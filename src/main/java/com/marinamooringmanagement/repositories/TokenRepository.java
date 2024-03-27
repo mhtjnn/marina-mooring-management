@@ -4,6 +4,8 @@ import com.marinamooringmanagement.model.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Repository for {@link Token}.
  */
@@ -15,5 +17,5 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
      * @param token the token value to search for
      * @return the token entity corresponding to the given token value, or null if not found
      */
-    Token findTokenEntityByToken(String token);
+    Optional<Token> findTokenEntityByToken(String token);
 }

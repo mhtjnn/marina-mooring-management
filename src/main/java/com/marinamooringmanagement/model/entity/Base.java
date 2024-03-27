@@ -47,8 +47,8 @@ public class Base implements Serializable {
      */
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "modifiedTime")
-    protected Date lastModifiedTime;
+    @Column(name = "modifiedDate")
+    protected Date lastModifiedDate;
 
     /**
      * The user who last modified the entity.

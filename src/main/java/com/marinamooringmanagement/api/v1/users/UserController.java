@@ -6,9 +6,11 @@ import com.marinamooringmanagement.request.UserRequestDto;
 import com.marinamooringmanagement.response.BasicRestResponse;
 import com.marinamooringmanagement.response.UserResponseDto;
 import com.marinamooringmanagement.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/api/v1/usercontroller")
+@Validated
 public class UserController {
     @Autowired
     private UserService userService;
@@ -29,12 +32,12 @@ public class UserController {
      * This REST API endpoint retrieves all users, supports pagination, and allows sorting by specified attributes.
      *
      * @param pageNumber Page number for pagination, default is 0.
-     * @param pageSize Number of records per page, default is 6.
+     * @param pageSize Number of records per page, default is 20.
      * @param sortBy Attribute name to sort the users, default is "email".
      * @param sortDir Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
-    @PreAuthorize(Authority.USER)
+    @PreAuthorize(Authority.ADMINISTRATOR)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -43,7 +46,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse getAllUsers(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "6", required = false) Integer pageSize,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "email", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
@@ -67,7 +70,7 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
-            @RequestBody UserRequestDto user
+            @Valid @RequestBody UserRequestDto user
     ) {
         final BasicRestResponse response = new BasicRestResponse();
         response.setMessage(userService.saveUser(user));
@@ -90,7 +93,7 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateUser(
-            @RequestBody UserRequestDto userRequestDto
+            @Valid @RequestBody UserRequestDto userRequestDto
     ) {
         final BasicRestResponse response = new BasicRestResponse();
         userService.updateUser(userRequestDto);

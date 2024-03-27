@@ -2,7 +2,10 @@ package com.marinamooringmanagement.service;
 
 
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.request.NewPasswordRequest;
 import com.marinamooringmanagement.request.UserRequestDto;
+import com.marinamooringmanagement.response.EmailLinkResponse;
+import com.marinamooringmanagement.response.NewPasswordResponse;
 import com.marinamooringmanagement.response.UserResponseDto;
 
 import java.util.List;
@@ -46,4 +49,8 @@ public interface UserService {
      * @return UserDto object if found, null otherwise
      */
     public UserDto findByEmailAddress(String email);
+
+    NewPasswordResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception;
+
+    EmailLinkResponse checkEmailAndTokenValid(String token);
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-03-22T14:43:52+0530",
+    date = "2024-03-27T16:01:42+0530",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 20.0.1 (Oracle Corporation)"
 )
 @Component
@@ -27,6 +27,9 @@ public class UserMapperImpl implements UserMapper {
         }
         if ( user.getCreatedBy() != null ) {
             dto.setCreatedBy( user.getCreatedBy() );
+        }
+        if ( user.getLastModifiedDate() != null ) {
+            dto.setLastModifiedDate( user.getLastModifiedDate() );
         }
         if ( user.getLastModifiedBy() != null ) {
             dto.setLastModifiedBy( user.getLastModifiedBy() );
@@ -70,6 +73,9 @@ public class UserMapperImpl implements UserMapper {
         }
         if ( userDto.getCreatedBy() != null ) {
             entity.setCreatedBy( userDto.getCreatedBy() );
+        }
+        if ( userDto.getLastModifiedDate() != null ) {
+            entity.setLastModifiedDate( userDto.getLastModifiedDate() );
         }
         if ( userDto.getLastModifiedBy() != null ) {
             entity.setLastModifiedBy( userDto.getLastModifiedBy() );
@@ -140,6 +146,9 @@ public class UserMapperImpl implements UserMapper {
         if ( role.getCreatedBy() != null ) {
             mappingTarget.setCreatedBy( role.getCreatedBy() );
         }
+        if ( role.getLastModifiedDate() != null ) {
+            mappingTarget.setLastModifiedDate( role.getLastModifiedDate() );
+        }
         if ( role.getLastModifiedBy() != null ) {
             mappingTarget.setLastModifiedBy( role.getLastModifiedBy() );
         }
@@ -164,6 +173,9 @@ public class UserMapperImpl implements UserMapper {
         }
         if ( roleDto.getCreatedBy() != null ) {
             mappingTarget.setCreatedBy( roleDto.getCreatedBy() );
+        }
+        if ( roleDto.getLastModifiedDate() != null ) {
+            mappingTarget.setLastModifiedDate( roleDto.getLastModifiedDate() );
         }
         if ( roleDto.getLastModifiedBy() != null ) {
             mappingTarget.setLastModifiedBy( roleDto.getLastModifiedBy() );

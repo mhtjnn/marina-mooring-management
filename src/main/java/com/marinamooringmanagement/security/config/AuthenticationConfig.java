@@ -67,7 +67,6 @@ public class AuthenticationConfig {
         return config.getAuthenticationManager();
     }
 
-
     /**
      * Bean for {@link PasswordEncoder}.
      *

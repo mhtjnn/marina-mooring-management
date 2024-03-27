@@ -54,14 +54,19 @@ public class JwtUtil {
      * @return true if the token is valid, false otherwise
      */
     private boolean isTokenValid(String token) {
-        final Token tokenEntity = tokenRepository.findTokenEntityByToken(token);
-        if(tokenEntity == null) {
-            return false;
-        }
+        Optional<Token> optionalToken = tokenRepository.findTokenEntityByToken(token);
+        if(optionalToken.isPresent()) {
+            Token tokenEntity = optionalToken.get();
+            if (tokenEntity == null) {
+                return false;
+            }
 
-        if(new Date().before(tokenEntity.getExpireAt())) {
-            final User user = tokenEntity.getUser();
-            return user != null;
+            if (new Date().before(tokenEntity.getExpireAt())) {
+                final User user = tokenEntity.getUser();
+                return user != null;
+            }
+        } else {
+            throw new RuntimeException("Token NOT FOUND!!!");
         }
 
         return false;
@@ -177,5 +182,14 @@ public class JwtUtil {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String generateResetPasswordToken(String subject) {
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 10000*60*48))
+                .signWith(SignatureAlgorithm.HS256, getSignInKey())
+                .compact();
     }
 }

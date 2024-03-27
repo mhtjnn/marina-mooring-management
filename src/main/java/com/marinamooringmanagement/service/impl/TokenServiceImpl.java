@@ -36,7 +36,7 @@ public class TokenServiceImpl implements TokenService {
      * @throws DBOperationException if an error occurs during database operation
      */
     @Override
-    public void saveToken(Token token) {
+    public void saveToken(final Token token) {
         try {
             if(null != token) {
                 tokenRepository.save(token);
@@ -64,6 +64,8 @@ public class TokenServiceImpl implements TokenService {
                         .token(token)
                         .expireAt(expireDateTime)
                         .build();
+                tokenEntity.setCreationDate(new Date(System.currentTimeMillis()));
+                tokenEntity.setLastModifiedDate(new Date(System.currentTimeMillis()));
                 saveToken(tokenEntity);
             }
         } catch (Exception e) {
