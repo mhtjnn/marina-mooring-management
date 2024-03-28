@@ -1,10 +1,12 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.service.TokenService;
 import org.slf4j.Logger;
@@ -23,6 +25,12 @@ import java.util.Date;
 public class TokenServiceImpl implements TokenService {
 
     private static final Logger log = LoggerFactory.getLogger(TokenServiceImpl.class);
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     TokenRepository tokenRepository;
@@ -71,6 +79,28 @@ public class TokenServiceImpl implements TokenService {
         } catch (Exception e) {
             log.error("exception occurred while saving token " + e.getMessage());
             throw new DBOperationException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Function to create a reset password token(which only has subject as email).
+     * @param email Email given by the user
+     * @return
+     */
+    @Override
+    public String createPasswordResetToken(String email) {
+        try {
+            if(userRepository.findByEmail(email).isEmpty()) {
+                throw new ClassNotFoundException("User with given email not found!!!");
+            }
+            User user = userRepository.findByEmail(email).get();
+            UserDto userDto = UserDto.builder().build();
+            userMapper.mapToUserDto(userDto, user);
+            String resetPasswordToken =  jwtUtil.generateResetPasswordToken(email);
+            saveToken(userDto, resetPasswordToken);
+            return resetPasswordToken;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }

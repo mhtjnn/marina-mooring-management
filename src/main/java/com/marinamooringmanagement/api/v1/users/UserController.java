@@ -37,7 +37,7 @@ public class UserController {
      * @param sortDir Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
-    @PreAuthorize(Authority.ADMINISTRATOR)
+    @PreAuthorize(Authority.USER)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -95,11 +95,7 @@ public class UserController {
     public BasicRestResponse updateUser(
             @Valid @RequestBody UserRequestDto userRequestDto
     ) {
-        final BasicRestResponse response = new BasicRestResponse();
-        userService.updateUser(userRequestDto);
-        response.setMessage("User Updated Successfully!!!");
-        response.setStatus(HttpStatus.OK.value());
-        return response;
+        return userService.updateUser(userRequestDto);
     }
 
     /**

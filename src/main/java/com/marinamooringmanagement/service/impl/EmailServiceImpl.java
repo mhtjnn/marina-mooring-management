@@ -8,12 +8,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 
+/**
+ * Service implementation class for Email related methods.
+ */
 @Service
 public class EmailServiceImpl implements EmailService {
 
     @Value("${spring.mail.username}")
     private String fromMailID;
 
+    /**
+     * Function to create {@link SimpleMailMessage} for Reset Password functionality.
+     * @param contextPath
+     * @param token
+     * @param email
+     * @return
+     */
     @Override
     public SimpleMailMessage constructPasswordResetEmail(String contextPath, String token, String email) {
         String url = contextPath + "/api/v1/auth/resetPassword?token=" + token;
@@ -21,6 +31,13 @@ public class EmailServiceImpl implements EmailService {
         return constructEmail("Reset Password", message, email);
     }
 
+    /**
+     * Helper function to construct email using subject, body and toMailID.
+     * @param subject
+     * @param body
+     * @param toMailID
+     * @return
+     */
     private SimpleMailMessage constructEmail(String subject, String body, String toMailID) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setSubject(subject);

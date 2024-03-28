@@ -4,6 +4,7 @@ package com.marinamooringmanagement.service;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.request.NewPasswordRequest;
 import com.marinamooringmanagement.request.UserRequestDto;
+import com.marinamooringmanagement.response.BasicRestResponse;
 import com.marinamooringmanagement.response.EmailLinkResponse;
 import com.marinamooringmanagement.response.NewPasswordResponse;
 import com.marinamooringmanagement.response.UserResponseDto;
@@ -36,13 +37,13 @@ public interface UserService {
      * Deletes a user by their ID.
      * @param empId The user ID to delete
      */
-    void deleteUser(Integer empId);
+    BasicRestResponse deleteUser(Integer empId);
 
     /**
      * Updates an existing user.
      * @param employee The user request DTO
      */
-    public void updateUser(UserRequestDto employee);
+    public BasicRestResponse updateUser(UserRequestDto employee);
     /**
      * Finds a user by their email address.
      * @param email The email address of the user to find
@@ -50,7 +51,19 @@ public interface UserService {
      */
     public UserDto findByEmailAddress(String email);
 
+    /**
+     * Update password for the user having email as subject of the token.
+     * @param token Reset Password Token
+     * @param newPasswordRequest Newly given password by the user
+     * @return {@link NewPasswordResponse}
+     * @throws Exception
+     */
     NewPasswordResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception;
 
+    /**
+     * Check validity of the token
+     * @param token Reset Password Token
+     * @return {@link EmailLinkResponse}
+     */
     EmailLinkResponse checkEmailAndTokenValid(String token);
 }

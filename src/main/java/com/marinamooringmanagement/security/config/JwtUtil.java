@@ -89,15 +89,20 @@ public class JwtUtil {
     }
 
     /**
-     * Function to het Username from the JWT
-     * @param token
-     * @return
+     * Function to get Username from the JWT
+     * @param token the JWT Token
+     * @return username extracted from the token
      */
     public String getUsernameFromToken(String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
 
+    /**
+     * Extract roles from the JWT
+     * @param token The JWT Token
+     * @return Roles given to the User extracted from the Token
+     */
     public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
@@ -110,8 +115,8 @@ public class JwtUtil {
 
     /**
      * Function to get User Id from the JWT
-     * @param token
-     * @return
+     * @param token The JWT Token
+     * @return User ID of the User extracted from the token
      */
     public Integer getUserIdFromToken(String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
@@ -120,8 +125,8 @@ public class JwtUtil {
 
     /**
      * Function to extract roles from the JWT
-     * @param token
-     * @return
+     * @param token The JWT Token
+     * @return Get the first Role from the List of Roles given to the User
      */
     public String getRoleFromToken(String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
@@ -151,8 +156,8 @@ public class JwtUtil {
     /**
      * Helper function for generating JWT
      * @param claims Roles and ID
-     * @param subject Eamil
-     * @return
+     * @param subject Email
+     * @return The JWT Token
      */
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
@@ -184,6 +189,11 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * Function to generate Reset Password Token
+     * @param subject Email of the User
+     * @return The JWT Token
+     */
     public String generateResetPasswordToken(String subject) {
         return Jwts.builder()
                 .setSubject(subject)

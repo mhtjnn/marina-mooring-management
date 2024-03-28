@@ -1,7 +1,10 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
+import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.RoleRepository;
 import com.marinamooringmanagement.mapper.UserMapper;
@@ -9,6 +12,7 @@ import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.request.NewPasswordRequest;
 import com.marinamooringmanagement.request.UserRequestDto;
+import com.marinamooringmanagement.response.BasicRestResponse;
 import com.marinamooringmanagement.response.EmailLinkResponse;
 import com.marinamooringmanagement.response.NewPasswordResponse;
 import com.marinamooringmanagement.response.UserResponseDto;
@@ -41,6 +45,9 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -105,36 +112,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to map User Entity to User Dto
-     *
-     * @param employee
-     * @return {@link UserDto}
-     */
-    private UserDto mapToUserDto(User employee) {
-        UserDto userDto = UserDto.builder().build();
-        mapper.mapToUserDto(userDto, employee);
-
-        RoleDto roleDto = RoleDto.builder().build();
-
-        Optional<Role> optionalRole = roleRepository.findById(employee.getRole().getId());
-
-        if (optionalRole.isPresent()) {
-            Role role = optionalRole.get();
-            roleDto.setId(employee.getRole().getId());
-            roleDto.setName(role.getName());
-            roleDto.setDescription(role.getDescription());
-            userDto.setRole(roleDto);
-        } else {
-            throw new RuntimeException("Role NOT FOUND!!!");
-        }
-
-        return userDto;
-    }
-
-    /**
      * Function to save User in the database
      *
-     * @param user
+     * @param user {@link UserRequestDto}
      * @return
      */
     @Override
@@ -156,31 +136,45 @@ public class UserServiceImpl implements UserService {
     /**
      * Function to delete User from the database
      *
-     * @param empId
+     * @param userId ID of the user which needs deletion.
      */
     @Override
-    public void deleteUser(Integer empId) {
-        log.info(String.format("delete employee with given empId"));
-        userRepository.deleteById(empId);
+    public BasicRestResponse deleteUser(Integer userId) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        log.info(String.format("delete employee with given userId"));
+        List<Token> tokenList = tokenRepository.findByUserId(userId);
+        tokenRepository.deleteAll(tokenList);
+        userRepository.deleteById(userId);
+        response.setMessage("User Deleted Successfully!!!");
+        response.setStatus(200);
+        return response;
     }
 
     /**
      * Function to update user in the database
      *
-     * @param userDto
+     * @param userDto {@link UserRequestDto}
      */
     @Override
-    public void updateUser(UserRequestDto userDto) {
+    public BasicRestResponse updateUser(UserRequestDto userDto) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
         User user = userRepository.findById(userDto.getId()).get();
         log.info(String.format("update employee"));
+        if(!userDto.getEmail().equals(user.getEmail())) {
+            response.setMessage("Email cannot be changed!!!");
+            response.setStatus(400);
+        }
         performSave(userDto, user, userDto.getId());
+        response.setMessage("User updated successfully!!!");
+        response.setStatus(200);
+        return response;
     }
 
     /**
      * Function to find Email Address of a user from the database
      *
-     * @param email
-     * @return
+     * @param email Email given by the user
+     * @return {@link UserDto}
      */
     @Override
     public UserDto findByEmailAddress(String email) {
@@ -194,6 +188,13 @@ public class UserServiceImpl implements UserService {
         return employee;
     }
 
+    /**
+     * Function to update password for the {@link User} having email as subject of the token.
+     * @param token Reset Password Token
+     * @param newPasswordRequest {@link NewPasswordRequest}
+     * @return {@link NewPasswordResponse}
+     * @throws Exception
+     */
     @Override
     public NewPasswordResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception {
         try {
@@ -206,7 +207,7 @@ public class UserServiceImpl implements UserService {
                 return passwordResponse;
             } else {
                 if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
-                    passwordResponse.setResponse("New password doesn't match");
+                    passwordResponse.setResponse("Confirm password doesn't match with New password");
                     passwordResponse.setSuccess(false);
                     return passwordResponse;
                 } else {
@@ -228,6 +229,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Function to validate email and token.
+     * @param token Reset Password Token
+     * @return {@link EmailLinkResponse}
+     */
     @Override
     public EmailLinkResponse checkEmailAndTokenValid(String token) {
         final EmailLinkResponse response = new EmailLinkResponse();
@@ -253,13 +259,12 @@ public class UserServiceImpl implements UserService {
     /**
      * Helper function to save the user in the database also update the existing user
      *
-     * @param userRequestDto
-     * @param user
-     * @param userId
+     * @param userRequestDto {@link UserResponseDto}
+     * @param user {@link User}
+     * @param userId ID of the user which requires update.
      */
     private void performSave(UserRequestDto userRequestDto, User user, Integer userId) {
         User savedUser = null;
-
         if (userRequestDto.getId() != null) {
             Optional<User> optionalUser = userRepository.findById(userRequestDto.getId());
             if (optionalUser.isPresent()) {

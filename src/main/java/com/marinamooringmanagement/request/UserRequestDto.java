@@ -13,23 +13,49 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * Request DTO (Data Transfer Object) class for {@link com.marinamooringmanagement.model.entity.User}.
- * This class is used for transferring user-related request data between layers of the application.
+ * Data transfer object (DTO) for user requests.
+ * This class represents the data structure used for creating or updating user information.
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRequestDto implements Serializable {
+    /**
+     * The unique identifier for the user.
+     */
     private Integer id;
+
+    /**
+     * The first name of the user.
+     */
     @NotNull(message = "First Name can't be blank")
     private String firstname;
+
+    /**
+     * The last name of the user.
+     */
     private String lastname;
+
+    /**
+     * The email address of the user.
+     */
     @Email(message = "Email is not Valid")
     private String email;
+
+    /**
+     * The phone number of the user.
+     */
     private String phoneNumber;
+
+    /**
+     * The password for the user account.
+     */
     @NotEmpty(message = "Password can't be blank")
     private String password;
+
+    /**
+     * The role ID associated with the user.
+     */
     private Integer roleId;
 }
-

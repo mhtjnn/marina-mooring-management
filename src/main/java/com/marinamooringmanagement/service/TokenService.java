@@ -21,4 +21,11 @@ public interface TokenService {
      * @param token The token string
      */
     void saveToken(final UserDto emp, final String token);
+
+    /**
+     * Create a Reset Password Token
+     * @param email Email given by User
+     * @return
+     */
+    String createPasswordResetToken(String email);
 }
