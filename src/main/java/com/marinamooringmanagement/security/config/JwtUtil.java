@@ -8,6 +8,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -24,7 +25,14 @@ public class JwtUtil {
     @Autowired
     TokenRepository tokenRepository;
 
-    private static final String SECRET_KEY = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    @Value("${security.token.expiration.time}")
+    private Long tokenExpirationTime;
+
+    @Value("${security.resetToken.expiration.time}")
+    private Long resetTokenExpirationTime;
+
+    @Value("${security.secret.key}")
+    private String SECRET_KEY;
 
     /**
      * Function to extract Username from the Token.
@@ -164,7 +172,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 10000*60*48))
+                .setExpiration(new Date(System.currentTimeMillis() + tokenExpirationTime))
                 .signWith(SignatureAlgorithm.HS256, getSignInKey())
                 .compact();
     }
@@ -198,7 +206,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 10000*60*48))
+                .setExpiration(new Date(System.currentTimeMillis() + resetTokenExpirationTime))
                 .signWith(SignatureAlgorithm.HS256, getSignInKey())
                 .compact();
     }

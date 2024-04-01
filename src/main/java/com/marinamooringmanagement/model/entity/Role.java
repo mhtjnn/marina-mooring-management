@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
  * This class inherits common fields from the Base class and includes role-specific attributes.
  */
 @Entity
-@Table(name = "employee_role")
+@Table(name = "role")
 @Data
 @Builder
 @AllArgsConstructor

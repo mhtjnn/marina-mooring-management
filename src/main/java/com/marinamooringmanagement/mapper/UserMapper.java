@@ -2,8 +2,7 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.request.UserRequestDto;
-import com.marinamooringmanagement.response.UserResponseDto;
+import com.marinamooringmanagement.model.request.UserRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;

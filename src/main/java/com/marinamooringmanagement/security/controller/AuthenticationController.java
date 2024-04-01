@@ -3,13 +3,13 @@ package com.marinamooringmanagement.security.controller;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.repositories.UserRepository;
-import com.marinamooringmanagement.request.NewPasswordRequest;
-import com.marinamooringmanagement.response.EmailLinkResponse;
-import com.marinamooringmanagement.response.NewPasswordResponse;
+import com.marinamooringmanagement.model.request.NewPasswordRequest;
+import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
-import com.marinamooringmanagement.request.ForgetPasswordEmailRequest;
+import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.service.TokenService;
@@ -92,14 +92,8 @@ public class AuthenticationController {
     public ResponseEntity<?> forgetPassword(
             HttpServletRequest request,
             @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        try {
-            String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
-            String contextPath = request.getScheme() + "://" + request.getServerName() + ":"  + request.getServerPort();
-            javaMailSender.send(emailService.constructPasswordResetEmail(contextPath, resetPasswordToken, forgetPasswordEmailRequest.getEmail()));
-            return ResponseEntity.ok("Mail Send Successfully!!!");
-        } catch (Exception e) {
-            throw new Exception(e.getMessage(), e);
-        }
+        EmailLinkResponse response = emailService.sendMail(request, forgetPasswordEmailRequest);
+        return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
     }
 
     /**

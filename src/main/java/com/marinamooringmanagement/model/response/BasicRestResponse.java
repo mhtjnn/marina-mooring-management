@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.response;
+package com.marinamooringmanagement.model.response;
 
 import lombok.*;
 

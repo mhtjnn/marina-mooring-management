@@ -1,9 +1,17 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
+import com.marinamooringmanagement.model.response.EmailLinkResponse;
 import com.marinamooringmanagement.service.EmailService;
+import com.marinamooringmanagement.service.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
@@ -13,6 +21,14 @@ import java.util.Locale;
  */
 @Service
 public class EmailServiceImpl implements EmailService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
+    @Autowired
+    private TokenService tokenService;
 
     @Value("${spring.mail.username}")
     private String fromMailID;
@@ -29,6 +45,23 @@ public class EmailServiceImpl implements EmailService {
         String url = contextPath + "/api/v1/auth/resetPassword?token=" + token;
         String message = "Please visit this following link to reset your password \r\n" + url;
         return constructEmail("Reset Password", message, email);
+    }
+
+    @Override
+    public EmailLinkResponse sendMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
+        EmailLinkResponse response = EmailLinkResponse.builder().build();
+        try {
+            String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+            String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            javaMailSender.send(constructPasswordResetEmail(contextPath, resetPasswordToken, forgetPasswordEmailRequest.getEmail()));
+            response.setResponse("Email Send Successfully");
+            response.setSuccess(true);
+        } catch (Exception e) {
+            log.info("Error occurred while sending email");
+            response.setResponse("Error occurred");
+            response.setSuccess(false);
+        }
+        return response;
     }
 
     /**

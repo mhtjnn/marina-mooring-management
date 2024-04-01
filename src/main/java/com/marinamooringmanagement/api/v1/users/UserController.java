@@ -1,10 +1,10 @@
 package com.marinamooringmanagement.api.v1.users;
 
 import com.marinamooringmanagement.constants.Authority;
-import com.marinamooringmanagement.model.dto.UserDto;
-import com.marinamooringmanagement.request.UserRequestDto;
-import com.marinamooringmanagement.response.BasicRestResponse;
-import com.marinamooringmanagement.response.UserResponseDto;
+
+import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +14,19 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
+import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
+
 /**
  * Rest Controller for managing {@link com.marinamooringmanagement.model.entity.User} entities.
  */
 @RestController
-@RequestMapping(value = "/api/v1/usercontroller")
+@RequestMapping(value = "/api/v1/user")
 @Validated
 public class UserController {
     @Autowired
     private UserService userService;
-    protected static final String DEFAULT_PAGE_SIZE = "20";
-    protected static final String DEFAULT_PAGE_NUM = "0";
 
     /**
      * Fetches a paginated list of users from the database.
@@ -41,17 +43,17 @@ public class UserController {
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
-            produces = {"application/json", "application/xml"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse getAllUsers(
+    public BasicRestResponse getUsers(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "email", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         List<UserResponseDto> userList = userService.getAllUser(pageNumber, pageSize, sortBy, sortDir);
-        final BasicRestResponse response = BasicRestResponse.builder().content(userList).message("User List").status(HttpStatus.OK.value()).build();
+        final BasicRestResponse response = BasicRestResponse.builder().content(userList).message("List of Saved Users in database").status(HttpStatus.OK.value()).build();
         return response;
     }
 
@@ -66,7 +68,7 @@ public class UserController {
     @RequestMapping(
             value = "/",
             method = RequestMethod.POST,
-            produces = {"application/json", "application/xml"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
@@ -74,7 +76,7 @@ public class UserController {
     ) {
         final BasicRestResponse response = new BasicRestResponse();
         response.setMessage(userService.saveUser(user));
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.CREATED.value());
         return response;
     }
 
@@ -89,7 +91,7 @@ public class UserController {
     @RequestMapping(
             value = "/",
             method = RequestMethod.PUT,
-            produces = {"application/json", "application/xml"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateUser(
@@ -109,7 +111,7 @@ public class UserController {
     @RequestMapping(
             value = "/{userId}",
             method = RequestMethod.DELETE,
-            produces = {"application/json", "application/xml"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteUser(

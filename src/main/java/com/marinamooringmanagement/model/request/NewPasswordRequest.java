@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.request;
+package com.marinamooringmanagement.model.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

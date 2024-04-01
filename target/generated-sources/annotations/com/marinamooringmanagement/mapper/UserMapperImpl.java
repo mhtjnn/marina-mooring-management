@@ -4,13 +4,13 @@ import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.request.UserRequestDto;
+import com.marinamooringmanagement.model.request.UserRequestDto;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-03-27T16:01:42+0530",
+    date = "2024-04-01T12:34:40+0530",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 20.0.1 (Oracle Corporation)"
 )
 @Component

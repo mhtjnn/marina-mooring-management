@@ -2,12 +2,12 @@ package com.marinamooringmanagement.service;
 
 
 import com.marinamooringmanagement.model.dto.UserDto;
-import com.marinamooringmanagement.request.NewPasswordRequest;
-import com.marinamooringmanagement.request.UserRequestDto;
-import com.marinamooringmanagement.response.BasicRestResponse;
-import com.marinamooringmanagement.response.EmailLinkResponse;
-import com.marinamooringmanagement.response.NewPasswordResponse;
-import com.marinamooringmanagement.response.UserResponseDto;
+import com.marinamooringmanagement.model.request.NewPasswordRequest;
+import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.response.NewPasswordResponse;
+import com.marinamooringmanagement.model.response.UserResponseDto;
 
 import java.util.List;
 
