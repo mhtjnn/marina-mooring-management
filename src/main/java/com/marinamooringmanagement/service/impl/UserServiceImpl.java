@@ -11,7 +11,7 @@ import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
@@ -226,11 +226,11 @@ public class UserServiceImpl implements UserService {
     /**
      * Function to validate email and token.
      * @param token Reset Password Token
-     * @return {@link EmailLinkResponse}
+     * @return {@link SendEmailResponse}
      */
     @Override
-    public EmailLinkResponse checkEmailAndTokenValid(String token) {
-        final EmailLinkResponse response = new EmailLinkResponse();
+    public SendEmailResponse checkEmailAndTokenValid(String token) {
+        final SendEmailResponse response = new SendEmailResponse();
         String email = jwtUtil.getUsernameFromToken(token);
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if(optionalUser.isEmpty()) {

@@ -4,7 +4,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
-import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
@@ -92,7 +92,7 @@ public class AuthenticationController {
     public ResponseEntity<?> forgetPassword(
             HttpServletRequest request,
             @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        EmailLinkResponse response = emailService.sendMail(request, forgetPasswordEmailRequest);
+        SendEmailResponse response = emailService.sendForgetPasswordEMail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
     }
 
@@ -105,7 +105,7 @@ public class AuthenticationController {
     @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
     public ResponseEntity<?> validateEmailAndToken(
             @RequestParam("token") String token) throws Exception {
-        EmailLinkResponse response = userService.checkEmailAndTokenValid(token);
+        SendEmailResponse response = userService.checkEmailAndTokenValid(token);
         return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
     }
 
