@@ -48,7 +48,7 @@ public class EmailServiceImpl implements EmailService {
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
     @Override
-    public SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
+    public SendEmailResponse sendForgetPasswordEmail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
         ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
         String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());

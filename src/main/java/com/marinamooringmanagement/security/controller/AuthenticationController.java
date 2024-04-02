@@ -92,7 +92,7 @@ public class AuthenticationController {
     public ResponseEntity<?> forgetPassword(
             HttpServletRequest request,
             @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        SendEmailResponse response = emailService.sendForgetPasswordEMail(request, forgetPasswordEmailRequest);
+        SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
     }
 
