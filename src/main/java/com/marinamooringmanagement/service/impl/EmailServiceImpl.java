@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.response.EmailLinkResponse;
 import com.marinamooringmanagement.service.EmailService;
@@ -14,7 +13,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Locale;
 
 /**
  * Service implementation class for Email related methods.
@@ -47,22 +45,38 @@ public class EmailServiceImpl implements EmailService {
         return constructEmail("Reset Password", message, email);
     }
 
+    /**
+     * Sends an email with a password reset link.
+     *
+     * @param request                    the HTTP servlet request
+     * @param forgetPasswordEmailRequest the request containing the email details
+     * @return an EmailLinkResponse indicating the status of the email sending process
+     */
     @Override
     public EmailLinkResponse sendMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
         EmailLinkResponse response = EmailLinkResponse.builder().build();
         try {
+            // Create a password reset token for the provided email address
             String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+
+            // Construct the context path for the email link
             String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+
+            // Send the password reset email
             javaMailSender.send(constructPasswordResetEmail(contextPath, resetPasswordToken, forgetPasswordEmailRequest.getEmail()));
-            response.setResponse("Email Send Successfully");
+
+            // Set the response details for success
+            response.setResponse("Email Sent Successfully");
             response.setSuccess(true);
         } catch (Exception e) {
-            log.info("Error occurred while sending email");
-            response.setResponse("Error occurred");
+            log.info("Error occurred while sending email", e);
+            // Set the response details for failure
+            response.setResponse("Error occurred while sending email");
             response.setSuccess(false);
         }
         return response;
     }
+
 
     /**
      * Helper function to construct email using subject, body and toMailID.

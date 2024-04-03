@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmailLinkResponse {
+
     /**
      * Flag to show whether the operation was a success or not.
      */
