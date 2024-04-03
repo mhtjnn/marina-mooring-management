@@ -275,7 +275,7 @@ public class UserServiceImpl implements UserService {
             user.setCreationDate(new Date());
             user.setLastModifiedDate(new Date());
             Role role = Role.builder().build();
-            role.setId(1);
+            role.setId(2);
             user.setRole(role);
             userRepository.save(user);
         }

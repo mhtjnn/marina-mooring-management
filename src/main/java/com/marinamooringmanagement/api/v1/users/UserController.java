@@ -24,6 +24,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping(value = "/api/v1/user")
 @Validated
+@CrossOrigin("*")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -39,7 +40,7 @@ public class UserController {
      * @param sortDir Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
-    @PreAuthorize(Authority.USER)
+    @PreAuthorize(Authority.ADMINISTRATOR)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,

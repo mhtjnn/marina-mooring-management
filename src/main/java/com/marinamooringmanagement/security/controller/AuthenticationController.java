@@ -63,7 +63,7 @@ public class AuthenticationController {
      * @return a ResponseEntity containing the authentication response
      * @throws Exception if an error occurs during authentication
      */
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(
             @RequestBody AuthenticationRequest authenticationRequest,
             HttpServletRequest request
