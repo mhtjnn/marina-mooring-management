@@ -1,5 +1,9 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.entity.Base;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CustomerDto {
+public class CustomerDto extends BaseDto {
     /**
      * The unique identifier of the customer.
      */
@@ -18,6 +22,7 @@ public class CustomerDto {
     /**
      * The name of the customer.
      */
+    @NotNull(message = "Customer Name can't be blank")
     private String customerName;
     /**
      * The customer ID.
@@ -30,6 +35,7 @@ public class CustomerDto {
     /**
      * The email address of the customer.
      */
+    @Email(message = "Email is not Valid")
     private String emailAddress;
     /**
      * The street and house number of the customer's address.
@@ -42,6 +48,7 @@ public class CustomerDto {
     /**
      * The state of the customer's address.
      */
+    @NotEmpty(message = "state can't be empty")
     private String state;
     /**
      * The country of the customer's address.

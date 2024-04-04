@@ -19,11 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.security.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 
 /**
  * Implementation of the CustomerService interface.
@@ -159,12 +156,14 @@ public class CustomerServiceImpl implements CustomerService {
             if (null == id) {
 
                 customerMapper.toEntity(customerDto,customer);
+                customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
                 customerRepository.save(customer);
             } else {
 
                     customerMapper.toEntity(customerDto,customer);
-
+                customer.setCreationDate(new Date());
+                customer.setLastModifiedDate(new Date());
                     customerRepository.save(customer);
                 }
 

@@ -42,6 +42,7 @@ public class BasicRestResponse implements Serializable {
      * The content object of the response.
      */
     private Object content;
+    private Object data;
 
     /**
      * Constructs a BasicRestResponse with specific status, message, and timestamp.

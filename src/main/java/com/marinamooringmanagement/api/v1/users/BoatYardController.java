@@ -3,8 +3,10 @@ package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.BoatYardDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.BoatYardService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +18,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
  * Controller class for managing Boat Yard operations.
  */
 @RestController
+@Validated
 @RequestMapping(value = "/api/v1/boatyard")
 public class BoatYardController {
 
@@ -30,7 +33,7 @@ public class BoatYardController {
      */
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer(@RequestBody BoatYardDto boatYardDto
+    public BasicRestResponse saveCustomer(@Valid @RequestBody BoatYardDto boatYardDto
                                           ) {
         final BasicRestResponse res = new BasicRestResponse();
         res.setStatus(HttpStatus.CREATED.value());
@@ -51,7 +54,7 @@ public class BoatYardController {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public List<BoatYardDto> getUsers(
+    public List<BoatYardDto> getBoatYards(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
@@ -104,7 +107,7 @@ public class BoatYardController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateBoatYard(
             @PathVariable(value = "id",required = true) Integer id,
-            @RequestBody BoatYardDto boatYardDto
+            @Valid @RequestBody BoatYardDto boatYardDto
     ){
         final BasicRestResponse res = new BasicRestResponse();
         boatYardService.updateBoatYard(boatYardDto,id);
@@ -112,8 +115,5 @@ public class BoatYardController {
         res.setMessage("BoatYard Updated successfully ");
         return  res;
     }
-
-
-
 
 }

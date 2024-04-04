@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 /**
@@ -65,7 +66,7 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @return A list of TechnicianDto objects.
      */
     @Override
-    public List<TechnicianDto> getUsers(int pageNumber, int pageSize, String sortBy, String sortDir) {
+    public List<TechnicianDto> getTechnicians(int pageNumber, int pageSize, String sortBy, String sortDir) {
         List<TechnicianDto> nlst = new ArrayList<>();
        try{ Sort sort = null;
         if (sortDir.equalsIgnoreCase("asc")) {
@@ -168,11 +169,12 @@ public class TechnicianServiceImpl implements TechnicianService {
         try {
             if (null == id) {
                 technicianMapper.toEntity(technicianDto, technician);
-
+                technician.setLastModifiedDate(new Date(System.currentTimeMillis()));
                 technicianRepository.save(technician);
             } else {
                     technicianMapper.toEntity(technicianDto, technician);
-
+                technician.setCreationDate(new Date());
+                technician.setLastModifiedDate(new Date());
                     technicianRepository.save(technician);
 
             }
@@ -182,4 +184,6 @@ public class TechnicianServiceImpl implements TechnicianService {
         }
     }
 }
+
+
 

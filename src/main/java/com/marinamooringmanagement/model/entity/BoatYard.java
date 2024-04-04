@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class BoatYard {
+public class BoatYard extends Base {
     /**
      * The unique identifier of the BoatYard.
      */
@@ -25,27 +25,27 @@ public class BoatYard {
     /**
      * The boatyard ID of the BoatYard.
      */
-    @Column(name="Boatyard_Id")
+    @Column(name="boatyard_id")
     private String boatyardId;
     /**
      * The mooring name of the BoatYard.
      */
-    @Column(name="Mooring_Name")
+    @Column(name="mooring_name")
     private String mooringName;
     /**
      * The owner name of the BoatYard.
      */
-    @Column(name="Owner_Name")
+    @Column(name="owner_name")
     private String ownerName;
     /**
      * The email address of the BoatYard owner.
      */
-    @Column(name="Email_Address")
+    @Column(name="email_address")
     private String emailAddress;
     /**
      * The phone number of the BoatYard.
      */
-    @Column(name="Phone")
+    @Column(name="phone")
     private String phone;
 
 

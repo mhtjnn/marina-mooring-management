@@ -1,5 +1,8 @@
 package com.marinamooringmanagement.model.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class BoatYardDto {
+public class BoatYardDto extends BaseDto {
     /**
      * The unique identifier of the BoatYard.
      */
@@ -24,14 +27,17 @@ public class BoatYardDto {
     /**
      * The mooring name of the BoatYard.
      */
+    @NotNull(message = "Mooring Name can't be blank")
     private String mooringName;
     /**
      * The owner name of the BoatYard.
      */
+    @NotEmpty(message = "Owner Name can't be blank")
     private String ownerName;
     /**
      * The email address of the BoatYard owner.
      */
+    @Email(message = "Email is not Valid")
     private String emailAddress;
     /**
      * The phone number of the BoatYard.

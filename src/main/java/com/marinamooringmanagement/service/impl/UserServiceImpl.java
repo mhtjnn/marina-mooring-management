@@ -265,6 +265,7 @@ public class UserServiceImpl implements UserService {
                 savedUser = optionalUser.get();
                 mapper.mapToUser(savedUser, userRequestDto);
                 user.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
                 userRepository.save(savedUser);
             } else {
                 throw new RuntimeException("User NOT FOUND!!!");

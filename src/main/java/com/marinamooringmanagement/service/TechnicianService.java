@@ -25,7 +25,7 @@ public interface TechnicianService {
      * @param sortDir    The sorting direction.
      * @return A list of TechnicianDto objects.
      */
-    public List<TechnicianDto> getUsers(int pageNumber, int pageSize, String sortBy, String sortDir);
+    public List<TechnicianDto> getTechnicians(int pageNumber, int pageSize, String sortBy, String sortDir);
 
     /**
      * Retrieves a technician by ID.

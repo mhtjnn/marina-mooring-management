@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 /**
  * Entity class representing a Technician.
  */
-public class Technician {
+public class Technician extends Base{
     /**
      * The unique identifier of the technician.
      */
@@ -25,51 +25,51 @@ public class Technician {
     /**
      * The name of the technician.
      */
-    @Column(name="Technician_Name")
+    @Column(name="technician_name")
     private String technicianName;
     /**
      * The technician ID.
      */
-    @Column(name="TechnicianId")
+    @Column(name="technician_id")
     private String technicianId;
     /**
      * The email address of the technician.
      */
-    @Column(name="EmailAddress")
+    @Column(name="email_address")
     private String emailAddress;
     /**
      * The phone number of the technician.
      */
-    @Column(name="Phone")
+    @Column(name="phone")
     private String phone;
     /**
      * The street and house number of the technician's address.
      */
-    @Column(name="Street/House")
+    @Column(name="street_house")
     private String streetHouse;
     /**
      * The sector or block of the technician's address.
      */
-    @Column(name="Sector/Block")
+    @Column(name="sector_block")
     private String sectorBlock;
     /**
      * The state of the technician's address.
      */
-    @Column(name="State")
+    @Column(name="state")
     private String state;
     /**
      * The country of the technician's address.
      */
-    @Column(name="Country")
+    @Column(name="country")
     private String country;
     /**
      * The pin code of the technician's address.
      */
-    @Column(name="Pincode")
+    @Column(name="pincode")
     private String pincode;
     /**
      * Additional notes or comments about the technician.
      */
-    @Column(name="Note")
+    @Column(name="note")
     private String note;
 }

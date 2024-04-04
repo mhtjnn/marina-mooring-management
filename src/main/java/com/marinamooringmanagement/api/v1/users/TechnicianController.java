@@ -4,8 +4,10 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.TechnicianService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
  * Controller class for managing technician-related endpoints.
  */
 @RestController
+@Validated
 @RequestMapping(value = "/api/v1/technician")
 public class TechnicianController {
 
@@ -31,7 +34,7 @@ public class TechnicianController {
      */
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveTechnician(@RequestBody TechnicianDto technicianDto) {
+    public BasicRestResponse saveTechnician(@Valid @RequestBody TechnicianDto technicianDto) {
         final BasicRestResponse res = new BasicRestResponse();
         res.setStatus(HttpStatus.CREATED.value());
         res.setMessage("Technician created successfully");
@@ -58,7 +61,7 @@ public class TechnicianController {
             @RequestParam(value = "sortBy", defaultValue = "technicianId", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return technicianService.getUsers(pageNumber, pageSize, sortBy, sortDir);
+        return technicianService.getTechnicians(pageNumber, pageSize, sortBy, sortDir);
     }
 
     /**
@@ -97,7 +100,7 @@ public class TechnicianController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateTechnician(
             @PathVariable(value = "id",required = true) Integer id,
-            @RequestBody TechnicianDto technicianDto,
+            @Valid @RequestBody TechnicianDto technicianDto,
             HttpServletRequest request, HttpServletResponse response
     ){
         final BasicRestResponse res = new BasicRestResponse();
@@ -107,3 +110,5 @@ public class TechnicianController {
         return  res;
     }
 }
+
+

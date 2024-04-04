@@ -1,9 +1,12 @@
 package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.entity.Base;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,8 +18,9 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
  * Controller class for managing customer-related endpoints.
  */
 @RestController
+@Validated
 @RequestMapping(value = "/api/v1/customer")
-public class CustomerController {
+public class CustomerController extends Base {
 
 
     @Autowired
@@ -30,7 +34,7 @@ public class CustomerController {
      */
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer(@RequestBody CustomerDto customerDto
+    public BasicRestResponse saveCustomer( @Valid @RequestBody CustomerDto customerDto
                                                    ) {
         final BasicRestResponse res = new BasicRestResponse();
         res.setStatus(HttpStatus.CREATED.value());
@@ -52,13 +56,22 @@ public class CustomerController {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public List<CustomerDto> getCustomers(
+    public BasicRestResponse getCustomers(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "customerId", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return customerService.getCustomers(pageNumber, pageSize, sortBy, sortDir);
+        List<CustomerDto> customers = customerService.getCustomers(pageNumber, pageSize, sortBy, sortDir);
+
+        BasicRestResponse response = new BasicRestResponse();
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Customers fetched successfully");
+        response.setData(customers);
+
+        return response;
+
+
     }
 
     /**
@@ -86,7 +99,7 @@ public class CustomerController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateCustomer(
             @PathVariable(value = "id",required = true) Integer id,
-            @RequestBody CustomerDto customerDto
+            @Valid @RequestBody CustomerDto customerDto
 
     ){
         final BasicRestResponse res = new BasicRestResponse();

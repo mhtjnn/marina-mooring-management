@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class Customer {
+public class Customer extends Base{
     /**
      * The unique identifier of the customer.
      */
@@ -25,56 +25,56 @@ public class Customer {
     /**
      * The name of the customer.
      */
-    @Column(name = "CustomerName")
+    @Column(name = "customer_name")
     private String customerName;
     /**
      * The customer ID.
      */
-    @Column(name = "CustomerId")
+    @Column(name = "customer_id")
     private String customerId;
 
     /**
      * The phone number of the customer.
      */
-    @Column(name="Phone")
+    @Column(name="phone")
     private String phone;
 
     /**
      * The email address of the customer.
      */
-    @Column(name="EmailAddress")
+    @Column(name="email_address")
     private String emailAddress;
 
     /**
      * The street and house number of the customer's address.
      */
-    @Column(name="Street/house")
+    @Column(name="street_house")
     private String streetHouse;
 
     /**
      * The sector or block of the customer's address.
      */
-    @Column(name="Sector/Block")
+    @Column(name="sector_block")
     private String sectorBlock;
     /**
      * The state of the customer's address.
      */
-    @Column(name="State")
+    @Column(name="state")
     private String state;
     /**
      * The country of the customer's address.
      */
-    @Column(name="Country")
+    @Column(name="country")
     private String country;
     /**
      * The pin code of the customer's address.
      */
-    @Column(name="Pincode")
+    @Column(name="pincode")
     private String pinCode;
     /**
      * Additional notes or comments about the customer.
      */
-    @Column(name="Note")
+    @Column(name="note")
     private String note;
 
 
