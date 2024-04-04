@@ -1,18 +1,26 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
-import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
+import com.marinamooringmanagement.model.request.SendEmailRequest;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.TokenService;
+import com.marinamooringmanagement.utils.EmailUtils;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 
 /**
  * Service implementation class for Email related methods.
@@ -21,6 +29,9 @@ import org.springframework.stereotype.Service;
 public class EmailServiceImpl implements EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -32,66 +43,73 @@ public class EmailServiceImpl implements EmailService {
     private String fromMailID;
 
     /**
-     * Function to create {@link SimpleMailMessage} for Reset Password functionality.
-     * @param contextPath
-     * @param token
-     * @param email
-     * @return
-     */
-    @Override
-    public SimpleMailMessage constructPasswordResetEmail(String contextPath, String token, String email) {
-        String url = contextPath + "/api/v1/auth/resetPassword?token=" + token;
-        String message = "Please visit this following link to reset your password \r\n" + url;
-        return constructEmail("Reset Password", message, email);
-    }
-
-    /**
-     * Sends an email with a password reset link.
+     * Sends a forget password email using the provided request and email template.
+     * Generates a reset password token and constructs the email message with the reset URL.
      *
-     * @param request                    the HTTP servlet request
-     * @param forgetPasswordEmailRequest the request containing the email details
-     * @return an EmailLinkResponse indicating the status of the email sending process
+     * @param request                   The HttpServletRequest object to get server information.
+     * @param forgetPasswordEmailRequest The ForgetPasswordEmailRequest containing email and other details.
+     * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
     @Override
-    public EmailLinkResponse sendMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
-        EmailLinkResponse response = EmailLinkResponse.builder().build();
-        try {
-            // Create a password reset token for the provided email address
-            String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+    public SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
+        ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
-            // Construct the context path for the email link
-            String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+        String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-            // Send the password reset email
-            javaMailSender.send(constructPasswordResetEmail(contextPath, resetPasswordToken, forgetPasswordEmailRequest.getEmail()));
+        String url = contextPath + "/api/v1/auth/resetPassword?token=" + resetPasswordToken;
+        String message = "Please visit this following link to reset your password: " + url;
 
-            // Set the response details for success
-            response.setResponse("Email Sent Successfully");
-            response.setSuccess(true);
-        } catch (Exception e) {
-            log.info("Error occurred while sending email", e);
-            // Set the response details for failure
-            response.setResponse("Error occurred while sending email");
-            response.setSuccess(false);
-        }
-        return response;
+        template.setToMailId(forgetPasswordEmailRequest.getEmail());
+        template.setSubject("Reset Password");
+        template.setBody(message);
+
+        SendEmailRequest sendEmailRequest = emailUtils.generateEmailRequest(template);
+
+        return sendEmail(sendEmailRequest);
     }
-
 
     /**
-     * Helper function to construct email using subject, body and toMailID.
-     * @param subject
-     * @param body
-     * @param toMailID
-     * @return
+     * Sends an email using the provided SendEmailRequest object.
+     * Uses JavaMailSender to create and send the MimeMessage.
+     *
+     * @param sendEmailRequest The SendEmailRequest containing email details.
+     * @return SendEmailResponse The response indicating if the email was sent successfully or not.
      */
-    private SimpleMailMessage constructEmail(String subject, String body, String toMailID) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setSubject(subject);
-        simpleMailMessage.setText(body);
-        simpleMailMessage.setTo(toMailID);
-        simpleMailMessage.setFrom(fromMailID);
+    @Override
+    public SendEmailResponse sendEmail(SendEmailRequest sendEmailRequest) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false);
+            mimeMessageHelper.setFrom(fromMailID);
 
-        return simpleMailMessage;
+            if(CollectionUtils.isNotEmpty(sendEmailRequest.getToList())) {
+                mimeMessageHelper.setTo(sendEmailRequest.getToList().toArray(new String[sendEmailRequest.getToList().size()]));
+            }
+
+            if(CollectionUtils.isNotEmpty(sendEmailRequest.getBccList())) {
+                mimeMessageHelper.setTo(sendEmailRequest.getBccList().toArray(new String[sendEmailRequest.getBccList().size()]));
+            }
+
+            if(CollectionUtils.isNotEmpty(sendEmailRequest.getCcList())) {
+                mimeMessageHelper.setTo(sendEmailRequest.getCcList().toArray(new String[sendEmailRequest.getCcList().size()]));
+            }
+
+            if(StringUtils.isNotEmpty(sendEmailRequest.getSubject())) {
+                mimeMessageHelper.setSubject(sendEmailRequest.getSubject());
+            }
+
+            if(StringUtils.isNotEmpty(sendEmailRequest.getBody())) {
+                mimeMessageHelper.setText(sendEmailRequest.getBody(), true);
+            }
+
+            javaMailSender.send(mimeMessage);
+            return new SendEmailResponse(true, "Mail send Successfully!!!");
+
+        } catch (Exception e) {
+            log.info("Error occurred while sending email: {}", e.getLocalizedMessage());
+            return new SendEmailResponse(false, "Mail send Error");
+        }
     }
+
 }

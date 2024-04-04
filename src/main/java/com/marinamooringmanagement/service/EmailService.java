@@ -1,33 +1,30 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
-import com.marinamooringmanagement.model.response.EmailLinkResponse;
+import com.marinamooringmanagement.model.request.SendEmailRequest;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.mail.SimpleMailMessage;
 
-
 /**
- * Service interface for handling email operations.
+ * EmailService interface defines methods for sending different types of emails.
  */
 public interface EmailService {
 
     /**
-     * Constructs a password reset email message.
+     * Sends a forget password email using the provided request and email details.
      *
-     * @param contextPath the context path of the application
-     * @param token       the reset token
-     * @param email       the recipient's email address
-     * @return a SimpleMailMessage representing the password reset email
+     * @param request                   The HttpServletRequest object to get server information.
+     * @param forgetPasswordEmailRequest The ForgetPasswordEmailRequest containing email and other details.
+     * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
-    SimpleMailMessage constructPasswordResetEmail(String contextPath, String token, String email);
+    SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest);
 
     /**
-     * Sends an email with a password reset link.
+     * Sends an email using the provided SendEmailRequest object.
      *
-     * @param request                 the HTTP servlet request
-     * @param forgetPasswordEmailRequest the request containing the email details
-     * @return an EmailLinkResponse indicating the status of the email sending process
+     * @param sendEmailRequest The SendEmailRequest containing email details.
+     * @return SendEmailResponse The response indicating if the email was sent successfully or not.
      */
-    EmailLinkResponse sendMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest);
+    SendEmailResponse sendEmail(SendEmailRequest sendEmailRequest);
 }
-

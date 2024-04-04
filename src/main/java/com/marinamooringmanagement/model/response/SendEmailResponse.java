@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmailLinkResponse {
-
+public class SendEmailResponse {
     /**
      * Flag to show whether the operation was a success or not.
      */
