@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.Token;
@@ -23,9 +24,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -68,23 +72,34 @@ public class UserServiceImpl implements UserService {
      * @return List of UserResponseDto objects
      */
     @Override
-    public List<UserResponseDto> getAllUser(
+    public BasicRestResponse fetchUsers(
             Integer pageNumber,
             Integer pageSize,
             String sortBy,
             String sortDir
     ) {
-        Sort sort = null;
-        if (sortDir.equalsIgnoreCase("asc")) {
-            sort = Sort.by(sortBy).ascending();
-        } else {
-            sort = Sort.by(sortBy).descending();
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Sort sort = null;
+            if (sortDir.equalsIgnoreCase("asc")) {
+                sort = Sort.by(sortBy).ascending();
+            } else {
+                sort = Sort.by(sortBy).descending();
+            }
+            Pageable p = PageRequest.of(pageNumber, pageSize, sort);
+            Page<User> employeeList = userRepository.findAll(p);
+            log.info(String.format("fetch all users"));
+            List<UserResponseDto> userResponseDtoList = employeeList.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
+            response.setMessage("Users fetched Successfully");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(userResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage("Error Occurred while fetching user from the database");
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setErrorList(List.of(e.getMessage()));
         }
-        Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-        Page<User> employeeList = userRepository.findAll(p);
-        log.info(String.format("fetch all employees"));
-        List<UserResponseDto> userResponseDtoList = employeeList.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
-        return userResponseDtoList;
+        return response;
     }
 
     /**
@@ -108,23 +123,34 @@ public class UserServiceImpl implements UserService {
     /**
      * Function to save User in the database
      *
-     * @param user {@link UserRequestDto}
+     * @param userRequestDto {@link UserRequestDto}
      * @return
      */
     @Override
-    public String saveUser(UserRequestDto user) {
+    public BasicRestResponse saveUser(UserRequestDto userRequestDto) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final User user = User.builder().build();
+            Optional<User> optionalEmp = userRepository.findByEmail(user.getEmail());
 
-        final User employee = com.marinamooringmanagement.model.entity.User.builder().build();
-        Optional<User> optionalEmp = userRepository.findByEmail(user.getEmail());
+            if (optionalEmp.isPresent()) {
+                log.info(String.format("Email already present in DB"));
+                throw new RuntimeException("Email already present in DB");
+            }
 
-        if (optionalEmp.isPresent()) {
-            log.info(String.format("Email already present in DB"));
-            return "Email Already Exists";
+            log.info(String.format("saving employee in DB"));
+            performSave(userRequestDto, user, null);
+
+            response.setMessage("User saved successfully");
+            response.setStatus(HttpStatus.CREATED.value());
+
+        } catch (Exception e) {
+            response.setMessage("Error Occurred while saving user");
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setErrorList(List.of(e.getMessage()));
         }
-
-        log.info(String.format("saving employee in DB"));
-        performSave(user, employee, null);
-        return "Employee Saved Successfully";
+        return response;
     }
 
     /**
@@ -135,12 +161,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public BasicRestResponse deleteUser(Integer userId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
-        log.info(String.format("delete employee with given userId"));
-        List<Token> tokenList = tokenRepository.findByUserId(userId);
-        tokenRepository.deleteAll(tokenList);
-        userRepository.deleteById(userId);
-        response.setMessage("User Deleted Successfully!!!");
-        response.setStatus(200);
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            log.info(String.format("delete employee with given userId"));
+            List<Token> tokenList = tokenRepository.findByUserId(userId);
+            tokenRepository.deleteAll(tokenList);
+            userRepository.deleteById(userId);
+            response.setMessage("User Deleted Successfully!!!");
+            response.setStatus(200);
+        } catch (Exception e) {
+            response.setMessage("Error occurred while deleting the user");
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setErrorList(List.of(e.getMessage()));
+        }
         return response;
     }
 
@@ -150,17 +183,25 @@ public class UserServiceImpl implements UserService {
      * @param userDto {@link UserRequestDto}
      */
     @Override
-    public BasicRestResponse updateUser(UserRequestDto userDto) {
+    public BasicRestResponse updateUser(UserRequestDto userDto, Integer userId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
-        User user = userRepository.findById(userDto.getId()).get();
-        log.info(String.format("update employee"));
-        if(!userDto.getEmail().equals(user.getEmail())) {
-            response.setMessage("Email cannot be changed!!!");
-            response.setStatus(400);
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            User user = userRepository.findById(userId).get();
+            log.info(String.format("update employee"));
+            if (!userDto.getEmail().equals(user.getEmail())) {
+                response.setMessage("Email cannot be changed!!!");
+                response.setStatus(400);
+                return response;
+            }
+            performSave(userDto, user, userDto.getId());
+            response.setMessage("User updated successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage("Error occurred while updating the user");
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setErrorList(List.of(e.getMessage()));
         }
-        performSave(userDto, user, userDto.getId());
-        response.setMessage("User updated successfully!!!");
-        response.setStatus(200);
         return response;
     }
 
@@ -190,37 +231,37 @@ public class UserServiceImpl implements UserService {
      * @throws Exception
      */
     @Override
-    public NewPasswordResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception {
+    public BasicRestResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception {
+        BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
+        passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final NewPasswordResponse passwordResponse = new NewPasswordResponse();
             String email = jwtUtil.getUsernameFromToken(token);
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isEmpty()) {
-                passwordResponse.setResponse("User with given email doesn't exist!!!");
-                passwordResponse.setSuccess(false);
-                return passwordResponse;
+                passwordResponse.setMessage("User with given email doesn't exist!!!");
+                passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             } else {
                 if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
-                    passwordResponse.setResponse("Confirm password doesn't match with New password");
-                    passwordResponse.setSuccess(false);
-                    return passwordResponse;
+                    passwordResponse.setMessage("Confirm password doesn't match with New password");
+                    passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                 } else {
                     final User user = optionalUser.get();
                     if(passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
-                        passwordResponse.setResponse("New password is same as old password");
-                        passwordResponse.setSuccess(false);
-                        return passwordResponse;
+                        passwordResponse.setMessage("New password is same as old password");
+                        passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    } else {
+                        user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
+                        userRepository.save(user);
+                        passwordResponse.setMessage("Password changed Successfully!!!");
+                        passwordResponse.setStatus(HttpStatus.OK.value());
                     }
-                    user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
-                    userRepository.save(user);
-                    passwordResponse.setResponse("Password changed Successfully!!!");
-                    passwordResponse.setSuccess(true);
-                    return passwordResponse;
                 }
             }
         } catch (Exception e) {
-            throw new Exception(e.getMessage(), e);
+            passwordResponse.setMessage(e.getMessage());
+            passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
+        return passwordResponse;
     }
 
     /**
@@ -229,24 +270,27 @@ public class UserServiceImpl implements UserService {
      * @return {@link SendEmailResponse}
      */
     @Override
-    public SendEmailResponse checkEmailAndTokenValid(String token) {
-        final SendEmailResponse response = new SendEmailResponse();
-        String email = jwtUtil.getUsernameFromToken(token);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if(optionalUser.isEmpty()) {
-            response.setResponse("No User found with given email!!!");
-            response.setSuccess(false);
-            return response;
-        }
+    public BasicRestResponse checkEmailAndTokenValid(String token) {
+        final BasicRestResponse response = new BasicRestResponse();
+        try {
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            String email = jwtUtil.getUsernameFromToken(token);
+            Optional<User> optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isEmpty()) {
+                throw new ResourceNotFoundException("No User found with the given email ID");
+            }
 
-        if(!jwtUtil.validateToken(token)) {
-            response.setResponse("Invalid Token!!!");
-            response.setSuccess(false);
-            return response;
-        }
+            if (!jwtUtil.validateToken(token)) {
+                throw new RuntimeException("Token is invalid");
+            }
 
-        response.setResponse("Email and Token Valid. Please proceed ahead...");
-        response.setSuccess(true);
+            response.setMessage("Email and Token Valid");
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage("Error occured while validating the token and email");
+            response.setErrorList(List.of(e.getMessage()));
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
         return response;
     }
 

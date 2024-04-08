@@ -24,14 +24,14 @@ public interface UserService {
      * @param sortDir The sort direction (asc or desc)
      * @return List of UserResponseDto objects
      */
-    public List<UserResponseDto> getAllUser(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+    public BasicRestResponse fetchUsers(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 
     /**
      * Saves a new user or updates an existing user.
      * @param employee The user request DTO
      * @return A message indicating the result of the operation
      */
-    public String saveUser(UserRequestDto employee);
+    public BasicRestResponse saveUser(UserRequestDto employee);
 
     /**
      * Deletes a user by their ID.
@@ -41,9 +41,9 @@ public interface UserService {
 
     /**
      * Updates an existing user.
-     * @param employee The user request DTO
+     * @param userRequestDto The user request DTO
      */
-    public BasicRestResponse updateUser(UserRequestDto employee);
+    public BasicRestResponse updateUser(UserRequestDto userRequestDto, Integer userId);
     /**
      * Finds a user by their email address.
      * @param email The email address of the user to find
@@ -58,12 +58,12 @@ public interface UserService {
      * @return {@link NewPasswordResponse}
      * @throws Exception
      */
-    NewPasswordResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception;
+    BasicRestResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception;
 
     /**
      * Check validity of the token
      * @param token Reset Password Token
      * @return {@link SendEmailResponse}
      */
-    SendEmailResponse checkEmailAndTokenValid(String token);
+    BasicRestResponse checkEmailAndTokenValid(String token);
 }

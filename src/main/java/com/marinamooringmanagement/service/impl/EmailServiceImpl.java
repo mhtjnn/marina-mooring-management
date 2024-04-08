@@ -52,21 +52,29 @@ public class EmailServiceImpl implements EmailService {
      */
     @Override
     public SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
-        ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
+        SendEmailResponse response = SendEmailResponse.builder().build();
+        try {
 
-        String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
-        String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
-        String url = contextPath + "/api/v1/auth/resetPassword?token=" + resetPasswordToken;
-        String message = "Please visit this following link to reset your password: " + url;
+            String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+            String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        template.setToMailId(forgetPasswordEmailRequest.getEmail());
-        template.setSubject("Reset Password");
-        template.setBody(message);
+            String url = contextPath + "/api/v1/auth/resetPassword?token=" + resetPasswordToken;
+            String message = "Please visit this following link to reset your password: " + url;
 
-        SendEmailRequest sendEmailRequest = emailUtils.generateEmailRequest(template);
+            template.setToMailId(forgetPasswordEmailRequest.getEmail());
+            template.setSubject("Reset Password");
+            template.setBody(message);
 
-        return sendEmail(sendEmailRequest);
+            SendEmailRequest sendEmailRequest = emailUtils.generateEmailRequest(template);
+
+            return sendEmail(sendEmailRequest);
+        } catch (Exception e) {
+            response.setResponse("Error occurred while sending email");
+            response.setSuccess(false);
+            return response;
+        }
     }
 
     /**
@@ -104,11 +112,11 @@ public class EmailServiceImpl implements EmailService {
             }
 
             javaMailSender.send(mimeMessage);
-            return new SendEmailResponse(true, "Mail send Successfully!!!");
+            return new SendEmailResponse(true, "Email send Successfully!!!");
 
         } catch (Exception e) {
             log.info("Error occurred while sending email: {}", e.getLocalizedMessage());
-            return new SendEmailResponse(false, "Mail send Error");
+            return new SendEmailResponse(false, "Error occurred while sending email");
         }
     }
 

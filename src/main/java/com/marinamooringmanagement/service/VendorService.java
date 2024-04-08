@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.VendorRequestDto;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 
 import java.util.List;
@@ -20,14 +21,14 @@ public interface VendorService {
      * @param sortDir the sort direction (asc or desc)
      * @return a list of vendor response DTOs
      */
-    List<VendorResponseDto> fetchVendors(Integer page, Integer size, String sortBy, String sortDir);
+    BasicRestResponse fetchVendors(Integer page, Integer size, String sortBy, String sortDir);
 
     /**
      * Saves a vendor based on the provided request DTO.
      *
      * @param requestDto the vendor request DTO
      */
-    void saveVendor(VendorRequestDto requestDto);
+    BasicRestResponse saveVendor(VendorRequestDto requestDto);
 
     /**
      * Deletes a vendor based on the provided vendor ID.
@@ -35,7 +36,7 @@ public interface VendorService {
      * @param vendorId the vendor ID
      * @return a message indicating the deletion status
      */
-    String deleteVendor(Integer vendorId);
+    BasicRestResponse deleteVendor(Integer vendorId);
 
     /**
      * Updates a vendor based on the provided request DTO and vendor ID.
@@ -43,6 +44,6 @@ public interface VendorService {
      * @param requestDto the vendor request DTO
      * @param vendorId   the vendor ID
      */
-    void updateVendor(VendorRequestDto requestDto, Integer vendorId);
+    BasicRestResponse updateVendor(VendorRequestDto requestDto, Integer vendorId);
 }
 
