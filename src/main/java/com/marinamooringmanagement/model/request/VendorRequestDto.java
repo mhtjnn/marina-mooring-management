@@ -24,34 +24,36 @@ public class VendorRequestDto implements Serializable {
      */
     private Integer id;
 
-    /**
-     * Name of the vendor.
-     */
-    @NotNull(message = "Vendor Name can't be blank")
-    private String vendorName;
+    @NotNull(message = "Company name cannot be blank")
+    private String companyName;
 
-    /**
-     * Slot and date information for the vendor request.
-     */
-    private String slotAndDate;
+    private String companyPhoneNumber;
 
-    /**
-     * Moorings information for the vendor request.
-     */
-    private String moorings;
+    private String website;
 
-    /**
-     * Number of users associated with the vendor.
-     */
-    private Integer noOfUsers;
+    private String street;
 
-    /**
-     * Inventory price information for the vendor.
-     */
-    private String inventoryPrice;
+    private String aptSuite;
 
-    /**
-     * Contact information for the vendor.
-     */
-    private String contact;
+    private String state;
+
+    private String country;
+
+    private Integer zipCode;
+
+    private String companyEmail;
+
+    private String accountNumber;
+
+    private String firstName;
+
+    private String lastName;
+
+    private String salesRepPhoneNumber;
+
+    private String salesRepEmail;
+
+    private String salesRepNote;
+
+    private boolean primarySalesRep;
 }

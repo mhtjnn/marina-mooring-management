@@ -4,7 +4,6 @@ import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

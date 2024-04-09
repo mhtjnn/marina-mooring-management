@@ -59,7 +59,7 @@ public class VendorController {
     public BasicRestResponse fetchVendors(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
-            @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "vendorName", required = false) String sortBy,
+            @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return vendorService.fetchVendors(page, size, sortBy, sortDir);

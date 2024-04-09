@@ -2,7 +2,6 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.MooringResponseDto;
 
 import java.util.List;
 

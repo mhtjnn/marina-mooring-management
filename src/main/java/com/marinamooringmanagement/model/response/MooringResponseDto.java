@@ -18,9 +18,9 @@ public class MooringResponseDto implements Serializable {
 
     private Integer id;
 
-    private String mooringNumber;
+    private String customerName;
 
-    private String ownerName;
+    private String mooringNumber;
 
     private String harbor;
 
@@ -36,13 +36,19 @@ public class MooringResponseDto implements Serializable {
 
     private String boatWeight;
 
+    private String sizeOfWeight;
+
+    private String typeOfWeight;
+
     private String conditionOfEye;
 
-    private String bottomChainCondition;
-
     private String topChainCondition;
+
+    private String bottomChainCondition;
 
     private String shackleSwivelCondition;
 
     private String pennantCondition;
+
+    private Integer depthAtMeanHighWater;
 }

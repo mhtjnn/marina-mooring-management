@@ -8,8 +8,14 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for Swagger documentation.
+ * This class provides OpenAPI definitions and security schemes for the Marina Mooring Management REST API.
+ */
 @OpenAPIDefinition(
         info = @Info(
                 title = "Marina Mooring Management",
@@ -43,3 +49,4 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 }
+

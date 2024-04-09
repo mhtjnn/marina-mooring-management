@@ -1,12 +1,10 @@
 package com.marinamooringmanagement.security.controller;
 
-import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
-import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
@@ -19,8 +17,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

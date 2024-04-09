@@ -23,16 +23,16 @@ public class Mooring extends Base {
     private Integer id;
 
     /**
+     * Name of the customer associated with the mooring.
+     */
+    @Column(name = "customer_name")
+    private String customerName;
+
+    /**
      * Mooring number assigned to the mooring.
      */
     @Column(name = "mooring_number")
     private String mooringNumber;
-
-    /**
-     * Name of the owner associated with the mooring.
-     */
-    @Column(name = "owner_name")
-    private String ownerName;
 
     /**
      * Harbor where the mooring is located.
@@ -77,22 +77,34 @@ public class Mooring extends Base {
     private String boatWeight;
 
     /**
+     * Size unit of the boat weight.
+     */
+    @Column(name = "size_of_weight")
+    private String sizeOfWeight;
+
+    /**
+     * Type of the boat weight.
+     */
+    @Column(name = "type_of_weight")
+    private String typeOfWeight;
+
+    /**
      * Condition of the eye related to the mooring.
      */
     @Column(name = "condition_of_eye")
     private String conditionOfEye;
 
     /**
-     * Condition of the bottom chain related to the mooring.
-     */
-    @Column(name = "bottom_chain_condition")
-    private String bottomChainCondition;
-
-    /**
      * Condition of the top chain related to the mooring.
      */
     @Column(name = "top_chain_condition")
     private String topChainCondition;
+
+    /**
+     * Condition of the bottom chain related to the mooring.
+     */
+    @Column(name = "bottom_chain_condition")
+    private String bottomChainCondition;
 
     /**
      * Condition of the shackle/swivel related to the mooring.
@@ -105,4 +117,11 @@ public class Mooring extends Base {
      */
     @Column(name = "pennant_condition")
     private String pennantCondition;
+
+    /**
+     * Depth at mean high water at the mooring location.
+     */
+    @Column(name = "depth_at_high_water")
+    private Integer depthAtMeanHighWater;
 }
+

@@ -4,7 +4,6 @@ import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.mail.SimpleMailMessage;
 
 /**
  * EmailService interface defines methods for sending different types of emails.

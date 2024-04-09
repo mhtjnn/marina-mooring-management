@@ -7,7 +7,6 @@ import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
-import com.marinamooringmanagement.model.response.UserResponseDto;
 
 import java.util.List;
 

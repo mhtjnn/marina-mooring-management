@@ -2,7 +2,6 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.VendorRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.VendorResponseDto;
 
 import java.util.List;
 

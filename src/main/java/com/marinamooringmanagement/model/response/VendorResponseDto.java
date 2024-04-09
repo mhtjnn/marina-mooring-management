@@ -13,15 +13,35 @@ public class VendorResponseDto {
 
     private Integer id;
 
-    private String vendorName;
+    private String companyName;
 
-    private String slotAndDate;
+    private String companyPhoneNumber;
 
-    private String moorings;
+    private String website;
 
-    private Integer noOfUsers;
+    private String street;
 
-    private String inventoryPrice;
+    private String aptSuite;
 
-    private String contact;
+    private String state;
+
+    private String country;
+
+    private Integer zipCode;
+
+    private String companyEmail;
+
+    private String accountNumber;
+
+    private String firstName;
+
+    private String lastName;
+
+    private String salesRepPhoneNumber;
+
+    private String salesRepEmail;
+
+    private String salesRepNote;
+
+    private boolean primarySalesRep;
 }

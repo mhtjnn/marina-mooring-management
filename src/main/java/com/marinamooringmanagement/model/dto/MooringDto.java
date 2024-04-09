@@ -1,13 +1,11 @@
 package com.marinamooringmanagement.model.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Represents a mooring data transfer object (DTO) used for transferring mooring-related information.
@@ -26,43 +24,87 @@ public class MooringDto extends BaseDto implements Serializable {
     private Integer id;
 
     /**
-     * Unique identifier assigned to the mooring.
+     * Name of the customer associated with the mooring.
      */
-    private String mooringId;
+    private String customerName;
 
     /**
-     * Name of the mooring.
+     * Mooring number assigned to the mooring.
      */
-    @NotNull(message = "Mooring name can't be blank")
-    private String mooringName;
+    private String mooringNumber;
 
     /**
-     * Name of the owner associated with the mooring.
+     * Harbor where the mooring is located.
      */
-    private String ownerName;
+    private String harbor;
 
     /**
-     * Start date of mooring reservation.
+     * Water depth at the mooring location.
      */
-    private Date fromDate;
+    private String waterDepth;
 
     /**
-     * End date of mooring reservation.
+     * GPS coordinates of the mooring.
      */
-    private Date toDate;
+    private String gpsCoordinates;
 
     /**
-     * Latitude coordinate of the mooring location.
+     * Name of the boat associated with the mooring.
      */
-    private String latitude;
+    private String boatName;
 
     /**
-     * Longitude coordinate of the mooring location.
+     * Size of the boat associated with the mooring.
      */
-    private String longitude;
+    private String boatSize;
 
     /**
-     * Status of the mooring (e.g., available, reserved, occupied).
+     * Type of the boat associated with the mooring.
      */
-    private String status;
+    private String boatType;
+
+    /**
+     * Weight of the boat associated with the mooring.
+     */
+    private String boatWeight;
+
+    /**
+     * Size unit of the boat weight.
+     */
+    private String sizeOfWeight;
+
+    /**
+     * Type of the boat weight.
+     */
+    private String typeOfWeight;
+
+    /**
+     * Condition of the eye related to the mooring.
+     */
+    private String conditionOfEye;
+
+    /**
+     * Condition of the top chain related to the mooring.
+     */
+    private String topChainCondition;
+
+    /**
+     * Condition of the bottom chain related to the mooring.
+     */
+    private String bottomChainCondition;
+
+    /**
+     * Condition of the shackle/swivel related to the mooring.
+     */
+    private String shackleSwivelCondition;
+
+    /**
+     * Condition of the pennant related to the mooring.
+     */
+    private String pennantCondition;
+
+    /**
+     * Depth at mean high water at the mooring location.
+     */
+    private Integer depthAtMeanHighWater;
 }

@@ -1,10 +1,7 @@
 package com.marinamooringmanagement.model.request;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -25,15 +22,15 @@ public class MooringRequestDto implements Serializable {
     private Integer id;
 
     /**
-     * Mooring number for the mooring request.
+     * Name of the customer associated with the mooring.
      */
-    @NotNull(message = "Mooring Number can't be blank")
-    private String mooringNumber;
+    private String customerName;
 
     /**
-     * Name of the owner associated with the mooring.
+     * Mooring number assigned to the mooring.
      */
-    private String ownerName;
+    @NotNull(message = "Mooring number cannot be null")
+    private String mooringNumber;
 
     /**
      * Harbor where the mooring is located.
@@ -71,19 +68,29 @@ public class MooringRequestDto implements Serializable {
     private String boatWeight;
 
     /**
+     * Size unit of the boat weight.
+     */
+    private String sizeOfWeight;
+
+    /**
+     * Type of the boat weight.
+     */
+    private String typeOfWeight;
+
+    /**
      * Condition of the eye related to the mooring.
      */
     private String conditionOfEye;
 
     /**
-     * Condition of the bottom chain related to the mooring.
-     */
-    private String bottomChainCondition;
-
-    /**
      * Condition of the top chain related to the mooring.
      */
     private String topChainCondition;
+
+    /**
+     * Condition of the bottom chain related to the mooring.
+     */
+    private String bottomChainCondition;
 
     /**
      * Condition of the shackle/swivel related to the mooring.
@@ -94,4 +101,9 @@ public class MooringRequestDto implements Serializable {
      * Condition of the pennant related to the mooring.
      */
     private String pennantCondition;
+
+    /**
+     * Depth at mean high water at the mooring location.
+     */
+    private Integer depthAtMeanHighWater;
 }

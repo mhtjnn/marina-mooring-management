@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.dto;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,33 +25,82 @@ public class VendorDto extends BaseDto implements Serializable {
     private Integer id;
 
     /**
-     * Name of the vendor.
+     * Name of the company associated with the vendor.
      */
-    private String vendorName;
+    private String companyName;
 
     /**
-     * Slot and date information for the vendor.
+     * Phone number of the company associated with the vendor.
      */
-    private String slotAndDate;
+    private String companyPhoneNumber;
 
     /**
-     * Moorings information for the vendor.
+     * Website URL of the company associated with the vendor.
      */
-    private String moorings;
+    private String website;
 
     /**
-     * Number of users associated with the vendor.
+     * Street address of the vendor.
      */
-    private Integer noOfUsers;
+    private String street;
 
     /**
-     * Inventory price information for the vendor.
+     * Apartment or suite number of the vendor.
      */
-    private String inventoryPrice;
+    private String aptSuite;
 
     /**
-     * Contact information for the vendor.
+     * State where the vendor is located.
      */
-    private String contact;
+    private String state;
+
+    /**
+     * Country where the vendor is located.
+     */
+    private String country;
+
+    /**
+     * ZIP code of the vendor's location.
+     */
+    private Integer zipCode;
+
+    /**
+     * Email address of the company associated with the vendor.
+     */
+    private String companyEmail;
+
+    /**
+     * Account number associated with the vendor.
+     */
+    private String accountNumber;
+
+    /**
+     * First name of the primary contact person associated with the vendor.
+     */
+    private String firstName;
+
+    /**
+     * Last name of the primary contact person associated with the vendor.
+     */
+    private String lastName;
+
+    /**
+     * Phone number of the sales representative associated with the vendor.
+     */
+    private String salesRepPhoneNumber;
+
+    /**
+     * Email address of the sales representative associated with the vendor.
+     */
+    private String salesRepEmail;
+
+    /**
+     * Note or additional information about the sales representative associated with the vendor.
+     */
+    private String salesRepNote;
+
+    /**
+     * Flag indicating whether the sales representative associated with the vendor is primary or not.
+     */
+    private boolean primarySalesRep;
 }
-

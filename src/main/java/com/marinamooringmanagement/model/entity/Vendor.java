@@ -24,38 +24,99 @@ public class Vendor extends Base {
     private Integer id;
 
     /**
-     * Name of the vendor.
+     * Name of the company associated with the vendor.
      */
-    @Column(name = "vendor_name")
-    private String vendorName;
+    @Column(name = "company_name")
+    private String companyName;
 
     /**
-     * Slot and date information for the vendor.
+     * Phone number of the company associated with the vendor.
      */
-    @Column(name = "slot_and_date")
-    private String slotAndDate;
+    @Column(name = "phone_number")
+    private String companyPhoneNumber;
 
     /**
-     * Moorings information for the vendor.
+     * Website URL of the company associated with the vendor.
      */
-    @Column(name = "moorings")
-    private String moorings;
+    @Column(name = "website")
+    private String website;
 
     /**
-     * Number of users associated with the vendor.
+     * Street address of the vendor.
      */
-    @Column(name = "no_of_users")
-    private Integer noOfUsers;
+    @Column(name = "street")
+    private String street;
 
     /**
-     * Inventory price information for the vendor.
+     * Apartment or suite number of the vendor.
      */
-    @Column(name = "inventory_price")
-    private String inventoryPrice;
+    @Column(name = "apt_suite")
+    private String aptSuite;
 
     /**
-     * Contact information for the vendor.
+     * State where the vendor is located.
      */
-    @Column(name = "contact")
-    private String contact;
+    @Column(name = "state")
+    private String state;
+
+    /**
+     * Country where the vendor is located.
+     */
+    @Column(name = "country")
+    private String country;
+
+    /**
+     * ZIP code of the vendor's location.
+     */
+    @Column(name = "zip_code")
+    private Integer zipCode;
+
+    /**
+     * Email address of the company associated with the vendor.
+     */
+    @Column(name = "company_email")
+    private String companyEmail;
+
+    /**
+     * Account number associated with the vendor.
+     */
+    @Column(name = "account_number")
+    private String accountNumber;
+
+    /**
+     * First name of the primary contact person associated with the vendor.
+     */
+    @Column(name = "first_name")
+    private String firstName;
+
+    /**
+     * Last name of the primary contact person associated with the vendor.
+     */
+    @Column(name = "last_name")
+    private String lastName;
+
+    /**
+     * Phone number of the sales representative associated with the vendor.
+     */
+    @Column(name = "sales_rep_phone_number")
+    private String salesRepPhoneNumber;
+
+    /**
+     * Email address of the sales representative associated with the vendor.
+     */
+    @Column(name = "sales_rep_email")
+    private String salesRepEmail;
+
+    /**
+     * Note or additional information about the sales representative associated with the vendor.
+     */
+    @Column(name = "sales_rep_note")
+    private String salesRepNote;
+
+    /**
+     * Flag indicating whether the sales representative associated with the vendor is primary or not.
+     */
+    @Column(name = "primary_sales_rep")
+    private boolean primarySalesRep;
 }
+
