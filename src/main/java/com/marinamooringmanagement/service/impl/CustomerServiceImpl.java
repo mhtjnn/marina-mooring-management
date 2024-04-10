@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.dto.MooringDto;
 import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.CustomerRepository;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -65,7 +67,9 @@ public class CustomerServiceImpl implements CustomerService {
      * @param sortDir    The sorting direction.
      * @return A list of CustomerDto objects.
      */
-    public List<CustomerDto> getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir) {
+    public BasicRestResponse getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         List<CustomerDto> nlst = new ArrayList<>();
         try {
             Sort sort = null;
@@ -77,15 +81,41 @@ public class CustomerServiceImpl implements CustomerService {
             Pageable p = PageRequest.of(pageNumber, pageSize, sort);
             Page<Customer> pageUser = customerRepository.findAll(p);
             List<Customer> lst = pageUser.getContent();
+            response.setMessage("All customers are fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+            MooringDto mooringDto = MooringDto.builder().build();
+            mooringDto.setId(1);
+            mooringDto.setCustomerName("test");
+            mooringDto.setMooringNumber("test123");
+            mooringDto.setHarbor("123");
+            mooringDto.setWaterDepth("345");
+            mooringDto.setGpsCoordinates("567");
+            mooringDto.setBoatName("789");
+            mooringDto.setBoatSize("91011");
+            mooringDto.setBoatType("Regular");
+            mooringDto.setBoatWeight("1000");
+            mooringDto.setSizeOfWeight("1000");
+            mooringDto.setTypeOfWeight("1000");
+            mooringDto.setConditionOfEye("123");
+            mooringDto.setTopChainCondition("123");
+            mooringDto.setBottomChainCondition("123");
+            mooringDto.setShackleSwivelCondition("123");
+            mooringDto.setPennantCondition("123");
+            mooringDto.setDepthAtMeanHighWater(123);
+
 
             for (Customer customer : lst) {
                 CustomerDto customerDto = customerMapper.toDto(customer);
                 nlst.add(customerDto);
             }
+
+            CustomerDto customerDto = null;
+            if(!nlst.isEmpty()) customerDto=nlst.get(0);
+            response.setContent(List.of(nlst,customerDto,mooringDto));
         } catch (Exception e) {
             throw new DBOperationException(e.getMessage(), e);
         }
-        return nlst;
+        return response;
     }
 
 

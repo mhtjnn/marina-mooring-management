@@ -2,6 +2,10 @@ package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.TechnicianService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -32,6 +36,24 @@ public class TechnicianController {
      * @param technicianDto The DTO containing technician information.
      * @return A BasicRestResponse indicating the success of the operation.
      */
+
+    @Operation(
+            tags = "Save technician in the database",
+            description = "API to save technician in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PostMapping(value = "/",
             produces = {"application/json"})
     public BasicRestResponse saveTechnician(@Valid @RequestBody TechnicianDto technicianDto) {
@@ -52,6 +74,24 @@ public class TechnicianController {
      * @param sortDir    The direction of sorting.
      * @return A list of TechnicianDto objects.
      */
+
+    @Operation(
+            tags = "Fetch technician from the database",
+            description = "API to fetch technician from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -84,6 +124,24 @@ public class TechnicianController {
      * @param id       The ID of the technician to delete.
      * @return A BasicRestResponse indicating the success of the operation.
      */
+
+    @Operation(
+            tags = "Delete technician from the database",
+            description = "API to delete technician from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -95,6 +153,23 @@ public class TechnicianController {
         return res;
     }
 
+    @Operation(
+            tags = "Update technician in the database",
+            description = "API to update technician in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)

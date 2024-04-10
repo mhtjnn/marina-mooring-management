@@ -3,6 +3,10 @@ package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.BoatYardDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.BoatYardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +35,24 @@ public class BoatYardController {
      * @param boatYardDto The BoatYardDto containing the details of the Boat Yard to be created.
      * @return A BasicRestResponse indicating the status of the operation.
      */
+
+    @Operation(
+            tags = "Save BoatYard in the database",
+            description = "API to save BoatYard in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PostMapping(value = "/",
             produces = {"application/json"})
     public BasicRestResponse saveCustomer(@Valid @RequestBody BoatYardDto boatYardDto
@@ -51,6 +73,24 @@ public class BoatYardController {
      * @param sortDir    The direction of sorting (default: asc).
      * @return A list of BoatYardDto objects.
      */
+
+    @Operation(
+            tags = "Fetch BoatYard from the database",
+            description = "API to fetch BoatYard from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -83,6 +123,24 @@ public class BoatYardController {
      * @param id The ID of the Boat Yard to delete.
      * @return A BasicRestResponse indicating the status of the operation.
      */
+
+    @Operation(
+            tags = "Delete BoatYard from the database",
+            description = "API to delete BoatYard from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -102,6 +160,24 @@ public class BoatYardController {
      * @param boatYardDto The BoatYardDto containing the updated details.
      * @return A BasicRestResponse indicating the status of the operation.
      */
+
+    @Operation(
+            tags = "Update BoatYard in the database",
+            description = "API to update BoatYard in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)

@@ -3,13 +3,17 @@ import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CustomerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
@@ -20,6 +24,8 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/customer")
+
+@Tag(name="CustomerController",description = "To perform operations on Customer")
 public class CustomerController extends Base {
 
 
@@ -32,6 +38,24 @@ public class CustomerController extends Base {
      * @param customerDto The DTO containing customer information.
      * @return A BasicRestResponse indicating the success of the operation.
      */
+
+    @Operation(
+            tags = "Save Customer in the database",
+            description = "API to save customer in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PostMapping(value = "/",
             produces = {"application/json"})
     public BasicRestResponse saveCustomer( @Valid @RequestBody CustomerDto customerDto
@@ -53,6 +77,25 @@ public class CustomerController extends Base {
      * @param sortDir    The direction of sorting.
      * @return A list of CustomerDto objects.
      */
+
+    @Operation(
+            tags = "Fetch customer from the database",
+            description = "API to fetch customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -62,16 +105,7 @@ public class CustomerController extends Base {
             @RequestParam(value = "sortBy", defaultValue = "customerId", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        List<CustomerDto> customers = customerService.getCustomers(pageNumber, pageSize, sortBy, sortDir);
-
-        BasicRestResponse response = new BasicRestResponse();
-        response.setStatus(HttpStatus.OK.value());
-        response.setMessage("Customers fetched successfully");
-        response.setData(customers);
-
-        return response;
-
-
+        return customerService.getCustomers(pageNumber, pageSize, sortBy, sortDir);
     }
 
     /**
@@ -94,6 +128,23 @@ public class CustomerController extends Base {
      * @param customerDto The DTO containing updated customer information.
 
      */
+    @Operation(
+            tags = "Update customers in the database",
+            description = "API to update customers in the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -115,6 +166,24 @@ public class CustomerController extends Base {
      * @param id       The ID of the customer to delete.
      * @return A BasicRestResponse indicating the success of the operation.
      */
+
+    @Operation(
+            tags = "Delete customer from the database",
+            description = "API to delete customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -128,5 +197,7 @@ public class CustomerController extends Base {
         return res;
     }
 }
+
+
 
 

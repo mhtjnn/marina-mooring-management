@@ -3,7 +3,6 @@ package com.marinamooringmanagement.service;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
-import java.util.List;
 /**
  * Service interface for managing Customer entities.
  */
@@ -23,7 +22,7 @@ public interface CustomerService {
      * @param sortDir    The sorting direction.
      * @return A list of CustomerDto objects.
      */
-    public List<CustomerDto> getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir);
+    public BasicRestResponse getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir);
     /**
      * Retrieves a customer by ID.
      *
