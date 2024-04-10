@@ -3,7 +3,6 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.MooringMapper;
-import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
@@ -67,23 +66,7 @@ public class MooringServiceImpl implements MooringService {
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
 
-            CustomerDto customerDto = CustomerDto.builder().build();
-            customerDto.setId(1);
-            customerDto.setCustomerName("John Doe");
-            customerDto.setNote("Test");
-            customerDto.setCountry("India");
-            customerDto.setPhone("123456789");
-            customerDto.setState("Punjab");
-            customerDto.setPinCode("1234");
-            customerDto.setSectorBlock("1234");
-            customerDto.setEmailAddress("test@gmail.com");
-            customerDto.setStreetHouse("test");
-
-            MooringResponseDto mooringResponseDto = null;
-
-            if(!mooringResponseDtoList.isEmpty())  mooringResponseDto = mooringResponseDtoList.get(0);
-
-            response.setContent(List.of(mooringResponseDtoList, customerDto, mooringResponseDto));
+            response.setContent(mooringResponseDtoList);
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             response.setMessage(e.getMessage());
