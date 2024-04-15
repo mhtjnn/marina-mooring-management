@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
@@ -29,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -87,9 +89,10 @@ public class UserServiceImpl implements UserService {
                 sort = Sort.by(sortBy).descending();
             }
             Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            Page<User> employeeList = userRepository.findAll(p);
+            Page<User> userList = userRepository.findAll(p);
             log.info(String.format("fetch all users"));
-            List<UserResponseDto> userResponseDtoList = employeeList.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
+            List<UserResponseDto> userResponseDtoList = new ArrayList<>();
+            if(!userList.isEmpty()) userResponseDtoList = userList.stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
             response.setMessage("Users fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(userResponseDtoList);
@@ -107,16 +110,20 @@ public class UserServiceImpl implements UserService {
      * @param user The User entity
      * @return UserResponseDto object
      */
-    private UserResponseDto mapToUserResponseDto(User user) {
-        UserResponseDto userResponseDto = UserResponseDto.builder().build();
+    public UserResponseDto customMapToUserResponseDto(User user) {
+        if(null != user) {
+            UserResponseDto userResponseDto = UserResponseDto.builder().build();
 
-        userResponseDto.setFirstname(user.getFirstname());
-        userResponseDto.setLastname(user.getLastname());
-        userResponseDto.setEmail(user.getEmail());
-        userResponseDto.setPhoneNumber(user.getPhoneNumber());
-        userResponseDto.setRole(user.getRole().getName());
+            userResponseDto.setFirstname(user.getFirstname());
+            userResponseDto.setLastname(user.getLastname());
+            userResponseDto.setEmail(user.getEmail());
+            userResponseDto.setPhoneNumber(user.getPhoneNumber());
+            userResponseDto.setRole(user.getRole().getName());
 
-        return userResponseDto;
+            return userResponseDto;
+        } else {
+            throw new ResourceNotFoundException("User is null");
+        }
     }
 
     /**
@@ -138,7 +145,7 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Email already present in DB");
             }
 
-            log.info(String.format("saving employee in DB"));
+            log.info(String.format("saving user in DB"));
             performSave(userRequestDto, user, null);
 
             response.setMessage("User saved successfully");
@@ -162,7 +169,7 @@ public class UserServiceImpl implements UserService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            log.info(String.format("delete employee with given userId"));
+            log.info(String.format("delete user with given userId"));
             List<Token> tokenList = tokenRepository.findByUserId(userId);
             tokenRepository.deleteAll(tokenList);
             userRepository.deleteById(userId);
@@ -186,16 +193,23 @@ public class UserServiceImpl implements UserService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            User user = userRepository.findById(userId).get();
-            log.info(String.format("update employee"));
-            if (!userDto.getEmail().equals(user.getEmail())) {
-                response.setMessage("Email cannot be changed!!!");
-                response.setStatus(400);
-                return response;
+            User user = null;
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if(optionalUser.isPresent()) {
+                user = optionalUser.get();
+                log.info(String.format("update user"));
+                if ((null != userDto.getEmail() && !userDto.getEmail().equals(user.getEmail())) ||
+                        (null != userDto.getPassword() && !userDto.getPassword().equals(user.getPassword()))) {
+                    response.setMessage("Email or Password cannot be changed!!!");
+                    response.setStatus(400);
+                    return response;
+                }
+                performSave(userDto, user, userDto.getId());
+                response.setMessage("User updated successfully!!!");
+                response.setStatus(HttpStatus.OK.value());
+            } else {
+                throw new DBOperationException("No User found with given User ID");
             }
-            performSave(userDto, user, userDto.getId());
-            response.setMessage("User updated successfully!!!");
-            response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             response.setMessage("Error occurred while updating the user");
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -212,14 +226,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDto findByEmailAddress(String email) {
-        UserDto employee = null;
+        UserDto user = null;
         if (null != email) {
             User empEntity = userRepository.findByEmail(email).get();
             if (null != empEntity) {
-                employee = mapper.mapToUserDto(UserDto.builder().build(), empEntity);
+                user = mapper.mapToUserDto(UserDto.builder().build(), empEntity);
             }
         }
-        return employee;
+        return user;
     }
 
     /**
@@ -300,26 +314,17 @@ public class UserServiceImpl implements UserService {
      * @param user {@link User}
      * @param userId ID of the user which requires update.
      */
-    private void performSave(UserRequestDto userRequestDto, User user, Integer userId) {
-        User savedUser = null;
+    public User performSave(UserRequestDto userRequestDto, User user, Integer userId) {
+        mapper.mapToUser(user, userRequestDto);
+        user.setLastModifiedDate(new Date(System.currentTimeMillis()));
         if (userId != null) {
-            Optional<User> optionalUser = userRepository.findById(userId);
-            if (optionalUser.isPresent()) {
-                savedUser = optionalUser.get();
-                mapper.mapToUser(savedUser, userRequestDto);
-                user.setLastModifiedDate(new Date(System.currentTimeMillis()));
-                userRepository.save(savedUser);
-            } else {
-                throw new RuntimeException("User NOT FOUND!!!");
-            }
+            return userRepository.save(user);
         } else {
-            mapper.mapToUser(user, userRequestDto);
             user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
             user.setCreationDate(new Date());
-            user.setLastModifiedDate(new Date());
             Role role = roleRepository.findByName("ADMINISTRATOR");
             user.setRole(role);
-            userRepository.save(user);
+            return userRepository.save(user);
         }
     }
 }

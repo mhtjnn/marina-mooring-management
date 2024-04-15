@@ -1,10 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Represents a mooring entity that maps to the "mooring" table in the database.
@@ -21,6 +18,12 @@ public class Mooring extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+
+    /**
+     * Name of the mooring
+     */
+    @Column(name = "mooring_name")
+    private String mooringName;
 
     /**
      * Name of the customer associated with the mooring.

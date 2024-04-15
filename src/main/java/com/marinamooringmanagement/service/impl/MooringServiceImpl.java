@@ -36,10 +36,12 @@ public class MooringServiceImpl implements MooringService {
     private static final Logger log = LoggerFactory.getLogger(MooringServiceImpl.class);
 
     @Autowired
-    private MooringMapper mooringMapper;
+    private MooringMapper mapper;
 
     @Autowired
     private MooringRepository mooringRepository;
+
+    public MooringServiceImpl() {}
 
     /**
      * Fetches a paginated list of moorings.
@@ -61,7 +63,7 @@ public class MooringServiceImpl implements MooringService {
             Page<Mooring> mooringPage = mooringRepository.findAll(pageable);
             List<MooringResponseDto> mooringResponseDtoList = mooringPage.getContent()
                     .stream()
-                    .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
+                    .map(mooring -> mapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
                     .collect(Collectors.toList());
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
@@ -90,6 +92,7 @@ public class MooringServiceImpl implements MooringService {
             performSave(mooringRequestDto, mooring, null);
             response.setMessage("Mooring saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
+            mapper.mapToMooring(mooring, mooringRequestDto);
         } catch (Exception e) {
             log.error("Error occurred while saving the mooring in the database", e);
             response.setMessage(e.getMessage());
@@ -137,8 +140,12 @@ public class MooringServiceImpl implements MooringService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+            Optional<Mooring> optionalMooring = mooringRepository.findById(id);
+            if(optionalMooring.isEmpty()) throw new RuntimeException("No mooring exists with " + id + " id");
             mooringRepository.deleteById(id);
+            Optional<Mooring> optionalMooringAfterDeleteOperation = mooringRepository.findById(id);
             String message = "Mooring with id " + id + " deleted successfully";
+            if(optionalMooringAfterDeleteOperation.isPresent()) message = "Failed to delete mooring with the given id " + id;
             response.setMessage(message);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -156,15 +163,15 @@ public class MooringServiceImpl implements MooringService {
      * @param mooring           the mooring object to be saved or updated
      * @param id                the mooring ID (null for new moorings)
      */
-    public void performSave(MooringRequestDto mooringRequestDto, Mooring mooring, Integer id) {
+    public Mooring performSave(MooringRequestDto mooringRequestDto, Mooring mooring, Integer id) {
         try {
             log.info("performSave() function called");
             if (id == null) {
                 mooring.setCreationDate(new Date(System.currentTimeMillis()));
             }
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
-            mooringMapper.mapToMooring(mooring, mooringRequestDto);
-            mooringRepository.save(mooring);
+            mapper.mapToMooring(mooring, mooringRequestDto);
+            return mooringRepository.save(mooring);
         } catch (Exception e) {
             log.error("Error occurred during performSave() function", e);
             throw new DBOperationException("Error occurred during performSave() function", e);

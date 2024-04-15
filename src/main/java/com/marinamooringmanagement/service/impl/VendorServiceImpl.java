@@ -167,7 +167,8 @@ public class VendorServiceImpl implements VendorService {
      * @param vendor     the vendor object to be saved or updated
      * @param vendorId   the vendor ID (null for new vendors)
      */
-    private void performSave(VendorRequestDto requestDto, Vendor vendor, Integer vendorId) {
+    public Vendor performSave(VendorRequestDto requestDto, Vendor vendor, Integer vendorId) {
+        Vendor savedVendor = null;
         try {
             logger.info("performSave() function called");
             if(null == vendorId) {
@@ -177,10 +178,11 @@ public class VendorServiceImpl implements VendorService {
                 vendor.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
             vendorMapper.mapToVendor(vendor, requestDto);
-            vendorRepository.save(vendor);
+            savedVendor = vendorRepository.save(vendor);
         } catch (Exception e) {
             logger.error("Error occurred during performSave() operation", e);
             throw new DBOperationException("Error occurred during performSave() operation", e);
         }
+        return savedVendor;
     }
 }

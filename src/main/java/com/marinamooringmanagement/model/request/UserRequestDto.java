@@ -57,5 +57,5 @@ public class UserRequestDto implements Serializable {
     /**
      * The role ID associated with the user.
      */
-    private Integer roleId;
+    private String role;
 }

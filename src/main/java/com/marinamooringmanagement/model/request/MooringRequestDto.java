@@ -22,6 +22,11 @@ public class MooringRequestDto implements Serializable {
     private Integer id;
 
     /**
+     * Name of the mooring
+     */
+    private String mooringName;
+
+    /**
      * Name of the customer associated with the mooring.
      */
     private String customerName;

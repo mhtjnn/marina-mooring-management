@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.api.v1.users;
+package com.marinamooringmanagement.api.v1.user;
 
 import com.marinamooringmanagement.constants.Authority;
 
@@ -11,14 +11,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
@@ -61,13 +61,14 @@ public class UserController {
             }
 
     )
-    @PreAuthorize(Authority.USER)
+    @PreAuthorize(Authority.ADMINISTRATOR)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "auth")
     public BasicRestResponse fetchUsers(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
