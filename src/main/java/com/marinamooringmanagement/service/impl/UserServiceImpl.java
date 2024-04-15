@@ -150,7 +150,8 @@ public class UserServiceImpl implements UserService {
      * @param userDto {@link UserRequestDto}
      */
     @Override
-    public BasicRestResponse updateUser(UserRequestDto userDto) {
+    public BasicRestResponse updateUser(
+            UserRequestDto userDto) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         User user = userRepository.findById(userDto.getId()).get();
         log.info(String.format("update employee"));

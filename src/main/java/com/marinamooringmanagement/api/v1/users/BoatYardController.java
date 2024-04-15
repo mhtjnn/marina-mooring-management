@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.users;
 
 import com.marinamooringmanagement.model.dto.BoatYardDto;
+import com.marinamooringmanagement.model.request.BoatYardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.BoatYardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +33,7 @@ public class BoatYardController {
     /**
      * Endpoint for creating a new Boat Yard.
      *
-     * @param boatYardDto The BoatYardDto containing the details of the Boat Yard to be created.
+     * @param boatYardRequestDto The BoatYardDto containing the details of the Boat Yard to be created.
      * @return A BasicRestResponse indicating the status of the operation.
      */
 
@@ -55,13 +56,10 @@ public class BoatYardController {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer(@Valid @RequestBody BoatYardDto boatYardDto
+    public BasicRestResponse saveCustomer(@Valid @RequestBody BoatYardRequestDto boatYardRequestDto
                                           ) {
-        final BasicRestResponse res = new BasicRestResponse();
-        res.setStatus(HttpStatus.CREATED.value());
-        res.setMessage("BoatYard created successfully");
-        boatYardService.saveBoatYard(boatYardDto);
-        return res;
+
+        return boatYardService.saveBoatYard(boatYardRequestDto);
     }
 
     /**
@@ -146,18 +144,15 @@ public class BoatYardController {
     @ResponseStatus(HttpStatus.OK)
     public
     BasicRestResponse deleteBoatYard(@PathVariable(value = "id") Integer id) {
-        final BasicRestResponse res = new BasicRestResponse();
-        boatYardService.deletebyId(id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("BoatYard Deleted ");
-        return res;
+
+        return boatYardService.deleteBoatYardbyId(id);
     }
 
     /**
      * Endpoint for updating a Boat Yard.
      *
      * @param id           The ID of the Boat Yard to update.
-     * @param boatYardDto The BoatYardDto containing the updated details.
+     * @param boatYardRequestDto The BoatYardDto containing the updated details.
      * @return A BasicRestResponse indicating the status of the operation.
      */
 
@@ -183,13 +178,9 @@ public class BoatYardController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateBoatYard(
             @PathVariable(value = "id",required = true) Integer id,
-            @Valid @RequestBody BoatYardDto boatYardDto
+            @Valid @RequestBody BoatYardRequestDto boatYardRequestDto
     ){
-        final BasicRestResponse res = new BasicRestResponse();
-        boatYardService.updateBoatYard(boatYardDto,id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("BoatYard Updated successfully ");
-        return  res;
+       return boatYardService.updateBoatYard(boatYardRequestDto,id);
     }
 
 }

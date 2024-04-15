@@ -2,6 +2,8 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -26,4 +28,8 @@ public interface CustomerMapper {
      * @return The mapped Customer entity.
      */
     Customer toEntity(CustomerDto customerDto, @MappingTarget Customer customer);
+
+    CustomerResponseDto mapToCustomerResponseDto(@MappingTarget CustomerResponseDto dto, Customer customer);
+
+    Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

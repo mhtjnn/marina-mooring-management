@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
+import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.TechnicianService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class TechnicianController {
     /**
      * Endpoint for saving a new technician.
      *
-     * @param technicianDto The DTO containing technician information.
+     * @param technicianRequestDto The DTO containing technician information.
      * @return A BasicRestResponse indicating the success of the operation.
      */
 
@@ -56,12 +57,10 @@ public class TechnicianController {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveTechnician(@Valid @RequestBody TechnicianDto technicianDto) {
-        final BasicRestResponse res = new BasicRestResponse();
-        res.setStatus(HttpStatus.CREATED.value());
-        res.setMessage("Technician created successfully");
-        technicianService.saveTechnician(technicianDto);
-        return res;
+    public BasicRestResponse saveTechnician(@Valid @RequestBody TechnicianRequestDto technicianRequestDto) {
+
+
+        return technicianService.saveTechnician(technicianRequestDto);
 
     }
 
@@ -146,11 +145,8 @@ public class TechnicianController {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteTechnician(@PathVariable(value = "id") Integer id) {
-        final BasicRestResponse res = new BasicRestResponse();
-        technicianService.deletebyId(id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Technician Deleted");
-        return res;
+
+        return technicianService.deleteTechnicianbyId(id);
     }
 
     @Operation(
@@ -175,14 +171,11 @@ public class TechnicianController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateTechnician(
             @PathVariable(value = "id",required = true) Integer id,
-            @Valid @RequestBody TechnicianDto technicianDto,
+            @Valid @RequestBody TechnicianRequestDto technicianRequestDto,
             HttpServletRequest request, HttpServletResponse response
     ){
-        final BasicRestResponse res = new BasicRestResponse();
-        technicianService.updateTechnician(technicianDto,id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Technician Updated successfully ");
-        return  res;
+
+        return  technicianService.updateTechnician(technicianRequestDto,id);
     }
 }
 

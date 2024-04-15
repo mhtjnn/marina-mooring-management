@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.users;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
+import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public class CustomerController extends Base {
     /**
      * Endpoint for saving a new customer.
      *
-     * @param customerDto The DTO containing customer information.
+     * @param customerRequestDto The DTO containing customer information.
      * @return A BasicRestResponse indicating the success of the operation.
      */
 
@@ -58,13 +59,9 @@ public class CustomerController extends Base {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer( @Valid @RequestBody CustomerDto customerDto
+    public BasicRestResponse saveCustomer( @Valid @RequestBody CustomerRequestDto customerRequestDto
                                                    ) {
-        final BasicRestResponse res = new BasicRestResponse();
-        res.setStatus(HttpStatus.CREATED.value());
-        res.setMessage("Customer created successfully");
-        customerService.saveCustomer(customerDto);
-        return res;
+        return customerService.saveCustomer(customerRequestDto);
 
 
     }
@@ -125,7 +122,7 @@ public class CustomerController extends Base {
     /**
      * Endpoint for updating a customer.
      *
-     * @param customerDto The DTO containing updated customer information.
+     * @param customerRequestDto The DTO containing updated customer information.
 
      */
     @Operation(
@@ -150,14 +147,11 @@ public class CustomerController extends Base {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateCustomer(
             @PathVariable(value = "id",required = true) Integer id,
-            @Valid @RequestBody CustomerDto customerDto
+            @Valid @RequestBody CustomerRequestDto customerRequestDto
 
     ){
-        final BasicRestResponse res = new BasicRestResponse();
-        customerService.updateCustomer(customerDto,id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Customer Updated successfully ");
-        return  res;
+
+       return customerService.updateCustomer(customerRequestDto,id);
     }
 
     /**
@@ -189,12 +183,8 @@ public class CustomerController extends Base {
     @ResponseStatus(HttpStatus.OK)
     public
     BasicRestResponse deleteCustomer(@PathVariable(value = "id") Integer id) {
-        final BasicRestResponse res = new BasicRestResponse();
 
-        customerService.deletebyId(id);
-        res.setStatus(HttpStatus.OK.value());
-        res.setMessage("Customer Deleted");
-        return res;
+        return customerService.deleteCustomerbyId(id);
     }
 }
 

@@ -34,6 +34,7 @@ public class SpringSecurityConfiguration{
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/login",
             "/**",
+
     };
 
     /**
@@ -59,4 +60,6 @@ public class SpringSecurityConfiguration{
 
         return http.build();
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.marinamooringmanagement.service;
 
 
 import com.marinamooringmanagement.model.dto.TechnicianDto;
+import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
@@ -12,9 +13,9 @@ public interface TechnicianService {
     /**
      * Saves a new technician.
      *
-     * @param technicianDto The DTO containing technician information.
+     * @param technicianRequestDto The DTO containing technician information.
      */
-    void saveTechnician(TechnicianDto technicianDto);
+    BasicRestResponse saveTechnician(TechnicianRequestDto technicianRequestDto);
 
     /**
      * Retrieves a list of technicians with pagination and sorting.
@@ -40,9 +41,9 @@ public interface TechnicianService {
      *
      * @param id The ID of the technician to delete.
      */
-    void deletebyId(Integer id);
+    BasicRestResponse deleteTechnicianbyId(Integer id);
 
-    BasicRestResponse updateTechnician(TechnicianDto technicianDto, Integer id);
+    BasicRestResponse updateTechnician(TechnicianRequestDto technicianRequestDto, Integer id);
 
 
 }

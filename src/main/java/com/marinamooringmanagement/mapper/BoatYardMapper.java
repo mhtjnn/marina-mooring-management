@@ -2,6 +2,8 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.BoatYardDto;
 import com.marinamooringmanagement.model.entity.BoatYard;
+import com.marinamooringmanagement.model.request.BoatYardRequestDto;
+import com.marinamooringmanagement.model.response.BoatYardResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -27,4 +29,8 @@ public interface BoatYardMapper {
      * @return The updated BoatYard entity.
      */
     BoatYard toEntity(BoatYardDto boatYardDto, @MappingTarget BoatYard boatYard);
+
+    BoatYardResponseDto mapToBoatYardResponseDto(@MappingTarget BoatYardResponseDto dto, BoatYard boatYard);
+
+    BoatYard mapToBoatYard(@MappingTarget BoatYard boatYard, BoatYardRequestDto dto);
 }

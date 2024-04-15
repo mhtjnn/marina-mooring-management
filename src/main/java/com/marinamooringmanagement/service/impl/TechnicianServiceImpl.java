@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.TechnicianMapper;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.entity.Technician;
+import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.TechnicianRepository;
 import com.marinamooringmanagement.service.TechnicianService;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.Optional;
  */
 @Service
 public class TechnicianServiceImpl implements TechnicianService {
-    private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(TechnicianServiceImpl.class);
 
     @Autowired
     private TechnicianRepository technicianRepository;
@@ -38,21 +40,25 @@ public class TechnicianServiceImpl implements TechnicianService {
     /**
      * Saves a new technician.
      *
-     * @param technicianDto The DTO containing technician information.
+     * @param technicianRequestDto The DTO containing technician information.
      */
     @Override
-    public void saveTechnician(TechnicianDto technicianDto) {
-        Technician technician = Technician.builder().build();
+    public BasicRestResponse saveTechnician(TechnicianRequestDto technicianRequestDto) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+
 
         try {
-            performSave(technicianDto,technician,null);
-            technicianRepository.save(technician);
+            Technician technician = new Technician();
+            performSave(technicianRequestDto,technician,null);
+            response.setStatus(HttpStatus.CREATED.value());
+            response.setMessage("Technician saved in the database");
             log.info("Technician saved Successfully");
         } catch (Exception e) {
             log.error("Exception occurred while performing save operation " + e);
             throw new DBOperationException(e.getMessage(), e);
         }
-
+return response;
     }
 
 
@@ -118,66 +124,71 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @param id The ID of the technician to delete.
      */
     @Override
-    public void deletebyId(Integer id) {
+    public BasicRestResponse deleteTechnicianbyId(Integer id) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setMessage("Deleted technician");
+        response.setStatus(HttpStatus.OK.value());
         try {
             technicianRepository.deleteById(id);
             log.info("Technician Deleted Successfully");
         } catch (Exception e) {
             throw  new DBOperationException(e.getMessage(),e);
         }
+        return response;
     }
 
 
     /**
      * Updates a Technician entity.
      *
-     * @param technicianDto The TechnicianDto containing the updated data.
+     * @param technicianRequestDto The TechnicianDto containing the updated data.
      * @param id            The ID of the Technician to update.
      * @return A BasicRestResponse indicating the status of the operation.
      * @throws DBOperationException if the technician ID is not provided or if an error occurs during the operation.
      */
     @Override
-    public BasicRestResponse updateTechnician(TechnicianDto technicianDto, Integer id) {
+    public BasicRestResponse updateTechnician(TechnicianRequestDto technicianRequestDto, Integer id) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         try {
-            if (null == technicianDto.getId()) {
+            if (null == technicianRequestDto.getId()) {
                 throw new ResourceNotFoundException("Technician Id not provided for update request");
             }
             Optional<Technician> optionalTechnician = technicianRepository.findById(id);
 
             Technician technician = optionalTechnician.get();
-            performSave(technicianDto,technician, technicianDto.getId());
+            performSave(technicianRequestDto,technician, technicianRequestDto.getId());
             response.setMessage("Technician with the given technician id updated successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            return response;
+
         } catch (Exception e) {
             log.info("Error occurred while updating Technician");
             throw new DBOperationException(e.getMessage(), e);
         }
+        return response;
 
     }
 
     /**
      * Helper method to perform the save operation for a Technician entity.
      *
-     * @param technicianDto The TechnicianDto containing the data.
+     * @param technicianRequestDto The TechnicianDto containing the data.
      * @param technician    The Technician entity to be updated.
      * @param id            The ID of the Technician to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-    public void performSave(TechnicianDto technicianDto,Technician technician, Integer id) {
+    public void performSave(TechnicianRequestDto technicianRequestDto,Technician technician, Integer id) {
         try {
             if (null == id) {
-                technicianMapper.toEntity(technicianDto, technician);
+
                 technician.setLastModifiedDate(new Date(System.currentTimeMillis()));
-                technicianRepository.save(technician);
-            } else {
-                    technicianMapper.toEntity(technicianDto, technician);
-                technician.setCreationDate(new Date());
-                technician.setLastModifiedDate(new Date());
-                    technicianRepository.save(technician);
 
             }
+                    technicianMapper.mapToTechnician(technician,technicianRequestDto);
+                technician.setCreationDate(new Date());
+                technician.setLastModifiedDate(new Date());
+technicianRepository.save(technician);
+
+
         } catch (Exception e) {
             log.info("Error occurred during performSave() function");
             throw new DBOperationException(e.getMessage(), e);

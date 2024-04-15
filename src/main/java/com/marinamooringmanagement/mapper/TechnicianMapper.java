@@ -2,6 +2,8 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.entity.Technician;
+import com.marinamooringmanagement.model.request.TechnicianRequestDto;
+import com.marinamooringmanagement.model.response.TechnicianResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -31,5 +33,8 @@ public interface TechnicianMapper {
      */
     Technician toEntity(TechnicianDto technicianDto, @MappingTarget Technician technician);
 
+    TechnicianResponseDto mapToTechnicianResponseDto(@MappingTarget TechnicianResponseDto dto, Technician technician);
+
+    Technician mapToTechnician(@MappingTarget Technician technician, TechnicianRequestDto dto);
 
 }

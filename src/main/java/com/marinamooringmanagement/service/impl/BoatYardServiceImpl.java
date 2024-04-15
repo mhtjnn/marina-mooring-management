@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatYardMapper;
 import com.marinamooringmanagement.model.dto.BoatYardDto;
 import com.marinamooringmanagement.model.entity.BoatYard;
+import com.marinamooringmanagement.model.request.BoatYardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.BoatYardRepository;
 import com.marinamooringmanagement.service.BoatYardService;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,26 +39,30 @@ public class BoatYardServiceImpl implements BoatYardService {
     @Autowired
     private BoatYardMapper boatYardMapper;
 
-    private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(BoatYardServiceImpl.class);
 
     /**
      * Saves a BoatYard entity.
      *
-     * @param boatYardDto The BoatYardDto containing the data to be saved.
+     * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
      */
     @Override
-    public void saveBoatYard(BoatYardDto boatYardDto) {
-        BoatYard boatYard = BoatYard.builder().build();
+    public BasicRestResponse saveBoatYard(BoatYardRequestDto boatYardRequestDto) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+
 
          try {
-             performSave(boatYardDto,boatYard,null);
-            boatYardRepository.save(boatYard);
+            BoatYard boatYard = new BoatYard();
+             performSave(boatYardRequestDto,boatYard,null);
+            response.setMessage("BoatYard Saved Successfully");
+            response.setStatus(HttpStatus.CREATED.value());
             log.info("BoatYard saved Successfully");
         } catch (Exception e) {
             log.error("Exception occurred while performing save operation " + e);
             throw new DBOperationException(e.getMessage(), e);
         }
-
+return response;
     }
 
     /**
@@ -123,65 +129,71 @@ public class BoatYardServiceImpl implements BoatYardService {
      * @param id The ID of the BoatYard to delete.
      */
     @Override
-    public void deletebyId(Integer id) {
+    public BasicRestResponse deleteBoatYardbyId(Integer id) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             boatYardRepository.deleteById(id);
+            response.setMessage("Boatyard deleted");
+            response.setStatus(HttpStatus.OK.value());
             log.info("BoatYard Deleted Successfully");
         } catch (Exception e) {
             throw new DBOperationException(e.getMessage(), e);
         }
+        return  response;
     }
 
     /**
      * Updates a BoatYard entity.
      *
-     * @param boatYardDto The BoatYardDto containing the updated data.
+     * @param boatYardRequestDto The BoatYardDto containing the updated data.
      * @param id          The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse updateBoatYard(BoatYardDto boatYardDto, Integer id) {
+    public BasicRestResponse updateBoatYard(BoatYardRequestDto boatYardRequestDto, Integer id) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         try {
-            if (null == boatYardDto.getId()) {
+            if (null == boatYardRequestDto.getId()) {
 
                 throw new ResourceNotFoundException("BoatYard Id not provided for update request");
             }
             Optional<BoatYard> optionalBoatYard = boatYardRepository.findById(id);
             BoatYard boatYard = optionalBoatYard.get();
-            performSave(boatYardDto,boatYard, boatYardDto.getId());
+            performSave(boatYardRequestDto,boatYard, boatYardRequestDto.getId());
             response.setMessage("BoatYard with the given boatyard id updated successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            return response;
+
         } catch (Exception e) {
             log.info("Error occurred while updating boatyard");
             throw new DBOperationException(e.getMessage(), e);
         }
+        return response;
     }
 
     /**
      * Helper method to perform the save operation for a BoatYard entity.
      *
-     * @param boatYardDto The BoatYardDto containing the data.
+     * @param boatYardRequestDto The BoatYardDto containing the data.
      * @param boatYard    The BoatYard entity to be updated.
      * @param id          The ID of the BoatYard to update.
      */
-    public void performSave(BoatYardDto boatYardDto,BoatYard boatYard, Integer id) {
+    public void performSave(BoatYardRequestDto boatYardRequestDto,BoatYard boatYard, Integer id) {
 
         try {
             if (null == id) {
-                boatYardMapper.toEntity(boatYardDto, boatYard);
-                boatYard.setLastModifiedDate(new Date(System.currentTimeMillis()));
-                boatYardRepository.save(boatYard);
-            } else {
 
-                    boatYardMapper.toEntity(boatYardDto, boatYard);
+                boatYard.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+            }
+
+                    boatYardMapper.mapToBoatYard(boatYard,boatYardRequestDto);
                 boatYard.setCreationDate(new Date());
                 boatYard.setLastModifiedDate(new Date());
 
                     boatYardRepository.save(boatYard);
 
-            }
+
         } catch (Exception e) {
             log.info("Error occurred during performSave() function");
             throw new DBOperationException(e.getMessage(), e);

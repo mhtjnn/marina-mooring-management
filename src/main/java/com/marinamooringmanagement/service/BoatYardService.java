@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.dto.BoatYardDto;
+import com.marinamooringmanagement.model.request.BoatYardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
@@ -12,9 +13,9 @@ public interface BoatYardService {
     /**
      * Saves a BoatYard entity.
      *
-     * @param boatYardDto The BoatYardDto containing the data to be saved.
+     * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
      */
-    void saveBoatYard(BoatYardDto boatYardDto);
+    BasicRestResponse saveBoatYard(BoatYardRequestDto boatYardRequestDto);
 
     /**
      * Retrieves a list of BoatYard entities.
@@ -40,14 +41,14 @@ public interface BoatYardService {
      *
      * @param id The ID of the BoatYard to delete.
      */
-    void deletebyId(Integer id);
+    BasicRestResponse deleteBoatYardbyId(Integer id);
 
     /**
      * Updates a BoatYard entity.
      *
-     * @param boatYardDto The BoatYardDto containing the updated data.
+     * @param boatYardRequestDto The BoatYardDto containing the updated data.
      * @param id          The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    BasicRestResponse updateBoatYard(BoatYardDto boatYardDto,  Integer id);
+    BasicRestResponse updateBoatYard(BoatYardRequestDto boatYardRequestDto,  Integer id);
 }

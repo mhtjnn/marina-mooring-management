@@ -7,9 +7,11 @@ import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.dto.MooringDto;
 import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.service.CustomerService;
+import jakarta.persistence.Basic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,23 +42,28 @@ public class CustomerServiceImpl implements CustomerService {
     /**
      * Saves a new customer.
      *
-     * @param customerDto The DTO containing customer information.
+     * @param customerRequestDto The DTO containing customer information.
      */
     @Override
-    public void saveCustomer(CustomerDto customerDto) {
-        Customer customer = Customer.builder().build();
+    public BasicRestResponse saveCustomer(CustomerRequestDto customerRequestDto) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            performSave(customerDto,customer,null);
-            customerRepository.save(customer);
-            log.info("Customer saved Successfully");
+            log.info("Save the data in the database");
+            Customer customer = new Customer();
+            performSave(customerRequestDto, customer, null);
+            response.setMessage("Customer saved successfully");
+            response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
             log.error("Exception occurred while performing save operation " + e);
             throw new DBOperationException(e.getMessage(), e);
         }
 
-
+        return response;
     }
+
+
 
     /**
      * Retrieves a list of customers with pagination and sorting.
@@ -119,6 +126,8 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
 
+
+
     /**
      * Retrieves a customer by ID.
      *
@@ -153,69 +162,73 @@ public class CustomerServiceImpl implements CustomerService {
      * @throws DBOperationException if the customer ID is not provided or if an error occurs during the operation.
      */
     @Override
-    public BasicRestResponse updateCustomer(CustomerDto customerDto, Integer id) {
+    public BasicRestResponse updateCustomer(CustomerRequestDto customerRequestDto, Integer id) {
         BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            if (null == customerDto.getId()) {
+            if (null == customerRequestDto.getId()) {
                 throw new ResourceNotFoundException("Customer Id not provided for update request");
             }
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
 
             Customer customer = optionalCustomer.get();
-            performSave(customerDto,customer, customerDto.getId());
+            performSave(customerRequestDto,customer, customerRequestDto.getId());
             response.setMessage("Customer with the given customer id updated successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            return response;
+
         } catch (Exception e) {
             log.info("Error occurred while updating customer");
             throw new DBOperationException(e.getMessage(), e);
         }
+        return response;
     }
 
 
     /**
      * Helper method to perform the save operation for a Customer entity.
      *
-     * @param customerDto The CustomerDto containing the data.
+     * @param customerRequestDto The CustomerDto containing the data.
      * @param customer    The Customer entity to be updated.
      * @param id          The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-    public void performSave(CustomerDto customerDto,Customer customer, Integer id) {
+    public void performSave(CustomerRequestDto customerRequestDto, Customer customer, Integer id) {
         try {
             if (null == id) {
-
-                customerMapper.toEntity(customerDto,customer);
                 customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
-
-                customerRepository.save(customer);
-            } else {
-
-                    customerMapper.toEntity(customerDto,customer);
+            }
+                customerMapper.mapToCustomer(customer,customerRequestDto);
                 customer.setCreationDate(new Date());
                 customer.setLastModifiedDate(new Date());
-                    customerRepository.save(customer);
-                }
 
+                customerRepository.save(customer);
         } catch (Exception e) {
             log.info("Error occurred during performSave() function");
             throw new DBOperationException(e.getMessage(), e);
         }
     }
 
-        /**
+    /**
          * Deletes a customer by ID.
          *
          * @param id The ID of the customer to delete.
          */
         @Override
-        public void deletebyId (Integer id){
+        public BasicRestResponse deleteCustomerbyId (Integer id){
+            BasicRestResponse response = BasicRestResponse.builder().build();
             try {
                 customerRepository.deleteById(id);
+                response.setMessage("customer deleted");
+                response.setStatus(HttpStatus.OK.value());
                 log.info("Customer Deleted Successfully");
             } catch (Exception e) {
+                log.error("Error occured while deleting mooring with id");
+                response.setMessage(e.getMessage());
+                response.setStatus(HttpStatus.NO_CONTENT.value());
+
                 throw new DBOperationException(e.getMessage(), e);
             }
+            return response;
         }
 
 
