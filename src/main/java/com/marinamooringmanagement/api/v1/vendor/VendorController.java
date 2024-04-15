@@ -22,6 +22,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping("/api/v1/vendor")
 @Validated
+@CrossOrigin("*")
 public class VendorController {
 
     @Autowired

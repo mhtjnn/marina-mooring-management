@@ -23,6 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping("/api/v1/mooring")
 @Validated
+@CrossOrigin("*")
 public class MooringController {
 
     @Autowired

@@ -5,7 +5,6 @@ import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
 
 import java.util.List;
@@ -58,11 +57,4 @@ public interface UserService {
      * @throws Exception
      */
     BasicRestResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception;
-
-    /**
-     * Check validity of the token
-     * @param token Reset Password Token
-     * @return {@link SendEmailResponse}
-     */
-    BasicRestResponse checkEmailAndTokenValid(String token);
 }

@@ -1,9 +1,11 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
+import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.TokenService;
 import com.marinamooringmanagement.utils.EmailUtils;
@@ -19,7 +21,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 
 /**
  * Service implementation class for Email related methods.
@@ -38,6 +39,9 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Value("${spring.mail.username}")
     private String fromMailID;
 
@@ -50,9 +54,13 @@ public class EmailServiceImpl implements EmailService {
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
     @Override
-    public SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
+    public SendEmailResponse sendForgetPasswordEmail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
         SendEmailResponse response = SendEmailResponse.builder().build();
         try {
+
+            if(userRepository.findByEmail(forgetPasswordEmailRequest.getEmail()).isEmpty()) {
+                throw new ResourceNotFoundException("Entered email is not registered with us. Please enter a valid email");
+            }
 
             ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
@@ -70,7 +78,7 @@ public class EmailServiceImpl implements EmailService {
 
             return sendEmail(sendEmailRequest);
         } catch (Exception e) {
-            response.setResponse("Error occurred while sending email");
+            response.setResponse(e.getMessage());
             response.setSuccess(false);
             return response;
         }

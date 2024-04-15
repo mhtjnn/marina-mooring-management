@@ -40,7 +40,7 @@ import java.util.List;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
-//@SecurityRequirement(name = "auth")
+@CrossOrigin("*")
 public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
@@ -140,38 +140,10 @@ public class AuthenticationController {
     public ResponseEntity<?> forgetPassword(
             HttpServletRequest request,
             @Parameter(description = "Registered email of the user", schema = @Schema(implementation = ForgetPasswordEmailRequest.class)) @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        SendEmailResponse response = emailService.sendForgetPasswordEMail(request, forgetPasswordEmailRequest);
+        SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response, HttpStatus.OK) : new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Function to validate email(existence) and token.
-     * @param token The Reset Password JWT
-     * @return  a ResponseEntity containing the response from EmailLinkResponse
-     * @throws Exception
-     */
-    @Operation(
-            tags = "Validate Email and Reset Password Token",
-            description = "API to validate email and reset password token",
-            responses = {
-                    @ApiResponse(
-                            description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "200"
-                    ),
-                    @ApiResponse(
-                            description = "Forbidden - Email, token or both could be invalid",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "400"
-                    )
-            }
-
-    )
-    @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
-    public BasicRestResponse validateEmailAndToken(
-            @Parameter(description = "Reset Password Token", schema = @Schema(implementation = String.class)) @RequestParam("token") String token) throws Exception {
-        return userService.checkEmailAndTokenValid(token);
-    }
 
     /**
      * Function to reset password with the new password.

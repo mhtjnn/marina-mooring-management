@@ -13,7 +13,6 @@ import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
@@ -92,7 +91,8 @@ public class UserServiceImpl implements UserService {
             Page<User> userList = userRepository.findAll(p);
             log.info(String.format("fetch all users"));
             List<UserResponseDto> userResponseDtoList = new ArrayList<>();
-            if(!userList.isEmpty()) userResponseDtoList = userList.stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
+            if (!userList.isEmpty())
+                userResponseDtoList = userList.stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
             response.setMessage("Users fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(userResponseDtoList);
@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
      * @return UserResponseDto object
      */
     public UserResponseDto customMapToUserResponseDto(User user) {
-        if(null != user) {
+        if (null != user) {
             UserResponseDto userResponseDto = UserResponseDto.builder().build();
 
             userResponseDto.setFirstname(user.getFirstname());
@@ -195,7 +195,7 @@ public class UserServiceImpl implements UserService {
         try {
             User user = null;
             Optional<User> optionalUser = userRepository.findById(userId);
-            if(optionalUser.isPresent()) {
+            if (optionalUser.isPresent()) {
                 user = optionalUser.get();
                 log.info(String.format("update user"));
                 if ((null != userDto.getEmail() && !userDto.getEmail().equals(user.getEmail())) ||
@@ -238,7 +238,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Function to update password for the {@link User} having email as subject of the token.
-     * @param token Reset Password Token
+     *
+     * @param token              Reset Password Token
      * @param newPasswordRequest {@link NewPasswordRequest}
      * @return {@link NewPasswordResponse}
      * @throws Exception
@@ -251,23 +252,25 @@ public class UserServiceImpl implements UserService {
             String email = jwtUtil.getUsernameFromToken(token);
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isEmpty()) {
-                passwordResponse.setMessage("User with given email doesn't exist!!!");
+                throw new ResourceNotFoundException("No User found with the given email ID");
+            }
+
+            if (!jwtUtil.validateToken(token)) {
+                throw new RuntimeException("Token is invalid");
+            }
+            if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
+                passwordResponse.setMessage("Confirm password doesn't match with New password");
                 passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             } else {
-                if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
-                    passwordResponse.setMessage("Confirm password doesn't match with New password");
+                final User user = optionalUser.get();
+                if (passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
+                    passwordResponse.setMessage("New password is same as old password");
                     passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                 } else {
-                    final User user = optionalUser.get();
-                    if(passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
-                        passwordResponse.setMessage("New password is same as old password");
-                        passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                    } else {
-                        user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
-                        userRepository.save(user);
-                        passwordResponse.setMessage("Password changed Successfully!!!");
-                        passwordResponse.setStatus(HttpStatus.OK.value());
-                    }
+                    user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
+                    userRepository.save(user);
+                    passwordResponse.setMessage("Password changed Successfully!!!");
+                    passwordResponse.setStatus(HttpStatus.OK.value());
                 }
             }
         } catch (Exception e) {
@@ -278,41 +281,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to validate email and token.
-     * @param token Reset Password Token
-     * @return {@link SendEmailResponse}
-     */
-    @Override
-    public BasicRestResponse checkEmailAndTokenValid(String token) {
-        final BasicRestResponse response = new BasicRestResponse();
-        try {
-            response.setTime(new Timestamp(System.currentTimeMillis()));
-            String email = jwtUtil.getUsernameFromToken(token);
-            Optional<User> optionalUser = userRepository.findByEmail(email);
-            if (optionalUser.isEmpty()) {
-                throw new ResourceNotFoundException("No User found with the given email ID");
-            }
-
-            if (!jwtUtil.validateToken(token)) {
-                throw new RuntimeException("Token is invalid");
-            }
-
-            response.setMessage("Email and Token Valid");
-            response.setStatus(HttpStatus.OK.value());
-        } catch (Exception e) {
-            response.setMessage("Error occured while validating the token and email");
-            response.setErrorList(List.of(e.getMessage()));
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
-        return response;
-    }
-
-    /**
      * Helper function to save the user in the database also update the existing user
      *
      * @param userRequestDto {@link UserResponseDto}
-     * @param user {@link User}
-     * @param userId ID of the user which requires update.
+     * @param user           {@link User}
+     * @param userId         ID of the user which requires update.
      */
     public User performSave(UserRequestDto userRequestDto, User user, Integer userId) {
         mapper.mapToUser(user, userRequestDto);
