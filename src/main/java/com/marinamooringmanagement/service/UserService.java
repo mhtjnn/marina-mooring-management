@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 
 import java.util.List;
 
@@ -48,6 +49,13 @@ public interface UserService {
      * @return UserDto object if found, null otherwise
      */
     public UserDto findByEmailAddress(String email);
+
+    /**
+     * Check validity of the token
+     * @param token Reset Password Token
+     * @return {@link SendEmailResponse}
+     */
+    BasicRestResponse checkEmailAndTokenValid(String token);
 
     /**
      * Update password for the user having email as subject of the token.

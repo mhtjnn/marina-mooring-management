@@ -179,12 +179,41 @@ public class AuthenticationController {
 
 
     /**
+     * Function to validate email(existence) and token.
+     * @param token The Reset Password JWT
+     * @return  a ResponseEntity containing the response from EmailLinkResponse
+     * @throws Exception
+     */
+    @Operation(
+            tags = "Validate email and reset password token",
+            description = "API to validate email and reset password token",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "500"
+                    )
+            }
+
+    )
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
+    public BasicRestResponse validateEmailAndToken(
+            @RequestParam("token") String token) throws Exception {
+        return userService.checkEmailAndTokenValid(token);
+    }
+
+
+    /**
      * Generates the authentication response containing the JWT token and user details.
      *
      * @param username the username for which to generate the authentication response
      * @return a ResponseEntity containing the authentication response
      */
-
     private ResponseEntity<?> generateAuthenticationResponse(String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
         final String token = jwtUtil.generateToken(emp);

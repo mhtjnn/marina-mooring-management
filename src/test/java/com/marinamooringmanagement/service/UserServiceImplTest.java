@@ -170,7 +170,7 @@ public class UserServiceImplTest {
 
         BasicRestResponse response = service.checkEmailAndTokenValid(token);
 
-        Assertions.assertEquals(response.getMessage(), String.format("Email and Token Valid"));
+        Assertions.assertEquals(response.getMessage(), String.format("Email and Token Valid. Please proceed ahead..."));
 
         verify(userRepo, times(1)).findByEmail(any(String.class));
         verify(jwtUtil, times(1)).getUsernameFromToken(any(String.class));

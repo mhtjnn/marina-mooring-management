@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.RoleRepository;
@@ -278,6 +279,33 @@ public class UserServiceImpl implements UserService {
             passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return passwordResponse;
+    }
+
+    /**
+     * Function to validate email and token.
+     * @param token Reset Password Token
+     * @return {@link SendEmailResponse}
+     */
+    @Override
+    public BasicRestResponse checkEmailAndTokenValid(String token) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            String email = jwtUtil.getUsernameFromToken(token);
+            Optional<User> optionalUser = userRepository.findByEmail(email);
+            if (optionalUser.isEmpty()) {
+                throw new ResourceNotFoundException("No user found with the email extracted from token");
+            }
+            if (!jwtUtil.validateToken(token)) {
+                throw new RuntimeException("INVALID TOKEN!!!");
+            }
+            response.setMessage("Email and Token Valid. Please proceed ahead...");
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
     }
 
     /**

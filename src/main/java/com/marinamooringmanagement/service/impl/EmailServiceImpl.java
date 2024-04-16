@@ -45,6 +45,12 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String fromMailID;
 
+    @Value("${ui.port}")
+    private String uiPort;
+
+    @Value("${ui.resetPassword.route}")
+    private String uiForgetPasswordRoute;
+
     /**
      * Sends a forget password email using the provided request and email template.
      * Generates a reset password token and constructs the email message with the reset URL.
@@ -65,9 +71,9 @@ public class EmailServiceImpl implements EmailService {
             ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
             String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
-            String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + uiPort;
 
-            String url = contextPath + "/api/v1/auth/resetPassword?token=" + resetPasswordToken;
+            String url = contextPath + "/" + uiForgetPasswordRoute + "?token=" + resetPasswordToken;
             String message = "Please visit this following link to reset your password: " + url;
 
             template.setToMailId(forgetPasswordEmailRequest.getEmail());
