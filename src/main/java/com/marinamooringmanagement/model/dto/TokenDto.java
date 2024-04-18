@@ -36,8 +36,8 @@ public class TokenDto extends BaseDto implements Serializable {
     private Date expire_at;
 
     /**
-     * The ID of the associated employee.
+     * The user dto associated with the token
      */
-    private String employee_id;
+    private UserDto user_id;
 }
 

@@ -48,7 +48,6 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             final String jwtToken = extractJwtFromRequest(request);
-            final String requestUrl = request.getRequestURL().toString();
             if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
                 final UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken),
                         org.apache.commons.lang3.StringUtils.EMPTY, jwtTokenUtil.getRolesFromToken(jwtToken));
@@ -61,7 +60,6 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                 usernamePasswordAuthenticationToken.setDetails(authDetails);
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
-
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException | ExpiredJwtException | BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             throw new RuntimeException(ex.getMessage(), ex);
