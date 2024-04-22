@@ -17,9 +17,14 @@ public class WorkOrderDto extends BaseDto {
      */
     private String customerName;
     /**
-     * The mooring number related to the work order.
+     * The ID of the customer associated with the Work Order.
      */
-    private String mooringNumber;
+    private String customerId;
+    /**
+     * The mooring Id related to the work order.
+     */
+
+    private String mooringId;
     /**
      * The boatyard associated with the work order.
      */

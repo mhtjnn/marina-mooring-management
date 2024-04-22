@@ -21,6 +21,13 @@ public class WorkOrder extends  Base{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
+    /**
+     * The ID of the customer associated with the Work Order.
+     */
+    @Column(name="customer_id")
+    private String customerId;
+
     /**
      * The name of the customer associated with the work order.
      */
@@ -29,8 +36,8 @@ public class WorkOrder extends  Base{
     /**
      * The mooring number related to the work order.
      */
-    @Column(name = "mooring_number")
-    private String mooringNumber;
+    @Column(name = "mooring_id")
+    private String mooringId;
     /**
      * The boatyard associated with the work order.
      */

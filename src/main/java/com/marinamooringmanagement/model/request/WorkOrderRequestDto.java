@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,11 @@ public class WorkOrderRequestDto {
      * The unique identifier for the work order.
      */
     private Integer id;
+
+    /**
+     * The ID of the customer associated with the Work Order.
+     */
+    private String customerId;
     /**
      * The name of the customer associated with the work order.
      */
@@ -23,7 +29,7 @@ public class WorkOrderRequestDto {
     /**
      * The mooring number related to the work order.
      */
-    private String mooringNumber;
+    private String mooringId;
     /**
      * The boatyard associated with the work order.
      */

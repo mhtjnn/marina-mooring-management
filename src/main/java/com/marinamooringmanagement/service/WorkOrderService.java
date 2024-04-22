@@ -1,10 +1,7 @@
 package com.marinamooringmanagement.service;
 
-import com.marinamooringmanagement.model.dto.WorkOrderDto;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-
-import java.util.List;
 
 /**
  * Service interface for handling Work Order operations.

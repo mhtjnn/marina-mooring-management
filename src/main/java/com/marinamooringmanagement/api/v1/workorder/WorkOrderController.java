@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.api.v1.workorder;
 
-import com.marinamooringmanagement.model.dto.WorkOrderDto;
+
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.WorkOrderService;
@@ -11,11 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
-
 
 /**
  * Controller class for handling WorkOrder-related API endpoints.
