@@ -7,6 +7,7 @@ import com.marinamooringmanagement.model.dto.WorkOrderDto;
 import com.marinamooringmanagement.model.entity.WorkOrder;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.WorkOrderResponseDto;
 import com.marinamooringmanagement.repositories.WorkOrderRepository;
 import com.marinamooringmanagement.service.WorkOrderService;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the WorkOrderService interface that handles operations and business logic for Work Orders.
@@ -66,6 +68,35 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            log.info("API called to fetch all the work orders from the database");
+            Sort sort = null;
+            if(sortDir.equalsIgnoreCase("asc")) {
+                sort = Sort.by(sortBy).ascending();
+            } else {
+                sort = Sort.by(sortBy).descending();
+            }
+            Pageable p = PageRequest.of(pageNumber, pageSize, sort);
+            Page<WorkOrder> workOrderList = workOrderRepository.findAll(p);
+            List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderList.stream()
+                    .map(workOrder -> workOrderMapper.mapToWorkResponseDto(WorkOrderResponseDto.builder().build(), workOrder))
+                    .collect(Collectors.toList());
+            response.setMessage("List of work orders in the database");
+            response.setContent(workOrderResponseDtoList);
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            log.error("Error occurred while fetching all the work orders from the database", e);
+            response.setMessage("Error occurred while fetching list of work orders from the database");
+            response.setContent(e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     /**
      * Retrieves a list of Work Order DTOs based on pagination and sorting criteria.
      *
@@ -76,28 +107,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @return A list of WorkOrderDto objects.
      * @throws DBOperationException If an error occurs during database operations.
      */
-    @Override
-    public List<WorkOrderDto> getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
-         List<WorkOrderDto> nlst = new ArrayList<>();
-            try{ Sort sort = null;
-                if (sortDir.equalsIgnoreCase("asc")) {
-                    sort = Sort.by(sortBy).ascending();
-                } else {
-                    sort = Sort.by(sortBy).descending();
-                }
-                Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-                Page<WorkOrder> pageUser = workOrderRepository.findAll(p);
-                List<WorkOrder> lst = pageUser.getContent();
-
-                for (WorkOrder workOrder : lst) {
-                    WorkOrderDto workOrderDto = workOrderMapper.toDto(workOrder);
-                    nlst.add(workOrderDto);
-                }}
-            catch(Exception e){
-                throw new DBOperationException(e.getMessage(), e);
-            }
-            return nlst;
-        }
 
     /**
      * Retrieves a Work Order DTO by its ID.
@@ -108,7 +117,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @throws DBOperationException      If an error occurs during database operations.
      */
     @Override
-    public WorkOrderDto getbyId(Integer id) {
+    public BasicRestResponse getbyId(Integer id) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         if (id == null) {
             throw new ResourceNotFoundException("ID cannot be null");
         }
@@ -116,13 +127,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             Optional<WorkOrder> workOrderEntityOptional = workOrderRepository.findById(id);
             if (workOrderEntityOptional.isPresent()) {
                 WorkOrderDto workOrderDto = workOrderMapper.toDto(workOrderEntityOptional.get());
-                return workOrderDto;
+                response.setMessage("List of work order by id from the database");
+                response.setContent(workOrderDto);
+                response.setStatus(HttpStatus.OK.value());
             } else {
                 throw new ResourceNotFoundException("Work Order with ID : " + id + " doesn't exist");
             }}
         catch(Exception e){
             throw  new DBOperationException(e.getMessage(),e);
         }
+        return response;
     }
 
     /**

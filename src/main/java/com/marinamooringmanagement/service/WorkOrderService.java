@@ -28,14 +28,14 @@ public interface WorkOrderService {
      * @param sortDir    The sort direction (asc or desc).
      * @return A list of WorkOrderDto objects.
      */
-    List<WorkOrderDto> getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+    BasicRestResponse getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
     /**
      * Retrieves a Work Order DTO by its ID.
      *
      * @param id The ID of the Work Order to retrieve.
      * @return The corresponding WorkOrderDto.
      */
-    WorkOrderDto getbyId(Integer id);
+    BasicRestResponse getbyId(Integer id);
     /**
      * Deletes a Work Order by its ID.
      *

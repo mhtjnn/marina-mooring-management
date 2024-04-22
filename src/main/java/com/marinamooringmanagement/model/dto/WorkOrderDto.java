@@ -37,7 +37,7 @@ public class WorkOrderDto extends BaseDto {
      */
     private String scheduleDate;
     /**
-     * The status of the work order (e.g., in progress, completed, etc.).
+     * The status of the work order.
      */
     private String status;
     /**

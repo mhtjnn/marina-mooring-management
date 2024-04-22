@@ -4,9 +4,11 @@ import com.marinamooringmanagement.model.dto.WorkOrderDto;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.WorkOrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +21,9 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
  * Controller class for handling WorkOrder-related API endpoints.
  */
 @RestController
+@Validated
 @RequestMapping("api/v1/workorder")
+@Tag(name="WorkOrderController",description = "To perform operations on Work Order")
 public class WorkOrderController {
 
     @Autowired
@@ -31,6 +35,7 @@ public class WorkOrderController {
      * @param workOrderRequestDto The request body containing WorkOrder data to be saved.
      * @return BasicRestResponse indicating the status of the operation.
      */
+
     @PostMapping(value = "/",
             produces = {"application/json"})
     public BasicRestResponse saveWorkOrder(@Valid @RequestBody WorkOrderRequestDto workOrderRequestDto
@@ -48,13 +53,14 @@ public class WorkOrderController {
      * @param sortDir    The sort direction ('asc' for ascending, 'desc' for descending).
      * @return List of WorkOrderDto objects.
      */
+
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public List<WorkOrderDto> getWorkOrders(
+    public BasicRestResponse getWorkOrders(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "status", required = false) String sortBy,
+            @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return workOrderService.getWorkOrders(pageNumber, pageSize, sortBy, sortDir);
@@ -66,10 +72,11 @@ public class WorkOrderController {
      * @param id The ID of the WorkOrder to retrieve.
      * @return WorkOrderDto object.
      */
+
     @GetMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public WorkOrderDto getWorkOrder(@PathVariable(value = "id") Integer id) {
+    public BasicRestResponse getWorkOrder(@PathVariable(value = "id") Integer id) {
         return this.workOrderService.getbyId(id);
     }
 
@@ -79,6 +86,7 @@ public class WorkOrderController {
      * @param id The ID of the WorkOrder to delete.
      * @return BasicRestResponse indicating the status of the operation.
      */
+
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
@@ -94,6 +102,7 @@ public class WorkOrderController {
      * @param workOrderRequestDto The request body containing updated WorkOrder data.
      * @return BasicRestResponse indicating the status of the operation.
      */
+
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
