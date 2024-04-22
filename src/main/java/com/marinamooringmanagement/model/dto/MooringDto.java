@@ -61,9 +61,16 @@ import java.io.Serializable;
          * Weight of the boat associated with the mooring.
          */
         private String boatWeight;
-
+        /**
+         * The size of the weight used or required for the service.
+         * This could be expressed in units relevant to the service context, such as kilograms, pounds, or another suitable measurement.
+         */
         private String sizeOfWeight;
-
+        /**
+         * The type of weight involved in the service.
+         * This might refer to categories such as "permanent", "temporary", "heavy", or "light",
+         * depending on the classification system used at the marina.
+         */
         private String typeOfWeight;
 
         /**
@@ -90,6 +97,9 @@ import java.io.Serializable;
          * Condition of the pennant related to the mooring.
          */
         private String pennantCondition;
-
+        /**
+         * The depth of water at mean high water (MHW), typically measured in meters or feet.
+         * This value is crucial for determining safe mooring depths and for navigational safety purposes.
+         */
         private Integer depthAtMeanHighWater;
     }

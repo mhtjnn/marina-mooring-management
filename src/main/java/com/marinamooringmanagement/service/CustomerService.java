@@ -3,7 +3,6 @@ package com.marinamooringmanagement.service;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.CustomerResponseDto;
 
 /**
  * Service interface for managing Customer entities.

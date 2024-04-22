@@ -56,7 +56,7 @@ public class BoatYardController {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer(@Valid @RequestBody BoatYardRequestDto boatYardRequestDto
+    public BasicRestResponse saveBoatYard(@Valid @RequestBody BoatYardRequestDto boatYardRequestDto
                                           ) {
 
         return boatYardService.saveBoatYard(boatYardRequestDto);

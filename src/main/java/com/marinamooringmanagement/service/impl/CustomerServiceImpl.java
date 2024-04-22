@@ -11,7 +11,6 @@ import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.service.CustomerService;
-import jakarta.persistence.Basic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +155,7 @@ public class CustomerServiceImpl implements CustomerService {
     /**
      * Updates a Customer entity.
      *
-     * @param customerDto The CustomerDto containing the updated data.
+     * @param customerRequestDto The CustomerDto containing the updated data.
      * @param id          The ID of the Customer to update.
      * @return A BasicRestResponse indicating the status of the operation.
      * @throws DBOperationException if the customer ID is not provided or if an error occurs during the operation.

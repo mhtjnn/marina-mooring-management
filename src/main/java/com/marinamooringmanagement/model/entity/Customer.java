@@ -77,6 +77,4 @@ public class Customer extends Base{
     @Column(name="note")
     private String note;
 
-
-
 }

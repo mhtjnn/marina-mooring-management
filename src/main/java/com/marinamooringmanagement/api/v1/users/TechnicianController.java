@@ -171,8 +171,7 @@ public class TechnicianController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateTechnician(
             @PathVariable(value = "id",required = true) Integer id,
-            @Valid @RequestBody TechnicianRequestDto technicianRequestDto,
-            HttpServletRequest request, HttpServletResponse response
+            @Valid @RequestBody TechnicianRequestDto technicianRequestDto
     ){
 
         return  technicianService.updateTechnician(technicianRequestDto,id);
