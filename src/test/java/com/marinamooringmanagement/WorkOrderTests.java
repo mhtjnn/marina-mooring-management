@@ -1,5 +1,6 @@
 package com.marinamooringmanagement;
-
+import static org.mockito.Mockito.verify;
+import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.mapper.WorkOrderMapper;
 import com.marinamooringmanagement.model.dto.WorkOrderDto;
 import com.marinamooringmanagement.model.entity.WorkOrder;
@@ -22,10 +23,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 
@@ -61,45 +62,87 @@ public class WorkOrderTests {
         assertEquals(HttpStatus.CREATED.value(), response.getStatus());
         assertEquals("Customer saved successfully", response.getMessage());
     }
+    @Test
+    public void getWorkOrders_ValidRequest_Success() {
+        int pageNumber = 0;
+        int pageSize = 10;
+        String sortBy = "status";
+        String sortDir = "asc";
 
-//    @Test
-//    public void getWorkOrders_ValidRequest_Success() {
-//        int pageNumber = 0;
-//        int pageSize = 10;
-//        String sortBy = "status";
-//        String sortDir = "asc";
-//
-//        List<WorkOrder> workOrders = new ArrayList<>();
-//        WorkOrder workOrder = new WorkOrder();
-//        workOrder.setId(2);
-//        workOrder.setCustomerName("shiprakinger");
-//        workOrders.add(workOrder);
-//
-//        when(workOrderRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(workOrders));
-//
-//        WorkOrderDto expectedDto = new WorkOrderDto();
-//        expectedDto.setCustomerName("shiprakinger");
-//        when(workOrderMapper.toDto(any(WorkOrder.class))).thenReturn(expectedDto);
-//
-//        List<WorkOrderDto> result = workOrderService.getWorkOrders(pageNumber, pageSize, sortBy, sortDir);
-//
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertEquals("shiprakinger", result.get(0).getCustomerName());
-//    }
+        List<WorkOrder> workOrders = new ArrayList<>();
+        WorkOrder workOrder = new WorkOrder();
+        workOrder.setId(2);
+        workOrder.setCustomerName("shiprakinger");
+        workOrders.add(workOrder);
 
-//    @Test
-//    public void getbyId_ValidId_Success() {
-//        Long id = 1L;
-//        WorkOrder workOrder = new WorkOrder();
-//        workOrder.setId(id);
-//        workOrder.setCustomerName("John Doe");
-//        when(workOrderRepository.findById(id)).thenReturn(Optional.of(workOrder));
-//
-//        WorkOrderDto result = workOrderService.getbyId(id.intValue());
-//
-//        assertNotNull(result);
-//        assertEquals("John Doe", result.getCustomerName());
-//    }
+        when(workOrderRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(workOrders));
 
+        WorkOrderDto expectedDto = new WorkOrderDto();
+        expectedDto.setCustomerName("shiprakinger");
+        when(workOrderMapper.toDto(any(WorkOrder.class))).thenReturn(expectedDto);
+
+        BasicRestResponse result = workOrderService.getWorkOrders(pageNumber, pageSize, sortBy, sortDir);
+
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK.value(), result.getStatus());
+        assertEquals("List of work orders in the database", result.getMessage());
+    }
+
+    @Test
+    public void getbyId_ValidId_Success() {
+        Integer id = 1;
+        WorkOrder workOrder = new WorkOrder();
+        workOrder.setId(id);
+        workOrder.setCustomerName("John Doe");
+        when(workOrderRepository.findById(id)).thenReturn(Optional.of(workOrder));
+
+        BasicRestResponse result = workOrderService.getbyId(id.intValue());
+
+        assertNotNull(result);
+        assertEquals("List of work order by id from the database", result.getMessage());
+    }
+
+    @Test
+    void getbyId_InvalidId_ThrowsDBOperationNotFoundException() {
+
+        int id = 1;
+        when(workOrderRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(DBOperationException.class, () -> workOrderService.getbyId(id));
+        verify(workOrderRepository, times(1)).findById(id);
+    }
+
+    @Test
+    void deleteWorkOrderbyId_ValidId_Success() {
+
+        int id = 1;
+
+        BasicRestResponse response = workOrderService.deleteWorkOrderbyId(id);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+        assertEquals("Deleted work order", response.getMessage());
+        verify(workOrderRepository, times(1)).deleteById(id);
+    }
+
+    @Test
+    void updateWorkOrder_ValidId_Success() {
+
+        int id = 1;
+        WorkOrderRequestDto requestDto = new WorkOrderRequestDto();
+        requestDto.setId(id);
+        WorkOrder workOrder = new WorkOrder();
+        when(workOrderRepository.findById(id)).thenReturn(Optional.of(workOrder));
+        when(workOrderMapper.mapToWorkOrder(any(), any())).thenReturn(workOrder);
+
+        BasicRestResponse response = workOrderService.updateWorkOrder(requestDto, id);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+        assertEquals("Work Order with the given work order id updated successfully!!!", response.getMessage());
+        verify(workOrderRepository, times(1)).findById(id);
+
+    }
 }
+
+
