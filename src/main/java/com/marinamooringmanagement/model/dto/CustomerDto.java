@@ -41,9 +41,9 @@ public class CustomerDto extends BaseDto {
      */
     private String streetHouse;
     /**
-     * The sector or block of the customer's address.
+     * The Apt/Suite of the customer's address.
      */
-    private String sectorBlock;
+    private String aptSuite;
     /**
      * The state of the customer's address.
      */
@@ -55,14 +55,11 @@ public class CustomerDto extends BaseDto {
     private String country;
 
     /**
-     * The pin code of the customer's address.
+     * The zip code of the customer's address.
      */
-    private String pinCode;
+    private String zipCode;
 
-    /**
-     * Additional notes or comments about the customer.
-     */
-    private String note;
+
 
 
 }

@@ -40,9 +40,9 @@ public class CustomerResponseDto {
      */
     private String streetHouse;
     /**
-     * The sector or block of the customer's address.
+     * The Apt/Suite of the customer's address.
      */
-    private String sectorBlock;
+    private String aptSuite;
     /**
      * The state or region of the customer's address.
      */
@@ -54,9 +54,6 @@ public class CustomerResponseDto {
     /**
      * The pin code of the customer's address.
      */
-    private String pinCode;
-    /**
-     * Additional notes related to the customer response.
-     */
-    private String note;
+    private String zipCode;
+
 }

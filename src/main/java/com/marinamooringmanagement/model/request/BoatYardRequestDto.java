@@ -23,15 +23,11 @@ public class BoatYardRequestDto {
      */
     private String boatyardId;
     /**
-     * The name or designation of the mooring location associated with this request.
+     * The name or designation of the boatyard location associated with this request.
      * Useful for identifying the specific mooring spot at the boatyard.
      */
-    private String mooringName;
-    /**
-     * The name of the boat owner who is making the request.
-     * This information is crucial for any communications or services to be personalized.
-     */
-    private String ownerName;
+    private String boatYardName;
+
     /**
      * The email address of the boat owner, used as a primary method of communication
      * regarding the request and updates related to boatyard services.
@@ -41,4 +37,13 @@ public class BoatYardRequestDto {
      * The phone number of the boat owner, providing a direct line of contact.
      */
     private String phone;
+    /**
+     * The address associated with an entity, such as a customer or location.
+     */
+    private String address;
+    /**
+     * The main contact detail, typically a name or a primary phone number,
+     * for reaching the primary contact person associated with this entity.
+     */
+    private String mainContact;
 }

@@ -25,15 +25,11 @@ public class BoatYardDto extends BaseDto {
      */
     private String boatyardId;
     /**
-     * The mooring name of the BoatYard.
+     * The name of the BoatYard.
      */
-    @NotNull(message = "Mooring Name can't be blank")
-    private String mooringName;
-    /**
-     * The owner name of the BoatYard.
-     */
-    @NotEmpty(message = "Owner Name can't be blank")
-    private String ownerName;
+    @NotNull(message = "BoatYard Name can't be blank")
+    private String boatYardName;
+
     /**
      * The email address of the BoatYard owner.
      */
@@ -43,6 +39,15 @@ public class BoatYardDto extends BaseDto {
      * The phone number of the BoatYard.
      */
     private String phone;
+    /**
+     * The address associated with an entity, such as a customer or location.
+     */
+    private String address;
+    /**
+     * The main contact detail, typically a name or a primary phone number,
+     * for reaching the primary contact person associated with this entity.
+     */
+    private String mainContact;
 
 }
 

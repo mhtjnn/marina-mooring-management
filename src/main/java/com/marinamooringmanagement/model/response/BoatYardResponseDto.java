@@ -23,13 +23,10 @@ public class BoatYardResponseDto {
      */
     private String boatyardId;
     /**
-     * The name of the mooring spot linked to the boatyard.
+     * The name linked to the boatyard.
      */
-    private String mooringName;
-    /**
-     * The name of the boat owner associated with the mooring.
-     */
-    private String ownerName;
+    private String boatYardName;
+
     /**
      * The email address of the boat owner.
      */
@@ -38,5 +35,14 @@ public class BoatYardResponseDto {
      * The phone number of the boat owner.
      */
     private String phone;
+    /**
+     * The address associated with an entity, such as a customer or location.
+     */
+    private String address;
+    /**
+     * The main contact detail, typically a name or a primary phone number,
+     * for reaching the primary contact person associated with this entity.
+     */
+    private String mainContact;
 
 }

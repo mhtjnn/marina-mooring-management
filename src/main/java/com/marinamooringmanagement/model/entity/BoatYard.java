@@ -28,15 +28,11 @@ public class BoatYard extends Base {
     @Column(name="boatyard_id")
     private String boatyardId;
     /**
-     * The mooring name of the BoatYard.
+     * The name of the BoatYard.
      */
-    @Column(name="mooring_name")
-    private String mooringName;
-    /**
-     * The owner name of the BoatYard.
-     */
-    @Column(name="owner_name")
-    private String ownerName;
+    @Column(name="boatYard_name")
+    private String boatYardName;
+
     /**
      * The email address of the BoatYard owner.
      */
@@ -48,5 +44,16 @@ public class BoatYard extends Base {
     @Column(name="phone")
     private String phone;
 
+    /**
+     * The address associated with an entity, such as a customer or location.
+     */
+    @Column(name="address")
+    private String address;
+    /**
+     * The main contact detail, typically a name or a primary phone number,
+     * for reaching the primary contact person associated with this entity.
+     */
+    @Column(name="main_contact")
+    private String mainContact;
 
 }

@@ -52,10 +52,10 @@ public class Customer extends Base{
     private String streetHouse;
 
     /**
-     * The sector or block of the customer's address.
+     * The Apt/Suite of the customer's address.
      */
-    @Column(name="sector_block")
-    private String sectorBlock;
+    @Column(name="apt_suite")
+    private String aptSuite;
     /**
      * The state of the customer's address.
      */
@@ -67,14 +67,10 @@ public class Customer extends Base{
     @Column(name="country")
     private String country;
     /**
-     * The pin code of the customer's address.
+     * The zip code of the customer's address.
      */
-    @Column(name="pincode")
-    private String pinCode;
-    /**
-     * Additional notes or comments about the customer.
-     */
-    @Column(name="note")
-    private String note;
+    @Column(name="zipcode")
+    private String zipCode;
+
 
 }
