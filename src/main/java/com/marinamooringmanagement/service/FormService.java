@@ -20,7 +20,7 @@ public interface FormService {
      * @param file The form file to be uploaded.
      * @return A {@link BasicRestResponse} object containing the status of the operation and any associated messages.
      */
-    BasicRestResponse uploadForm(String customerName, String customerId, MultipartFile file);
+    BasicRestResponse uploadForm(final String customerName, final String customerId, final MultipartFile file);
 
     /**
      * Downloads a form from the database.
@@ -28,7 +28,7 @@ public interface FormService {
      * @param fileName The name of the file to be downloaded.
      * @return A {@link ResponseEntity} containing a {@link ByteArrayResource} representing the downloaded form file.
      */
-    ResponseEntity<ByteArrayResource> downloadForm(String fileName);
+    ResponseEntity<ByteArrayResource> downloadForm(final String fileName);
 
     /**
      * Fetches a list of forms from the database with pagination and sorting options.
@@ -39,5 +39,5 @@ public interface FormService {
      * @param sortDir The direction of the sort (ascending or descending).
      * @return A {@link BasicRestResponse} object containing a list of {@link com.marinamooringmanagement.model.response.FormResponseDto} objects representing the forms.
      */
-    BasicRestResponse fetchForms(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+    BasicRestResponse fetchForms(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
 }

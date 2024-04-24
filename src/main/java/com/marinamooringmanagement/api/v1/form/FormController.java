@@ -62,11 +62,11 @@ public class FormController {
     @PostMapping("/upload")
     public BasicRestResponse saveForm(
             @Parameter(description = "File to be uploaded", schema = @Schema(implementation = MultipartFile.class))
-            @NotNull @RequestPart("file") MultipartFile file,
+            final @NotNull @RequestPart("file") MultipartFile file,
             @Parameter(description = "Customer Name", schema = @Schema(implementation = String.class))
-            @NotNull @RequestPart("customerName") String customerName,
+            final @NotNull @RequestPart("customerName") String customerName,
             @Parameter(description = "Customer ID", schema = @Schema(implementation = String.class))
-            @NotNull @RequestPart("customerId") String customerId
+            final @NotNull @RequestPart("customerId") String customerId
     ) {
         return formService.uploadForm(customerName, customerId, file);
     }
@@ -99,7 +99,7 @@ public class FormController {
     @GetMapping("/download/{filename}")
     public ResponseEntity<ByteArrayResource> downloadForm(
             @Parameter(description = "Name of the file to be downloaded", schema = @Schema(implementation = String.class))
-            @NotNull @PathVariable("filename") String fileName
+            final @NotNull @PathVariable("filename") String fileName
     ) {
         return formService.downloadForm(fileName);
     }
@@ -135,10 +135,14 @@ public class FormController {
     )
     @GetMapping("/")
     public BasicRestResponse fetchForms(
-            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @Parameter(description = "Sort acc. to the field", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-            @Parameter(description = "Sort direction (ascending or descending)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class))
+            final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class))
+            final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @Parameter(description = "Sort acc. to the field", schema = @Schema(implementation = String.class))
+            final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort direction (ascending or descending)", schema = @Schema(implementation = String.class))
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return formService.fetchForms(pageNumber, pageSize, sortBy, sortDir);
     }

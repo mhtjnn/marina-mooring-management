@@ -51,17 +51,19 @@ public class FormServiceImpl implements FormService {
      * @return A {@link BasicRestResponse} object containing the status of the operation and any associated messages.
      */
     @Override
-    public BasicRestResponse uploadForm(String customerName, String customerId, MultipartFile file) {
+    public BasicRestResponse uploadForm(final String customerName, final String customerId, final MultipartFile file) {
         log.info("Upload form API called");
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        if(file.isEmpty()) throw new RuntimeException("No file given for upload");
+        if(null == file.getOriginalFilename()) throw new RuntimeException("No file name for given given");
+        final String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+            final String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/v1/form/download/")
                     .path(fileName)
                     .toUriString();
-            Form form = Form.builder()
+            final Form form = Form.builder()
                     .customerName(customerName)
                     .customerId(customerId)
                     .formName(fileName)
@@ -90,14 +92,14 @@ public class FormServiceImpl implements FormService {
      * @return A {@link ResponseEntity} containing a {@link ByteArrayResource} representing the downloaded form file.
      */
     @Override
-    public ResponseEntity<ByteArrayResource> downloadForm(String fileName) {
+    public ResponseEntity<ByteArrayResource> downloadForm(final String fileName) {
         try {
             log.info("Download form API called");
-            Optional<Form> optionalForm = formRepository.findByFormName(fileName);
+            final Optional<Form> optionalForm = formRepository.findByFormName(fileName);
             if (optionalForm.isEmpty()) {
                 throw new ResourceNotFoundException("No file found with the given filename: " + fileName);
             }
-            Form form = optionalForm.get();
+            final Form form = optionalForm.get();
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(form.getFormType()))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "file; filename=\"" + form.getFormName() + "\"")
@@ -120,15 +122,15 @@ public class FormServiceImpl implements FormService {
      * @return A {@link BasicRestResponse} object containing a list of {@link FormResponseDto} objects representing the forms.
      */
     @Override
-    public BasicRestResponse fetchForms(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse fetchForms(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
-            Page<Form> formList = formRepository.findAll(pageable);
+            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+            final Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+            final Page<Form> formList = formRepository.findAll(pageable);
             log.info("Fetching all forms from the database");
-            List<FormResponseDto> formResponseDtoList = formList.stream().map(this::mapToFormResponseDto).collect(Collectors.toList());
+            final List<FormResponseDto> formResponseDtoList = formList.stream().map(this::mapToFormResponseDto).collect(Collectors.toList());
             response.setMessage("Form list fetched successfully");
             response.setContent(formResponseDtoList);
             response.setStatus(HttpStatus.OK.value());
@@ -146,7 +148,7 @@ public class FormServiceImpl implements FormService {
      * @param form The form entity to be mapped.
      * @return A {@link FormResponseDto} object containing the form data.
      */
-    private FormResponseDto mapToFormResponseDto(Form form) {
+    private FormResponseDto mapToFormResponseDto(final Form form) {
         return FormResponseDto.builder()
                 .id(form.getId())
                 .submittedBy(form.getCustomerName())
