@@ -49,18 +49,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @throws DBOperationException If an error occurs during database operations.
      */
     @Override
-    public BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse saveWorkOrder(final WorkOrderRequestDto workOrderRequestDto) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            log.info("Save the data in the database");
-            WorkOrder workOrder = new WorkOrder();
+            log.info(String.format("Saving data in the database for WorkOrder ID %d", workOrderRequestDto.getId()));
+            final WorkOrder workOrder = new WorkOrder();
             performSave(workOrderRequestDto, workOrder, null);
-            response.setMessage("Customer saved successfully");
+            response.setMessage("Work Order saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
-            log.error("Exception occurred while performing save operation " + e);
+            log.error(String.format("Exception occurred while performing save operation: %s", e.getMessage()), e);
             throw new DBOperationException(e.getMessage(), e);
         }
 
@@ -68,19 +68,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse getWorkOrders(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            log.info("API called to fetch all the work orders from the database");
-            Sort sort = null;
-            if(sortDir.equalsIgnoreCase("asc")) {
-                sort = Sort.by(sortBy).ascending();
-            } else {
-                sort = Sort.by(sortBy).descending();
-            }
-            Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            Page<WorkOrder> workOrderList = workOrderRepository.findAll(p);
+            log.info(String.format("Work Orders fetched successfully"));
+            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+            final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
+            final Page<WorkOrder> workOrderList = workOrderRepository.findAll(p);
             List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderList.stream()
                     .map(workOrder -> workOrderMapper.mapToWorkResponseDto(WorkOrderResponseDto.builder().build(), workOrder))
                     .collect(Collectors.toList());
@@ -88,7 +84,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             response.setContent(workOrderResponseDtoList);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            log.error("Error occurred while fetching all the work orders from the database", e);
+            log.error(String.format("Error occurred while fetching WorkOrders: %s", e.getMessage()), e);
+
             response.setMessage("Error occurred while fetching list of work orders from the database");
             response.setContent(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -116,24 +113,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @throws DBOperationException      If an error occurs during database operations.
      */
     @Override
-    public BasicRestResponse getbyId(Integer id) {
+    public BasicRestResponse getbyId(final Integer id) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         if (id == null) {
             throw new ResourceNotFoundException("ID cannot be null");
         }
-        try{
+        try {
             Optional<WorkOrder> workOrderEntityOptional = workOrderRepository.findById(id);
             if (workOrderEntityOptional.isPresent()) {
+                log.info(String.format("Successfully retrieved WorkOrder data for ID: %d", id));
+
                 WorkOrderDto workOrderDto = workOrderMapper.toDto(workOrderEntityOptional.get());
                 response.setMessage("List of work order by id from the database");
                 response.setContent(workOrderDto);
                 response.setStatus(HttpStatus.OK.value());
             } else {
                 throw new ResourceNotFoundException("Work Order with ID : " + id + " doesn't exist");
-            }}
-        catch(Exception e){
-            throw  new DBOperationException(e.getMessage(),e);
+            }
+        } catch (Exception e) {
+            log.error(String.format("Error occurred while retrieving Work Order for ID: %d: %s", id, e.getMessage()), e);
+            throw new DBOperationException(e.getMessage(), e);
         }
         return response;
     }
@@ -146,15 +146,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @throws DBOperationException If an error occurs during database operations.
      */
     @Override
-    public BasicRestResponse deleteWorkOrderbyId(Integer id) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse deleteWorkOrderbyId(final Integer id) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setMessage("Deleted work order");
         response.setStatus(HttpStatus.OK.value());
+
         try {
             workOrderRepository.deleteById(id);
-            log.info("Work Order Deleted Successfully");
+            log.info(String.format("Work Order with ID %d deleted successfully", id));
+
         } catch (Exception e) {
-            throw  new DBOperationException(e.getMessage(),e);
+            log.error(String.format("Error occurred while deleting work order with ID %d", id));
+
+            throw new DBOperationException(e.getMessage(), e);
         }
         return response;
     }
@@ -169,21 +173,25 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @throws DBOperationException      If an error occurs during database operations.
      */
     @Override
-    public BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer id) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse updateWorkOrder(final WorkOrderRequestDto workOrderRequestDto, final Integer id) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             if (null == workOrderRequestDto.getId()) {
+                log.info(String.format("Update attempt without a Work Order ID provided in the request DTO"));
                 throw new ResourceNotFoundException("Work Order Id not provided for update request");
             }
             Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findById(id);
+            if (optionalWorkOrder.isPresent()) {
 
-            WorkOrder workOrder = optionalWorkOrder.get();
-            performSave(workOrderRequestDto,workOrder, workOrderRequestDto.getId());
-            response.setMessage("Work Order with the given work order id updated successfully!!!");
-            response.setStatus(HttpStatus.OK.value());
+                WorkOrder workOrder = optionalWorkOrder.get();
+                performSave(workOrderRequestDto, workOrder, workOrderRequestDto.getId());
+                response.setMessage("Work Order with the given work order id updated successfully!!!");
+                response.setStatus(HttpStatus.OK.value());
 
+            }
         } catch (Exception e) {
-            log.info("Error occurred while updating Work Order");
+            log.error(String.format("Error occurred while updating work order: %s", e.getMessage()), e);
+
             throw new DBOperationException(e.getMessage(), e);
         }
         return response;
@@ -197,23 +205,23 @@ public class WorkOrderServiceImpl implements WorkOrderService {
      * @param id                  The ID of the WorkOrder entity for update operations.
      * @throws DBOperationException If an error occurs during database operations.
      */
-    public void performSave(WorkOrderRequestDto workOrderRequestDto, WorkOrder workOrder, Integer id) {
+    public void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer id) {
         try {
             if (null == id) {
                 workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
-            workOrderMapper.mapToWorkOrder(workOrder,workOrderRequestDto);
+            workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
             workOrder.setCreationDate(new Date());
             workOrder.setLastModifiedDate(new Date());
 
             workOrderRepository.save(workOrder);
+            log.info(String.format("Work Order saved successfully with ID: %d", workOrder.getId()));
+
         } catch (Exception e) {
-            log.info("Error occurred during performSave() function");
+            log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
             throw new DBOperationException(e.getMessage(), e);
         }
     }
-
-
 
 
 }

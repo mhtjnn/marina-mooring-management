@@ -20,7 +20,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping("api/v1/workorder")
-@Tag(name="WorkOrderController",description = "To perform operations on Work Order")
+@Tag(name = "WorkOrderController", description = "To perform operations on Work Order")
 public class WorkOrderController {
 
     @Autowired
@@ -104,10 +104,10 @@ public class WorkOrderController {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateWorkOrder(
-            @PathVariable(value = "id",required = true) Integer id,
+            @PathVariable(value = "id", required = true) Integer id,
             @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto
-    ){
+    ) {
 
-        return  workOrderService.updateWorkOrder(workOrderRequestDto,id);
+        return workOrderService.updateWorkOrder(workOrderRequestDto, id);
     }
 }

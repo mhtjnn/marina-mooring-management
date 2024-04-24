@@ -16,33 +16,34 @@ import org.springframework.context.annotation.Configuration;
  */
 @OpenAPIDefinition(
         info = @Info(
-                title = "Marina Mooring Management",
-                description = "Rest API's for marina mooring management",
-                summary = "This documentation contains information of REST API's in marina mooring management project",
-                termsOfService = "T&C",
+                title = "${swagger.title}",
+                description = "${swagger.description}",
+                summary = "${swagger.summary}",
+                termsOfService = "${swagger.termsOfService}",
+
                 contact = @Contact(
-                        name = "Genboot",
-                        email = "genboot@gmail.com"
+                        name = "${swagger.contact.name}",
+                        email = "${swagger.contact.email}"
                 ),
                 license = @License(
-                        name = "Licence No."
+                        name = "${swagger.license.name}"
                 ),
-                version = "v3"
+                version = "${swagger.version}"
         ),
         servers = {
                 @Server(
-                        description = "Dev",
-                        url = "http://localhost:8082"
+                        description = "${swagger.server.description}",
+                        url = "${swagger.server.url}"
                 )
         }
 )
 @SecurityScheme(
-        name = "auth",
+        name = "${swagger.security.name}",
         in = SecuritySchemeIn.HEADER,
         type = SecuritySchemeType.HTTP,
-        bearerFormat = "JWT",
-        scheme = "bearer",
-        description = "Bearer token required for authorization"
+        bearerFormat = "${swagger.security.bearerFormat}",
+        scheme = "${swagger.security.scheme}",
+        description = "${swagger.security.description}"
 )
 @Configuration
 public class SwaggerConfig {

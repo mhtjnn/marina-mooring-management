@@ -30,6 +30,7 @@ public interface WorkOrderMapper {
      * @return The mapped WorkOrder entity.
      */
     WorkOrder toEntity(WorkOrderDto workOrderDto, @MappingTarget WorkOrder workOrder);
+
     /**
      * Maps a WorkOrder entity to a WorkOrderResponseDto.
      *
@@ -42,8 +43,8 @@ public interface WorkOrderMapper {
     /**
      * Maps a WorkOrderRequestDto to a WorkOrder entity.
      *
-     * @param workOrder    The target WorkOrder entity to map to.
-     * @param dto          The WorkOrderRequestDto to map.
+     * @param workOrder The target WorkOrder entity to map to.
+     * @param dto       The WorkOrderRequestDto to map.
      * @return The mapped WorkOrder entity.
      */
     WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderRequestDto dto);

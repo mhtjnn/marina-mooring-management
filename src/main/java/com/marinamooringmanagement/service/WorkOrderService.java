@@ -14,7 +14,7 @@ public interface WorkOrderService {
      * @param workOrderRequestDto The DTO containing Work Order data to be saved or updated.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto);
+    BasicRestResponse saveWorkOrder(final WorkOrderRequestDto workOrderRequestDto);
 
     /**
      * Retrieves a list of Work Order DTOs based on pagination and sorting criteria.
@@ -25,21 +25,24 @@ public interface WorkOrderService {
      * @param sortDir    The sort direction (asc or desc).
      * @return A list of WorkOrderDto objects.
      */
-    BasicRestResponse getWorkOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+    BasicRestResponse getWorkOrders(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
+
     /**
      * Retrieves a Work Order DTO by its ID.
      *
      * @param id The ID of the Work Order to retrieve.
      * @return The corresponding WorkOrderDto.
      */
-    BasicRestResponse getbyId(Integer id);
+    BasicRestResponse getbyId(final Integer id);
+
     /**
      * Deletes a Work Order by its ID.
      *
      * @param id The ID of the Work Order to delete.
      * @return A BasicRestResponse indicating the status of the deletion operation.
      */
-    BasicRestResponse deleteWorkOrderbyId(Integer id);
+    BasicRestResponse deleteWorkOrderbyId(final Integer id);
+
     /**
      * Updates an existing Work Order with new data.
      *
@@ -47,5 +50,5 @@ public interface WorkOrderService {
      * @param id                  The ID of the Work Order to update.
      * @return A BasicRestResponse indicating the status of the update operation.
      */
-    BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer id);
+    BasicRestResponse updateWorkOrder(final WorkOrderRequestDto workOrderRequestDto, final Integer id);
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkOrder extends  Base{
+public class WorkOrder extends Base {
     /**
      * The unique identifier for the work order.
      */
@@ -25,13 +25,13 @@ public class WorkOrder extends  Base{
     /**
      * The ID of the customer associated with the Work Order.
      */
-    @Column(name="customer_id")
+    @Column(name = "customer_id")
     private String customerId;
 
     /**
      * The name of the customer associated with the work order.
      */
-    @Column(name="customer_name")
+    @Column(name = "customer_name")
     private String customerName;
     /**
      * The mooring number related to the work order.
@@ -41,12 +41,12 @@ public class WorkOrder extends  Base{
     /**
      * The boatyard associated with the work order.
      */
-    @Column(name="boatYard")
+    @Column(name = "boatYard")
     private String boatYard;
     /**
      * The person or team assigned to the work order.
      */
-    @Column(name="assigned_to")
+    @Column(name = "assigned_to")
     private String assignedTo;
     /**
      * The due date for completing the work order.
@@ -56,12 +56,12 @@ public class WorkOrder extends  Base{
     /**
      * The scheduled date for the work order.
      */
-    @Column(name="schedule_date")
+    @Column(name = "schedule_date")
     private String scheduleDate;
     /**
      * The status of the work order (e.g., in progress, completed, etc.).
      */
-    @Column(name="status")
+    @Column(name = "status")
     private String status;
     /**
      * The time duration or estimated time for completing the work order.
