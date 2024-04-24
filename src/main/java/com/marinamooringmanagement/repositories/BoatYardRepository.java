@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  * This interface provides CRUD operations for BoatYard entities using Spring Data JPA.
  */
 @Repository
-public interface BoatYardRepository extends JpaRepository<BoatYard,Integer> {
-    
+public interface BoatYardRepository extends JpaRepository<BoatYard, Integer> {
+
 }

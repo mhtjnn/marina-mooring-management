@@ -22,7 +22,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
-public class SpringSecurityConfiguration{
+public class SpringSecurityConfiguration {
 
     private final UserRepository repository;
 

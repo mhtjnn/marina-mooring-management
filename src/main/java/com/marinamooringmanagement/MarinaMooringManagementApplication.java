@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 public class MarinaMooringManagementApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MarinaMooringManagementApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MarinaMooringManagementApplication.class, args);
+    }
 
 }

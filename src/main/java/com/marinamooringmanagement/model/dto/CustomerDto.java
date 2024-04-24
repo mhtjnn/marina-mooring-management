@@ -60,6 +60,4 @@ public class CustomerDto extends BaseDto {
     private String zipCode;
 
 
-
-
 }

@@ -43,12 +43,12 @@ public class BoatYardController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -57,7 +57,7 @@ public class BoatYardController {
     @PostMapping(value = "/",
             produces = {"application/json"})
     public BasicRestResponse saveBoatYard(@Valid @RequestBody BoatYardRequestDto boatYardRequestDto
-                                          ) {
+    ) {
 
         return boatYardService.saveBoatYard(boatYardRequestDto);
     }
@@ -78,12 +78,12 @@ public class BoatYardController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -110,8 +110,7 @@ public class BoatYardController {
     @GetMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public
-    BoatYardDto getBoatYard(@PathVariable(value = "id") Integer id) {
+    public BoatYardDto getBoatYard(@PathVariable(value = "id") Integer id) {
         return this.boatYardService.getbyId(id);
     }
 
@@ -128,12 +127,12 @@ public class BoatYardController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -142,8 +141,7 @@ public class BoatYardController {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public
-    BasicRestResponse deleteBoatYard(@PathVariable(value = "id") Integer id) {
+    public BasicRestResponse deleteBoatYard(@PathVariable(value = "id") Integer id) {
 
         return boatYardService.deleteBoatYardbyId(id);
     }
@@ -151,7 +149,7 @@ public class BoatYardController {
     /**
      * Endpoint for updating a Boat Yard.
      *
-     * @param id           The ID of the Boat Yard to update.
+     * @param id                 The ID of the Boat Yard to update.
      * @param boatYardRequestDto The BoatYardDto containing the updated details.
      * @return A BasicRestResponse indicating the status of the operation.
      */
@@ -162,12 +160,12 @@ public class BoatYardController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -177,10 +175,10 @@ public class BoatYardController {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateBoatYard(
-            @PathVariable(value = "id",required = true) Integer id,
+            @PathVariable(value = "id", required = true) Integer id,
             @Valid @RequestBody BoatYardRequestDto boatYardRequestDto
-    ){
-       return boatYardService.updateBoatYard(boatYardRequestDto,id);
+    ) {
+        return boatYardService.updateBoatYard(boatYardRequestDto, id);
     }
 
 }

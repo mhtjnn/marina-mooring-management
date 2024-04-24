@@ -7,6 +7,7 @@ import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
 /**
  * Mapper interface for mapping between Customer and CustomerDto objects.
  */

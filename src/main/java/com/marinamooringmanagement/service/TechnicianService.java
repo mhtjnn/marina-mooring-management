@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
+
 /**
  * Service interface for managing Technician entities.
  */
@@ -15,7 +16,7 @@ public interface TechnicianService {
      *
      * @param technicianRequestDto The DTO containing technician information.
      */
-    BasicRestResponse saveTechnician(TechnicianRequestDto technicianRequestDto);
+    BasicRestResponse saveTechnician(final TechnicianRequestDto technicianRequestDto);
 
     /**
      * Retrieves a list of technicians with pagination and sorting.
@@ -26,7 +27,7 @@ public interface TechnicianService {
      * @param sortDir    The sorting direction.
      * @return A list of TechnicianDto objects.
      */
-    public List<TechnicianDto> getTechnicians(int pageNumber, int pageSize, String sortBy, String sortDir);
+    public List<TechnicianDto> getTechnicians(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
 
     /**
      * Retrieves a technician by ID.
@@ -34,16 +35,16 @@ public interface TechnicianService {
      * @param id The ID of the technician.
      * @return The TechnicianDto object.
      */
-    TechnicianDto getbyId(Integer id);
+    TechnicianDto getbyId(final Integer id);
 
     /**
      * Deletes a technician by ID.
      *
      * @param id The ID of the technician to delete.
      */
-    BasicRestResponse deleteTechnicianbyId(Integer id);
+    BasicRestResponse deleteTechnicianbyId(final Integer id);
 
-    BasicRestResponse updateTechnician(TechnicianRequestDto technicianRequestDto, Integer id);
+    BasicRestResponse updateTechnician(final TechnicianRequestDto technicianRequestDto, final Integer id);
 
 
 }

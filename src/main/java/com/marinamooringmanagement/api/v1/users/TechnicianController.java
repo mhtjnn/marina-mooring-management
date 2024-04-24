@@ -1,4 +1,5 @@
 package com.marinamooringmanagement.api.v1.users;
+
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -7,8 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,12 +43,12 @@ public class TechnicianController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -80,12 +79,12 @@ public class TechnicianController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -119,8 +118,7 @@ public class TechnicianController {
     /**
      * Endpoint for deleting a technician by ID.
      *
-
-     * @param id       The ID of the technician to delete.
+     * @param id The ID of the technician to delete.
      * @return A BasicRestResponse indicating the success of the operation.
      */
 
@@ -130,12 +128,12 @@ public class TechnicianController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -155,12 +153,12 @@ public class TechnicianController {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -170,11 +168,11 @@ public class TechnicianController {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateTechnician(
-            @PathVariable(value = "id",required = true) Integer id,
+            @PathVariable(value = "id", required = true) Integer id,
             @Valid @RequestBody TechnicianRequestDto technicianRequestDto
-    ){
+    ) {
 
-        return  technicianService.updateTechnician(technicianRequestDto,id);
+        return technicianService.updateTechnician(technicianRequestDto, id);
     }
 }
 

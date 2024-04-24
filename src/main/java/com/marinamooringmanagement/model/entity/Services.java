@@ -24,21 +24,21 @@ public class Services {
     /**
      * The name or identifier of the mooring location where the service was provided.
      */
-    @Column(name="mooring")
+    @Column(name = "mooring")
     private String mooring;
     /**
      * The name of the technician who performed the service.
      */
-    @Column(name="technician_name")
+    @Column(name = "technician_name")
     private String techniciansName;
     /**
      * The amount charged for the service.
      */
-    @Column(name="amount")
+    @Column(name = "amount")
     private int amount;
     /**
      * A record or description of the service provided.
      */
-    @Column(name="service_record")
+    @Column(name = "service_record")
     private String serviceRecord;
 }

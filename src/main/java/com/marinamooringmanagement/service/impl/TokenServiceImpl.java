@@ -40,13 +40,14 @@ public class TokenServiceImpl implements TokenService {
 
     /**
      * Saves the given token entity to the database.
+     *
      * @param token The token entity to save
      * @throws DBOperationException if an error occurs during database operation
      */
     @Override
     public void saveToken(final Token token) {
         try {
-            if(null != token) {
+            if (null != token) {
                 tokenRepository.save(token);
             }
         } catch (Exception e) {
@@ -56,14 +57,15 @@ public class TokenServiceImpl implements TokenService {
 
     /**
      * Saves a token with user details to the database.
+     *
      * @param userDto The user details DTO
-     * @param token The authentication token
+     * @param token   The authentication token
      * @throws DBOperationException if an error occurs during database operation
      */
     @Override
     public void saveToken(final UserDto userDto, final String token) {
         try {
-            if(null != userDto && StringUtils.hasText(token)) {
+            if (null != userDto && StringUtils.hasText(token)) {
                 final User user = User.builder().build();
                 user.setId(userDto.getId());
                 final Date expireDateTime = jwtUtil.getExpireTimeFromToken(token);
@@ -84,19 +86,20 @@ public class TokenServiceImpl implements TokenService {
 
     /**
      * Function to create a reset password token(which only has subject as email).
+     *
      * @param email Email given by the user
      * @return
      */
     @Override
     public String createPasswordResetToken(String email) {
         try {
-            if(userRepository.findByEmail(email).isEmpty()) {
+            if (userRepository.findByEmail(email).isEmpty()) {
                 throw new ClassNotFoundException("User with given email not found!!!");
             }
             User user = userRepository.findByEmail(email).get();
             UserDto userDto = UserDto.builder().build();
             userMapper.mapToUserDto(userDto, user);
-            String resetPasswordToken =  jwtUtil.generateResetPasswordToken(email);
+            String resetPasswordToken = jwtUtil.generateResetPasswordToken(email);
             saveToken(userDto, resetPasswordToken);
             return resetPasswordToken;
         } catch (Exception e) {

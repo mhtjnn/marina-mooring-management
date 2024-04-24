@@ -5,7 +5,6 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.dto.MooringDto;
 import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the CustomerService interface.
@@ -44,24 +44,25 @@ public class CustomerServiceImpl implements CustomerService {
      * @param customerRequestDto The DTO containing customer information.
      */
     @Override
-    public BasicRestResponse saveCustomer(CustomerRequestDto customerRequestDto) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse saveCustomer(final CustomerRequestDto customerRequestDto) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            log.info("Save the data in the database");
-            Customer customer = new Customer();
+            log.info(String.format("Saving data in the database for Customer ID %d", customerRequestDto.getId()));
+
+            final Customer customer = new Customer();
             performSave(customerRequestDto, customer, null);
             response.setMessage("Customer saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
-            log.error("Exception occurred while performing save operation " + e);
+            log.error(String.format("Exception occurred while performing save operation: %s", e.getMessage()), e);
+
             throw new DBOperationException(e.getMessage(), e);
         }
 
         return response;
     }
-
 
 
     /**
@@ -73,58 +74,35 @@ public class CustomerServiceImpl implements CustomerService {
      * @param sortDir    The sorting direction.
      * @return A list of CustomerDto objects.
      */
-    public BasicRestResponse getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse getCustomers(final int pageNumber, final int pageSize, final String sortBy, final String sortDir) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
-        List<CustomerDto> nlst = new ArrayList<>();
+        List<CustomerDto> customerDtoList;
         try {
-            Sort sort = null;
-            if (sortDir.equalsIgnoreCase("asc")) {
-                sort = Sort.by(sortBy).ascending();
-            } else {
-                sort = Sort.by(sortBy).descending();
-            }
-            Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            Page<Customer> pageUser = customerRepository.findAll(p);
-            List<Customer> lst = pageUser.getContent();
+            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+            final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
+            final Page<Customer> pageUser = customerRepository.findAll(p);
+            List<Customer> customerList = pageUser.getContent();
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            MooringDto mooringDto = MooringDto.builder().build();
-            mooringDto.setId(1);
-            mooringDto.setCustomerName("test");
-            mooringDto.setMooringNumber("test123");
-            mooringDto.setHarbor("123");
-            mooringDto.setWaterDepth("345");
-            mooringDto.setGpsCoordinates("567");
-            mooringDto.setBoatName("789");
-            mooringDto.setBoatSize("91011");
-            mooringDto.setBoatType("Regular");
-            mooringDto.setBoatWeight("1000");
-            mooringDto.setSizeOfWeight("1000");
-            mooringDto.setTypeOfWeight("1000");
-            mooringDto.setConditionOfEye("123");
-            mooringDto.setTopChainCondition("123");
-            mooringDto.setBottomChainCondition("123");
-            mooringDto.setShackleSwivelCondition("123");
-            mooringDto.setPennantCondition("123");
-            mooringDto.setDepthAtMeanHighWater(123);
+
+            customerDtoList = customerList.stream()
+                    .map(customerMapper::toDto)
+                    .collect(Collectors.toList());
 
 
-            for (Customer customer : lst) {
-                CustomerDto customerDto = customerMapper.toDto(customer);
-                nlst.add(customerDto);
-            }
+            CustomerDto customerDto = !customerDtoList.isEmpty() ? customerDtoList.get(0) : null;
+            response.setContent(List.of(customerDtoList, customerDto));
+            log.info(String.format("Customers fetched successfully"));
 
-            CustomerDto customerDto = null;
-            if(!nlst.isEmpty()) customerDto=nlst.get(0);
-            response.setContent(List.of(nlst,customerDto,mooringDto));
         } catch (Exception e) {
+            log.error(String.format("Error occurred while fetching Customers: %s", e.getMessage()), e);
+
             throw new DBOperationException(e.getMessage(), e);
         }
         return response;
     }
-
-
 
 
     /**
@@ -134,49 +112,59 @@ public class CustomerServiceImpl implements CustomerService {
      * @return The CustomerDto object.
      */
     @Override
-    public CustomerDto getbyId(Integer id) {
+    public CustomerDto getbyId(final Integer id) {
         if (id == null) {
             throw new ResourceNotFoundException("ID cannot be null");
         }
         try {
             Optional<Customer> customerEntityOptional = customerRepository.findById(id);
             if (customerEntityOptional.isPresent()) {
-                CustomerDto customerDto = customerMapper.toDto(customerEntityOptional.get());
-                return customerDto;
+                log.info(String.format("Successfully retrieved Customer data for ID: %d", id));
+
+                return customerMapper.toDto(customerEntityOptional.get());
+
+
             } else {
-                throw new DBOperationException("Customer with ID : " + id + " doesn't exist");
+                throw new DBOperationException(String.format("Customer with ID : %d doesn't exist", id));
             }
-        }
-        catch (Exception e){
-            throw  new DBOperationException(e.getMessage(),e);
+        } catch (Exception e) {
+            log.error(String.format("Error occurred while retrieving Customer for ID: %d: %s", id, e.getMessage()), e);
+
+            throw new DBOperationException(e.getMessage(), e);
         }
 
     }
+
     /**
      * Updates a Customer entity.
      *
      * @param customerRequestDto The CustomerDto containing the updated data.
-     * @param id          The ID of the Customer to update.
+     * @param id                 The ID of the Customer to update.
      * @return A BasicRestResponse indicating the status of the operation.
      * @throws DBOperationException if the customer ID is not provided or if an error occurs during the operation.
      */
     @Override
-    public BasicRestResponse updateCustomer(CustomerRequestDto customerRequestDto, Integer id) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             if (null == customerRequestDto.getId()) {
-                throw new ResourceNotFoundException("Customer Id not provided for update request");
+                log.info(String.format("Update attempt without a Customer ID provided in the request DTO"));
+
+                throw new ResourceNotFoundException(String.format("Customer not found with id: %1$s", id));
             }
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
+            if (optionalCustomer.isPresent()) {
 
-            Customer customer = optionalCustomer.get();
-            performSave(customerRequestDto,customer, customerRequestDto.getId());
-            response.setMessage("Customer with the given customer id updated successfully!!!");
-            response.setStatus(HttpStatus.OK.value());
+                Customer customer = optionalCustomer.get();
+                performSave(customerRequestDto, customer, customerRequestDto.getId());
+                response.setMessage("Customer with the given customer id updated successfully!!!");
+                response.setStatus(HttpStatus.OK.value());
 
+            }
         } catch (Exception e) {
-            log.info("Error occurred while updating customer");
+            log.error(String.format("Error occurred while updating customer: %s", e.getMessage()), e);
+
             throw new DBOperationException(e.getMessage(), e);
         }
         return response;
@@ -187,48 +175,53 @@ public class CustomerServiceImpl implements CustomerService {
      * Helper method to perform the save operation for a Customer entity.
      *
      * @param customerRequestDto The CustomerDto containing the data.
-     * @param customer    The Customer entity to be updated.
-     * @param id          The ID of the Customer to update.
+     * @param customer           The Customer entity to be updated.
+     * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-    public void performSave(CustomerRequestDto customerRequestDto, Customer customer, Integer id) {
+    public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
             if (null == id) {
                 customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
-                customerMapper.mapToCustomer(customer,customerRequestDto);
-                customer.setCreationDate(new Date());
-                customer.setLastModifiedDate(new Date());
+            customerMapper.mapToCustomer(customer, customerRequestDto);
+            customer.setCreationDate(new Date());
+            customer.setLastModifiedDate(new Date());
 
-                customerRepository.save(customer);
+            customerRepository.save(customer);
+            log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
+
         } catch (Exception e) {
-            log.info("Error occurred during performSave() function");
+            log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
+
             throw new DBOperationException(e.getMessage(), e);
         }
     }
 
     /**
-         * Deletes a customer by ID.
-         *
-         * @param id The ID of the customer to delete.
-         */
-        @Override
-        public BasicRestResponse deleteCustomerbyId (Integer id){
-            BasicRestResponse response = BasicRestResponse.builder().build();
-            try {
-                customerRepository.deleteById(id);
-                response.setMessage("customer deleted");
-                response.setStatus(HttpStatus.OK.value());
-                log.info("Customer Deleted Successfully");
-            } catch (Exception e) {
-                log.error("Error occured while deleting mooring with id");
-                response.setMessage(e.getMessage());
-                response.setStatus(HttpStatus.NO_CONTENT.value());
+     * Deletes a customer by ID.
+     *
+     * @param id The ID of the customer to delete.
+     */
+    @Override
+    public BasicRestResponse deleteCustomerbyId(final Integer id) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        try {
+            customerRepository.deleteById(id);
+            response.setMessage(String.format("Customer with ID %d deleted successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+            log.info(String.format("Customer with ID %d deleted successfully", id));
 
-                throw new DBOperationException(e.getMessage(), e);
-            }
-            return response;
+        } catch (Exception e) {
+            log.error(String.format("Error occurred while deleting customer with ID %d", id));
+
+            response.setMessage(e.getMessage());
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+
+            throw new DBOperationException(e.getMessage(), e);
         }
-
-
+        return response;
     }
+
+
+}

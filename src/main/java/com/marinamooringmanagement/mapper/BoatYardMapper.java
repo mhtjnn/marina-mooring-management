@@ -21,6 +21,7 @@ public interface BoatYardMapper {
      * @return The corresponding BoatYardDto object.
      */
     BoatYardDto toDto(BoatYard boatYard);
+
     /**
      * Updates an existing BoatYard entity with data from a BoatYardDto.
      *

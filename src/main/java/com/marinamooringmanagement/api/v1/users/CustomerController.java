@@ -1,4 +1,5 @@
 package com.marinamooringmanagement.api.v1.users;
+
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
@@ -26,7 +27,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @Validated
 @RequestMapping(value = "/api/v1/customer")
 
-@Tag(name="CustomerController",description = "To perform operations on Customer")
+@Tag(name = "CustomerController", description = "To perform operations on Customer")
 public class CustomerController extends Base {
 
 
@@ -46,12 +47,12 @@ public class CustomerController extends Base {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -59,12 +60,13 @@ public class CustomerController extends Base {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer( @Valid @RequestBody CustomerRequestDto customerRequestDto
-                                                   ) {
+    public BasicRestResponse saveCustomer(@Valid @RequestBody CustomerRequestDto customerRequestDto
+    ) {
         return customerService.saveCustomer(customerRequestDto);
 
 
     }
+
     /**
      * Endpoint for retrieving a list of customers.
      *
@@ -81,12 +83,12 @@ public class CustomerController extends Base {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -114,8 +116,7 @@ public class CustomerController extends Base {
     @GetMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public
-    CustomerDto getCustomer(@PathVariable(value = "id") Integer id) {
+    public CustomerDto getCustomer(@PathVariable(value = "id") Integer id) {
         return this.customerService.getbyId(id);
     }
 
@@ -123,7 +124,6 @@ public class CustomerController extends Base {
      * Endpoint for updating a customer.
      *
      * @param customerRequestDto The DTO containing updated customer information.
-
      */
     @Operation(
             tags = "Update customers in the database",
@@ -131,12 +131,12 @@ public class CustomerController extends Base {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -146,18 +146,18 @@ public class CustomerController extends Base {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateCustomer(
-            @PathVariable(value = "id",required = true) Integer id,
+            @PathVariable(value = "id", required = true) Integer id,
             @Valid @RequestBody CustomerRequestDto customerRequestDto
 
-    ){
+    ) {
 
-       return customerService.updateCustomer(customerRequestDto,id);
+        return customerService.updateCustomer(customerRequestDto, id);
     }
 
     /**
      * Endpoint for deleting a customer by ID.
      *
-     * @param id       The ID of the customer to delete.
+     * @param id The ID of the customer to delete.
      * @return A BasicRestResponse indicating the success of the operation.
      */
 
@@ -167,12 +167,12 @@ public class CustomerController extends Base {
             responses = {
                     @ApiResponse(
                             description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "200"
                     ),
                     @ApiResponse(
                             description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
                             responseCode = "400"
                     )
             }
@@ -181,8 +181,7 @@ public class CustomerController extends Base {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public
-    BasicRestResponse deleteCustomer(@PathVariable(value = "id") Integer id) {
+    public BasicRestResponse deleteCustomer(@PathVariable(value = "id") Integer id) {
 
         return customerService.deleteCustomerbyId(id);
     }

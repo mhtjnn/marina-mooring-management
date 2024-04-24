@@ -85,7 +85,8 @@ public class AuthenticationController {
 
     /**
      * Function to send Link through email for password reset functionality.
-     * @param request the HTTP servlet request
+     *
+     * @param request                    the HTTP servlet request
      * @param forgetPasswordEmailRequest Request containing the email where the reset password link has to be sent.
      * @return a ResponseEntity containing the response
      * @throws Exception
@@ -100,8 +101,9 @@ public class AuthenticationController {
 
     /**
      * Function to validate email(existence) and token.
+     *
      * @param token The Reset Password JWT
-     * @return  a ResponseEntity containing the response from EmailLinkResponse
+     * @return a ResponseEntity containing the response from EmailLinkResponse
      * @throws Exception
      */
     @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
@@ -113,9 +115,10 @@ public class AuthenticationController {
 
     /**
      * Function to reset password with the new password.
-     * @param token The reset password JWT
+     *
+     * @param token              The reset password JWT
      * @param newPasswordRequest Request containing the new password and confirm password
-     * @return  a ResponseEntity containing the response of NewPasswordResponse
+     * @return a ResponseEntity containing the response of NewPasswordResponse
      * @throws Exception
      */
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)

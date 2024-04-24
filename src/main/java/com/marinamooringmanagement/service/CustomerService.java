@@ -13,7 +13,8 @@ public interface CustomerService {
      *
      * @param customerDto The DTO containing customer information.
      */
-    BasicRestResponse saveCustomer(CustomerRequestDto customerDto);
+    BasicRestResponse saveCustomer(final CustomerRequestDto customerDto);
+
     /**
      * Retrieves a list of customers with pagination and sorting.
      *
@@ -23,28 +24,30 @@ public interface CustomerService {
      * @param sortDir    The sorting direction.
      * @return A list of CustomerDto objects.
      */
-    public BasicRestResponse getCustomers(int pageNumber, int pageSize, String sortBy, String sortDir);
+    public BasicRestResponse getCustomers(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
+
     /**
      * Retrieves a customer by ID.
      *
      * @param id The ID of the customer.
      * @return The CustomerDto object.
      */
-    CustomerDto getbyId(Integer id);
+    CustomerDto getbyId(final Integer id);
+
     /**
      * Updates an existing customer.
      *
      * @param customerRequestDto The DTO containing updated customer information.
-     * @param id          The ID of the customer to update.
+     * @param id                 The ID of the customer to update.
      */
-    BasicRestResponse updateCustomer(CustomerRequestDto customerRequestDto, Integer id);
+    BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id);
 
     /**
      * Deletes a customer by ID.
      *
      * @param id The ID of the customer to delete.
      */
-    BasicRestResponse deleteCustomerbyId(Integer id);
+    BasicRestResponse deleteCustomerbyId(final Integer id);
 
 
 }

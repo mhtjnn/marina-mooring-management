@@ -5,6 +5,7 @@ import com.marinamooringmanagement.model.request.BoatYardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
+
 /**
  * Service interface for managing BoatYard entities.
  * Defines methods for performing CRUD operations on BoatYard entities.
@@ -15,7 +16,7 @@ public interface BoatYardService {
      *
      * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
      */
-    BasicRestResponse saveBoatYard(BoatYardRequestDto boatYardRequestDto);
+    BasicRestResponse saveBoatYard(final BoatYardRequestDto boatYardRequestDto);
 
     /**
      * Retrieves a list of BoatYard entities.
@@ -26,7 +27,7 @@ public interface BoatYardService {
      * @param sortDir    The direction of sorting.
      * @return A list of BoatYardDto objects.
      */
-    List<BoatYardDto> getBoatYard(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+    List<BoatYardDto> getBoatYard(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
 
     /**
      * Retrieves a BoatYard entity by its ID.
@@ -34,21 +35,21 @@ public interface BoatYardService {
      * @param id The ID of the BoatYard to retrieve.
      * @return The BoatYardDto object corresponding to the given ID.
      */
-    BoatYardDto getbyId(Integer id);
+    BoatYardDto getbyId(final Integer id);
 
     /**
      * Deletes a BoatYard entity by its ID.
      *
      * @param id The ID of the BoatYard to delete.
      */
-    BasicRestResponse deleteBoatYardbyId(Integer id);
+    BasicRestResponse deleteBoatYardbyId(final Integer id);
 
     /**
      * Updates a BoatYard entity.
      *
      * @param boatYardRequestDto The BoatYardDto containing the updated data.
-     * @param id          The ID of the BoatYard to update.
+     * @param id                 The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    BasicRestResponse updateBoatYard(BoatYardRequestDto boatYardRequestDto,  Integer id);
+    BasicRestResponse updateBoatYard(final BoatYardRequestDto boatYardRequestDto, final Integer id);
 }
