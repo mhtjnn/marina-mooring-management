@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class SendEmailRequest {
     /**
      * List of email addresses to send the email to.
      */
+    @NotNull(message = "To List cannot be empty")
     private List<String> toList;
 
     /**

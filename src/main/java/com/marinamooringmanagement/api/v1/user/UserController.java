@@ -70,10 +70,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "auth")
     public BasicRestResponse fetchUsers(
-            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "email", required = false) String sortBy,
-            @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "email", required = false) String sortBy,
+            @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return userService.fetchUsers(pageNumber, pageSize, sortBy, sortDir);
     }
@@ -110,7 +110,7 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
-            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) @Valid @RequestBody UserRequestDto user
+            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user
     ) {
         return userService.saveUser(user);
     }
@@ -147,8 +147,8 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateUser(
-            @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) @PathVariable("id") Integer userId,
-            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) @Valid @RequestBody UserRequestDto userRequestDto
+            @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer userId,
+            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto
     ) {
         return userService.updateUser(userRequestDto, userId);
     }
@@ -185,7 +185,7 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteUser(
-            @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) @PathVariable("userId") Integer userId
+            @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("userId") Integer userId
     ) {
         return userService.deleteUser(userId);
     }

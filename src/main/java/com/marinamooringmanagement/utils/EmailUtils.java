@@ -21,11 +21,11 @@ public class EmailUtils {
      * @param template The ResetPasswordEmailTemplate containing email details.
      * @return SendEmailRequest The generated SendEmailRequest object.
      */
-    public SendEmailRequest generateEmailRequest(ResetPasswordEmailTemplate template) {
-        SendEmailRequest sendEmailRequest = SendEmailRequest.builder().build();
+    public SendEmailRequest generateEmailRequest(final ResetPasswordEmailTemplate template) {
+        final SendEmailRequest sendEmailRequest = SendEmailRequest.builder().build();
 
         // Extract and set the 'to' email address
-        List<String> toMailList = new ArrayList<>();
+        final List<String> toMailList = new ArrayList<>();
         toMailList.add(template.getToMailId());
         if (CollectionUtils.isNotEmpty(toMailList)) {
             sendEmailRequest.setToList(toMailList);

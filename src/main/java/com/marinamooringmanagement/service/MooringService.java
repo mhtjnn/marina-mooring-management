@@ -20,14 +20,14 @@ public interface MooringService {
      * @param sortDir the sort direction (asc or desc)
      * @return a list of mooring response DTOs
      */
-    BasicRestResponse fetchMoorings(Integer page, Integer size, String sortBy, String sortDir);
+    BasicRestResponse fetchMoorings(final Integer page, final Integer size, final String sortBy, final String sortDir);
 
     /**
      * Saves a mooring based on the provided request DTO.
      *
      * @param dto the mooring request DTO
      */
-    BasicRestResponse saveMooring(MooringRequestDto dto);
+    BasicRestResponse saveMooring(final MooringRequestDto dto);
 
     /**
      * Updates a mooring based on the provided request DTO and mooring ID.
@@ -35,7 +35,7 @@ public interface MooringService {
      * @param mooringRequestDto the mooring request DTO
      * @param mooringId         the mooring ID
      */
-    BasicRestResponse updateMooring(MooringRequestDto mooringRequestDto, Integer mooringId);
+    BasicRestResponse updateMooring(final MooringRequestDto mooringRequestDto, final Integer mooringId);
 
     /**
      * Deletes a mooring based on the provided ID.
@@ -43,6 +43,6 @@ public interface MooringService {
      * @param id the mooring ID
      * @return a message indicating the deletion status
      */
-    BasicRestResponse deleteMooring(Integer id);
+    BasicRestResponse deleteMooring(final Integer id);
 }
 

@@ -61,10 +61,10 @@ public class MooringController {
             produces = {"application/json"}
     )
     public BasicRestResponse fetchMoorings(
-            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
-            @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
+            @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return mooringService.fetchMoorings(page, size, sortBy, sortDir);
     }
@@ -96,7 +96,7 @@ public class MooringController {
             method = RequestMethod.POST,
             produces = {"application/json"})
     public BasicRestResponse saveMooring(
-            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) @Valid @RequestBody MooringRequestDto dto
+            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto
     ) {
         return mooringService.saveMooring(dto);
     }
@@ -129,8 +129,8 @@ public class MooringController {
             method = RequestMethod.PUT,
             produces = {"application/json"})
     public BasicRestResponse updateMooring(
-            @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = MooringRequestDto.class)) @Valid @RequestBody MooringRequestDto dto,
-            @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) @PathVariable("id") Integer mooringId
+            @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto,
+            @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer mooringId
     ) {
         return mooringService.updateMooring(dto, mooringId);
     }
@@ -162,7 +162,7 @@ public class MooringController {
             method = RequestMethod.DELETE,
             produces = {"application/json"})
     public BasicRestResponse deleteMooring(
-            @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) @PathVariable("id") Integer id
+            @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id
     ) {
 
         return mooringService.deleteMooring(id);

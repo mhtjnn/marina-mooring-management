@@ -40,7 +40,7 @@ public class UserRequestDto implements Serializable {
     /**
      * The email address of the user.
      */
-    @Email(message = "Email is not Valid")
+    @Email(message = "Email is not Valid", regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     private String email;
 
     /**

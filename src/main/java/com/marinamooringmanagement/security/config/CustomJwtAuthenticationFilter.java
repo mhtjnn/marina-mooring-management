@@ -42,9 +42,9 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain chain
     ) throws ServletException, IOException {
         try {
             final String jwtToken = extractJwtFromRequest(request);
@@ -53,7 +53,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                         org.apache.commons.lang3.StringUtils.EMPTY, jwtTokenUtil.getRolesFromToken(jwtToken));
                 final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                AuthenticationDetails authDetails = new AuthenticationDetails();
+                final AuthenticationDetails authDetails = new AuthenticationDetails();
                 authDetails.setLoggedInUserEmail(jwtTokenUtil.getUsernameFromToken(jwtToken));
                 authDetails.setLoggedInUserId(jwtTokenUtil.getUserIdFromToken(jwtToken));
                 authDetails.setLoggedInUserRole(jwtTokenUtil.getRoleFromToken(jwtToken));
@@ -73,7 +73,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
      * @param request the HTTP servlet request
      * @return the extracted JWT token as a {@link String}
      */
-    private String extractJwtFromRequest(HttpServletRequest request) {
+    private String extractJwtFromRequest(final HttpServletRequest request) {
         final String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);

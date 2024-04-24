@@ -20,14 +20,14 @@ public interface VendorService {
      * @param sortDir the sort direction (asc or desc)
      * @return a list of vendor response DTOs
      */
-    BasicRestResponse fetchVendors(Integer page, Integer size, String sortBy, String sortDir);
+    BasicRestResponse fetchVendors(final Integer page, final Integer size, final String sortBy, final String sortDir, final Integer vendorId, final String  companyName, final String phoneNumber, final String emailAddress);
 
     /**
      * Saves a vendor based on the provided request DTO.
      *
      * @param requestDto the vendor request DTO
      */
-    BasicRestResponse saveVendor(VendorRequestDto requestDto);
+    BasicRestResponse saveVendor(final VendorRequestDto requestDto);
 
     /**
      * Deletes a vendor based on the provided vendor ID.
@@ -35,7 +35,7 @@ public interface VendorService {
      * @param vendorId the vendor ID
      * @return a message indicating the deletion status
      */
-    BasicRestResponse deleteVendor(Integer vendorId);
+    BasicRestResponse deleteVendor(final Integer vendorId);
 
     /**
      * Updates a vendor based on the provided request DTO and vendor ID.
@@ -43,6 +43,6 @@ public interface VendorService {
      * @param requestDto the vendor request DTO
      * @param vendorId   the vendor ID
      */
-    BasicRestResponse updateVendor(VendorRequestDto requestDto, Integer vendorId);
+    BasicRestResponse updateVendor(final VendorRequestDto requestDto, final Integer vendorId);
 }
 

@@ -20,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -51,27 +50,24 @@ public class VendorServiceImpl implements VendorService {
      * @return a list of vendor response DTOs
      */
     @Override
-    public BasicRestResponse fetchVendors(Integer page, Integer size, String sortBy, String sortDir) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse fetchVendors(final Integer page, final Integer size, final String sortBy, final String sortDir, final Integer vendorId, final String companyName, final String phoneNumber, final String emailAddress) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to fetch all the vendors from the database");
-            Sort sort = null;
-            if(sortDir.equalsIgnoreCase("asc")) {
-                sort = Sort.by(sortBy).ascending();
-            } else {
-                sort = Sort.by(sortBy).descending();
-            }
-            Pageable p = PageRequest.of(page, size, sort);
-            Page<Vendor> vendorList = vendorRepository.findAll(p);
-            List<VendorResponseDto> vendorResponseDtoList = vendorList.stream()
+            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            final Pageable p = PageRequest.of(page, size, sort);
+
+            final Page<Vendor> vendorList = vendorRepository.findAll(p);
+
+            final List<VendorResponseDto> vendorResponseDtoList = vendorList.getContent().stream()
                     .map(vendor -> vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), vendor))
                     .collect(Collectors.toList());
             response.setMessage("List of vendors in the database");
             response.setContent(vendorResponseDtoList);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            logger.error("Error occurred while fetching all the vendors from the database", e);
+            logger.error("Error occurred while fetching all the vendors from the database: {}", e.getLocalizedMessage());
             response.setMessage("Error occurred while fetching list of vendors from the database");
             response.setContent(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -85,17 +81,17 @@ public class VendorServiceImpl implements VendorService {
      * @param requestDto the vendor request DTO
      */
     @Override
-    public BasicRestResponse saveVendor(VendorRequestDto requestDto) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse saveVendor(final VendorRequestDto requestDto) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to save the vendor in the database");
-            Vendor vendor = Vendor.builder().build();
+            final Vendor vendor = Vendor.builder().build();
             performSave(requestDto, vendor, null);
             response.setMessage("Vendor Saved Successfully");
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
-            logger.error("Error occurred while saving the vendor in the database", e);
+            logger.error("Error occurred while saving the vendor in the database {}", e.getLocalizedMessage());
             response.setMessage("Error occurred while saving the vendor in the database");
             response.setContent(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -110,17 +106,17 @@ public class VendorServiceImpl implements VendorService {
      * @return a message indicating the deletion status
      */
     @Override
-    public BasicRestResponse deleteVendor(Integer vendorId) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse deleteVendor(final Integer vendorId) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to delete the vendor from the database");
             vendorRepository.deleteById(vendorId);
-            String message = "Vendor with the id " + vendorId + " is deleted successfully";
+            final String message = vendorRepository.findById(vendorId).isPresent() ? String.format("Vendor with the id %1$s failed to get deleted", vendorId) : String.format("Vendor with the id %1$s is deleted successfully", vendorId);
             response.setMessage(message);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            logger.error("Error occurred while deleting the vendor from the database", e);
+            logger.error("Error occurred while deleting the vendor from the database {}", e.getLocalizedMessage());
             response.setMessage("Error occurred while deleting the vendor from the database");
             response.setContent(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -135,8 +131,8 @@ public class VendorServiceImpl implements VendorService {
      * @param vendorId   the vendor ID
      */
     @Override
-    public BasicRestResponse updateVendor(VendorRequestDto requestDto, Integer vendorId) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse updateVendor(final VendorRequestDto requestDto, final Integer vendorId) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to update the vendor in the database");
@@ -147,13 +143,13 @@ public class VendorServiceImpl implements VendorService {
                 if(optionalVendor.isEmpty()) {
                     throw new ResourceNotFoundException("No vendor exists with the given vendor ID");
                 }
-                Vendor vendor = optionalVendor.get();
+                final Vendor vendor = optionalVendor.get();
                 performSave(requestDto, vendor, vendorId);
             }
             response.setMessage("Vendor updated successfully");
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            logger.error("Error occurred while updating the vendor in the database", e);
+            logger.error("Error occurred while updating the vendor in the database {}", e.getLocalizedMessage());
             response.setMessage("Error occurred while updating the vendor in the database");
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -167,8 +163,8 @@ public class VendorServiceImpl implements VendorService {
      * @param vendor     the vendor object to be saved or updated
      * @param vendorId   the vendor ID (null for new vendors)
      */
-    public Vendor performSave(VendorRequestDto requestDto, Vendor vendor, Integer vendorId) {
-        Vendor savedVendor = null;
+    public Vendor performSave(final VendorRequestDto requestDto, final Vendor vendor, final Integer vendorId) {
+        final Vendor savedVendor;
         try {
             logger.info("performSave() function called");
             if(null == vendorId) {
@@ -180,7 +176,7 @@ public class VendorServiceImpl implements VendorService {
             vendorMapper.mapToVendor(vendor, requestDto);
             savedVendor = vendorRepository.save(vendor);
         } catch (Exception e) {
-            logger.error("Error occurred during performSave() operation", e);
+            logger.error("Error occurred during performSave() operation {}", e.getLocalizedMessage());
             throw new DBOperationException("Error occurred during performSave() operation", e);
         }
         return savedVendor;

@@ -58,12 +58,16 @@ public class VendorController {
             method = RequestMethod.GET,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse fetchVendors(
-            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
-            @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-            @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
+            @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @Parameter(description = "Vendor Id", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "id", required = false) final Integer vendorId,
+            @Parameter(description = "Company Name", schema = @Schema(implementation = String.class)) @RequestParam(value = "companyName", required = false) final String companyName,
+            @Parameter(description = "Phone Number", schema = @Schema(implementation = String.class)) @RequestParam(value = "phoneNumber", required = false) final String phoneNumber,
+            @Parameter(description = "Email Address", schema = @Schema(implementation = String.class)) @RequestParam(value = "emailAddress", required = false) final String emailAddress
     ) {
-        return vendorService.fetchVendors(page, size, sortBy, sortDir);
+        return vendorService.fetchVendors(page, size, sortBy, sortDir, vendorId, companyName, phoneNumber, emailAddress);
     }
 
     /**
@@ -93,7 +97,7 @@ public class VendorController {
             method = RequestMethod.POST,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse saveVendor(
-            @Parameter(description = "Vendor to save in the database", schema = @Schema(implementation = VendorRequestDto.class)) @Valid @RequestBody VendorRequestDto requestDto
+            @Parameter(description = "Vendor to save in the database", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto
     ) {
         return vendorService.saveVendor(requestDto);
 
@@ -126,7 +130,7 @@ public class VendorController {
             method = RequestMethod.DELETE,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse deleteVendor(
-            @Parameter(description = "Vendor ID to be deleted", schema = @Schema(implementation = Integer.class)) @PathVariable("id") Integer vendorId
+            @Parameter(description = "Vendor ID to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId
     ) {
         return vendorService.deleteVendor(vendorId);
     }
@@ -159,8 +163,8 @@ public class VendorController {
             method = RequestMethod.PUT,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse updateVendor(
-            @Parameter(description = "Fields to update", schema = @Schema(implementation = VendorRequestDto.class)) @Valid @RequestBody VendorRequestDto requestDto,
-            @Parameter(description = "Vendor ID", schema = @Schema(implementation = Integer.class)) @PathVariable("id") Integer vendorId
+            @Parameter(description = "Fields to update", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto,
+            @Parameter(description = "Vendor ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId
     ) {
         return vendorService.updateVendor(requestDto, vendorId);
     }

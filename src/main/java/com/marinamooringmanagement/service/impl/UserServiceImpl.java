@@ -82,18 +82,13 @@ public class UserServiceImpl implements UserService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Sort sort = null;
-            if (sortDir.equalsIgnoreCase("asc")) {
-                sort = Sort.by(sortBy).ascending();
-            } else {
-                sort = Sort.by(sortBy).descending();
-            }
+            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
             Pageable p = PageRequest.of(pageNumber, pageSize, sort);
             Page<User> userList = userRepository.findAll(p);
-            log.info(String.format("fetch all users"));
+            log.info("fetch all users");
             List<UserResponseDto> userResponseDtoList = new ArrayList<>();
             if (!userList.isEmpty())
-                userResponseDtoList = userList.stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
+                userResponseDtoList = userList.getContent().stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
             response.setMessage("Users fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(userResponseDtoList);
@@ -246,11 +241,11 @@ public class UserServiceImpl implements UserService {
      * @throws Exception
      */
     @Override
-    public BasicRestResponse updatePassword(String token, NewPasswordRequest newPasswordRequest) throws Exception {
-        BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
+    public BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception {
+        final BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
         passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            String email = jwtUtil.getUsernameFromToken(token);
+            final String email = jwtUtil.getUsernameFromToken(token);
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isEmpty()) {
                 throw new ResourceNotFoundException("No User found with the given email ID");
@@ -287,11 +282,11 @@ public class UserServiceImpl implements UserService {
      * @return {@link SendEmailResponse}
      */
     @Override
-    public BasicRestResponse checkEmailAndTokenValid(String token) {
+    public BasicRestResponse checkEmailAndTokenValid(final String token) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            String email = jwtUtil.getUsernameFromToken(token);
+            final String email = jwtUtil.getUsernameFromToken(token);
             Optional<User> optionalUser = userRepository.findByEmail(email);
             if (optionalUser.isEmpty()) {
                 throw new ResourceNotFoundException("No user found with the email extracted from token");
@@ -315,17 +310,22 @@ public class UserServiceImpl implements UserService {
      * @param user           {@link User}
      * @param userId         ID of the user which requires update.
      */
-    public User performSave(UserRequestDto userRequestDto, User user, Integer userId) {
-        mapper.mapToUser(user, userRequestDto);
-        user.setLastModifiedDate(new Date(System.currentTimeMillis()));
-        if (userId != null) {
-            return userRepository.save(user);
-        } else {
-            user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
-            user.setCreationDate(new Date());
-            Role role = roleRepository.findByName("ADMINISTRATOR");
-            user.setRole(role);
-            return userRepository.save(user);
+    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId) {
+        try {
+            mapper.mapToUser(user, userRequestDto);
+            user.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            if (userId != null) {
+                return userRepository.save(user);
+            } else {
+                user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+                user.setCreationDate(new Date());
+                Role role = roleRepository.findByName("ADMINISTRATOR");
+                user.setRole(role);
+                return userRepository.save(user);
+            }
+        } catch (Exception e) {
+            log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
+            throw new RuntimeException("Error occurred during perform save method", e);
         }
     }
 }

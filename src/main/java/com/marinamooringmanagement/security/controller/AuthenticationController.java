@@ -90,10 +90,10 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
-            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) @RequestBody AuthenticationRequest authenticationRequest,
-            HttpServletRequest request
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest,
+            final HttpServletRequest request
     ) throws Exception {
-        AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
+        final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -103,7 +103,7 @@ public class AuthenticationController {
             );
             return generateAuthenticationResponse(authenticationRequest.getUsername(), authenticationResponse);
         } catch (Exception e) {
-            BasicRestResponse response = BasicRestResponse.builder().build();
+            final BasicRestResponse response = BasicRestResponse.builder().build();
             response.setMessage("Authentication failed");
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setErrorList(List.of(e.getMessage()));
@@ -138,9 +138,9 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
     public ResponseEntity<?> forgetPassword(
-            HttpServletRequest request,
-            @Parameter(description = "Registered email of the user", schema = @Schema(implementation = ForgetPasswordEmailRequest.class)) @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
+            final HttpServletRequest request,
+            @Parameter(description = "Registered email of the user", schema = @Schema(implementation = ForgetPasswordEmailRequest.class)) final @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
+        final SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response, HttpStatus.OK) : new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -171,9 +171,8 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
     public BasicRestResponse resetPasswordWithNewPassword(
-            @Parameter(description = "Reset Password Token", schema = @Schema(implementation = String.class)) @RequestParam("token") String token,
-            @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
-
+            @Parameter(description = "Reset Password Token", schema = @Schema(implementation = String.class)) final @RequestParam("token") String token,
+            @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) final @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
         return userService.updatePassword(token, newPasswordRequest);
     }
 
@@ -203,7 +202,7 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
     public BasicRestResponse validateEmailAndToken(
-            @RequestParam("token") String token) throws Exception {
+            @RequestParam("token") final String token) throws Exception {
         return userService.checkEmailAndTokenValid(token);
     }
 
@@ -214,7 +213,7 @@ public class AuthenticationController {
      * @param username the username for which to generate the authentication response
      * @return a ResponseEntity containing the authentication response
      */
-    private ResponseEntity<?> generateAuthenticationResponse(String username, final AuthenticationResponse response) {
+    private ResponseEntity<?> generateAuthenticationResponse(final String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
         final String token = jwtUtil.generateToken(emp);
         tokenService.saveToken(emp, token);

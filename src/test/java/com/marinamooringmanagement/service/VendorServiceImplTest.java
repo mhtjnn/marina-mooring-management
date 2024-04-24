@@ -79,7 +79,7 @@ public class VendorServiceImplTest {
                 .thenReturn(newVendorResponseDtoInstance());
 
 
-        BasicRestResponse getResponse = service.fetchVendors(1,10,"id","asc");
+        BasicRestResponse getResponse = service.fetchVendors(1,10,"id","asc",1,"","","");
 
         Assertions.assertEquals(response.getContent(), getResponse.getContent());
         verify(vendorRepo, times(1)).findAll(any(Pageable.class));
