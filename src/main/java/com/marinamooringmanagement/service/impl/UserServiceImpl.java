@@ -81,9 +81,9 @@ public class UserServiceImpl implements UserService {
             sort = Sort.by(sortBy).descending();
         }
         Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-        Page<User> employeeList = userRepository.findAll(p);
+        Page<User> userList = userRepository.findAll(p);
         log.info(String.format("fetch all employees"));
-        List<UserResponseDto> userResponseDtoList = employeeList.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
+        List<UserResponseDto> userResponseDtoList = userList.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
         return userResponseDtoList;
     }
 

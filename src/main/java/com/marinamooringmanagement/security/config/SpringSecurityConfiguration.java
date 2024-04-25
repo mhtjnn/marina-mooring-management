@@ -32,7 +32,11 @@ public class SpringSecurityConfiguration{
     private final CustomJwtAuthenticationFilter jwtAuthFilter;
 
     private static final String[] WHITE_LIST_URL = {
-            "/api/v1/auth/login",
+            "/api/v1/auth/**",
+            "/swagger/resources/**",
+            "/swagger-ui/**",
+            "/webjars/**",
+            "/v3/api-docs",
             "/**",
     };
 
