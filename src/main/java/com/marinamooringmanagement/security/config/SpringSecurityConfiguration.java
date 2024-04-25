@@ -11,17 +11,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 /**
  * Configuration class containing {@link SecurityFilterChain} for Spring Security configuration.
  */
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
+@EnableWebMvc
 public class SpringSecurityConfiguration{
 
     private final UserRepository repository;
@@ -32,7 +33,11 @@ public class SpringSecurityConfiguration{
     private final CustomJwtAuthenticationFilter jwtAuthFilter;
 
     private static final String[] WHITE_LIST_URL = {
-            "/api/v1/auth/login",
+            "/api/v1/auth/**",
+            "/swagger/resources/**",
+            "/swagger-ui/**",
+            "/webjars/**",
+            "/v3/api-docs",
             "/**",
     };
 
@@ -44,7 +49,7 @@ public class SpringSecurityConfiguration{
      * @throws Exception if an error occurs during configuration
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
@@ -55,7 +60,6 @@ public class SpringSecurityConfiguration{
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
 
         return http.build();
     }

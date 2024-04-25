@@ -42,26 +42,24 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain chain
     ) throws ServletException, IOException {
         try {
             final String jwtToken = extractJwtFromRequest(request);
-            final String requestUrl = request.getRequestURL().toString();
             if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
                 final UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken),
                         org.apache.commons.lang3.StringUtils.EMPTY, jwtTokenUtil.getRolesFromToken(jwtToken));
                 final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                AuthenticationDetails authDetails = new AuthenticationDetails();
+                final AuthenticationDetails authDetails = new AuthenticationDetails();
                 authDetails.setLoggedInUserEmail(jwtTokenUtil.getUsernameFromToken(jwtToken));
                 authDetails.setLoggedInUserId(jwtTokenUtil.getUserIdFromToken(jwtToken));
                 authDetails.setLoggedInUserRole(jwtTokenUtil.getRoleFromToken(jwtToken));
                 usernamePasswordAuthenticationToken.setDetails(authDetails);
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
-
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException | ExpiredJwtException | BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             throw new RuntimeException(ex.getMessage(), ex);
@@ -75,7 +73,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
      * @param request the HTTP servlet request
      * @return the extracted JWT token as a {@link String}
      */
-    private String extractJwtFromRequest(HttpServletRequest request) {
+    private String extractJwtFromRequest(final HttpServletRequest request) {
         final String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);

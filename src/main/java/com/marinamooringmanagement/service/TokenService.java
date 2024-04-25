@@ -27,5 +27,5 @@ public interface TokenService {
      * @param email Email given by User
      * @return
      */
-    String createPasswordResetToken(String email);
+    String createPasswordResetToken(final String email);
 }

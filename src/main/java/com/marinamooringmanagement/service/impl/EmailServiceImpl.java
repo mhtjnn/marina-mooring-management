@@ -1,9 +1,11 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
+import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.TokenService;
 import com.marinamooringmanagement.utils.EmailUtils;
@@ -15,12 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 
 /**
  * Service implementation class for Email related methods.
@@ -39,8 +39,17 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Value("${spring.mail.username}")
     private String fromMailID;
+
+    @Value("${ui.port}")
+    private String uiPort;
+
+    @Value("${ui.resetPassword.route}")
+    private String uiForgetPasswordRoute;
 
     /**
      * Sends a forget password email using the provided request and email template.
@@ -51,22 +60,31 @@ public class EmailServiceImpl implements EmailService {
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
     @Override
-    public SendEmailResponse sendForgetPasswordEMail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
-        ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
+    public SendEmailResponse sendForgetPasswordEmail(final HttpServletRequest request, final ForgetPasswordEmailRequest forgetPasswordEmailRequest) {
+        final SendEmailResponse response = SendEmailResponse.builder().build();
+        try {
+            if(userRepository.findByEmail(forgetPasswordEmailRequest.getEmail()).isEmpty()) {
+                throw new ResourceNotFoundException("Entered email is not registered with us. Please enter a valid email");
+            }
 
-        String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
-        String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            final ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
-        String url = contextPath + "/api/v1/auth/resetPassword?token=" + resetPasswordToken;
-        String message = "Please visit this following link to reset your password: " + url;
+            final String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
+            final String contextPath = String.format("%1$s://%2$s:%3$s", request.getScheme(), request.getServerName(), uiPort);
 
-        template.setToMailId(forgetPasswordEmailRequest.getEmail());
-        template.setSubject("Reset Password");
-        template.setBody(message);
+            final String url = String.format("%1$s/%2$s?token=%3$s", contextPath, uiForgetPasswordRoute, resetPasswordToken);
+            final String message = String.format("Please visit this following link to reset your password:%1$s", url);
 
-        SendEmailRequest sendEmailRequest = emailUtils.generateEmailRequest(template);
+            template.setToMailId(forgetPasswordEmailRequest.getEmail());
+            template.setSubject("Reset Password");
+            template.setBody(message);
 
-        return sendEmail(sendEmailRequest);
+            return sendEmail(emailUtils.generateEmailRequest(template));
+        } catch (Exception e) {
+            response.setResponse(e.getMessage());
+            response.setSuccess(false);
+            return response;
+        }
     }
 
     /**
@@ -77,9 +95,9 @@ public class EmailServiceImpl implements EmailService {
      * @return SendEmailResponse The response indicating if the email was sent successfully or not.
      */
     @Override
-    public SendEmailResponse sendEmail(SendEmailRequest sendEmailRequest) {
+    public SendEmailResponse sendEmail(final SendEmailRequest sendEmailRequest) {
         try {
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            final MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false);
             mimeMessageHelper.setFrom(fromMailID);
 
@@ -104,11 +122,11 @@ public class EmailServiceImpl implements EmailService {
             }
 
             javaMailSender.send(mimeMessage);
-            return new SendEmailResponse(true, "Mail send Successfully!!!");
+            return new SendEmailResponse(true, "Email send Successfully!!!");
 
         } catch (Exception e) {
             log.info("Error occurred while sending email: {}", e.getLocalizedMessage());
-            return new SendEmailResponse(false, "Mail send Error");
+            return new SendEmailResponse(false, "Error occurred while sending email");
         }
     }
 

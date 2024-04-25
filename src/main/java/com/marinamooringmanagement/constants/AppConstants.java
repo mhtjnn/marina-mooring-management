@@ -21,7 +21,7 @@ public class AppConstants {
     }
 
     public static class DefaultPageConst {
-        public static final String DEFAULT_PAGE_SIZE = "20";
+        public static final String DEFAULT_PAGE_SIZE = "10";
         public static final String DEFAULT_PAGE_NUM = "0";
     }
 }
