@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.BaseDto;
+
 import lombok.*;
 
 import java.io.Serializable;

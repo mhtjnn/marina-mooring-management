@@ -150,11 +150,12 @@ public class UserServiceImpl implements UserService {
      * @param userDto {@link UserRequestDto}
      */
     @Override
-    public BasicRestResponse updateUser(UserRequestDto userDto) {
+    public BasicRestResponse updateUser(
+            UserRequestDto userDto) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         User user = userRepository.findById(userDto.getId()).get();
         log.info(String.format("update employee"));
-        if(!userDto.getEmail().equals(user.getEmail())) {
+        if (!userDto.getEmail().equals(user.getEmail())) {
             response.setMessage("Email cannot be changed!!!");
             response.setStatus(400);
         }
@@ -184,7 +185,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Function to update password for the {@link User} having email as subject of the token.
-     * @param token Reset Password Token
+     *
+     * @param token              Reset Password Token
      * @param newPasswordRequest {@link NewPasswordRequest}
      * @return {@link NewPasswordResponse}
      * @throws Exception
@@ -206,7 +208,7 @@ public class UserServiceImpl implements UserService {
                     return passwordResponse;
                 } else {
                     final User user = optionalUser.get();
-                    if(passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
+                    if (passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
                         passwordResponse.setResponse("New password is same as old password");
                         passwordResponse.setSuccess(false);
                         return passwordResponse;
@@ -225,6 +227,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Function to validate email and token.
+     *
      * @param token Reset Password Token
      * @return {@link SendEmailResponse}
      */
@@ -233,13 +236,13 @@ public class UserServiceImpl implements UserService {
         final SendEmailResponse response = new SendEmailResponse();
         String email = jwtUtil.getUsernameFromToken(token);
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             response.setResponse("No User found with given email!!!");
             response.setSuccess(false);
             return response;
         }
 
-        if(!jwtUtil.validateToken(token)) {
+        if (!jwtUtil.validateToken(token)) {
             response.setResponse("Invalid Token!!!");
             response.setSuccess(false);
             return response;
@@ -254,8 +257,8 @@ public class UserServiceImpl implements UserService {
      * Helper function to save the user in the database also update the existing user
      *
      * @param userRequestDto {@link UserResponseDto}
-     * @param user {@link User}
-     * @param userId ID of the user which requires update.
+     * @param user           {@link User}
+     * @param userId         ID of the user which requires update.
      */
     private void performSave(UserRequestDto userRequestDto, User user, Integer userId) {
         User savedUser = null;
@@ -265,6 +268,7 @@ public class UserServiceImpl implements UserService {
                 savedUser = optionalUser.get();
                 mapper.mapToUser(savedUser, userRequestDto);
                 user.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
                 userRepository.save(savedUser);
             } else {
                 throw new RuntimeException("User NOT FOUND!!!");

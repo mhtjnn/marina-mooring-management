@@ -34,9 +34,9 @@ public class UserController {
      * This REST API endpoint retrieves all users, supports pagination, and allows sorting by specified attributes.
      *
      * @param pageNumber Page number for pagination, default is 0.
-     * @param pageSize Number of records per page, default is 20.
-     * @param sortBy Attribute name to sort the users, default is "email".
-     * @param sortDir Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
+     * @param pageSize   Number of records per page, default is 20.
+     * @param sortBy     Attribute name to sort the users, default is "email".
+     * @param sortDir    Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
     @PreAuthorize(Authority.USER)

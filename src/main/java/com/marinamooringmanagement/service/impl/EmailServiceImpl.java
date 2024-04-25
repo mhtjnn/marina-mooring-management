@@ -15,12 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 
 /**
  * Service implementation class for Email related methods.
@@ -46,7 +44,7 @@ public class EmailServiceImpl implements EmailService {
      * Sends a forget password email using the provided request and email template.
      * Generates a reset password token and constructs the email message with the reset URL.
      *
-     * @param request                   The HttpServletRequest object to get server information.
+     * @param request                    The HttpServletRequest object to get server information.
      * @param forgetPasswordEmailRequest The ForgetPasswordEmailRequest containing email and other details.
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
@@ -83,23 +81,23 @@ public class EmailServiceImpl implements EmailService {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false);
             mimeMessageHelper.setFrom(fromMailID);
 
-            if(CollectionUtils.isNotEmpty(sendEmailRequest.getToList())) {
+            if (CollectionUtils.isNotEmpty(sendEmailRequest.getToList())) {
                 mimeMessageHelper.setTo(sendEmailRequest.getToList().toArray(new String[sendEmailRequest.getToList().size()]));
             }
 
-            if(CollectionUtils.isNotEmpty(sendEmailRequest.getBccList())) {
+            if (CollectionUtils.isNotEmpty(sendEmailRequest.getBccList())) {
                 mimeMessageHelper.setTo(sendEmailRequest.getBccList().toArray(new String[sendEmailRequest.getBccList().size()]));
             }
 
-            if(CollectionUtils.isNotEmpty(sendEmailRequest.getCcList())) {
+            if (CollectionUtils.isNotEmpty(sendEmailRequest.getCcList())) {
                 mimeMessageHelper.setTo(sendEmailRequest.getCcList().toArray(new String[sendEmailRequest.getCcList().size()]));
             }
 
-            if(StringUtils.isNotEmpty(sendEmailRequest.getSubject())) {
+            if (StringUtils.isNotEmpty(sendEmailRequest.getSubject())) {
                 mimeMessageHelper.setSubject(sendEmailRequest.getSubject());
             }
 
-            if(StringUtils.isNotEmpty(sendEmailRequest.getBody())) {
+            if (StringUtils.isNotEmpty(sendEmailRequest.getBody())) {
                 mimeMessageHelper.setText(sendEmailRequest.getBody(), true);
             }
 

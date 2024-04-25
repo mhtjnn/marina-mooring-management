@@ -4,7 +4,6 @@ import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.mail.SimpleMailMessage;
 
 /**
  * EmailService interface defines methods for sending different types of emails.
@@ -14,7 +13,7 @@ public interface EmailService {
     /**
      * Sends a forget password email using the provided request and email details.
      *
-     * @param request                   The HttpServletRequest object to get server information.
+     * @param request                    The HttpServletRequest object to get server information.
      * @param forgetPasswordEmailRequest The ForgetPasswordEmailRequest containing email and other details.
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */

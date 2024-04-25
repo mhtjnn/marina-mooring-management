@@ -1,7 +1,5 @@
 package com.marinamooringmanagement.model.request;
 
-import com.marinamooringmanagement.model.dto.BaseDto;
-import com.marinamooringmanagement.model.dto.RoleDto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -59,3 +57,5 @@ public class UserRequestDto implements Serializable {
      */
     private Integer roleId;
 }
+
+

@@ -18,16 +18,18 @@ import java.util.List;
 public interface UserService {
     /**
      * Retrieves a paginated and sorted list of users.
+     *
      * @param pageNumber The page number
-     * @param pageSize The page size
-     * @param sortBy The field to sort by
-     * @param sortDir The sort direction (asc or desc)
+     * @param pageSize   The page size
+     * @param sortBy     The field to sort by
+     * @param sortDir    The sort direction (asc or desc)
      * @return List of UserResponseDto objects
      */
     public List<UserResponseDto> getAllUser(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 
     /**
      * Saves a new user or updates an existing user.
+     *
      * @param employee The user request DTO
      * @return A message indicating the result of the operation
      */
@@ -35,17 +37,21 @@ public interface UserService {
 
     /**
      * Deletes a user by their ID.
+     *
      * @param empId The user ID to delete
      */
     BasicRestResponse deleteUser(Integer empId);
 
     /**
      * Updates an existing user.
+     *
      * @param employee The user request DTO
      */
     public BasicRestResponse updateUser(UserRequestDto employee);
+
     /**
      * Finds a user by their email address.
+     *
      * @param email The email address of the user to find
      * @return UserDto object if found, null otherwise
      */
@@ -53,7 +59,8 @@ public interface UserService {
 
     /**
      * Update password for the user having email as subject of the token.
-     * @param token Reset Password Token
+     *
+     * @param token              Reset Password Token
      * @param newPasswordRequest Newly given password by the user
      * @return {@link NewPasswordResponse}
      * @throws Exception
@@ -62,6 +69,7 @@ public interface UserService {
 
     /**
      * Check validity of the token
+     *
      * @param token Reset Password Token
      * @return {@link SendEmailResponse}
      */

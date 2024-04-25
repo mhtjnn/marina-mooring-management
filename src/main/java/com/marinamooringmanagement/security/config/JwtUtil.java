@@ -63,7 +63,7 @@ public class JwtUtil {
      */
     private boolean isTokenValid(String token) {
         Optional<Token> optionalToken = tokenRepository.findTokenEntityByToken(token);
-        if(optionalToken.isPresent()) {
+        if (optionalToken.isPresent()) {
             Token tokenEntity = optionalToken.get();
             if (tokenEntity == null) {
                 return false;
@@ -91,13 +91,15 @@ public class JwtUtil {
         try {
             Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException | ExpiredJwtException ex) {
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException |
+                 ExpiredJwtException ex) {
             throw ex;
         }
     }
 
     /**
      * Function to get Username from the JWT
+     *
      * @param token the JWT Token
      * @return username extracted from the token
      */
@@ -108,6 +110,7 @@ public class JwtUtil {
 
     /**
      * Extract roles from the JWT
+     *
      * @param token The JWT Token
      * @return Roles given to the User extracted from the Token
      */
@@ -115,7 +118,7 @@ public class JwtUtil {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
         List<String> rolesFromToken = claims.get("roles", List.class);
-        if(null != rolesFromToken) {
+        if (null != rolesFromToken) {
             rolesFromToken.forEach(roleFromToken -> roles.add(new SimpleGrantedAuthority(roleFromToken)));
         }
         return roles;
@@ -123,6 +126,7 @@ public class JwtUtil {
 
     /**
      * Function to get User Id from the JWT
+     *
      * @param token The JWT Token
      * @return User ID of the User extracted from the token
      */
@@ -133,6 +137,7 @@ public class JwtUtil {
 
     /**
      * Function to extract roles from the JWT
+     *
      * @param token The JWT Token
      * @return Get the first Role from the List of Roles given to the User
      */
@@ -140,7 +145,7 @@ public class JwtUtil {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
         List<String> rolesFromToken = claims.get("roles", List.class);
-        if(!CollectionUtils.isEmpty(rolesFromToken)) {
+        if (!CollectionUtils.isEmpty(rolesFromToken)) {
             return rolesFromToken.get(0);
         }
 
@@ -163,7 +168,8 @@ public class JwtUtil {
 
     /**
      * Helper function for generating JWT
-     * @param claims Roles and ID
+     *
+     * @param claims  Roles and ID
      * @param subject Email
      * @return The JWT Token
      */
@@ -179,6 +185,7 @@ public class JwtUtil {
 
     /**
      * Function to get Expiration time of the JWT
+     *
      * @param token
      * @return {@link Date}
      */
@@ -199,6 +206,7 @@ public class JwtUtil {
 
     /**
      * Function to generate Reset Password Token
+     *
      * @param subject Email of the User
      * @return The JWT Token
      */

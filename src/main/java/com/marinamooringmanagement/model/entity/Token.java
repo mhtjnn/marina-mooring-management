@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+
 /**
  * Entity class representing a Token.
  * This class inherits common fields from the Base class and includes token-specific attributes.

@@ -62,7 +62,8 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
 
-        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException | ExpiredJwtException | BadCredentialsException ex) {
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException |
+                 ExpiredJwtException | BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             throw new RuntimeException(ex.getMessage(), ex);
         }

@@ -22,7 +22,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
-public class SpringSecurityConfiguration{
+public class SpringSecurityConfiguration {
 
     private final UserRepository repository;
 
@@ -34,6 +34,7 @@ public class SpringSecurityConfiguration{
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/login",
             "/**",
+
     };
 
     /**
@@ -59,4 +60,6 @@ public class SpringSecurityConfiguration{
 
         return http.build();
     }
+
+
 }
