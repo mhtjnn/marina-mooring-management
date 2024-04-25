@@ -27,7 +27,7 @@ public class FormResponseDto {
     /**
      * The name of the person who submitted the form.
      */
-    private String submittedBy;
+    private String customerName;
 
     /**
      * The name of the form.

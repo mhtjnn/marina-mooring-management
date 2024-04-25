@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.model.request.FormSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +32,15 @@ public interface FormService {
     ResponseEntity<ByteArrayResource> downloadForm(final String fileName);
 
     /**
-     * Fetches a list of forms from the database with pagination and sorting options.
+     * Fetches forms based on the provided search criteria.
      *
-     * @param pageNumber The page number for pagination.
-     * @param pageSize The size of each page for pagination.
-     * @param sortBy The field to sort the results by.
-     * @param sortDir The direction of the sort (ascending or descending).
-     * @return A {@link BasicRestResponse} object containing a list of {@link com.marinamooringmanagement.model.response.FormResponseDto} objects representing the forms.
+     * @param formSearchRequest An instance of {@code FormSearchRequest} containing the search criteria.
+     * @return A {@code BasicRestResponse} object containing the response data, including the list of forms matching the search criteria.
+     * @throws IllegalArgumentException if {@code formSearchRequest} is {@code null}.
+     * @implNote The implementation of this method should handle various search criteria specified in the {@code formSearchRequest} and return the appropriate response.
+     * @apiNote The returned {@code BasicRestResponse} includes a list of forms matching the search criteria.
+     * @see FormSearchRequest
+     * @see BasicRestResponse
      */
-    BasicRestResponse fetchForms(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
+    BasicRestResponse fetchForms(final FormSearchRequest formSearchRequest);
 }

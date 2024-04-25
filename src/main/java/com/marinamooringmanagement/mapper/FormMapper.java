@@ -2,6 +2,7 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.FormDto;
 import com.marinamooringmanagement.model.entity.Form;
+import com.marinamooringmanagement.model.response.FormResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -37,4 +38,16 @@ public interface FormMapper {
      * @return The updated {@link Form} entity with data from the provided {@link FormDto}.
      */
     Form mapToForm(@MappingTarget Form form, FormDto formDto);
+
+    /**
+     * Maps a {@code Form} entity to a {@code FormResponseDto}.
+     *
+     * @param formResponseDto The target {@code FormResponseDto} to map the data into.
+     * @param form The {@code Form} entity to map.
+     * @return The mapped {@code FormResponseDto}.
+     * @implNote This method performs the mapping of data from the provided {@code Form} entity to the target {@code FormResponseDto}.
+     * @see Form
+     * @see FormResponseDto
+     */
+    FormResponseDto mapToFormResponseDto(@MappingTarget FormResponseDto formResponseDto, Form form);
 }

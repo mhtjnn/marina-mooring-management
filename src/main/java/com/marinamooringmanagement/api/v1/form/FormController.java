@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.api.v1.form;
 
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
+import com.marinamooringmanagement.model.request.FormSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.FormService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +36,6 @@ public class FormController {
 
     /**
      * Uploads a form to the database.
-     *
      * This API method allows uploading a form with associated customer information to the database.
      *
      * @param file         The file to be uploaded, wrapped as a {@link MultipartFile}.
@@ -144,6 +145,12 @@ public class FormController {
             @Parameter(description = "Sort direction (ascending or descending)", schema = @Schema(implementation = String.class))
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return formService.fetchForms(pageNumber, pageSize, sortBy, sortDir);
+
+        FormSearchRequest formSearchRequest = FormSearchRequest.builder().build();
+        formSearchRequest.setPageNumber(pageNumber);
+        formSearchRequest.setPageSize(pageSize);
+        formSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
+
+        return formService.fetchForms(formSearchRequest);
     }
 }
