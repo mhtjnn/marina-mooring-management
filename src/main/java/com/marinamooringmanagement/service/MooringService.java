@@ -1,9 +1,8 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-
-import java.util.List;
 
 
 /**
@@ -20,7 +19,7 @@ public interface MooringService {
      * @param sortDir the sort direction (asc or desc)
      * @return a list of mooring response DTOs
      */
-    BasicRestResponse fetchMoorings(final Integer page, final Integer size, final String sortBy, final String sortDir);
+    BasicRestResponse fetchMoorings(final MooringSearchRequest mooringSearchRequest);
 
     /**
      * Saves a mooring based on the provided request DTO.

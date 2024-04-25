@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
@@ -64,27 +65,26 @@ public class UserServiceImpl implements UserService {
     private UserMapper mapper;
 
     /**
-     * Fetches all users in paginated and sorted form.
+     * Fetches users based on the provided search criteria.
      *
-     * @param pageNumber The page number
-     * @param pageSize   The page size
-     * @param sortBy     The field to sort by
-     * @param sortDir    The sort direction ("asc" or "desc")
-     * @return List of UserResponseDto objects
+     * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
+     * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
+     * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
+     * @implNote This method interacts with the database to retrieve users based on the search criteria provided in the {@code userSearchRequest}.
+     *           It constructs a {@code BasicRestResponse} object with information about the status of the operation and the fetched user data.
+     * @apiNote The returned {@code BasicRestResponse} includes a list of {@code UserResponseDto} objects representing the fetched users.
+     * @see UserSearchRequest
+     * @see BasicRestResponse
+     * @see User
+     * @see UserResponseDto
      */
     @Override
-    public BasicRestResponse fetchUsers(
-            Integer pageNumber,
-            Integer pageSize,
-            String sortBy,
-            String sortDir
-    ) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-            Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            Page<User> userList = userRepository.findAll(p);
+            final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
+            final Page<User> userList = userRepository.findAll(p);
             log.info("fetch all users");
             List<UserResponseDto> userResponseDtoList = new ArrayList<>();
             if (!userList.isEmpty())
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
      */
     public UserResponseDto customMapToUserResponseDto(User user) {
         if (null != user) {
-            UserResponseDto userResponseDto = UserResponseDto.builder().build();
+            final UserResponseDto userResponseDto = UserResponseDto.builder().build();
 
             userResponseDto.setFirstname(user.getFirstname());
             userResponseDto.setLastname(user.getLastname());
@@ -130,11 +130,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse saveUser(UserRequestDto userRequestDto) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final User user = User.builder().build();
-            Optional<User> optionalEmp = userRepository.findByEmail(user.getEmail());
+            final Optional<User> optionalEmp = userRepository.findByEmail(user.getEmail());
 
             if (optionalEmp.isPresent()) {
                 log.info(String.format("Email already present in DB"));
@@ -162,11 +162,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse deleteUser(Integer userId) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info(String.format("delete user with given userId"));
-            List<Token> tokenList = tokenRepository.findByUserId(userId);
+            final List<Token> tokenList = tokenRepository.findByUserId(userId);
             tokenRepository.deleteAll(tokenList);
             userRepository.deleteById(userId);
             response.setMessage("User Deleted Successfully!!!");
@@ -186,13 +186,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse updateUser(UserRequestDto userDto, Integer userId) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            User user = null;
             Optional<User> optionalUser = userRepository.findById(userId);
             if (optionalUser.isPresent()) {
-                user = optionalUser.get();
+                final User user = optionalUser.get();
                 log.info(String.format("update user"));
                 if ((null != userDto.getEmail() && !userDto.getEmail().equals(user.getEmail())) ||
                         (null != userDto.getPassword() && !userDto.getPassword().equals(user.getPassword()))) {
@@ -319,7 +318,7 @@ public class UserServiceImpl implements UserService {
             } else {
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
                 user.setCreationDate(new Date());
-                Role role = roleRepository.findByName("ADMINISTRATOR");
+                final Role role = roleRepository.findByName("ADMINISTRATOR");
                 user.setRole(role);
                 return userRepository.save(user);
             }

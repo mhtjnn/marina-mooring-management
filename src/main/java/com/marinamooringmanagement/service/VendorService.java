@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.VendorRequestDto;
+import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface VendorService {
      * @param sortDir the sort direction (asc or desc)
      * @return a list of vendor response DTOs
      */
-    BasicRestResponse fetchVendors(final Integer page, final Integer size, final String sortBy, final String sortDir, final Integer vendorId, final String  companyName, final String phoneNumber, final String emailAddress);
+    BasicRestResponse fetchVendors(final VendorSearchRequest vendorSearchRequest);
 
     /**
      * Saves a vendor based on the provided request DTO.

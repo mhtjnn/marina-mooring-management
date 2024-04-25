@@ -4,6 +4,7 @@ package com.marinamooringmanagement.service;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
@@ -16,14 +17,18 @@ import java.util.List;
  */
 public interface UserService {
     /**
-     * Retrieves a paginated and sorted list of users.
-     * @param pageNumber The page number
-     * @param pageSize The page size
-     * @param sortBy The field to sort by
-     * @param sortDir The sort direction (asc or desc)
-     * @return List of UserResponseDto objects
+     * Fetches users based on the provided search criteria.
+     *
+     * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
+     * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
+     * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
+     * @apiNote The implementation of this method should handle various search criteria specified in the {@code userSearchRequest} and return the appropriate response.
+     * @implSpec This method should be implemented to interact with the backend system or data source to fetch users based on the provided search criteria.
+     * @implNote Implementations of this method should adhere to the contract defined by {@code BasicRestResponse} for representing REST API responses.
+     * @see UserSearchRequest
+     * @see BasicRestResponse
      */
-    public BasicRestResponse fetchUsers(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest);
 
     /**
      * Saves a new user or updates an existing user.

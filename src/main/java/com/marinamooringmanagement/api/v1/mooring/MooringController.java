@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.api.v1.mooring;
 
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
+import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.MooringService;
@@ -66,7 +68,11 @@ public class MooringController {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return mooringService.fetchMoorings(page, size, sortBy, sortDir);
+        final MooringSearchRequest mooringSearchRequest = MooringSearchRequest.builder().build();
+        mooringSearchRequest.setPageNumber(page);
+        mooringSearchRequest.setPageSize(size);
+        mooringSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
+        return mooringService.fetchMoorings(mooringSearchRequest);
     }
 
     /**

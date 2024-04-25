@@ -1,21 +1,19 @@
-package com.marinamooringmanagement.model.dto;
+package com.marinamooringmanagement.model.request;
 
-import jakarta.persistence.Column;
 import lombok.*;
 
-import java.io.Serializable;
-
 /**
- * Represents a vendor data transfer object (DTO) used for transferring vendor-related information.
+ * Represents a search request for querying vendor information based on specified criteria.
+ *
+ * <p>This class extends {@code BaseSearchRequest} and includes additional fields to define search criteria for vendors.
+ *
+ * @see BaseSearchRequest
  */
 @Data
 @Builder
 @AllArgsConstructor
-@RequiredArgsConstructor
-public class VendorDto extends BaseDto implements Serializable {
-
-    private static final long serialVersionUID = 55026860357976L;
-
+@NoArgsConstructor
+public class VendorSearchRequest extends BaseSearchRequest{
     /**
      * Unique identifier for the vendor.
      */

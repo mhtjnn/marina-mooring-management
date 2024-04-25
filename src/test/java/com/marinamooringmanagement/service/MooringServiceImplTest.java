@@ -1,8 +1,11 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.entity.Mooring;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
+import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.MooringRepository;
@@ -16,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +27,6 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 public class MooringServiceImplTest {
-
     @Mock
     private MooringRepository mooringRepo;
 
@@ -40,15 +43,15 @@ public class MooringServiceImplTest {
 
     @Test
     public void should_successfully_save_mooring() {
-        MooringRequestDto mooringRequestDto = newMooringRequestDtoInstance();
+        final MooringRequestDto mooringRequestDto = newMooringRequestDtoInstance();
 
-        Mooring mooring = newMooringInstance();
+        final Mooring mooring = newMooringInstance();
 
         when(mapper.mapToMooring(any(Mooring.class), any(MooringRequestDto.class))).thenReturn(mooring);
 
         when(mooringRepo.save(any(Mooring.class))).thenReturn(mooring);
 
-        Mooring returnedMooring = service.performSave(mooringRequestDto, mooring, null);
+        final Mooring returnedMooring = service.performSave(mooringRequestDto, mooring, null);
 
         Assertions.assertEquals(mooringRequestDto.getMooringNumber(), returnedMooring.getMooringNumber());
         Assertions.assertEquals(mooringRequestDto.getBoatName(), returnedMooring.getBoatName());
@@ -60,15 +63,17 @@ public class MooringServiceImplTest {
 
     @Test
     public void should_return_all_moorings() {
-        List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
+        final List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
         mooringResponseDtoList.add(newMooringResponseDtoInstance());
 
-        List<Mooring> moorings = new ArrayList<>();
+        final List<Mooring> moorings = new ArrayList<>();
         moorings.add(newMooringInstance());
 
-        Page<Mooring> pagedMooringList = new PageImpl<>(moorings);
+        final MooringSearchRequest mooringSearchRequest = newMooringSearchRequestInstance();
 
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final Page<Mooring> pagedMooringList = new PageImpl<>(moorings);
+
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setContent(mooringResponseDtoList);
 
         when(mooringRepo.findAll(any(Pageable.class))).thenReturn(pagedMooringList);
@@ -76,8 +81,7 @@ public class MooringServiceImplTest {
         when(mapper.mapToMooringResponseDto(any(MooringResponseDto.class),any(Mooring.class)))
                 .thenReturn(newMooringResponseDtoInstance());
 
-
-        BasicRestResponse getResponse = service.fetchMoorings(1,10,"id","asc");
+        final BasicRestResponse getResponse = service.fetchMoorings(mooringSearchRequest);
 
         Assertions.assertEquals(response.getContent(), getResponse.getContent());
         verify(mooringRepo, times(1)).findAll(any(Pageable.class));
@@ -85,17 +89,17 @@ public class MooringServiceImplTest {
 
     @Test
     public void should_successfully_update_mooring() {
-        MooringRequestDto mooringRequestDto = newMooringRequestDtoInstance();
+        final MooringRequestDto mooringRequestDto = newMooringRequestDtoInstance();
         mooringRequestDto.setBoatName("changed");
 
-        Mooring oldMooring = newMooringInstance();
+        final Mooring oldMooring = newMooringInstance();
 
-        Mooring updatedMooring = newMooringInstance();
+        final Mooring updatedMooring = newMooringInstance();
         updatedMooring.setBoatName("changed");
 
-        MooringResponseDto mooringResponseDto = newMooringResponseDtoInstance();
+        final MooringResponseDto mooringResponseDto = newMooringResponseDtoInstance();
 
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         mooringResponseDto.setBoatName("changed");
         response.setContent(mooringResponseDto);
 
@@ -136,6 +140,11 @@ public class MooringServiceImplTest {
                 .build();
     }
 
-
-
+    public MooringSearchRequest newMooringSearchRequestInstance() {
+        MooringSearchRequest mooringSearchRequest =  MooringSearchRequest.builder().build();
+        mooringSearchRequest.setPageNumber(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM));
+        mooringSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
+        mooringSearchRequest.setSort(Sort.by("id").ascending());
+        return mooringSearchRequest;
+    }
 }

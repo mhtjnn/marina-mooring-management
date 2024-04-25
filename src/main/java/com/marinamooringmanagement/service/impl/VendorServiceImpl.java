@@ -5,6 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
+import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.VendorRepository;
@@ -50,13 +51,12 @@ public class VendorServiceImpl implements VendorService {
      * @return a list of vendor response DTOs
      */
     @Override
-    public BasicRestResponse fetchVendors(final Integer page, final Integer size, final String sortBy, final String sortDir, final Integer vendorId, final String companyName, final String phoneNumber, final String emailAddress) {
+    public BasicRestResponse fetchVendors(final VendorSearchRequest vendorSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to fetch all the vendors from the database");
-            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-            final Pageable p = PageRequest.of(page, size, sort);
+            final Pageable p = PageRequest.of(vendorSearchRequest.getPageNumber(), vendorSearchRequest.getPageSize(), vendorSearchRequest.getSort());
 
             final Page<Vendor> vendorList = vendorRepository.findAll(p);
 

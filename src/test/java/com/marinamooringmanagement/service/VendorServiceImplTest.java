@@ -1,8 +1,10 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
+import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.VendorRepository;
@@ -16,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,15 +45,15 @@ public class VendorServiceImplTest {
 
     @Test
     public void should_successfully_save_vendor() {
-        VendorRequestDto vendorRequestDto = newVendorRequestDtoInstance();
+        final VendorRequestDto vendorRequestDto = newVendorRequestDtoInstance();
 
-        Vendor vendor = newVendorInstance();
+        final Vendor vendor = newVendorInstance();
 
         when(mapper.mapToVendor(any(Vendor.class), any(VendorRequestDto.class))).thenReturn(vendor);
 
         when(vendorRepo.save(any(Vendor.class))).thenReturn(vendor);
 
-        Vendor returnedVendor = service.performSave(vendorRequestDto, vendor, null);
+        final Vendor returnedVendor = service.performSave(vendorRequestDto, vendor, null);
 
         Assertions.assertEquals(vendorRequestDto.getCompanyName(), returnedVendor.getCompanyName());
         Assertions.assertEquals(vendorRequestDto.getWebsite(), returnedVendor.getWebsite());
@@ -62,15 +65,17 @@ public class VendorServiceImplTest {
 
     @Test
     public void should_return_all_vendors() {
-        List<VendorResponseDto> vendorResponseDtoList = new ArrayList<>();
+        final VendorSearchRequest vendorSearchRequest = newVendorSearchRequestInstance();
+
+        final List<VendorResponseDto> vendorResponseDtoList = new ArrayList<>();
         vendorResponseDtoList.add(newVendorResponseDtoInstance());
 
-        List<Vendor> vendors = new ArrayList<>();
+        final List<Vendor> vendors = new ArrayList<>();
         vendors.add(newVendorInstance());
 
-        Page<Vendor> pagedVendorList = new PageImpl<>(vendors);
+        final Page<Vendor> pagedVendorList = new PageImpl<>(vendors);
 
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setContent(vendorResponseDtoList);
 
         when(vendorRepo.findAll(any(Pageable.class))).thenReturn(pagedVendorList);
@@ -79,27 +84,28 @@ public class VendorServiceImplTest {
                 .thenReturn(newVendorResponseDtoInstance());
 
 
-        BasicRestResponse getResponse = service.fetchVendors(1,10,"id","asc",1,"","","");
+        final BasicRestResponse getResponse = service.fetchVendors(newVendorSearchRequestInstance());
 
         Assertions.assertEquals(response.getContent(), getResponse.getContent());
+
         verify(vendorRepo, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     public void should_successfully_update_vendor() {
-        VendorRequestDto vendorRequestDto = newVendorRequestDtoInstance();
+        final VendorRequestDto vendorRequestDto = newVendorRequestDtoInstance();
         vendorRequestDto.setWebsite("changed");
 
-        Vendor oldVendor = newVendorInstance();
+        final Vendor oldVendor = newVendorInstance();
 
-        Vendor updatedVendor = newVendorInstance();
+        final Vendor updatedVendor = newVendorInstance();
         updatedVendor.setWebsite("changed");
 
         when(mapper.mapToVendor(any(Vendor.class), any(VendorRequestDto.class))).thenReturn(updatedVendor);
 
         when(vendorRepo.save(any(Vendor.class))).thenReturn(updatedVendor);
 
-        Vendor returnedVendor = service.performSave(vendorRequestDto, oldVendor, 1);
+        final Vendor returnedVendor = service.performSave(vendorRequestDto, oldVendor, 1);
 
         Assertions.assertEquals(updatedVendor.getWebsite(), returnedVendor.getWebsite());
 
@@ -131,4 +137,11 @@ public class VendorServiceImplTest {
                 .build();
     }
 
+    public VendorSearchRequest newVendorSearchRequestInstance() {
+        VendorSearchRequest vendorSearchRequest = VendorSearchRequest.builder().build();
+        vendorSearchRequest.setPageNumber(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM));
+        vendorSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
+        vendorSearchRequest.setSort(Sort.by("id").ascending());
+        return vendorSearchRequest;
+    }
 }

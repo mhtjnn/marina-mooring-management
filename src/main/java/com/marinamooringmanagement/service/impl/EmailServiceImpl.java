@@ -79,9 +79,7 @@ public class EmailServiceImpl implements EmailService {
             template.setSubject("Reset Password");
             template.setBody(message);
 
-            final SendEmailRequest sendEmailRequest = emailUtils.generateEmailRequest(template);
-
-            return sendEmail(sendEmailRequest);
+            return sendEmail(emailUtils.generateEmailRequest(template));
         } catch (Exception e) {
             response.setResponse(e.getMessage());
             response.setSuccess(false);

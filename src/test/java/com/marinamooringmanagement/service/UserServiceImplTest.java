@@ -1,10 +1,12 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.RoleRepository;
@@ -21,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
@@ -59,11 +62,11 @@ public class UserServiceImplTest {
 
     @Test
     public void should_successfully_save_user() {
-        Role role = newRoleInstance();
+        final Role role = newRoleInstance();
 
-        User user = newUserInstance();
+        final User user = newUserInstance();
 
-        UserRequestDto userRequestDto = newUserRequestDtoInstance();
+        final UserRequestDto userRequestDto = newUserRequestDtoInstance();
 
         when(userRepo.save(any(User.class))).thenReturn(user);
 
@@ -71,7 +74,7 @@ public class UserServiceImplTest {
 
         when(passwordEncoder.encode(null)).thenReturn("test");
 
-        User savedUser = service.performSave(userRequestDto, user, null);
+        final User savedUser = service.performSave(userRequestDto, user, null);
 
         Assertions.assertEquals(savedUser.getEmail(), user.getEmail());
         Assertions.assertEquals(savedUser.getFirstname(), user.getFirstname());
@@ -85,27 +88,29 @@ public class UserServiceImplTest {
 
     @Test
     public void should_fetch_all_users() {
-        List<UserResponseDto> userResponseDtoList = new ArrayList<>();
+        final List<UserResponseDto> userResponseDtoList = new ArrayList<>();
 
-        Role role = newRoleInstance();
+        final UserSearchRequest userSearchRequest = newUserSearchRequestInstance();
 
-        UserResponseDto userResponseDto = newUserResponseDtoInstance();
+        final Role role = newRoleInstance();
+
+        final UserResponseDto userResponseDto = newUserResponseDtoInstance();
 
         userResponseDtoList.add(userResponseDto);
 
-        User user = newUserInstance();
+        final User user = newUserInstance();
 
-        List<User> users = new ArrayList<>();
+        final List<User> users = new ArrayList<>();
         users.add(user);
 
-        Page<User> pagedUserList = new PageImpl<>(users);
+        final Page<User> pagedUserList = new PageImpl<>(users);
 
-        BasicRestResponse response = BasicRestResponse.builder().build();
+        final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setContent(userResponseDtoList);
 
         when(userRepo.findAll(any(Pageable.class))).thenReturn(pagedUserList);
 
-        BasicRestResponse getResponse = service.fetchUsers(1, 10, "id", "asc");
+        final BasicRestResponse getResponse = service.fetchUsers(userSearchRequest);
 
         Assertions.assertEquals(response.getContent(), getResponse.getContent());
 
@@ -114,17 +119,17 @@ public class UserServiceImplTest {
 
     @Test
     public void should_successfully_update_user() {
-        User oldUser = newUserInstance();
+        final User oldUser = newUserInstance();
 
-        User updateUser = newUserInstance();
+        final User updateUser = newUserInstance();
         updateUser.setEmail("updated");
 
-        UserRequestDto userRequestDto = newUserRequestDtoInstance();
+        final UserRequestDto userRequestDto = newUserRequestDtoInstance();
         userRequestDto.setEmail("updated");
 
         when(userRepo.save(any(User.class))).thenReturn(updateUser);
 
-        User performSaveUser = service.performSave(userRequestDto, oldUser, 1);
+        final User performSaveUser = service.performSave(userRequestDto, oldUser, 1);
 
         Assertions.assertEquals(userRequestDto.getEmail(), performSaveUser.getEmail());
 
@@ -133,11 +138,11 @@ public class UserServiceImplTest {
 
     @Test
     public void should_successfully_update_password() throws Exception {
-        String token = "test";
+        final String token = "test";
 
-        NewPasswordRequest request = newNewPasswordRequestInstance();
+        final NewPasswordRequest request = newNewPasswordRequestInstance();
 
-        User oldPasswordUser = newUserInstance();
+        final User oldPasswordUser = newUserInstance();
         oldPasswordUser.setPassword("old");
 
 
@@ -147,7 +152,7 @@ public class UserServiceImplTest {
 
         when(userRepo.save(any(User.class))).thenReturn(any(User.class));
 
-        BasicRestResponse response = service.updatePassword(token, request);
+        final BasicRestResponse response = service.updatePassword(token, request);
 
         Assertions.assertEquals(response.getMessage(), String.format("Password changed Successfully!!!"));
 
@@ -158,9 +163,9 @@ public class UserServiceImplTest {
 
     @Test
     public void should_successfully_check_email_token_valid() {
-        String token = "test";
+        final String token = "test";
 
-        User user = newUserInstance();
+        final User user = newUserInstance();
 
         when(jwtUtil.getUsernameFromToken(token)).thenReturn("test");
 
@@ -168,7 +173,7 @@ public class UserServiceImplTest {
 
         when(jwtUtil.validateToken(token)).thenReturn(true);
 
-        BasicRestResponse response = service.checkEmailAndTokenValid(token);
+        final BasicRestResponse response = service.checkEmailAndTokenValid(token);
 
         Assertions.assertEquals(response.getMessage(), String.format("Email and Token Valid. Please proceed ahead..."));
 
@@ -215,4 +220,11 @@ public class UserServiceImplTest {
                 .build();
     }
 
+    public UserSearchRequest newUserSearchRequestInstance() {
+        final UserSearchRequest userSearchRequest = UserSearchRequest.builder().build();
+        userSearchRequest.setPageNumber(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM));
+        userSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
+        userSearchRequest.setSort(Sort.by("id").ascending());
+        return userSearchRequest;
+    }
 }

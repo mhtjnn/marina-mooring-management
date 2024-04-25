@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.MooringMapper;
+import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,22 +46,17 @@ public class MooringServiceImpl implements MooringService {
     /**
      * Fetches a paginated list of moorings.
      *
-     * @param pageNumber the page number
-     * @param size       the page size
-     * @param sortBy     the field to sort by
-     * @param sortDir    the sort direction (asc or desc)
      * @return a list of mooring response DTOs
      */
     @Override
-    public BasicRestResponse fetchMoorings(final Integer pageNumber, final Integer size, final String sortBy, final String sortDir) {
+    public BasicRestResponse fetchMoorings(final MooringSearchRequest mooringSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("API called to fetch all the moorings in the database");
-            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-            final Pageable pageable = PageRequest.of(pageNumber, size, sort);
+            final Pageable pageable = PageRequest.of(mooringSearchRequest.getPageNumber(), mooringSearchRequest.getPageSize(), mooringSearchRequest.getSort());
             final Page<Mooring> mooringPage = mooringRepository.findAll(pageable);
-            List<MooringResponseDto> mooringResponseDtoList = mooringPage.getContent()
+            final List<MooringResponseDto> mooringResponseDtoList = mooringPage.getContent()
                     .stream()
                     .map(mooring -> mapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
                     .collect(Collectors.toList());

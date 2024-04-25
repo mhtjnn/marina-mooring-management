@@ -2,7 +2,9 @@ package com.marinamooringmanagement.api.v1.user;
 
 import com.marinamooringmanagement.constants.Authority;
 
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.service.UserService;
@@ -75,7 +77,11 @@ public class UserController {
             @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "email", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return userService.fetchUsers(pageNumber, pageSize, sortBy, sortDir);
+        UserSearchRequest userSearchRequest = UserSearchRequest.builder().build();
+        userSearchRequest.setPageNumber(pageNumber);
+        userSearchRequest.setPageSize(pageSize);
+        userSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
+        return userService.fetchUsers(userSearchRequest);
     }
 
     /**
