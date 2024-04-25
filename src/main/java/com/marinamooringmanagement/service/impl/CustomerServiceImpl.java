@@ -93,7 +93,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 
             CustomerDto customerDto = !customerDtoList.isEmpty() ? customerDtoList.get(0) : null;
-            response.setContent(List.of(customerDtoList, customerDto));
+            response.setContent(customerDtoList);
             log.info(String.format("Customers fetched successfully"));
 
         } catch (Exception e) {

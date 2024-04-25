@@ -92,10 +92,10 @@ public class BoatYardTests {
 
         when(boatYardRepository.findAll(any(PageRequest.class))).thenReturn(page);
 
-        List<BoatYardDto> result = boatYardService.getBoatYard(pageNumber, pageSize, sortBy, sortDir);
+        BasicRestResponse result = boatYardService.getBoatYard(pageNumber, pageSize, sortBy, sortDir);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertEquals("All boatyard are fetched successfully", result.getMessage());
     }
 
     @Test

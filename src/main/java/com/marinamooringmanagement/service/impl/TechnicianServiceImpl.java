@@ -7,6 +7,7 @@ import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.entity.Technician;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.TechnicianResponseDto;
 import com.marinamooringmanagement.repositories.TechnicianRepository;
 import com.marinamooringmanagement.service.TechnicianService;
 import org.slf4j.Logger;
@@ -76,26 +77,29 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @return A list of TechnicianDto objects.
      */
     @Override
-    public List<TechnicianDto> getTechnicians(final int pageNumber, final int pageSize, final String sortBy, final String sortDir) {
-        List<TechnicianDto> technicianDtoList = new ArrayList<>();
+    public BasicRestResponse getTechnicians(final int pageNumber, final int pageSize, final String sortBy, final String sortDir) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+            log.info(String.format("Technicians fetched successfully"));
             final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
             final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            final Page<Technician> pageUser = technicianRepository.findAll(p);
-            List<Technician> technicianList = pageUser.getContent();
-
-            technicianDtoList = technicianList.stream()
-                    .map(technicianMapper::toDto)
+            final Page<Technician> techniciansList = technicianRepository.findAll(p);
+            List<TechnicianResponseDto> technicianResponseDtoList = techniciansList.stream()
+                    .map(technician -> technicianMapper.mapToTechnicianResponseDto(TechnicianResponseDto.builder().build(), technician))
                     .collect(Collectors.toList());
-            log.info(String.format("Technician fetched successfully"));
-
+            response.setMessage("List of technicians in the database");
+            response.setContent(technicianResponseDtoList);
+            response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            log.error(String.format("Error occurred while fetching Technician: %s", e.getMessage()), e);
+            log.error(String.format("Error occurred while fetching Technicians: %s", e.getMessage()), e);
 
-            throw new DBOperationException(e.getMessage(), e);
+            response.setMessage("Error occurred while fetching list of technician from the database");
+            response.setContent(e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-        return technicianDtoList;
+        return response;
     }
 
     /**

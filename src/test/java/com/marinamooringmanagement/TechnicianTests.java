@@ -2,6 +2,7 @@ package com.marinamooringmanagement;
 
 import com.marinamooringmanagement.mapper.TechnicianMapper;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
+import com.marinamooringmanagement.model.entity.BoatYard;
 import com.marinamooringmanagement.model.entity.Technician;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -13,16 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,19 +56,20 @@ public class TechnicianTests {
     }
 
     @Test
-    public void testGetTechnicians() {
-        int pageNumber = 0;
-        int pageSize = 10;
-        String sortBy = "name";
+    public void testGetTechnician_EmptyList() {
+        Integer pageNumber = 0;
+        Integer pageSize = 10;
+        String sortBy = "mooringName";
         String sortDir = "asc";
 
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy).ascending());
-        List<Technician> technicianList = Arrays.asList(new Technician(), new Technician());
+        Page<Technician> page = Page.empty();
 
-        when(technicianRepository.findAll(pageable)).thenReturn(new PageImpl<>(technicianList));
+        when(technicianRepository.findAll(any(PageRequest.class))).thenReturn(page);
 
-        List<TechnicianDto> result = technicianService.getTechnicians(pageNumber, pageSize, sortBy, sortDir);
-        assertEquals(technicianList.size(), result.size());
+        BasicRestResponse result = technicianService.getTechnicians(pageNumber, pageSize, sortBy, sortDir);
+
+        assertNotNull(result);
+        assertEquals("List of technicians in the database", result.getMessage());
     }
 
     @Test

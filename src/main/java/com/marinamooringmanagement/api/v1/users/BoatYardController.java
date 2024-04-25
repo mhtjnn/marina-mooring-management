@@ -92,7 +92,7 @@ public class BoatYardController {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public List<BoatYardDto> getBoatYards(
+    public BasicRestResponse getBoatYards(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,

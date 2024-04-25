@@ -93,10 +93,10 @@ public class TechnicianController {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public List<TechnicianDto> getTechnicians(
+    public BasicRestResponse getTechnicians(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "technicianId", required = false) String sortBy,
+            @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
         return technicianService.getTechnicians(pageNumber, pageSize, sortBy, sortDir);

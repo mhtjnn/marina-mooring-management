@@ -4,7 +4,9 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatYardMapper;
 import com.marinamooringmanagement.model.dto.BoatYardDto;
+import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.BoatYard;
+import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.request.BoatYardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.BoatYardRepository;
@@ -67,6 +69,7 @@ public class BoatYardServiceImpl implements BoatYardService {
         return response;
     }
 
+
     /**
      * Retrieves a list of BoatYard entities.
      *
@@ -76,18 +79,26 @@ public class BoatYardServiceImpl implements BoatYardService {
      * @param sortDir    The direction of sorting.
      * @return A list of BoatYardDto objects.
      */
-    @Override
-    public List<BoatYardDto> getBoatYard(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir) {
+    public BasicRestResponse getBoatYard(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
         List<BoatYardDto> boatYardDtoList;
         try {
             final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
             final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
             final Page<BoatYard> pageUser = boatYardRepository.findAll(p);
             List<BoatYard> boatYardList = pageUser.getContent();
+            response.setMessage("All boatyard are fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+
             boatYardDtoList = boatYardList.stream()
                     .map(boatYardMapper::toDto)
                     .collect(Collectors.toList());
 
+
+            BoatYardDto boatYardDto = !boatYardDtoList.isEmpty() ? boatYardDtoList.get(0) : null;
+            response.setContent(boatYardDtoList);
             log.info(String.format("BoatYard fetched successfully"));
 
         } catch (Exception e) {
@@ -95,9 +106,9 @@ public class BoatYardServiceImpl implements BoatYardService {
 
             throw new DBOperationException(e.getMessage(), e);
         }
-
-        return boatYardDtoList;
+        return response;
     }
+
 
     /**
      * Retrieves a BoatYard entity by its ID.

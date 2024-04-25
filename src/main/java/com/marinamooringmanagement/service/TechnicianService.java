@@ -5,7 +5,6 @@ import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
-import java.util.List;
 
 /**
  * Service interface for managing Technician entities.
@@ -27,7 +26,7 @@ public interface TechnicianService {
      * @param sortDir    The sorting direction.
      * @return A list of TechnicianDto objects.
      */
-    public List<TechnicianDto> getTechnicians(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
+    public BasicRestResponse getTechnicians(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
 
     /**
      * Retrieves a technician by ID.
