@@ -88,15 +88,15 @@ public class TokenServiceImpl implements TokenService {
      * @return
      */
     @Override
-    public String createPasswordResetToken(String email) {
+    public String createPasswordResetToken(final String email) {
         try {
             if(userRepository.findByEmail(email).isEmpty()) {
                 throw new ClassNotFoundException("User with given email not found!!!");
             }
-            User user = userRepository.findByEmail(email).get();
-            UserDto userDto = UserDto.builder().build();
+            final User user = userRepository.findByEmail(email).get();
+            final UserDto userDto = UserDto.builder().build();
             userMapper.mapToUserDto(userDto, user);
-            String resetPasswordToken =  jwtUtil.generateResetPasswordToken(email);
+            final String resetPasswordToken =  jwtUtil.generateResetPasswordToken(email);
             saveToken(userDto, resetPasswordToken);
             return resetPasswordToken;
         } catch (Exception e) {

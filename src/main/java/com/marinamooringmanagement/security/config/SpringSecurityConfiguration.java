@@ -5,23 +5,31 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.util.Arrays;
+
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 /**
  * Configuration class containing {@link SecurityFilterChain} for Spring Security configuration.
  */
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
+@EnableWebMvc
 public class SpringSecurityConfiguration{
 
     private final UserRepository repository;
@@ -32,9 +40,32 @@ public class SpringSecurityConfiguration{
     private final CustomJwtAuthenticationFilter jwtAuthFilter;
 
     private static final String[] WHITE_LIST_URL = {
-            "/api/v1/auth/login",
+            "/api/v1/auth/**",
+            "/swagger/resources/**",
+            "/swagger-ui/**",
+            "/webjars/**",
+            "/v3/api-docs",
             "/**",
     };
+
+    /**
+     * Configures CORS (Cross-Origin Resource Sharing) for the application.
+     *
+     * @return A CorsConfigurationSource object that defines CORS settings.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+
+        return source;
+    }
 
     /**
      * Bean for {@link SecurityFilterChain} configuration.
@@ -44,9 +75,10 @@ public class SpringSecurityConfiguration{
      * @throws Exception if an error occurs during configuration
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
@@ -55,7 +87,6 @@ public class SpringSecurityConfiguration{
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
 
         return http.build();
     }

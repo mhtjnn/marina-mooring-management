@@ -15,7 +15,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.security.Key;
 import java.util.*;
-
 /**
  * Utility class for JWT token handling.
  */
@@ -40,7 +39,7 @@ public class JwtUtil {
      * @param token the JWT token
      * @return the extracted username
      */
-    public String extractUsername(String token) {
+    public String extractUsername(final String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
@@ -51,7 +50,7 @@ public class JwtUtil {
      * @param authToken the JWT token
      * @return true if the token is valid, false otherwise
      */
-    public boolean validateToken(String authToken) {
+    public boolean validateToken(final String authToken) {
         return validate(authToken, SECRET_KEY) && isTokenValid(authToken);
     }
 
@@ -61,10 +60,10 @@ public class JwtUtil {
      * @param token the JWT token
      * @return true if the token is valid, false otherwise
      */
-    private boolean isTokenValid(String token) {
-        Optional<Token> optionalToken = tokenRepository.findTokenEntityByToken(token);
+    private boolean isTokenValid(final String token) {
+        final Optional<Token> optionalToken = tokenRepository.findTokenEntityByToken(token);
         if(optionalToken.isPresent()) {
-            Token tokenEntity = optionalToken.get();
+            final Token tokenEntity = optionalToken.get();
             if (tokenEntity == null) {
                 return false;
             }
@@ -87,7 +86,7 @@ public class JwtUtil {
      * @param secretKey the secret key used for signing
      * @return true if the signature is valid, false otherwise
      */
-    private boolean validate(String authToken, String secretKey) {
+    private boolean validate(final String authToken, final String secretKey) {
         try {
             Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(authToken);
             return true;
@@ -101,7 +100,7 @@ public class JwtUtil {
      * @param token the JWT Token
      * @return username extracted from the token
      */
-    public String getUsernameFromToken(String token) {
+    public String getUsernameFromToken(final String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
@@ -111,10 +110,10 @@ public class JwtUtil {
      * @param token The JWT Token
      * @return Roles given to the User extracted from the Token
      */
-    public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
+    public List<SimpleGrantedAuthority> getRolesFromToken(final String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
-        List<SimpleGrantedAuthority> roles = new ArrayList<>();
-        List<String> rolesFromToken = claims.get("roles", List.class);
+        final List<SimpleGrantedAuthority> roles = new ArrayList<>();
+        final List<String> rolesFromToken = claims.get("roles", List.class);
         if(null != rolesFromToken) {
             rolesFromToken.forEach(roleFromToken -> roles.add(new SimpleGrantedAuthority(roleFromToken)));
         }
@@ -126,7 +125,7 @@ public class JwtUtil {
      * @param token The JWT Token
      * @return User ID of the User extracted from the token
      */
-    public Integer getUserIdFromToken(String token) {
+    public Integer getUserIdFromToken(final String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
         return claims.get("id", Integer.class);
     }
@@ -136,14 +135,12 @@ public class JwtUtil {
      * @param token The JWT Token
      * @return Get the first Role from the List of Roles given to the User
      */
-    public String getRoleFromToken(String token) {
+    public String getRoleFromToken(final String token) {
         final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
-        List<SimpleGrantedAuthority> roles = new ArrayList<>();
-        List<String> rolesFromToken = claims.get("roles", List.class);
+        final List<String> rolesFromToken = claims.get("roles", List.class);
         if(!CollectionUtils.isEmpty(rolesFromToken)) {
             return rolesFromToken.get(0);
         }
-
         return null;
     }
 
@@ -153,7 +150,7 @@ public class JwtUtil {
      * @param userDetails the user details
      * @return the generated JWT token
      */
-    public String generateToken(UserDto userDetails) {
+    public String generateToken(final UserDto userDetails) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put("roles", Arrays.asList(userDetails.getRole().getName()));
         claims.put("id", userDetails.getId());
@@ -167,7 +164,7 @@ public class JwtUtil {
      * @param subject Email
      * @return The JWT Token
      */
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
+    private String doGenerateToken(final Map<String, Object> claims, final String subject) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -202,7 +199,7 @@ public class JwtUtil {
      * @param subject Email of the User
      * @return The JWT Token
      */
-    public String generateResetPasswordToken(String subject) {
+    public String generateResetPasswordToken(final String subject) {
         return Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))

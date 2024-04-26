@@ -1,11 +1,10 @@
 package com.marinamooringmanagement.security.controller;
 
-import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
-import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
@@ -13,6 +12,11 @@ import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.service.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 
 /**
  * Controller class for handling authentication-related endpoints.
@@ -33,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
+@CrossOrigin("*")
 public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
@@ -63,11 +71,29 @@ public class AuthenticationController {
      * @return a ResponseEntity containing the authentication response
      * @throws Exception if an error occurs during authentication
      */
+    @Operation(
+            tags = "User Login",
+            description = "API to login the user",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = AuthenticationResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Forbidden",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "403"
+                    )
+            }
+
+    )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
-            @RequestBody AuthenticationRequest authenticationRequest,
-            HttpServletRequest request
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest,
+            final HttpServletRequest request
     ) throws Exception {
+        final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -75,9 +101,14 @@ public class AuthenticationController {
                             authenticationRequest.getPassword()
                     )
             );
-            return generateAuthenticationResponse(authenticationRequest.getUsername());
+            return generateAuthenticationResponse(authenticationRequest.getUsername(), authenticationResponse);
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Bad Credentials!!!");
+            final BasicRestResponse response = BasicRestResponse.builder().build();
+            response.setMessage("Authentication failed");
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setErrorList(List.of(e.getMessage()));
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            return new ResponseEntity(response, HttpStatus.FORBIDDEN);
         }
     }
 
@@ -88,26 +119,31 @@ public class AuthenticationController {
      * @return a ResponseEntity containing the response
      * @throws Exception
      */
+    @Operation(
+            tags = "Reset Password Email",
+            description = "API to send a link to reset password through email",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = SendEmailResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = SendEmailResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
     @RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
     public ResponseEntity<?> forgetPassword(
-            HttpServletRequest request,
-            @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
-        SendEmailResponse response = emailService.sendForgetPasswordEMail(request, forgetPasswordEmailRequest);
-        return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
+            final HttpServletRequest request,
+            @Parameter(description = "Registered email of the user", schema = @Schema(implementation = ForgetPasswordEmailRequest.class)) final @Valid @RequestBody ForgetPasswordEmailRequest forgetPasswordEmailRequest) throws Exception {
+        final SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
+        return response.isSuccess() ? new ResponseEntity(response, HttpStatus.OK) : new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Function to validate email(existence) and token.
-     * @param token The Reset Password JWT
-     * @return  a ResponseEntity containing the response from EmailLinkResponse
-     * @throws Exception
-     */
-    @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
-    public ResponseEntity<?> validateEmailAndToken(
-            @RequestParam("token") String token) throws Exception {
-        SendEmailResponse response = userService.checkEmailAndTokenValid(token);
-        return response.isSuccess() ? new ResponseEntity(response.getResponse(), HttpStatus.OK) : new ResponseEntity(response.getResponse(), HttpStatus.BAD_REQUEST);
-    }
 
     /**
      * Function to reset password with the new password.
@@ -116,13 +152,58 @@ public class AuthenticationController {
      * @return  a ResponseEntity containing the response of NewPasswordResponse
      * @throws Exception
      */
-    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
-    public ResponseEntity<?> resetPasswordWithNewPassword(
-            @RequestParam("token") String token,
-            @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
+    @Operation(
+            tags = "Reset password with the New password",
+            description = "API to reset old password with the new password",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "500"
+                    )
+            }
 
-        final NewPasswordResponse passwordResponse = userService.updatePassword(token, newPasswordRequest);
-        return passwordResponse.isSuccess() ? new ResponseEntity(passwordResponse.getResponse(), HttpStatus.OK) : new ResponseEntity(passwordResponse.getResponse(), HttpStatus.BAD_REQUEST);
+    )
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+    public BasicRestResponse resetPasswordWithNewPassword(
+            @Parameter(description = "Reset Password Token", schema = @Schema(implementation = String.class)) final @RequestParam("token") String token,
+            @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) final @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
+        return userService.updatePassword(token, newPasswordRequest);
+    }
+
+
+    /**
+     * Function to validate email(existence) and token.
+     * @param token The Reset Password JWT
+     * @return  a ResponseEntity containing the response from EmailLinkResponse
+     * @throws Exception
+     */
+    @Operation(
+            tags = "Validate email and reset password token",
+            description = "API to validate email and reset password token",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "500"
+                    )
+            }
+
+    )
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
+    public BasicRestResponse validateEmailAndToken(
+            @RequestParam("token") final String token) throws Exception {
+        return userService.checkEmailAndTokenValid(token);
     }
 
 
@@ -132,12 +213,10 @@ public class AuthenticationController {
      * @param username the username for which to generate the authentication response
      * @return a ResponseEntity containing the authentication response
      */
-
-    private ResponseEntity<?> generateAuthenticationResponse(String username) {
+    private ResponseEntity<?> generateAuthenticationResponse(final String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
         final String token = jwtUtil.generateToken(emp);
         tokenService.saveToken(emp, token);
-        final AuthenticationResponse response = new AuthenticationResponse();
         response.setToken(token);
         response.setUser(emp);
         response.setStatus(HttpStatus.OK.value());

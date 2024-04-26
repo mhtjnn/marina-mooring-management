@@ -13,5 +13,4 @@ public class ResetPasswordEmailTemplate {
     private String toMailId;
     private String subject;
     private String body;
-//    private String link;
 }

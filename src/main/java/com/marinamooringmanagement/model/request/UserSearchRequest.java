@@ -1,24 +1,23 @@
 package com.marinamooringmanagement.model.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.marinamooringmanagement.model.dto.RoleDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
- * Data transfer object (DTO) for user requests.
- * This class represents the data structure used for creating or updating user information.
+ * Represents a search request for querying user information based on specified criteria.
+ *
+ * <p>This class extends {@code BaseSearchRequest} and includes additional fields to define search criteria for users.
+ *
+ * @see BaseSearchRequest
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRequestDto implements Serializable {
+public class UserSearchRequest extends BaseSearchRequest{
     /**
      * The unique identifier for the user.
      */
@@ -27,7 +26,6 @@ public class UserRequestDto implements Serializable {
     /**
      * The first name of the user.
      */
-    @NotNull(message = "First Name can't be blank")
     private String firstname;
 
     /**
@@ -38,7 +36,6 @@ public class UserRequestDto implements Serializable {
     /**
      * The email address of the user.
      */
-    @Email(message = "Email is not Valid")
     private String email;
 
     /**
@@ -47,13 +44,12 @@ public class UserRequestDto implements Serializable {
     private String phoneNumber;
 
     /**
-     * The password for the user account.
+     * The password of the user.
      */
-    @NotEmpty(message = "Password can't be blank")
     private String password;
 
     /**
-     * The role ID associated with the user.
+     * The role associated with the user.
      */
-    private Integer roleId;
+    private RoleDto role;
 }
