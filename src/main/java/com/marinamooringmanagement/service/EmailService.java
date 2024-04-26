@@ -17,7 +17,7 @@ public interface EmailService {
      * @param forgetPasswordEmailRequest The ForgetPasswordEmailRequest containing email and other details.
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
-    SendEmailResponse sendForgetPasswordEmail(HttpServletRequest request, ForgetPasswordEmailRequest forgetPasswordEmailRequest);
+    SendEmailResponse sendForgetPasswordEmail(final HttpServletRequest request, final ForgetPasswordEmailRequest forgetPasswordEmailRequest);
 
     /**
      * Sends an email using the provided SendEmailRequest object.
@@ -25,5 +25,5 @@ public interface EmailService {
      * @param sendEmailRequest The SendEmailRequest containing email details.
      * @return SendEmailResponse The response indicating if the email was sent successfully or not.
      */
-    SendEmailResponse sendEmail(SendEmailRequest sendEmailRequest);
+    SendEmailResponse sendEmail(final SendEmailRequest sendEmailRequest);
 }

@@ -40,11 +40,11 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 	 */
 	@Override
 	public void run(String... args) throws Exception {
-		String roleSql = "SELECT * FROM role";
-		List<Role> roleList = jdbcTemplate.query(roleSql, (resultSet, rowNum) ->
+		final String roleSql = "SELECT * FROM role";
+		final List<Role> roleList = jdbcTemplate.query(roleSql, (resultSet, rowNum) ->
 				null);
 
-		Role roleAdmin = Role.builder().build();
+		final Role roleAdmin = Role.builder().build();
 
 		if(roleList.isEmpty()) {
 			Role roleUser = Role.builder().build();
@@ -61,8 +61,8 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			roleRepository.save(roleAdmin);
 		}
 
-		String userSql = "SELECT * FROM user";
-		List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) ->
+		final String userSql = "SELECT * FROM user";
+		final List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) ->
 				null);
 
 		if(userList.isEmpty()) {
