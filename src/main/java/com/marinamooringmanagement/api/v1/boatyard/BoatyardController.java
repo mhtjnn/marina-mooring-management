@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.api.v1.users;
+package com.marinamooringmanagement.api.v1.boatyard;
 
 import com.marinamooringmanagement.model.dto.BoatYardDto;
 import com.marinamooringmanagement.model.request.BoatYardRequestDto;
@@ -23,7 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/boatyard")
-public class BoatYardController {
+public class BoatyardController {
 
     @Autowired
     private BoatYardService boatYardService;
