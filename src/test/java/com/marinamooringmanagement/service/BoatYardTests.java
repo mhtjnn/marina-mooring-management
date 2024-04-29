@@ -1,4 +1,4 @@
-package com.marinamooringmanagement;
+package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.mapper.BoatYardMapper;

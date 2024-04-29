@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.api.v1.users;
+package com.marinamooringmanagement.api.v1.user;
 
 import com.marinamooringmanagement.constants.Authority;
 
