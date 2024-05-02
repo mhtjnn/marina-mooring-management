@@ -7,6 +7,7 @@ import com.marinamooringmanagement.model.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,24 +26,16 @@ public class JwtUtil {
     TokenRepository tokenRepository;
 
     @Value("${security.token.expiration.time}")
-    private Long tokenExpirationTime;
+    private Long normalTokenExpirationTime;
 
     @Value("${security.resetToken.expiration.time}")
-    private Long resetTokenExpirationTime;
+    private Long resetPasswordTokenExpirationTime;
+
+    @Value("${security.refreshToken.expiration.time}")
+    private Long refreshTokenExpirationTime;
 
     @Value("${security.secret.key}")
     private String SECRET_KEY;
-
-    /**
-     * Function to extract Username from the Token.
-     *
-     * @param token the JWT token
-     * @return the extracted username
-     */
-    public String extractUsername(final String token) {
-        final Claims claims = Jwts.parser().setSigningKey(getSignInKey()).parseClaimsJws(token).getBody();
-        return claims.getSubject();
-    }
 
     /**
      * Function to validate a JWT token.
@@ -64,11 +57,8 @@ public class JwtUtil {
         final Optional<Token> optionalToken = tokenRepository.findTokenEntityByToken(token);
         if(optionalToken.isPresent()) {
             final Token tokenEntity = optionalToken.get();
-            if (tokenEntity == null) {
-                return false;
-            }
 
-            if (new Date().before(tokenEntity.getExpireAt())) {
+            if (new Date().before(tokenEntity.getTokenExpireAt())) {
                 final User user = tokenEntity.getUser();
                 return user != null;
             }
@@ -150,12 +140,12 @@ public class JwtUtil {
      * @param userDetails the user details
      * @return the generated JWT token
      */
-    public String generateToken(final UserDto userDetails) {
+    public String generateToken(final UserDto userDetails, final String tokenType) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put("roles", Arrays.asList(userDetails.getRole().getName()));
         claims.put("id", userDetails.getId());
 
-        return doGenerateToken(claims, userDetails.getEmail());
+        return doGenerateToken(claims, userDetails.getEmail(), tokenType);
     }
 
     /**
@@ -164,12 +154,19 @@ public class JwtUtil {
      * @param subject Email
      * @return The JWT Token
      */
-    private String doGenerateToken(final Map<String, Object> claims, final String subject) {
+    public String doGenerateToken(Map<String, Object> claims, final String subject, final String tokenType) {
+
+        Long diffTokenExpirationTime = StringUtils.equals(tokenType, "NORMAL_TOKEN") ? normalTokenExpirationTime :
+                StringUtils.equals(tokenType, "REFRESH_TOKEN") ? refreshTokenExpirationTime :
+                        resetPasswordTokenExpirationTime;
+
+
+
         return Jwts.builder()
-                .setClaims(claims)
+                .setClaims(claims != null ? claims : new HashMap<>())
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + tokenExpirationTime))
+                .setExpiration(new Date(System.currentTimeMillis() + diffTokenExpirationTime))
                 .signWith(SignatureAlgorithm.HS256, getSignInKey())
                 .compact();
     }
@@ -192,19 +189,5 @@ public class JwtUtil {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    /**
-     * Function to generate Reset Password Token
-     * @param subject Email of the User
-     * @return The JWT Token
-     */
-    public String generateResetPasswordToken(final String subject) {
-        return Jwts.builder()
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + resetTokenExpirationTime))
-                .signWith(SignatureAlgorithm.HS256, getSignInKey())
-                .compact();
     }
 }

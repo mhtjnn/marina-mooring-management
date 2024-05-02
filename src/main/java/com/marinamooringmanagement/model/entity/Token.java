@@ -25,11 +25,17 @@ public class Token extends Base {
     @Column(name = "token")
     private String token;
 
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
     /**
      * The expiration date and time of the token.
      */
     @Column(name = "expire_at")
-    private Date expireAt;
+    private Date tokenExpireAt;
+
+    @Column(name = "refresh_token_expire_at")
+    private Date refreshTokenExpireAt;
 
     /**
      * The user associated with the token.

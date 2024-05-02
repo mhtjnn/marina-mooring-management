@@ -3,14 +3,10 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
-import com.marinamooringmanagement.model.entity.Role;
-import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.UserSearchRequest;
-import com.marinamooringmanagement.repositories.TokenRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
-import com.marinamooringmanagement.repositories.RoleRepository;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
-import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -19,6 +15,7 @@ import com.marinamooringmanagement.model.response.NewPasswordResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +56,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private StateRepository stateRepository;
+
+    @Autowired
+    private CountryRepository countryRepository;
 
     @Autowired
     private UserMapper mapper;
@@ -109,8 +112,10 @@ public class UserServiceImpl implements UserService {
         if (null != user) {
             final UserResponseDto userResponseDto = UserResponseDto.builder().build();
 
-            userResponseDto.setFirstname(user.getFirstname());
-            userResponseDto.setLastname(user.getLastname());
+            userResponseDto.setUserID(user.getUserID());
+            userResponseDto.setCustomerAdminId(user.getCustomerAdminId());
+            userResponseDto.setId(user.getId());
+            userResponseDto.setName(user.getName());
             userResponseDto.setEmail(user.getEmail());
             userResponseDto.setPhoneNumber(user.getPhoneNumber());
             userResponseDto.setRole(user.getRole().getName());
@@ -128,17 +133,30 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public BasicRestResponse saveUser(UserRequestDto userRequestDto) {
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final HttpServletRequest request) {
+//        String role = getRoleFromRequest(request);
+//
+//        if(null == role) throw new ResourceNotFoundException("No Role found in the given token");
+
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final User user = User.builder().build();
-            final Optional<User> optionalEmp = userRepository.findByEmail(user.getEmail());
+            final Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
 
-            if (optionalEmp.isPresent()) {
+            if (optionalUser.isPresent()) {
                 log.info(String.format("Email already present in DB"));
                 throw new RuntimeException("Email already present in DB");
             }
+
+//            if(userRequestDto.getCustomerAdminId().isEmpty() && !role.equals("OWNER")) throw new RuntimeException("NOT Authorized to save the user");
+//            else if(!userRequestDto.getCustomerAdminId().isEmpty()) {
+//
+//                final Integer tokenId = jwtUtil.getUserIdFromToken(request.getHeader("Authorization").substring(7));
+//
+//                Optional<User> optionalUserFromtokenId =
+//
+//            }
 
             log.info(String.format("saving user in DB"));
             performSave(userRequestDto, user, null);
@@ -315,15 +333,50 @@ public class UserServiceImpl implements UserService {
             if (userId != null) {
                 return userRepository.save(user);
             } else {
-                user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
                 user.setCreationDate(new Date());
-                final Role role = roleRepository.findByName("ADMINISTRATOR");
-                user.setRole(role);
+
+                if(null != userRequestDto.getPassword()) user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+
+                if(null != userRequestDto.getRole()) {
+                    final Optional<Role> optionalRole = roleRepository.findByName(userRequestDto.getRole());
+                    if (optionalRole.isEmpty()) throw new ResourceNotFoundException("No Role found with the given role");
+                    final Role role = optionalRole.get();
+                    user.setRole(role);
+                }
+
+                if(null != userRequestDto.getState()) {
+                    final Optional<State> optionalState = stateRepository.findByName(userRequestDto.getState());
+                    if(optionalState.isPresent()) {
+                        user.setState(optionalState.get());
+                    } else {
+                        State state = State.builder()
+                                .name(userRequestDto.getState())
+                                .build();
+                        user.setState(stateRepository.save(state));
+                    }
+                }
+
+                if(null != userRequestDto.getCountry()) {
+                    final Optional<Country> optionalCountry = countryRepository.findByName(userRequestDto.getCountry());
+                    if(optionalCountry.isPresent()) {
+                        user.setCountry(optionalCountry.get());
+                    } else {
+                        Country country = Country.builder()
+                                .name(userRequestDto.getCountry())
+                                .build();
+                        user.setCountry(countryRepository.save(country));
+                    }
+                }
+
                 return userRepository.save(user);
             }
         } catch (Exception e) {
             log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
             throw new RuntimeException("Error occurred during perform save method", e);
         }
+    }
+
+    public String getRoleFromRequest(HttpServletRequest request) {
+        return jwtUtil.getRoleFromToken(request.getHeader("Authorization").substring(7));
     }
 }

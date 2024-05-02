@@ -28,14 +28,8 @@ public class User extends Base {
     /**
      * The first name of the user.
      */
-    @Column(name = "firstname")
-    private String firstname;
-
-    /**
-     * The last name of the user.
-     */
-    @Column(name = "lastname")
-    private String lastname;
+    @Column(name = "name")
+    private String name;
 
     /**
      * The email address of the user.
@@ -55,11 +49,26 @@ public class User extends Base {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "user_ID")
+    private String userID;
+
+    @Column(name = "customer_admin_ID")
+    private String customerAdminId;
+
     /**
      * The role associated with the user.
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id")
+    private State state;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private Country country;
+
 }
 

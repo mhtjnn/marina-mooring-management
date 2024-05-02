@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
@@ -65,7 +65,7 @@ public class UserController {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR)
+    @PreAuthorize(Authority.OWNER)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -118,9 +118,10 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
-            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user
+            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user,
+            HttpServletRequest request
     ) {
-        return userService.saveUser(user);
+        return userService.saveUser(user, request);
     }
 
     /**
@@ -197,4 +198,5 @@ public class UserController {
     ) {
         return userService.deleteUser(userId);
     }
+
 }

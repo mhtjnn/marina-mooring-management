@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.entity.Role;
 import lombok.*;
 
 import java.io.Serializable;
@@ -17,14 +18,14 @@ import java.io.Serializable;
 public class UserResponseDto implements Serializable {
 
     /**
-     * The first name of the user.
+     * The unique identifier for the user.
      */
-    private String firstname;
+    private Integer id;
 
     /**
-     * The last name of the user.
+     * The first name of the user.
      */
-    private String lastname;
+    private String name;
 
     /**
      * The email address of the user.
@@ -36,8 +37,16 @@ public class UserResponseDto implements Serializable {
      */
     private String phoneNumber;
 
+    private String userID;
+
+    private String customerAdminId;
+
     /**
-     * The role name of the user.
+     * The role associated with the user.
      */
     private String role;
+
+    private String state;
+
+    private String country;
 }

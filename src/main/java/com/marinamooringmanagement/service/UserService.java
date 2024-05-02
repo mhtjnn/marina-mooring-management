@@ -8,6 +8,7 @@ import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.model.response.NewPasswordResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Interface for User Service.
@@ -33,7 +34,7 @@ public interface UserService {
      * @param employee The user request DTO
      * @return A message indicating the result of the operation
      */
-    public BasicRestResponse saveUser(final UserRequestDto employee);
+    public BasicRestResponse saveUser(final UserRequestDto employee, final HttpServletRequest request);
 
     /**
      * Deletes a user by their ID.

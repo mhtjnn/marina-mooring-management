@@ -24,6 +24,8 @@ import java.util.Date;
 @Service
 public class TokenServiceImpl implements TokenService {
 
+    private static final String resetPasswordTokenStr = "RESET_PASSWORD_TOKEN";
+
     private static final Logger log = LoggerFactory.getLogger(TokenServiceImpl.class);
 
     @Autowired
@@ -57,20 +59,24 @@ public class TokenServiceImpl implements TokenService {
     /**
      * Saves a token with user details to the database.
      * @param userDto The user details DTO
-     * @param token The authentication token
+     * @param normalToken The authentication token
      * @throws DBOperationException if an error occurs during database operation
      */
     @Override
-    public void saveToken(final UserDto userDto, final String token) {
+    public void saveToken(final UserDto userDto, final String normalToken, final String refreshToken) {
         try {
-            if(null != userDto && StringUtils.hasText(token)) {
+            if(null != userDto && StringUtils.hasText(normalToken)) {
                 final User user = User.builder().build();
                 user.setId(userDto.getId());
-                final Date expireDateTime = jwtUtil.getExpireTimeFromToken(token);
+                final Date tokenExpireDateTime = jwtUtil.getExpireTimeFromToken(normalToken);
+                Date refreshTokenExpireDateTime = null;
+                if(null != refreshToken) refreshTokenExpireDateTime = jwtUtil.getExpireTimeFromToken(refreshToken);
                 final Token tokenEntity = Token.builder()
                         .user(user)
-                        .token(token)
-                        .expireAt(expireDateTime)
+                        .token(normalToken)
+                        .refreshToken(refreshToken)
+                        .tokenExpireAt(tokenExpireDateTime)
+                        .refreshTokenExpireAt(refreshTokenExpireDateTime)
                         .build();
                 tokenEntity.setCreationDate(new Date(System.currentTimeMillis()));
                 tokenEntity.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -96,8 +102,8 @@ public class TokenServiceImpl implements TokenService {
             final User user = userRepository.findByEmail(email).get();
             final UserDto userDto = UserDto.builder().build();
             userMapper.mapToUserDto(userDto, user);
-            final String resetPasswordToken =  jwtUtil.generateResetPasswordToken(email);
-            saveToken(userDto, resetPasswordToken);
+            final String resetPasswordToken =  jwtUtil.doGenerateToken(null, email, resetPasswordTokenStr);
+            saveToken(userDto, resetPasswordToken, null);
             return resetPasswordToken;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);

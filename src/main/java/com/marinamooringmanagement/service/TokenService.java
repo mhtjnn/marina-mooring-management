@@ -20,7 +20,7 @@ public interface TokenService {
      * @param emp The user DTO
      * @param token The token string
      */
-    void saveToken(final UserDto emp, final String token);
+    void saveToken(final UserDto emp, final String token, final String refreshToken);
 
     /**
      * Create a Reset Password Token

@@ -4,6 +4,7 @@ import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -29,6 +30,9 @@ public interface UserMapper {
      * @param entity  {@link User} the User entity to update.
      * @param userDto {@link UserDto} the User Dto with updated data.
      */
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "country", ignore = true)
     void mapToUser(@MappingTarget User entity, UserDto userDto);
 
     /**
@@ -37,6 +41,9 @@ public interface UserMapper {
      * @param entity         {@link User} the User entity to update.
      * @param userRequestDto {@link UserRequestDto} the User Request Dto with data to map.
      */
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "country", ignore = true)
     void mapToUser(@MappingTarget User entity, UserRequestDto userRequestDto);
 }
 

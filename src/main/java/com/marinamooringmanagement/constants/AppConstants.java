@@ -12,12 +12,16 @@ public class AppConstants {
         /**
          * Represents a regular user role.
          */
-        public final static String USER = "USER";
+        public final static String OWNER = "OWNER";
 
         /**
          * Represents an administrator role.
          */
-        public final static String ADMINISTRATOR = "ADMINISTRATOR";
+        public final static String CUSTOMER_ADMIN = "CUSTOMER_ADMIN";
+
+        public final static String FINANCE = "FINANCE";
+
+        public final static String TECHNICIAN = "TECHNICIAN";
     }
 
     public static class DefaultPageConst {

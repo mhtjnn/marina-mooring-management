@@ -44,21 +44,39 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 		final List<Role> roleList = jdbcTemplate.query(roleSql, (resultSet, rowNum) ->
 				null);
 
-		final Role roleAdmin = Role.builder().build();
+		final Role roleOwner = Role.builder().build();
 
 		if(roleList.isEmpty()) {
-			Role roleUser = Role.builder().build();
-			roleUser.setDescription("Normal User");
-			roleUser.setName("USER");
-			roleUser.setCreationDate(new Date(System.currentTimeMillis()));
-			roleUser.setLastModifiedDate(new Date(System.currentTimeMillis()));
-			roleRepository.save(roleUser);
+			roleOwner.setId(1);
+			roleOwner.setDescription("Owner");
+			roleOwner.setName("OWNER");
+			roleOwner.setCreationDate(new Date(System.currentTimeMillis()));
+			roleOwner.setLastModifiedDate(new Date(System.currentTimeMillis()));
+			roleRepository.save(roleOwner);
 
-			roleAdmin.setDescription("Administrator User");
-			roleAdmin.setName("ADMINISTRATOR");
-			roleAdmin.setCreationDate(new Date(System.currentTimeMillis()));
-			roleAdmin.setLastModifiedDate(new Date(System.currentTimeMillis()));
-			roleRepository.save(roleAdmin);
+			final Role roleCustomerAdmin = Role.builder().build();
+			roleCustomerAdmin.setId(2);
+			roleCustomerAdmin.setDescription("Customer Administrator");
+			roleCustomerAdmin.setName("CUSTOMER_ADMIN");
+			roleCustomerAdmin.setCreationDate(new Date(System.currentTimeMillis()));
+			roleCustomerAdmin.setLastModifiedDate(new Date(System.currentTimeMillis()));
+			roleRepository.save(roleCustomerAdmin);
+
+			final Role roleFinance = Role.builder().build();
+			roleFinance.setId(3);
+			roleFinance.setDescription("Finance");
+			roleFinance.setName("FINANCE");
+			roleFinance.setCreationDate(new Date(System.currentTimeMillis()));
+			roleFinance.setLastModifiedDate(new Date(System.currentTimeMillis()));
+			roleRepository.save(roleFinance);
+
+			final Role roleTechnician = Role.builder().build();
+			roleTechnician.setId(4);
+			roleTechnician.setDescription("Technician");
+			roleTechnician.setName("TECHNICIAN");
+			roleTechnician.setCreationDate(new Date(System.currentTimeMillis()));
+			roleTechnician.setLastModifiedDate(new Date(System.currentTimeMillis()));
+			roleRepository.save(roleTechnician);
 		}
 
 		final String userSql = "SELECT * FROM user";
@@ -67,14 +85,17 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
 		if(userList.isEmpty()) {
 			User user = User.builder().build();
+			user.setId(1);
 			user.setCreationDate(new Date(System.currentTimeMillis()));
 			user.setLastModifiedDate(new Date(System.currentTimeMillis()));
-			user.setFirstname("ADMIN");
-			user.setLastname("USER");
-			user.setEmail("adminuser@gmail.com");
+			user.setName("Matt Pussey");
+			user.setUserID("O0001");
+			user.setEmail("matt.pussey@moorfind.com");
 			user.setPassword(passwordEncoder.encode("1234"));
 			user.setPhoneNumber("123456789");
-			user.setRole(roleAdmin);
+			user.setRole(roleOwner);
+			user.setCreatedBy("System");
+			user.setLastModifiedBy("System");
 
 			userRepository.save(user);
 		}

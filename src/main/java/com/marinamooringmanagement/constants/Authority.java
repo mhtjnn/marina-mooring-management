@@ -14,6 +14,8 @@ package com.marinamooringmanagement.constants;
  * <p>
  */
 public class Authority {
-    public static final String USER = "hasAnyAuthority('" + AppConstants.Role.USER + "')";
-    public static final String ADMINISTRATOR = "hasAnyAuthority('" + AppConstants.Role.ADMINISTRATOR + "')";
+    public static final String OWNER = "hasAnyAuthority('" + AppConstants.Role.OWNER + "')";
+    public static final String CUSTOMER_ADMIN = "hasAnyAuthority('" + AppConstants.Role.CUSTOMER_ADMIN + "')";
+    public static final String FINANCE = "hasAnyAuthority('" + AppConstants.Role.FINANCE + "')";
+    public static final String TECHNICIAN = "hasAnyAuthority('" + AppConstants.Role.TECHNICIAN + "')";
 }

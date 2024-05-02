@@ -1,7 +1,10 @@
 package com.marinamooringmanagement.security.controller;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
@@ -30,7 +33,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.Base64;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -42,6 +48,10 @@ import java.util.List;
 @Validated
 @CrossOrigin("*")
 public class AuthenticationController {
+
+    private static final String normalTokenStr = "NORMAL_TOKEN";
+
+    private static final String refreshTokenStr = "REFRESH_TOKEN";
 
     private final AuthenticationManager authenticationManager;
 
@@ -62,6 +72,9 @@ public class AuthenticationController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     /**
      * Endpoint to create an authentication token based on the provided credentials.
@@ -90,8 +103,7 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
-            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest,
-            final HttpServletRequest request
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
         try {
@@ -206,6 +218,66 @@ public class AuthenticationController {
         return userService.checkEmailAndTokenValid(token);
     }
 
+    @Operation(
+            tags = "User Refresh",
+            description = "API to refresh the user",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = AuthenticationResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Forbidden",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "403"
+                    )
+            }
+
+    )
+    @RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
+    public ResponseEntity<?> createAuthenticationTokenFromRefreshToken(
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestParam("refreshToken") String refreshToken
+    ) throws Exception {
+        final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
+        try {
+            return generateNormalTokenFromRefreshToken(refreshToken, authenticationResponse);
+        } catch (Exception e) {
+            final BasicRestResponse response = BasicRestResponse.builder().build();
+            response.setMessage("Authentication failed");
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setErrorList(List.of(e.getMessage()));
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            return new ResponseEntity(response, HttpStatus.FORBIDDEN);
+        }
+    }
+
+    private ResponseEntity<?> generateNormalTokenFromRefreshToken(String refreshToken, final AuthenticationResponse response) {
+        try {
+            final String username = jwtUtil.getUsernameFromToken(refreshToken);
+            final UserDto emp = userService.findByEmailAddress(username);
+            final String token = jwtUtil.generateToken(emp, normalTokenStr);
+
+            Date refreshTokenExpirationTime = jwtUtil.getExpireTimeFromToken(refreshToken);
+
+            final Optional<Token> optionalRefreshTokenEntity = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
+
+            if(optionalRefreshTokenEntity.isEmpty()) throw new ResourceNotFoundException("No token entity found with the given token");
+
+            String newRefreshToken = refreshToken;
+
+            if (refreshTokenExpirationTime.before(new Date())) newRefreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+
+            tokenService.saveToken(emp, token, refreshToken);
+            response.setToken(token);
+            response.setRefreshToken(newRefreshToken);
+            response.setUser(emp);
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * Generates the authentication response containing the JWT token and user details.
@@ -215,9 +287,11 @@ public class AuthenticationController {
      */
     private ResponseEntity<?> generateAuthenticationResponse(final String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
-        final String token = jwtUtil.generateToken(emp);
-        tokenService.saveToken(emp, token);
+        final String token = jwtUtil.generateToken(emp, normalTokenStr);
+        final String refreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+        tokenService.saveToken(emp, token, refreshToken);
         response.setToken(token);
+        response.setRefreshToken(refreshToken);
         response.setUser(emp);
         response.setStatus(HttpStatus.OK.value());
         return ResponseEntity.ok(response);
