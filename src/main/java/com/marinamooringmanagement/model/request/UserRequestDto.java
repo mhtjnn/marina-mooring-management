@@ -17,6 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRequestDto implements Serializable {
+
     /**
      * The unique identifier for the user.
      */
@@ -43,8 +44,14 @@ public class UserRequestDto implements Serializable {
      */
     private String password;
 
+    /**
+     * The user ID.
+     */
     private String userID;
 
+    /**
+     * The ID of the customer admin associated with the user.
+     */
     private String customerAdminId;
 
     /**
@@ -52,7 +59,14 @@ public class UserRequestDto implements Serializable {
      */
     private String role;
 
+    /**
+     * The state associated with the user.
+     */
     private String state;
 
+    /**
+     * The country associated with the user.
+     */
     private String country;
 }
+

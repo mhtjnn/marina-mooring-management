@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation for managing states.
+ * This class provides methods for fetching, saving, updating, and deleting state data.
+ */
 @Service
 public class StateServiceImpl implements StateService {
 
@@ -35,6 +39,12 @@ public class StateServiceImpl implements StateService {
     @Autowired
     private StateMapper stateMapper;
 
+    /**
+     * Fetches a paginated list of states.
+     *
+     * @param stateSearchRequest The search criteria for fetching states.
+     * @return A BasicRestResponse containing a list of StateResponseDto representing the fetched states.
+     */
     @Override
     public BasicRestResponse fetchStates(StateSearchRequest stateSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -57,6 +67,12 @@ public class StateServiceImpl implements StateService {
         return response;
     }
 
+    /**
+     * Saves a new state.
+     *
+     * @param stateDto The DTO containing the state data to be saved.
+     * @return A BasicRestResponse indicating the outcome of the save operation.
+     */
     @Override
     public BasicRestResponse saveState(StateDto stateDto) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -66,11 +82,11 @@ public class StateServiceImpl implements StateService {
             final Optional<State> optionalState = stateRepository.findByName(stateDto.getName());
 
             if (optionalState.isPresent()) {
-                log.info(String.format("State already present in DB"));
+                log.info("State already present in DB");
                 throw new RuntimeException("State already present in DB");
             }
 
-            log.info(String.format("Saving state in DB"));
+            log.info("Saving state in DB");
             performSave(stateDto, state, null);
 
             response.setMessage("State saved successfully");
@@ -84,6 +100,13 @@ public class StateServiceImpl implements StateService {
         return response;
     }
 
+    /**
+     * Updates an existing state.
+     *
+     * @param stateDto The DTO containing the updated state data.
+     * @param stateId  The ID of the state to be updated.
+     * @return A BasicRestResponse indicating the outcome of the update operation.
+     */
     @Override
     public BasicRestResponse updateState(StateDto stateDto, Integer stateId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -92,13 +115,13 @@ public class StateServiceImpl implements StateService {
             final Optional<State> optionalState = stateRepository.findById(stateId);
 
             if (optionalState.isEmpty()) {
-                log.info(String.format("State not present in DB"));
+                log.info("State not present in DB");
                 throw new RuntimeException("State not present in DB");
             }
 
             final State state = optionalState.get();
 
-            log.info(String.format("Updating state in DB"));
+            log.info("Updating state in DB");
             performSave(stateDto, state, stateId);
 
             response.setMessage("State updated successfully");
@@ -112,12 +135,18 @@ public class StateServiceImpl implements StateService {
         return response;
     }
 
+    /**
+     * Deletes a state.
+     *
+     * @param id The ID of the state to be deleted.
+     * @return A BasicRestResponse indicating the outcome of the delete operation.
+     */
     @Override
     public BasicRestResponse deleteState(Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            log.info(String.format("delete state with given ID"));
+            log.info("Deleting state with ID {}", id);
             stateRepository.deleteById(id);
             response.setMessage("State Deleted Successfully!!!");
             response.setStatus(200);
@@ -129,15 +158,24 @@ public class StateServiceImpl implements StateService {
         return response;
     }
 
+    /**
+     * Performs the save operation for a state.
+     *
+     * @param stateDto The DTO containing the state data.
+     * @param state    The state entity to be saved.
+     * @param userId   The ID of the user performing the operation.
+     * @return The saved state entity.
+     */
     public State performSave(final StateDto stateDto, final State state, final Integer userId) {
         try {
             stateMapper.mapToState(state, stateDto);
             state.setLastModifiedDate(new Date(System.currentTimeMillis()));
             return stateRepository.save(state);
         } catch (Exception e) {
-            log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
+            log.error("Error occurred during perform save method: {}", e.getLocalizedMessage());
             throw new RuntimeException("Error occurred during perform save method", e);
         }
     }
 }
+
 

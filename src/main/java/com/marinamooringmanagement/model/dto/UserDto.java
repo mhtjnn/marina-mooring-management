@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.model.dto;
 
-import com.marinamooringmanagement.model.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,8 +44,14 @@ public class UserDto extends BaseDto implements Serializable {
      */
     private String password;
 
+    /**
+     * The user ID.
+     */
     private String userID;
 
+    /**
+     * The ID of the customer admin associated with the user.
+     */
     private String customerAdminId;
 
     /**
@@ -54,8 +59,15 @@ public class UserDto extends BaseDto implements Serializable {
      */
     private RoleDto role;
 
+    /**
+     * The state associated with the user.
+     */
     private StateDto stateDto;
 
+    /**
+     * The country associated with the user.
+     */
     private CountryDto countryDto;
 }
+
 

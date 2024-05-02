@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
@@ -20,17 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -81,16 +81,74 @@ public class UserServiceImpl implements UserService {
      * @see UserResponseDto
      */
     @Override
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest) {
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, String customerAdminId, final HttpServletRequest request) {
+        String role = null;
+        Integer loggedInId;
+
+        final String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
+            String jwt = bearerToken.substring(7);
+            role = jwtUtil.getRoleFromToken(jwt);
+            loggedInId = jwtUtil.getUserIdFromToken(jwt);
+        } else {
+            loggedInId = null;
+            throw new RuntimeException("INVALID TOKEN");
+        }
+
+        if (role.isEmpty()) throw new ResourceNotFoundException("No Role found in the given token");
+
+        if (null == loggedInId) throw new ResourceNotFoundException("No ID found in the given token");
+
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
             final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
             final Page<User> userList = userRepository.findAll(p);
-            log.info("fetch all users");
+
+            if (userList.isEmpty()) throw new ResourceNotFoundException("No Users found");
+
             List<UserResponseDto> userResponseDtoList = new ArrayList<>();
-            if (!userList.isEmpty())
-                userResponseDtoList = userList.getContent().stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
+
+            userResponseDtoList = userList.getContent().stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
+
+            List<UserResponseDto> userWithSameCustomerAdminId = null;
+
+            if (null != customerAdminId) {
+                String finalCustomerAdminId = customerAdminId;
+                userWithSameCustomerAdminId = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getCustomerAdminId().equals(finalCustomerAdminId) && !Objects.equals(user.getId(), loggedInId)).toList();
+            }
+
+            Page<UserResponseDto> userWithSameCustomerAdminIdPage = null;
+            if (null != userWithSameCustomerAdminId) userWithSameCustomerAdminIdPage = new PageImpl<>(userWithSameCustomerAdminId);
+
+            if (role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+                response.setContent(userWithSameCustomerAdminIdPage.getContent());
+                response.setMessage("Users fetched Successfully");
+                response.setStatus(HttpStatus.OK.value());
+                return response;
+            } else if (role.equals(AppConstants.Role.OWNER)) {
+                List<UserResponseDto> userWithCustomerAdminRole = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)).toList();
+
+                if (userWithCustomerAdminRole.isEmpty()) response.setContent("No user found with Customer Admin role");
+
+                Page<UserResponseDto> userWithCustomerAdminRolePage = null;
+                userWithCustomerAdminRolePage = new PageImpl<>(userWithCustomerAdminRole);
+
+                if(null == customerAdminId || customerAdminId.isEmpty()) customerAdminId = userWithCustomerAdminRole.get(0).getCustomerAdminId();
+
+                String finalCustomerAdminIdForOwner = customerAdminId;
+                userWithSameCustomerAdminId = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getCustomerAdminId().equals(finalCustomerAdminIdForOwner) && !Objects.equals(user.getId(), loggedInId) && !user.getRole().equals(AppConstants.Role.OWNER) && !user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)).toList();
+
+                userWithSameCustomerAdminIdPage = new PageImpl<>(userWithSameCustomerAdminId);
+
+                response.setContent(List.of(userWithCustomerAdminRolePage, userWithSameCustomerAdminIdPage));
+                response.setMessage("Users fetched Successfully");
+                response.setStatus(HttpStatus.OK.value());
+            }
+
+
+            log.info("fetch all users");
             response.setMessage("Users fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(userResponseDtoList);
@@ -119,6 +177,10 @@ public class UserServiceImpl implements UserService {
             userResponseDto.setEmail(user.getEmail());
             userResponseDto.setPhoneNumber(user.getPhoneNumber());
             userResponseDto.setRole(user.getRole().getName());
+            if (null != user.getState()) userResponseDto.setState(user.getState().getName());
+            else userResponseDto.setState("state");
+            if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
+            else userResponseDto.setCountry("country");
 
             return userResponseDto;
         } else {
@@ -134,12 +196,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final HttpServletRequest request) {
-//        String role = getRoleFromRequest(request);
-//
-//        if(null == role) throw new ResourceNotFoundException("No Role found in the given token");
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
+
         try {
             final User user = User.builder().build();
             final Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
@@ -149,23 +209,14 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Email already present in DB");
             }
 
-//            if(userRequestDto.getCustomerAdminId().isEmpty() && !role.equals("OWNER")) throw new RuntimeException("NOT Authorized to save the user");
-//            else if(!userRequestDto.getCustomerAdminId().isEmpty()) {
-//
-//                final Integer tokenId = jwtUtil.getUserIdFromToken(request.getHeader("Authorization").substring(7));
-//
-//                Optional<User> optionalUserFromtokenId =
-//
-//            }
-
             log.info(String.format("saving user in DB"));
-            performSave(userRequestDto, user, null);
+            performSave(userRequestDto, user, null, request);
 
             response.setMessage("User saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
 
         } catch (Exception e) {
-            response.setMessage("Error Occurred while saving user");
+            response.setMessage(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setErrorList(List.of(e.getMessage()));
         }
@@ -178,11 +229,22 @@ public class UserServiceImpl implements UserService {
      * @param userId ID of the user which needs deletion.
      */
     @Override
-    public BasicRestResponse deleteUser(Integer userId) {
+    public BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info(String.format("delete user with given userId"));
+
+            Optional<User> optionalUser = userRepository.findById(userId);
+
+            if (optionalUser.isEmpty()) throw new ResourceNotFoundException("No user found with the given ID");
+
+            User user = optionalUser.get();
+
+            UserRequestDto userRequestDto = customMapToUserRequestDto(user);
+
+            checkForAuthority(request, "delete", userRequestDto, user);
+
             final List<Token> tokenList = tokenRepository.findByUserId(userId);
             tokenRepository.deleteAll(tokenList);
             userRepository.deleteById(userId);
@@ -196,13 +258,16 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    /**
-     * Function to update user in the database
-     *
-     * @param userDto {@link UserRequestDto}
-     */
+    private UserRequestDto customMapToUserRequestDto(User user) {
+        return UserRequestDto.builder()
+                .id(user.getId())
+                .role(user.getRole().getName())
+                .customerAdminId(user.getCustomerAdminId())
+                .build();
+    }
+
     @Override
-    public BasicRestResponse updateUser(UserRequestDto userDto, Integer userId) {
+    public BasicRestResponse updateUser(UserRequestDto userRequestDto, Integer userId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -210,13 +275,13 @@ public class UserServiceImpl implements UserService {
             if (optionalUser.isPresent()) {
                 final User user = optionalUser.get();
                 log.info(String.format("update user"));
-                if ((null != userDto.getEmail() && !userDto.getEmail().equals(user.getEmail())) ||
-                        (null != userDto.getPassword() && !userDto.getPassword().equals(user.getPassword()))) {
+                if ((null != userRequestDto.getEmail() && !userRequestDto.getEmail().equals(user.getEmail())) ||
+                        (null != userRequestDto.getPassword() && !userRequestDto.getPassword().equals(user.getPassword()))) {
                     response.setMessage("Email or Password cannot be changed!!!");
                     response.setStatus(400);
                     return response;
                 }
-                performSave(userDto, user, userDto.getId());
+                performSave(userRequestDto, user, userRequestDto.getId(), request);
                 response.setMessage("User updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             } else {
@@ -294,6 +359,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Function to validate email and token.
+     *
      * @param token Reset Password Token
      * @return {@link SendEmailResponse}
      */
@@ -326,8 +392,13 @@ public class UserServiceImpl implements UserService {
      * @param user           {@link User}
      * @param userId         ID of the user which requires update.
      */
-    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId) {
+    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId, final HttpServletRequest request) {
+
+        final String task = (userId == null) ? "save" : "update";
+
         try {
+            checkForAuthority(request, task, userRequestDto, user);
+
             mapper.mapToUser(user, userRequestDto);
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
             if (userId != null) {
@@ -335,18 +406,18 @@ public class UserServiceImpl implements UserService {
             } else {
                 user.setCreationDate(new Date());
 
-                if(null != userRequestDto.getPassword()) user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+                if (null != userRequestDto.getPassword()) user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
 
-                if(null != userRequestDto.getRole()) {
+                if (null != userRequestDto.getRole()) {
                     final Optional<Role> optionalRole = roleRepository.findByName(userRequestDto.getRole());
                     if (optionalRole.isEmpty()) throw new ResourceNotFoundException("No Role found with the given role");
-                    final Role role = optionalRole.get();
-                    user.setRole(role);
+                    final Role savedRole = optionalRole.get();
+                    user.setRole(savedRole);
                 }
 
-                if(null != userRequestDto.getState()) {
+                if (null != userRequestDto.getState()) {
                     final Optional<State> optionalState = stateRepository.findByName(userRequestDto.getState());
-                    if(optionalState.isPresent()) {
+                    if (optionalState.isPresent()) {
                         user.setState(optionalState.get());
                     } else {
                         State state = State.builder()
@@ -356,9 +427,9 @@ public class UserServiceImpl implements UserService {
                     }
                 }
 
-                if(null != userRequestDto.getCountry()) {
+                if (null != userRequestDto.getCountry()) {
                     final Optional<Country> optionalCountry = countryRepository.findByName(userRequestDto.getCountry());
-                    if(optionalCountry.isPresent()) {
+                    if (optionalCountry.isPresent()) {
                         user.setCountry(optionalCountry.get());
                     } else {
                         Country country = Country.builder()
@@ -376,7 +447,48 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public String getRoleFromRequest(HttpServletRequest request) {
-        return jwtUtil.getRoleFromToken(request.getHeader("Authorization").substring(7));
+    public void checkForAuthority(final HttpServletRequest request, String task, UserRequestDto userRequestDto, User user) {
+        String role = null;
+        Integer loggedInId = null;
+
+        final String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
+            String jwt = bearerToken.substring(7);
+            role = jwtUtil.getRoleFromToken(jwt);
+
+            if (role.equals(AppConstants.Role.FINANCE) || role.equals(AppConstants.Role.TECHNICIAN))
+                throw new RuntimeException(String.format("Not authorized to %s user", task));
+
+            loggedInId = jwtUtil.getUserIdFromToken(jwt);
+        } else throw new ResourceNotFoundException("Either token is null or of different type than bearer");
+
+        if (role.isEmpty()) throw new ResourceNotFoundException("No Role found in the given token");
+
+        if (null == loggedInId) throw new ResourceNotFoundException("No ID found in the given token");
+
+        if (userRequestDto.getRole().isEmpty()) {
+            if (null == user || null == user.getRole()) throw new ResourceNotFoundException("No Role found for the user to be updated");
+            else userRequestDto.setRole(user.getRole().getName());
+        }
+
+        if (userRequestDto.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN) && userRequestDto.getCustomerAdminId().isEmpty())
+            throw new RuntimeException("Customer admin Id cannot be null");
+
+        final Optional<User> optionalLoggedInUser = userRepository.findById(loggedInId);
+
+        if (optionalLoggedInUser.isEmpty()) throw new ResourceNotFoundException("No user found with the ID in the token");
+
+        if (role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+            if (userRequestDto.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN) || userRequestDto.getRole().equals(AppConstants.Role.OWNER)) {
+                throw new RuntimeException(String.format("Not authorized to %s customer administrator or owner", task));
+            } else if (userRequestDto.getRole().equals(AppConstants.Role.FINANCE) || userRequestDto.getRole().equals(AppConstants.Role.TECHNICIAN)) {
+                if (!userRequestDto.getCustomerAdminId().equals(optionalLoggedInUser.get().getCustomerAdminId())) {
+                    throw new RuntimeException("Customer admin ID doesn't match");
+                }
+            }
+        } else if (!role.equals(AppConstants.Role.OWNER)) {
+            throw new RuntimeException("Role not defined in the database");
+        }
     }
+
 }

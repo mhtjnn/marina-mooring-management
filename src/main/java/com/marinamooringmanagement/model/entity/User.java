@@ -49,9 +49,15 @@ public class User extends Base {
     @Column(name = "password")
     private String password;
 
+    /**
+     * The user ID.
+     */
     @Column(name = "user_ID")
     private String userID;
 
+    /**
+     * The ID of the customer admin associated with the user.
+     */
     @Column(name = "customer_admin_ID")
     private String customerAdminId;
 
@@ -62,13 +68,17 @@ public class User extends Base {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    /**
+     * The state associated with the user.
+     */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "state_id")
     private State state;
 
+    /**
+     * The country associated with the user.
+     */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Country country;
-
 }
-

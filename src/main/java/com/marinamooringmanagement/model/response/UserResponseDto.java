@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.entity.Role;
 import lombok.*;
 
 import java.io.Serializable;
@@ -16,6 +15,8 @@ import java.io.Serializable;
 @Data
 @Builder
 public class UserResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 1234534567890L;
 
     /**
      * The unique identifier for the user.
@@ -37,8 +38,14 @@ public class UserResponseDto implements Serializable {
      */
     private String phoneNumber;
 
+    /**
+     * The user ID.
+     */
     private String userID;
 
+    /**
+     * The ID of the customer admin associated with the user.
+     */
     private String customerAdminId;
 
     /**
@@ -46,7 +53,13 @@ public class UserResponseDto implements Serializable {
      */
     private String role;
 
+    /**
+     * The state associated with the user.
+     */
     private String state;
 
+    /**
+     * The country associated with the user.
+     */
     private String country;
 }

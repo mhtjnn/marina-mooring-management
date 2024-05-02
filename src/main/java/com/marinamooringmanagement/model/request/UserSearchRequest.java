@@ -52,4 +52,14 @@ public class UserSearchRequest extends BaseSearchRequest{
      * The role associated with the user.
      */
     private RoleDto role;
+
+    /**
+     * The state associated with the user.
+     */
+    private String state;
+
+    /**
+     * The country associated with the user.
+     */
+    private String country;
 }

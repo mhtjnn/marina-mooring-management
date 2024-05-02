@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
 
+/**
+ * Controller class for handling metadata-related API endpoints.
+ */
 @RestController
 @RequestMapping("/api/v1/metadata")
 @Validated
@@ -34,6 +37,15 @@ public class MetadataController {
     @Autowired
     private RoleService roleService;
 
+    /**
+     * Fetches countries from the database.
+     *
+     * @param page    Page number
+     * @param size    Page size
+     * @param sortBy  Field to sort by
+     * @param sortDir Sort direction (asc or desc)
+     * @return BasicRestResponse containing the list of countries
+     */
     @Operation(
             tags = "Fetch countries from the database",
             description = "API to fetch countries from the database",
@@ -49,7 +61,6 @@ public class MetadataController {
                             responseCode = "400"
                     )
             }
-
     )
     @RequestMapping(
             value = "/countries",
@@ -69,6 +80,15 @@ public class MetadataController {
         return countryService.fetchCountries(countrySearchRequest);
     }
 
+    /**
+     * Fetches states from the database.
+     *
+     * @param page    Page number
+     * @param size    Page size
+     * @param sortBy  Field to sort by
+     * @param sortDir Sort direction (asc or desc)
+     * @return BasicRestResponse containing the list of states
+     */
     @Operation(
             tags = "Fetch states from the database",
             description = "API to fetch states from the database",
@@ -84,7 +104,6 @@ public class MetadataController {
                             responseCode = "400"
                     )
             }
-
     )
     @RequestMapping(
             value = "/states",
@@ -104,6 +123,15 @@ public class MetadataController {
         return stateService.fetchStates(stateSearchRequest);
     }
 
+    /**
+     * Fetches roles from the database.
+     *
+     * @param page    Page number
+     * @param size    Page size
+     * @param sortBy  Field to sort by
+     * @param sortDir Sort direction (asc or desc)
+     * @return BasicRestResponse containing the list of roles
+     */
     @Operation(
             tags = "Fetch roles from the database",
             description = "API to fetch roles from the database",
@@ -119,7 +147,6 @@ public class MetadataController {
                             responseCode = "400"
                     )
             }
-
     )
     @RequestMapping(
             value = "/roles",
@@ -136,3 +163,4 @@ public class MetadataController {
     }
 
 }
+
