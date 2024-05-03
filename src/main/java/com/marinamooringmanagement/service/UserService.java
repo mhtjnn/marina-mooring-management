@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.FetchUsersResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -28,7 +29,7 @@ public interface UserService {
      * @see UserSearchRequest
      * @see BasicRestResponse
      */
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, String customerAdminId, final HttpServletRequest request);
+    public FetchUsersResponse fetchUsers(final UserSearchRequest userSearchRequest, String customerAdminId, final HttpServletRequest request);
 
     /**
      * Saves a new user or updates an existing user.

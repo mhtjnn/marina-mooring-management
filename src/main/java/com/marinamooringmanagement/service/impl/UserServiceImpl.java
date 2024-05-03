@@ -6,14 +6,11 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.UserSearchRequest;
+import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.SendEmailResponse;
-import com.marinamooringmanagement.model.response.NewPasswordResponse;
-import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +28,6 @@ import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Implementation class for User Service Interface.
@@ -81,8 +77,8 @@ public class UserServiceImpl implements UserService {
      * @see UserResponseDto
      */
     @Override
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, String customerAdminId, final HttpServletRequest request) {
-        String role = null;
+    public FetchUsersResponse fetchUsers(final UserSearchRequest userSearchRequest, final String customerAdminId, final HttpServletRequest request) {
+        String role;
         Integer loggedInId;
 
         final String bearerToken = request.getHeader("Authorization");
@@ -91,7 +87,6 @@ public class UserServiceImpl implements UserService {
             role = jwtUtil.getRoleFromToken(jwt);
             loggedInId = jwtUtil.getUserIdFromToken(jwt);
         } else {
-            loggedInId = null;
             throw new RuntimeException("INVALID TOKEN");
         }
 
@@ -99,8 +94,8 @@ public class UserServiceImpl implements UserService {
 
         if (null == loggedInId) throw new ResourceNotFoundException("No ID found in the given token");
 
-        final BasicRestResponse response = BasicRestResponse.builder().build();
-        response.setTime(new Timestamp(System.currentTimeMillis()));
+        final FetchUsersResponse fetchUsersResponse = FetchUsersResponse.builder().build();
+        fetchUsersResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
 
             final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
@@ -108,57 +103,144 @@ public class UserServiceImpl implements UserService {
 
             if (userList.isEmpty()) throw new ResourceNotFoundException("No Users found");
 
-            List<UserResponseDto> userResponseDtoList = new ArrayList<>();
-
-            userResponseDtoList = userList.getContent().stream().map(this::customMapToUserResponseDto).collect(Collectors.toList());
+            List<UserResponseDto> userResponseDtoList = userList
+                    .getContent()
+                    .stream()
+                    .map(this::customMapToUserResponseDto)
+                    .toList();
 
             List<UserResponseDto> userWithSameCustomerAdminId = null;
 
             if (null != customerAdminId) {
-                String finalCustomerAdminId = customerAdminId;
-                userWithSameCustomerAdminId = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getCustomerAdminId().equals(finalCustomerAdminId) && !Objects.equals(user.getId(), loggedInId)).toList();
+                userWithSameCustomerAdminId = userResponseDtoList
+                        .stream()
+                        .filter(
+                                user -> null != user.getCustomerAdminId()
+                                        && !user.getCustomerAdminId().isEmpty()
+                                        && user.getCustomerAdminId().equals(customerAdminId)
+                                        && !Objects.equals(user.getId(), loggedInId)
+                        )
+                        .toList();
             }
 
             Page<UserResponseDto> userWithSameCustomerAdminIdPage = null;
-            if (null != userWithSameCustomerAdminId) userWithSameCustomerAdminIdPage = new PageImpl<>(userWithSameCustomerAdminId);
+            if (null != userWithSameCustomerAdminId) userWithSameCustomerAdminIdPage =
+                    new PageImpl<>(userWithSameCustomerAdminId, p, userWithSameCustomerAdminId.size());
 
             if (role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
-                response.setContent(userWithSameCustomerAdminIdPage.getContent());
-                response.setMessage("Users fetched Successfully");
-                response.setStatus(HttpStatus.OK.value());
-                return response;
+                return fetchUsersCustomerAdminRole(customerAdminId, fetchUsersResponse, userWithSameCustomerAdminIdPage);
             } else if (role.equals(AppConstants.Role.OWNER)) {
-                List<UserResponseDto> userWithCustomerAdminRole = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)).toList();
+                return fetchUsersOwnerRole(userResponseDtoList, customerAdminId, p, userWithSameCustomerAdminId, loggedInId, userWithSameCustomerAdminIdPage, fetchUsersResponse);
+            } else {
+                throw new RuntimeException("Not authorized to fetch the users");
+            }
+        } catch (Exception e) {
+            fetchUsersResponse.setMessage(e.getLocalizedMessage());
+            fetchUsersResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
 
-                if (userWithCustomerAdminRole.isEmpty()) response.setContent("No user found with Customer Admin role");
+        return fetchUsersResponse;
+    }
 
-                Page<UserResponseDto> userWithCustomerAdminRolePage = null;
-                userWithCustomerAdminRolePage = new PageImpl<>(userWithCustomerAdminRole);
-
-                if(null == customerAdminId || customerAdminId.isEmpty()) customerAdminId = userWithCustomerAdminRole.get(0).getCustomerAdminId();
-
-                String finalCustomerAdminIdForOwner = customerAdminId;
-                userWithSameCustomerAdminId = userResponseDtoList.stream().filter(user -> null != user.getCustomerAdminId() && !user.getCustomerAdminId().isEmpty() && user.getCustomerAdminId().equals(finalCustomerAdminIdForOwner) && !Objects.equals(user.getId(), loggedInId) && !user.getRole().equals(AppConstants.Role.OWNER) && !user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)).toList();
-
-                userWithSameCustomerAdminIdPage = new PageImpl<>(userWithSameCustomerAdminId);
-
-                response.setContent(List.of(userWithCustomerAdminRolePage, userWithSameCustomerAdminIdPage));
-                response.setMessage("Users fetched Successfully");
-                response.setStatus(HttpStatus.OK.value());
+    /**
+     * Fetches users for the customer admin role.
+     *
+     * @param customerAdminId           The customer admin ID.
+     * @param fetchUsersResponse        The response object.
+     * @param userWithSameCustomerAdminIdPage The page containing users with the same customer admin ID.
+     * @return The response object containing fetched users.
+     */
+    private FetchUsersResponse fetchUsersCustomerAdminRole(
+            final String customerAdminId,
+            final FetchUsersResponse fetchUsersResponse,
+            final Page<UserResponseDto> userWithSameCustomerAdminIdPage
+    ) {
+        try {
+            if (null == customerAdminId || customerAdminId.isEmpty()) {
+                throw new RuntimeException("Customer ID is null");
             }
 
+            if (userWithSameCustomerAdminIdPage.isEmpty()) {
+                throw new ResourceNotFoundException("No users found with the given customer ID");
+            }
 
-            log.info("fetch all users");
-            response.setMessage("Users fetched Successfully");
-            response.setStatus(HttpStatus.OK.value());
-            response.setContent(userResponseDtoList);
+            fetchUsersResponse.setContent(List.of(userWithSameCustomerAdminIdPage));
+            fetchUsersResponse.setMessage("Users fetched Successfully");
+            fetchUsersResponse.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
-            response.setMessage("Error Occurred while fetching user from the database");
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.setErrorList(List.of(e.getMessage()));
+            fetchUsersResponse.setMessage(e.getLocalizedMessage());
+            fetchUsersResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-        return response;
+
+        return fetchUsersResponse;
     }
+
+    /**
+     * Fetches users for the owner role.
+     *
+     * @param userResponseDtoList           The list of user response DTOs.
+     * @param customerAdminId               The customer admin ID.
+     * @param p                             The pageable object.
+     * @param userWithSameCustomerAdminId   The list of users with the same customer admin ID.
+     * @param loggedInId                    The logged-in user ID.
+     * @param userWithSameCustomerAdminIdPage The page containing users with the same customer admin ID.
+     * @param fetchUsersResponse            The response object.
+     * @return The response object containing fetched users.
+     */
+    private FetchUsersResponse fetchUsersOwnerRole(
+            final List<UserResponseDto> userResponseDtoList,
+            String customerAdminId,
+            final Pageable p,
+            List<UserResponseDto> userWithSameCustomerAdminId,
+            final Integer loggedInId,
+            Page<UserResponseDto> userWithSameCustomerAdminIdPage,
+            final FetchUsersResponse fetchUsersResponse
+    ) {
+        try {
+            List<UserResponseDto> userWithCustomerAdminRole = userResponseDtoList
+                    .stream()
+                    .filter(
+                            user -> null != user.getCustomerAdminId()
+                                    && !user.getCustomerAdminId().isEmpty()
+                                    && user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)
+                    )
+                    .toList();
+
+            Page<UserResponseDto> userWithCustomerAdminRolePage;
+            userWithCustomerAdminRolePage = new PageImpl<>(userWithCustomerAdminRole, p, userWithCustomerAdminRole.size());
+
+            if (null == customerAdminId || customerAdminId.isEmpty()) {
+                customerAdminId = userWithCustomerAdminRole.get(0).getCustomerAdminId();
+            }
+
+            String finalCustomerAdminIdForOwner = customerAdminId;
+            userWithSameCustomerAdminId = userResponseDtoList
+                    .stream()
+                    .filter(
+                            user -> null != user.getCustomerAdminId()
+                                    && !user.getCustomerAdminId().isEmpty()
+                                    && user.getCustomerAdminId().equals(finalCustomerAdminIdForOwner)
+                                    && !Objects.equals(user.getId(), loggedInId)
+                                    && !user.getRole().equals(AppConstants.Role.OWNER)
+                                    && !user.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)
+                    )
+                    .toList();
+
+            userWithSameCustomerAdminIdPage = new PageImpl<>(userWithSameCustomerAdminId, p, userWithSameCustomerAdminId.size());
+
+            fetchUsersResponse.setContent(List.of(userWithCustomerAdminRolePage, userWithSameCustomerAdminIdPage));
+            fetchUsersResponse.setMessage("Users fetched Successfully");
+            fetchUsersResponse.setStatus(HttpStatus.OK.value());
+
+            fetchUsersResponse.setContent(List.of(userWithCustomerAdminRolePage, userWithSameCustomerAdminIdPage));
+        } catch (Exception e) {
+            fetchUsersResponse.setMessage(e.getLocalizedMessage());
+            fetchUsersResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return fetchUsersResponse;
+    }
+
 
     /**
      * Maps a User entity to a UserResponseDto object.
@@ -166,7 +248,7 @@ public class UserServiceImpl implements UserService {
      * @param user The User entity
      * @return UserResponseDto object
      */
-    public UserResponseDto customMapToUserResponseDto(User user) {
+    public UserResponseDto customMapToUserResponseDto(final User user) {
         if (null != user) {
             final UserResponseDto userResponseDto = UserResponseDto.builder().build();
 
@@ -258,7 +340,7 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    private UserRequestDto customMapToUserRequestDto(User user) {
+    private UserRequestDto customMapToUserRequestDto(final User user) {
         return UserRequestDto.builder()
                 .id(user.getId())
                 .role(user.getRole().getName())
@@ -267,7 +349,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public BasicRestResponse updateUser(UserRequestDto userRequestDto, Integer userId, final HttpServletRequest request) {
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -413,6 +495,8 @@ public class UserServiceImpl implements UserService {
                     if (optionalRole.isEmpty()) throw new ResourceNotFoundException("No Role found with the given role");
                     final Role savedRole = optionalRole.get();
                     user.setRole(savedRole);
+
+                    if(user.getRole().getName().equals(AppConstants.Role.OWNER)) user.setCustomerAdminId(null);
                 }
 
                 if (null != userRequestDto.getState()) {
@@ -443,13 +527,13 @@ public class UserServiceImpl implements UserService {
             }
         } catch (Exception e) {
             log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
-            throw new RuntimeException("Error occurred during perform save method", e);
+            throw new RuntimeException(e.getLocalizedMessage(), e);
         }
     }
 
-    public void checkForAuthority(final HttpServletRequest request, String task, UserRequestDto userRequestDto, User user) {
-        String role = null;
-        Integer loggedInId = null;
+    public void checkForAuthority(final HttpServletRequest request, final String task, final UserRequestDto userRequestDto, final User user) {
+        String role;
+        Integer loggedInId;
 
         final String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
