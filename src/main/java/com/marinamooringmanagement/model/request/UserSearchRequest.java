@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserSearchRequest extends BaseSearchRequest{
+public class UserSearchRequest extends BaseSearchRequest {
+
     /**
      * The unique identifier for the user.
      */
@@ -62,4 +63,19 @@ public class UserSearchRequest extends BaseSearchRequest{
      * The country associated with the user.
      */
     private String country;
+
+    /**
+     * The street address associated with the user.
+     */
+    private String street;
+
+    /**
+     * The apartment number associated with the user.
+     */
+    private String apt;
+
+    /**
+     * The ZIP code associated with the user.
+     */
+    private String zipCode;
 }

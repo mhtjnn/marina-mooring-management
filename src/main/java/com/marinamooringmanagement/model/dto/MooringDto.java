@@ -24,7 +24,7 @@ public class MooringDto extends BaseDto implements Serializable {
     private Integer id;
 
     /**
-     * Name of the mooring
+     * Name of the mooring.
      */
     private String mooringName;
 
@@ -52,6 +52,11 @@ public class MooringDto extends BaseDto implements Serializable {
      * GPS coordinates of the mooring.
      */
     private String gpsCoordinates;
+
+    /**
+     * Name of the boatyard associated with the mooring.
+     */
+    private String boatyardName;
 
     /**
      * Name of the boat associated with the mooring.
@@ -112,4 +117,9 @@ public class MooringDto extends BaseDto implements Serializable {
      * Depth at mean high water at the mooring location.
      */
     private Integer depthAtMeanHighWater;
+
+    /**
+     * Status of the mooring.
+     */
+    private String status;
 }

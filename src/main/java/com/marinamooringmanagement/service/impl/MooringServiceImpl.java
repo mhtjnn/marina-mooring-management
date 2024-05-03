@@ -1,12 +1,15 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.MooringMapper;
+import com.marinamooringmanagement.model.entity.Boatyard;
 import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
+import com.marinamooringmanagement.repositories.BoatyardRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.service.MooringService;
@@ -40,6 +43,9 @@ public class MooringServiceImpl implements MooringService {
 
     @Autowired
     private MooringRepository mooringRepository;
+
+    @Autowired
+    private BoatyardRepository boatyardRepository;
 
     public MooringServiceImpl() {}
 
@@ -164,10 +170,22 @@ public class MooringServiceImpl implements MooringService {
             }
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
             mapper.mapToMooring(mooring, mooringRequestDto);
-            return mooringRepository.save(mooring);
+            mooring.setStatus(AppConstants.Status.GEAR_IN);
+
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
+
+            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
+
+            Mooring savedMooring = mooringRepository.save(mooring);
+
+            optionalBoatyard.get().getMooringList().add(savedMooring);
+
+            boatyardRepository.save(optionalBoatyard.get());
         } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());
-            throw new DBOperationException("Error occurred during performSave() function", e);
+            throw new DBOperationException(e.getMessage(), e);
         }
+
+        return mooring;
     }
 }

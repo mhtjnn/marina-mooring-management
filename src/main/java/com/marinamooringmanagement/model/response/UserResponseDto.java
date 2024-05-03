@@ -62,4 +62,19 @@ public class UserResponseDto implements Serializable {
      * The country associated with the user.
      */
     private String country;
+
+    /**
+     * The street address.
+     */
+    private String street;
+
+    /**
+     * The apartment or unit number.
+     */
+    private String apt;
+
+    /**
+     * The ZIP code.
+     */
+    private String zipCode;
 }

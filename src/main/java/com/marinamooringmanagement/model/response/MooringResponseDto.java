@@ -55,6 +55,8 @@ public class MooringResponseDto implements Serializable {
      */
     private String gpsCoordinates;
 
+    private String boatyardName;
+
     /**
      * The name of the boat associated with the mooring.
      */
@@ -114,4 +116,9 @@ public class MooringResponseDto implements Serializable {
      * The depth at mean high water at the mooring location.
      */
     private Integer depthAtMeanHighWater;
+
+    /**
+     * The status of mooring
+     */
+    private String status;
 }

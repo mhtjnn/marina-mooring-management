@@ -68,6 +68,22 @@ public class UserDto extends BaseDto implements Serializable {
      * The country associated with the user.
      */
     private CountryDto countryDto;
+
+    /**
+     * The street address of the user.
+     */
+    private String street;
+
+    /**
+     * The apartment number of the user.
+     */
+    private String apt;
+
+    /**
+     * The zip code of the user's location.
+     */
+    private String zipCode;
 }
+
 
 

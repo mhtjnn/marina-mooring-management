@@ -62,6 +62,24 @@ public class User extends Base {
     private String customerAdminId;
 
     /**
+     * The street address of the user.
+     */
+    @Column(name = "street")
+    private String street;
+
+    /**
+     * The apartment number of the user.
+     */
+    @Column(name = "apt")
+    private String apt;
+
+    /**
+     * The zip code of the user's location.
+     */
+    @Column(name = "zipcode")
+    private String zipCode;
+
+    /**
      * The role associated with the user.
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
@@ -82,3 +100,4 @@ public class User extends Base {
     @JoinColumn(name = "country_id")
     private Country country;
 }
+

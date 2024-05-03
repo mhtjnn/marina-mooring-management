@@ -43,4 +43,31 @@ public class AppConstants {
          */
         public static final String DEFAULT_PAGE_NUM = "0";
     }
+
+    /**
+     * This class defines constants representing different statuses.
+     */
+    public static class Status {
+
+        /**
+         * Indicates that an item needs inspection.
+         */
+        public static final String NEED_INSPECTION = "NEED_INSPECTION";
+
+        /**
+         * Indicates that the gear is off.
+         */
+        public static final String GEAR_OFF = "GEAR_OFF";
+
+        /**
+         * Indicates that the gear is in use.
+         */
+        public static final String GEAR_IN = "GEAR_IN";
+
+        /**
+         * Indicates that the item is not in use.
+         */
+        public static final String NOT_IN_USE = "NOT_IN_USE";
+    }
+
 }

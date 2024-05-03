@@ -68,5 +68,21 @@ public class UserRequestDto implements Serializable {
      * The country associated with the user.
      */
     private String country;
+
+    /**
+     * The street address associated with the user.
+     */
+    private String street;
+
+    /**
+     * The apartment number associated with the user.
+     */
+    private String apt;
+
+    /**
+     * The ZIP code associated with the user.
+     */
+    private String zipCode;
 }
+
 

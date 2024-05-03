@@ -53,6 +53,12 @@ public class MooringRequestDto implements Serializable {
     private String gpsCoordinates;
 
     /**
+     * Name of the boatyard associated with the mooring.
+     */
+    @NotNull(message = "Boatyard name cannot be blank")
+    private String boatyardName;
+
+    /**
      * Name of the boat associated with the mooring.
      */
     private String boatName;
@@ -111,4 +117,9 @@ public class MooringRequestDto implements Serializable {
      * Depth at mean high water at the mooring location.
      */
     private Integer depthAtMeanHighWater;
+
+    /**
+     * The status of the mooring.
+     */
+    private String status;
 }

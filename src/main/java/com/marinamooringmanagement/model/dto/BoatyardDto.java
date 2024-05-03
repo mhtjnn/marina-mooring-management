@@ -1,59 +1,71 @@
-package com.marinamooringmanagement.model.entity;
+package com.marinamooringmanagement.model.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+
 /**
- * Entity class representing a BoatYard.
- * This class is used to map BoatYard objects to database entities.
+ * Data Transfer Object (DTO) for BoatYard entities.
+ * This DTO represents a BoatYard and is used for transferring data between layers of the application.
  */
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
-public class BoatYard extends Base {
-    /**
-     * The unique identifier of the BoatYard.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+public class BoatyardDto extends BaseDto {
+
     private Integer id;
+
     /**
      * The boatyard ID of the BoatYard.
      */
-    @Column(name = "boatyard_id")
     private String boatyardId;
+
     /**
      * The name of the BoatYard.
      */
-    @Column(name = "boatYard_name")
-    private String boatYardName;
+    private String boatyardName;
 
     /**
      * The email address of the BoatYard owner.
      */
-    @Column(name = "email_address")
     private String emailAddress;
+
     /**
      * The phone number of the BoatYard.
      */
-    @Column(name = "phone")
     private String phone;
 
     /**
      * The address associated with an entity, such as a customer or location.
      */
-    @Column(name = "address")
-    private String address;
+    private String street;
+
+    private String apt;
+
+    /**
+     * The state associated with the BoatYard.
+     */
+    private StateDto state;
+
+    /**
+     * The country associated with the BoatYard.
+     */
+    private CountryDto country;
+
+    private String zipCode;
+
     /**
      * The main contact detail, typically a name or a primary phone number,
      * for reaching the primary contact person associated with this entity.
      */
-    @Column(name = "main_contact")
     private String mainContact;
 
+    /**
+     * List of moorings associated with the BoatYard.
+     */
+    private List<MooringDto> mooringDtoList;
 }
+

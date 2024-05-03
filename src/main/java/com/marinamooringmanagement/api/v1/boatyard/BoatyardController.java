@@ -1,9 +1,9 @@
 package com.marinamooringmanagement.api.v1.boatyard;
 
-import com.marinamooringmanagement.model.dto.BoatYardDto;
-import com.marinamooringmanagement.model.request.BoatYardRequestDto;
+import com.marinamooringmanagement.model.dto.BoatyardDto;
+import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.service.BoatYardService;
+import com.marinamooringmanagement.service.BoatyardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,7 +26,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 public class BoatyardController {
 
     @Autowired
-    private BoatYardService boatYardService;
+    private BoatyardService boatyardService;
 
     /**
      * Endpoint for creating a new Boat Yard.
@@ -34,7 +34,7 @@ public class BoatyardController {
      * @param boatYardRequestDto The BoatYardDto containing the details of the Boat Yard to be created.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-
+    @PostMapping(value = "/", produces = {"application/json"})
     @Operation(
             tags = "Save BoatYard in the database",
             description = "API to save BoatYard in the database",
@@ -50,14 +50,9 @@ public class BoatyardController {
                             responseCode = "400"
                     )
             }
-
     )
-    @PostMapping(value = "/",
-            produces = {"application/json"})
-    public BasicRestResponse saveBoatYard(@Valid @RequestBody BoatYardRequestDto boatYardRequestDto
-    ) {
-
-        return boatYardService.saveBoatYard(boatYardRequestDto);
+    public BasicRestResponse saveBoatyard(@Valid @RequestBody BoatyardRequestDto boatYardRequestDto) {
+        return boatyardService.saveBoatYard(boatYardRequestDto);
     }
 
     /**
@@ -69,7 +64,8 @@ public class BoatyardController {
      * @param sortDir    The direction of sorting (default: asc).
      * @return A list of BoatYardDto objects.
      */
-
+    @GetMapping(value = "/", produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             tags = "Fetch BoatYard from the database",
             description = "API to fetch BoatYard from the database",
@@ -85,18 +81,13 @@ public class BoatyardController {
                             responseCode = "400"
                     )
             }
-
     )
-    @GetMapping(value = "/",
-            produces = {"application/json"})
-    @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse getBoatYards(
+    public BasicRestResponse fetchBoatyards(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
-    ) {
-        return boatYardService.getBoatYard(pageNumber, pageSize, sortBy, sortDir);
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
+        return boatyardService.fetchBoatyards(pageNumber, pageSize, sortBy, sortDir);
     }
 
     /**
@@ -105,11 +96,10 @@ public class BoatyardController {
      * @param id The ID of the Boat Yard to retrieve.
      * @return The BoatYardDto object corresponding to the given ID.
      */
-    @GetMapping(value = "/{id}",
-            produces = {"application/json"})
+    @GetMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BoatYardDto getBoatYard(@PathVariable(value = "id") Integer id) {
-        return this.boatYardService.getbyId(id);
+    public BoatyardDto getBoatyard(@PathVariable(value = "id") Integer id) {
+        return this.boatyardService.getbyId(id);
     }
 
     /**
@@ -118,7 +108,8 @@ public class BoatyardController {
      * @param id The ID of the Boat Yard to delete.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-
+    @DeleteMapping(value = "/{id}", produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             tags = "Delete BoatYard from the database",
             description = "API to delete BoatYard from the database",
@@ -134,14 +125,9 @@ public class BoatyardController {
                             responseCode = "400"
                     )
             }
-
     )
-    @DeleteMapping(value = "/{id}",
-            produces = {"application/json"})
-    @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse deleteBoatYard(@PathVariable(value = "id") Integer id) {
-
-        return boatYardService.deleteBoatYardbyId(id);
+    public BasicRestResponse deleteBoatyard(@PathVariable(value = "id") Integer id) {
+        return boatyardService.deleteBoatYardbyId(id);
     }
 
     /**
@@ -151,7 +137,8 @@ public class BoatyardController {
      * @param boatYardRequestDto The BoatYardDto containing the updated details.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-
+    @PutMapping(value = "/{id}", produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             tags = "Update BoatYard in the database",
             description = "API to update BoatYard in the database",
@@ -167,16 +154,12 @@ public class BoatyardController {
                             responseCode = "400"
                     )
             }
-
     )
-    @PutMapping(value = "/{id}",
-            produces = {"application/json"})
-    @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse updateBoatYard(
+    public BasicRestResponse updateBoatyard(
             @PathVariable(value = "id", required = true) Integer id,
-            @Valid @RequestBody BoatYardRequestDto boatYardRequestDto
-    ) {
-        return boatYardService.updateBoatYard(boatYardRequestDto, id);
+            @Valid @RequestBody BoatyardRequestDto boatYardRequestDto) {
+        return boatyardService.updateBoatYard(boatYardRequestDto, id);
     }
 
 }
+

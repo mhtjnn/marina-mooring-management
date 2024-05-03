@@ -20,7 +20,7 @@ public class Mooring extends Base {
     private Integer id;
 
     /**
-     * Name of the mooring
+     * Name of the mooring.
      */
     @Column(name = "mooring_name")
     private String mooringName;
@@ -54,6 +54,12 @@ public class Mooring extends Base {
      */
     @Column(name = "gps_coordinates")
     private String gpsCoordinates;
+
+    /**
+     * Name of the boatyard associated with the mooring.
+     */
+    @Column(name = "boatyard_name")
+    private String boatyardName;
 
     /**
      * Name of the boat associated with the mooring.
@@ -126,4 +132,10 @@ public class Mooring extends Base {
      */
     @Column(name = "depth_at_high_water")
     private Integer depthAtMeanHighWater;
+
+    /**
+     * Status of the mooring.
+     */
+    @Column(name = "status")
+    private String status;
 }
