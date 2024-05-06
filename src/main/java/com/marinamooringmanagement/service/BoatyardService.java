@@ -12,9 +12,9 @@ public interface BoatyardService {
     /**
      * Saves a BoatYard entity.
      *
-     * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
+     * @param boatyardRequestDto The BoatYardDto containing the data to be saved.
      */
-    BasicRestResponse saveBoatYard(final BoatyardRequestDto boatYardRequestDto);
+    BasicRestResponse saveBoatyard(final BoatyardRequestDto boatyardRequestDto);
 
     /**
      * Retrieves a list of BoatYard entities.
@@ -23,7 +23,7 @@ public interface BoatyardService {
      * @param pageSize   The size of each page.
      * @param sortBy     The field to sort by.
      * @param sortDir    The direction of sorting.
-     * @return A list of BoatYardDto objects.
+     * @return A list of BoatyardDto objects.
      */
     BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
 
@@ -40,7 +40,7 @@ public interface BoatyardService {
      *
      * @param id The ID of the BoatYard to delete.
      */
-    BasicRestResponse deleteBoatYardbyId(final Integer id);
+    BasicRestResponse deleteBoatyardById(final Integer id);
 
     /**
      * Updates a BoatYard entity.
@@ -49,5 +49,5 @@ public interface BoatyardService {
      * @param id                 The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    BasicRestResponse updateBoatYard(final BoatyardRequestDto boatYardRequestDto, final Integer id);
+    BasicRestResponse updateBoatyard(final BoatyardRequestDto boatyardRequestDto, final Integer id);
 }

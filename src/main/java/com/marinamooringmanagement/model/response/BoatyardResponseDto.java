@@ -71,6 +71,8 @@ public class BoatyardResponseDto {
      */
     private String mainContact;
 
+    private String gpsCoordinates;
+
     /**
      * List of mooring response DTOs associated with the BoatYard.
      */

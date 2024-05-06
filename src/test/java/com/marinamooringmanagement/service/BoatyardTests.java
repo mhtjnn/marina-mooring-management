@@ -48,7 +48,7 @@ public class BoatyardTests {
         Boatyard boatYard = Boatyard.builder().build();
         when(boatYardMapper.mapToBoatYard(boatYard, boatYardRequestDto)).thenReturn(boatYard);
 
-        assertDoesNotThrow(() -> boatYardService.saveBoatYard(boatYardRequestDto));
+        assertDoesNotThrow(() -> boatYardService.saveBoatyard(boatYardRequestDto));
 
         verify(boatYardRepository, times(1)).save(boatYard);
     }
@@ -56,7 +56,7 @@ public class BoatyardTests {
     @Test
     public void testBoatYardDeleteById() {
         Integer id = 1;
-        assertDoesNotThrow(() -> boatYardService.deleteBoatYardbyId(id));
+        assertDoesNotThrow(() -> boatYardService.deleteBoatyardById(id));
         verify(boatYardRepository, times(1)).deleteById(id);
     }
 
@@ -73,7 +73,7 @@ public class BoatyardTests {
         when(boatYardRepository.findById(id)).thenReturn(optionalBoatYard);
         when(boatYardMapper.mapToBoatYard(boatYard, boatYardRequestDto)).thenReturn(boatYard);
 
-        BasicRestResponse response = boatYardService.updateBoatYard(boatYardRequestDto, id);
+        BasicRestResponse response = boatYardService.updateBoatyard(boatYardRequestDto, id);
         assertNotNull(response);
         assertEquals(HttpStatus.OK.value(), response.getStatus());
         assertEquals("BoatYard with the given boatyard id updated successfully!!!", response.getMessage());
@@ -109,7 +109,7 @@ public class BoatyardTests {
 
         doThrow(DBOperationException.class).when(boatYardRepository).deleteById(id);
 
-        assertThrows(DBOperationException.class, () -> boatYardService.deleteBoatYardbyId(id));
+        assertThrows(DBOperationException.class, () -> boatYardService.deleteBoatyardById(id));
     }
 
 }

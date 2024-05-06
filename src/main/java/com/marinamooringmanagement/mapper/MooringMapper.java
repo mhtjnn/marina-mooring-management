@@ -5,6 +5,7 @@ import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -22,6 +23,8 @@ public interface MooringMapper {
      * @param mooring The source Mooring entity to map from.
      * @return The mapped MooringDto object.
      */
+    @Mapping(target = "boatyard", ignore = true)
+    @Mapping(target = "customer", ignore = true)
     MooringDto mapToMooringDto(@MappingTarget MooringDto dto, Mooring mooring);
 
     /**
@@ -31,6 +34,8 @@ public interface MooringMapper {
      * @param dto     The source MooringDto object to map from.
      * @return The mapped Mooring entity.
      */
+    @Mapping(target = "boatyard", ignore = true)
+    @Mapping(target = "customer", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringDto dto);
 
     /**
@@ -40,6 +45,8 @@ public interface MooringMapper {
      * @param mooring The source Mooring entity to map from.
      * @return The mapped MooringResponseDto object.
      */
+    @Mapping(target = "boatyard", ignore = true)
+    @Mapping(target = "customer", ignore = true)
     MooringResponseDto mapToMooringResponseDto(@MappingTarget MooringResponseDto dto, Mooring mooring);
 
     /**

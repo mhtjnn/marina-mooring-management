@@ -1,0 +1,51 @@
+package com.marinamooringmanagement.service;
+
+import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
+
+/**
+ * Service interface for managing Customer entities.
+ */
+public interface CustomerService {
+    /**
+     * Saves a new customer.
+     *
+     * @param customerDto The DTO containing customer information.
+     */
+    BasicRestResponse saveCustomer(final CustomerRequestDto customerDto);
+
+    /**
+     * Retrieves a list of customers with pagination and sorting.
+     *
+     * @param pageNumber The page number.
+     * @param pageSize   The page size.
+     * @param sortBy     The field to sort by.
+     * @param sortDir    The sorting direction.
+     * @return A list of CustomerDto objects.
+     */
+    public BasicRestResponse getCustomers(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
+
+    /**
+     * Retrieves a customer by ID.
+     *
+     * @param id The ID of the customer.
+     * @return The CustomerDto object.
+     */
+    CustomerDto getbyId(final Integer id);
+
+    /**
+     * Updates an existing customer.
+     *
+     * @param customerRequestDto The DTO containing updated customer information.
+     * @param id                 The ID of the customer to update.
+     */
+    BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id);
+
+    /**
+     * Deletes a customer by ID.
+     *
+     * @param id The ID of the customer to delete.
+     */
+    BasicRestResponse deleteCustomerbyId(final Integer id);
+}

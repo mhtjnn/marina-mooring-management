@@ -1,43 +1,63 @@
-package com.marinamooringmanagement.model.dto;
+package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.util.List;
-
 /**
- * Represents a mooring data transfer object (DTO) used for transferring mooring-related information.
+ * Data Transfer Object (DTO) representing a customer request, encapsulating details
+ * necessary for managing customer information and requests within the system.
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MooringDto extends BaseDto implements Serializable {
-
-    private static final long serialVersionUID = 5502680630355079L;
-
-    /**
-     * Unique identifier for the mooring.
-     */
+public class CustomerRequestDto {
     private Integer id;
-
     /**
-     * Name of the mooring.
-     */
-    private String mooringName;
-
-    /**
-     * Name of the customer associated with the mooring.
+     * The name of the customer making the request.
      */
     private String customerName;
+    /**
+     * The customer's identification number or code.
+     */
+    private String customerId;
+    /**
+     * The email address of the customer.
+     */
+    private String emailAddress;
+    /**
+     * The phone number of the customer.
+     */
+    private String phone;
+    /**
+     * The street and house details of the customer's address.
+     */
+    private String streetHouse;
+    /**
+     * The Apt/Suite of the customer's address.
+     */
+    private String aptSuite;
+    /**
+     * The state or region of the customer's address.
+     */
+    private String state;
+    /**
+     * The country of the customer's address.
+     */
+    private String country;
+    /**
+     * The zip code or postal code of the customer's address.
+     */
+    private String zipCode;
 
     /**
-     * Mooring number assigned to the mooring.
+     * Name of the mooring
      */
-    private String mooringNumber;
+    @NotNull(message = "Mooring ID cannot be null")
+    private String mooringId;
 
     /**
      * Harbor where the mooring is located.
@@ -57,6 +77,7 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Name of the boatyard associated with the mooring.
      */
+    @NotNull(message = "Boatyard name cannot be blank")
     private String boatyardName;
 
     /**
@@ -90,14 +111,14 @@ public class MooringDto extends BaseDto implements Serializable {
     private String typeOfWeight;
 
     /**
-     * Condition of the eye related to the mooring.
-     */
-    private String conditionOfEye;
-
-    /**
      * Condition of the top chain related to the mooring.
      */
     private String topChainCondition;
+
+    /**
+     * Condition of the eye related to the mooring.
+     */
+    private String conditionOfEye;
 
     /**
      * Condition of the bottom chain related to the mooring.
@@ -120,11 +141,9 @@ public class MooringDto extends BaseDto implements Serializable {
     private Integer depthAtMeanHighWater;
 
     /**
-     * Status of the mooring.
+     * The status of the mooring.
      */
     private String status;
 
-    private BoatyardDto boatyard;
-
-    private List<CustomerDto> customer;
+    private String gpsCoordinate;
 }

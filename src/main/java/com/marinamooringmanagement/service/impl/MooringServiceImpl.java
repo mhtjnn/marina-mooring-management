@@ -176,6 +176,8 @@ public class MooringServiceImpl implements MooringService {
 
             if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
 
+            mooring.setBoatyard(optionalBoatyard.get());
+
             Mooring savedMooring = mooringRepository.save(mooring);
 
             optionalBoatyard.get().getMooringList().add(savedMooring);

@@ -69,7 +69,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
      */
     @Override
-    public BasicRestResponse saveBoatYard(final BoatyardRequestDto boatYardRequestDto) {
+    public BasicRestResponse saveBoatyard(final BoatyardRequestDto boatYardRequestDto) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -163,7 +163,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param id The ID of the BoatYard to delete.
      */
     @Override
-    public BasicRestResponse deleteBoatYardbyId(final Integer id) {
+    public BasicRestResponse deleteBoatyardById(final Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -186,7 +186,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse updateBoatYard(final BoatyardRequestDto boatYardRequestDto, final Integer id) {
+    public BasicRestResponse updateBoatyard(final BoatyardRequestDto boatYardRequestDto, final Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             if (null == id) {

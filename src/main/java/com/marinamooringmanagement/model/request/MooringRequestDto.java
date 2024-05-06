@@ -17,11 +17,6 @@ public class MooringRequestDto implements Serializable {
     private static final long serialVersionUID = 550268063035509L;
 
     /**
-     * Unique identifier for the mooring.
-     */
-    private Integer id;
-
-    /**
      * Name of the mooring
      */
     private String mooringName;

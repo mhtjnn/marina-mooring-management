@@ -66,5 +66,7 @@ public class BoatyardRequestDto {
      * for reaching the primary contact person associated with this entity.
      */
     private String mainContact;
+
+    private String gpsCoordinates;
 }
 

@@ -88,10 +88,12 @@ public class Boatyard extends Base {
     @Column(name = "main_contact")
     private String mainContact;
 
+    @Column(name = "gps_coordinates")
+    private String gpsCoordinates;
+
     /**
      * The list of moorings associated with the BoatYard.
      */
-    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "boatyard_id")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Mooring> mooringList;
 }
