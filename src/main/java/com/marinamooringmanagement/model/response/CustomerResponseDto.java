@@ -1,10 +1,11 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.entity.Mooring;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * Data Transfer Object (DTO) representing a response for customer details,
@@ -56,4 +57,5 @@ public class CustomerResponseDto {
      */
     private String zipCode;
 
+    private List<MooringResponseDto> mooringResponseDtoList;
 }

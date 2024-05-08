@@ -79,7 +79,7 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			roleRepository.save(roleTechnician);
 		}
 
-		final String userSql = "SELECT * FROM user";
+		final String userSql = "SELECT * FROM _user";
 		final List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) ->
 				null);
 

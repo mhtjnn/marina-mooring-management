@@ -10,15 +10,6 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
  */
 public interface MooringService {
 
-    /**
-     * Fetches a paginated list of moorings.
-     *
-     * @param page    the page number
-     * @param size    the page size
-     * @param sortBy  the field to sort by
-     * @param sortDir the sort direction (asc or desc)
-     * @return a list of mooring response DTOs
-     */
     BasicRestResponse fetchMoorings(final MooringSearchRequest mooringSearchRequest);
 
     /**

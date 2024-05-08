@@ -29,7 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping(value = "/api/v1/user")
 @Validated
-@CrossOrigin("*")
+@CrossOrigin
 public class UserController {
     @Autowired
     private UserService userService;
@@ -66,7 +66,6 @@ public class UserController {
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET
-//            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "auth")

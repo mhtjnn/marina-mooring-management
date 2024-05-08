@@ -1,8 +1,10 @@
-package com.marinamooringmanagement.api.v1;
+package com.marinamooringmanagement.api.v1.customer;
 
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.request.CustomerSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,8 +63,6 @@ public class CustomerController extends Base {
     public BasicRestResponse saveCustomer(@Valid @RequestBody CustomerRequestDto customerRequestDto
     ) {
         return customerService.saveCustomer(customerRequestDto);
-
-
     }
 
     /**
@@ -92,17 +92,53 @@ public class CustomerController extends Base {
             }
 
     )
-
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse getCustomers(
+    public BasicRestResponse fetchCustomers(
             @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = "customerId", required = false) String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return customerService.getCustomers(pageNumber, pageSize, sortBy, sortDir);
+        CustomerSearchRequest customerSearchRequest = CustomerSearchRequest.builder().build();
+        customerSearchRequest.setPageNumber(pageNumber);
+        customerSearchRequest.setPageSize(pageSize);
+        customerSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
+        return customerService.fetchCustomers(customerSearchRequest);
+    }
+
+    /**
+     * Retrieves a customer along with their moorings based on the provided customer ID.
+     *
+     * @param customerId The ID of the customer to fetch along with their moorings.
+     * @return A BasicRestResponse containing the customer details and their associated moorings.
+     * @throws IllegalArgumentException If the customer ID is null or negative.
+     */
+    @Operation(
+            tags = "Fetch customer and moorings associated with it from the database",
+            description = "Fetch customer and moorings associated with it from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/fetchCustomerWithMoorings/{id}",
+            produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchCustomerWithMoorings(
+            @PathVariable("id") final Integer customerId
+    ) {
+        return customerService.fetchCustomerAndMooringsById(customerId);
     }
 
     /**

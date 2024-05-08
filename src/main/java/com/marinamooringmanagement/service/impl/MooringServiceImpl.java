@@ -3,13 +3,18 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.entity.Boatyard;
+import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.CustomerAndMooringsCustomResponse;
+import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.BoatyardRepository;
+import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.service.MooringService;
@@ -24,10 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.Date;
+import java.util.*;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -39,13 +42,19 @@ public class MooringServiceImpl implements MooringService {
     private static final Logger log = LoggerFactory.getLogger(MooringServiceImpl.class);
 
     @Autowired
-    private MooringMapper mapper;
+    private MooringMapper mooringMapper;
 
     @Autowired
     private MooringRepository mooringRepository;
 
     @Autowired
     private BoatyardRepository boatyardRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private CustomerMapper customerMapper;
 
     public MooringServiceImpl() {}
 
@@ -64,7 +73,11 @@ public class MooringServiceImpl implements MooringService {
             final Page<Mooring> mooringPage = mooringRepository.findAll(pageable);
             final List<MooringResponseDto> mooringResponseDtoList = mooringPage.getContent()
                     .stream()
-                    .map(mooring -> mapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
+                    .map(mooring -> {
+                        MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                        mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        return  mooringResponseDto;
+                    })
                     .collect(Collectors.toList());
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
@@ -92,7 +105,7 @@ public class MooringServiceImpl implements MooringService {
             performSave(mooringRequestDto, mooring, null);
             response.setMessage("Mooring saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
-            mapper.mapToMooring(mooring, mooringRequestDto);
+            mooringMapper.mapToMooring(mooring, mooringRequestDto);
         } catch (Exception e) {
             log.error("Error occurred while saving the mooring in the database {}", e.getLocalizedMessage());
             response.setMessage(e.getMessage());
@@ -165,29 +178,39 @@ public class MooringServiceImpl implements MooringService {
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id) {
         try {
             log.info("performSave() function called");
+
+            Mooring savedMooring = null;
+
+            mooringMapper.mapToMooring(mooring, mooringRequestDto);
+
             if (id == null) {
                 mooring.setCreationDate(new Date(System.currentTimeMillis()));
+
+                mooring.setStatus(AppConstants.Status.GEAR_IN);
+
+                Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
+
+                if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
+
+                mooring.setBoatyard(optionalBoatyard.get());
+
+                savedMooring = mooringRepository.save(mooring);
+
+                optionalBoatyard.get().getMooringList().add(savedMooring);
+
+                boatyardRepository.save(optionalBoatyard.get());
+            } else {
+                savedMooring = mooringRepository.save(mooring);
             }
+
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
-            mapper.mapToMooring(mooring, mooringRequestDto);
-            mooring.setStatus(AppConstants.Status.GEAR_IN);
 
-            Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
+            return savedMooring;
 
-            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
-
-            mooring.setBoatyard(optionalBoatyard.get());
-
-            Mooring savedMooring = mooringRepository.save(mooring);
-
-            optionalBoatyard.get().getMooringList().add(savedMooring);
-
-            boatyardRepository.save(optionalBoatyard.get());
         } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());
             throw new DBOperationException(e.getMessage(), e);
         }
 
-        return mooring;
     }
 }

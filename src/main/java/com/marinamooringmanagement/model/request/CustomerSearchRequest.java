@@ -1,30 +1,16 @@
-package com.marinamooringmanagement.model.dto;
+package com.marinamooringmanagement.model.request;
 
-import com.marinamooringmanagement.model.entity.Mooring;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
-/**
- * Data Transfer Object (DTO) class representing a Customer.
- */
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 @Builder
-public class CustomerDto extends BaseDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class CustomerSearchRequest extends BaseSearchRequest{
 
-    private Integer id;
-    /**
-     * The name of the customer.
-     */
     private String customerName;
     /**
      * The customer ID.
@@ -62,6 +48,4 @@ public class CustomerDto extends BaseDto {
      * The zip code of the customer's address.
      */
     private String zipCode;
-
-    private List<MooringDto> mooringDtoList;
 }

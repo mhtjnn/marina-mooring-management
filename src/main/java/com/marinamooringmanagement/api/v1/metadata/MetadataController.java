@@ -25,7 +25,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping("/api/v1/metadata")
 @Validated
-@CrossOrigin("*")
+@CrossOrigin
 public class MetadataController {
 
     @Autowired

@@ -1,5 +1,8 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.entity.Boatyard;
+import com.marinamooringmanagement.model.entity.Customer;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,15 +22,14 @@ public class MooringDto extends BaseDto implements Serializable {
 
     private static final long serialVersionUID = 5502680630355079L;
 
-    /**
-     * Unique identifier for the mooring.
-     */
     private Integer id;
 
     /**
      * Name of the mooring.
      */
     private String mooringName;
+
+    private String mooringId;
 
     /**
      * Name of the customer associated with the mooring.
@@ -124,7 +126,7 @@ public class MooringDto extends BaseDto implements Serializable {
      */
     private String status;
 
-    private BoatyardDto boatyard;
+    private Boatyard boatyard;
 
-    private List<CustomerDto> customer;
+    private Customer customer;
 }

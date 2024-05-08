@@ -33,7 +33,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +45,7 @@ import java.util.Optional;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
-@CrossOrigin("*")
+@CrossOrigin
 public class AuthenticationController {
 
     private static final String normalTokenStr = "NORMAL_TOKEN";
@@ -80,7 +79,6 @@ public class AuthenticationController {
      * Endpoint to create an authentication token based on the provided credentials.
      *
      * @param authenticationRequest the authentication request containing username and password
-     * @param request               the HTTP servlet request
      * @return a ResponseEntity containing the authentication response
      * @throws Exception if an error occurs during authentication
      */

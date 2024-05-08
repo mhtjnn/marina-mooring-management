@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The {@code MooringResponseDto} class represents a Data Transfer Object (DTO) for mooring response.
@@ -31,6 +32,8 @@ public class MooringResponseDto implements Serializable {
      * The name of the mooring.
      */
     private String mooringName;
+
+    private String mooringId;
 
     /**
      * The name of the customer who owns or uses the mooring.
@@ -124,7 +127,7 @@ public class MooringResponseDto implements Serializable {
      */
     private String status;
 
-    private BoatyardDto boatyard;
+    private List<String> boatyardNames;
 
-    private CustomerDto customer;
+    private Integer customerId;
 }

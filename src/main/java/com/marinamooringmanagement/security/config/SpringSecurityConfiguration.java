@@ -45,7 +45,7 @@ public class SpringSecurityConfiguration{
             "/swagger-ui/**",
             "/webjars/**",
             "/v3/api-docs",
-            "/**",
+            "/**"
     };
 
     /**
@@ -53,19 +53,19 @@ public class SpringSecurityConfiguration{
      *
      * @return A CorsConfigurationSource object that defines CORS settings.
      */
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-
-        return source;
-    }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//
+//        CorsConfiguration corsConfiguration = new CorsConfiguration();
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("*"));
+//        configuration.setAllowedHeaders(Arrays.asList("*"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", corsConfiguration);
+//
+//        return source;
+//    }
 
     /**
      * Bean for {@link SecurityFilterChain} configuration.
@@ -78,7 +78,7 @@ public class SpringSecurityConfiguration{
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+//                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()

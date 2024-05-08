@@ -5,6 +5,7 @@ import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -19,6 +20,7 @@ public interface CustomerMapper {
      * @param customer The Customer entity to map.
      * @return The mapped CustomerDto object.
      */
+    @Mapping(target = "mooringDtoList", ignore = true)
     CustomerDto toDto(@MappingTarget CustomerDto dto, Customer customer);
 
     /**
@@ -28,9 +30,15 @@ public interface CustomerMapper {
      * @param customer    The target Customer entity.
      * @return The mapped Customer entity.
      */
-    Customer toEntity(CustomerDto customerDto, @MappingTarget Customer customer);
+    @Mapping(target = "mooringList", ignore = true)
+    Customer toEntity(@MappingTarget Customer customer, CustomerDto customerDto);
 
+    @Mapping(target = "mooringList", ignore = true)
+    Customer toEntity(@MappingTarget Customer customer, CustomerRequestDto customerRequestDto);
+
+    @Mapping(target = "mooringResponseDtoList", ignore = true)
     CustomerResponseDto mapToCustomerResponseDto(@MappingTarget CustomerResponseDto dto, Customer customer);
 
+    @Mapping(target = "mooringList", ignore = true)
     Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

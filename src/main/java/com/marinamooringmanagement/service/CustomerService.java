@@ -2,6 +2,7 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.request.CustomerSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 /**
@@ -15,16 +16,7 @@ public interface CustomerService {
      */
     BasicRestResponse saveCustomer(final CustomerRequestDto customerDto);
 
-    /**
-     * Retrieves a list of customers with pagination and sorting.
-     *
-     * @param pageNumber The page number.
-     * @param pageSize   The page size.
-     * @param sortBy     The field to sort by.
-     * @param sortDir    The sorting direction.
-     * @return A list of CustomerDto objects.
-     */
-    public BasicRestResponse getCustomers(final int pageNumber, final int pageSize, final String sortBy, final String sortDir);
+    public BasicRestResponse fetchCustomers(final CustomerSearchRequest customerSearchRequest);
 
     /**
      * Retrieves a customer by ID.
@@ -48,4 +40,7 @@ public interface CustomerService {
      * @param id The ID of the customer to delete.
      */
     BasicRestResponse deleteCustomerbyId(final Integer id);
+
+    BasicRestResponse fetchCustomerAndMooringsById(final Integer mooringId);
 }
+

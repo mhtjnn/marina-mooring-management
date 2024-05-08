@@ -23,7 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/boatyard")
-@CrossOrigin("*")
+@CrossOrigin
 public class BoatyardController {
 
     @Autowired
@@ -36,6 +36,7 @@ public class BoatyardController {
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @PostMapping(value = "/", produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
     @Operation(
             tags = "Save BoatYard in the database",
             description = "API to save BoatYard in the database",

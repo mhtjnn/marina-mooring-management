@@ -21,23 +21,14 @@ public class Mooring extends Base {
     @Column(name = "id")
     private Integer id;
 
-    /**
-     * Name of the mooring.
-     */
-    @Column(name = "mooring_name")
-    private String mooringName;
+    @Column(name = "mooring_id")
+    private String mooringId;
 
     /**
      * Name of the customer associated with the mooring.
      */
     @Column(name = "customer_name")
     private String customerName;
-
-    /**
-     * Mooring number assigned to the mooring.
-     */
-    @Column(name = "mooring_number")
-    private String mooringNumber;
 
     /**
      * Harbor where the mooring is located.

@@ -3,11 +3,18 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
+import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.request.CustomerSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.CustomerAndMooringsCustomResponse;
+import com.marinamooringmanagement.model.response.CustomerResponseDto;
+import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.CustomerRepository;
+import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.service.CustomerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +43,15 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private CustomerMapper customerMapper;
 
+    @Autowired
+    private MooringMapper mooringMapper;
+
+    @Autowired
+    private MooringRepository mooringRepository;
+
+    @Autowired
+    private MooringServiceImpl mooringService;
+
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     /**
@@ -51,8 +67,10 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             log.info(String.format("Saving data in the database for Customer ID %d", customerRequestDto.getId()));
 
-            final Customer customer = new Customer();
+            final Customer customer = Customer.builder().build();
+
             performSave(customerRequestDto, customer, null);
+
             response.setMessage("Customer saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
@@ -64,46 +82,73 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
-
-    /**
-     * Retrieves a list of customers with pagination and sorting.
-     *
-     * @param pageNumber The page number.
-     * @param pageSize   The page size.
-     * @param sortBy     The field to sort by.
-     * @param sortDir    The sorting direction.
-     * @return A list of CustomerDto objects.
-     */
-    public BasicRestResponse getCustomers(final int pageNumber, final int pageSize, final String sortBy, final String sortDir) {
+    public BasicRestResponse fetchCustomers(final CustomerSearchRequest customerSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
-        List<CustomerDto> customerDtoList;
         try {
-            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+            final Pageable p = PageRequest.of(customerSearchRequest.getPageNumber(), customerSearchRequest.getPageSize(), customerSearchRequest.getSort());
 
-            final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
             final Page<Customer> pageUser = customerRepository.findAll(p);
+
             List<Customer> customerList = pageUser.getContent();
+
+            if(customerList.isEmpty()) throw new DBOperationException("No customers found in the database");
+
+            final List<CustomerResponseDto> customerResponseDtoList = customerList.stream().map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer)).toList();
+
+            response.setContent(customerResponseDtoList);
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 
-            customerDtoList = customerList.stream()
-                    .map(customer -> customerMapper.toDto(CustomerDto.builder().build(), customer))
-                    .collect(Collectors.toList());
-
-
-            CustomerDto customerDto = !customerDtoList.isEmpty() ? customerDtoList.get(0) : null;
-            response.setContent(customerDtoList);
             log.info(String.format("Customers fetched successfully"));
 
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching Customers: %s", e.getMessage()), e);
-
-            throw new DBOperationException(e.getMessage(), e);
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
+
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
+            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+
+            if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException("No customer found with the given ID");
+
+            CustomerResponseDto customerResponseDto = CustomerResponseDto.builder().build();
+            customerMapper.mapToCustomerResponseDto(customerResponseDto, optionalCustomer.get());
+
+            List<Mooring> mooringList = optionalCustomer.get().getMooringList();
+            List<String> boatyardNames = new ArrayList<>();
+            List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
+
+            if(!mooringList.isEmpty()) {
+                boatyardNames = mooringList.stream().map(Mooring::getBoatyardName).toList();
+                mooringResponseDtoList = mooringList.stream().map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring)).toList();
+            }
+
+            customerResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
+            customerAndMooringsCustomResponse.setCustomerResponseDto(customerResponseDto);
+            customerAndMooringsCustomResponse.setBoatyardNames(boatyardNames);
+
+            response.setContent(customerAndMooringsCustomResponse);
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setMessage("Customer and its moorings fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setErrorList(List.of(e.getCause().toString()));
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
 
     /**
      * Retrieves a customer by ID.
@@ -122,7 +167,6 @@ public class CustomerServiceImpl implements CustomerService {
                 log.info(String.format("Successfully retrieved Customer data for ID: %d", id));
 
                 return customerMapper.toDto(CustomerDto.builder().build(), customerEntityOptional.get());
-
 
             } else {
                 throw new DBOperationException(String.format("Customer with ID : %d doesn't exist", id));
@@ -164,8 +208,8 @@ public class CustomerServiceImpl implements CustomerService {
             }
         } catch (Exception e) {
             log.error(String.format("Error occurred while updating customer: %s", e.getMessage()), e);
-
-            throw new DBOperationException(e.getMessage(), e);
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.OK.value());
         }
         return response;
     }
@@ -181,14 +225,38 @@ public class CustomerServiceImpl implements CustomerService {
      */
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
+            customerMapper.mapToCustomer(customer, customerRequestDto);
+
+            Optional<Mooring> optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
+
+            Mooring mooring = null;
+
+            mooring = (optionalMooring.isPresent()) ?
+                    mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId()) :
+                    mooringService.performSave(customerRequestDto.getMooringRequestDto(), Mooring.builder().build(), null);
+
+            List<Mooring> mooringList = new ArrayList<>();
+
             if (null == id) {
                 customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                customer.setCreationDate(new Date());
+
+                mooringList.add(mooring);
+            } else {
+                mooringList = customer.getMooringList();
+
+                List<Mooring> mooringExist = mooringList.stream().filter(mooring1 -> mooring1.getMooringId().equals(customerRequestDto.getMooringRequestDto().getMooringId())).toList();
+
+                if(mooringList.isEmpty() || mooringExist.isEmpty()) mooringList.add(mooring);
             }
-            customerMapper.mapToCustomer(customer, customerRequestDto);
-            customer.setCreationDate(new Date());
+
+            customer.setMooringList(mooringList);
             customer.setLastModifiedDate(new Date());
 
-            customerRepository.save(customer);
+            mooring.setCustomer(customerRepository.save(customer));
+
+            mooringRepository.save(mooring);
+
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
 
         } catch (Exception e) {
@@ -208,8 +276,10 @@ public class CustomerServiceImpl implements CustomerService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             customerRepository.deleteById(id);
+
             response.setMessage(String.format("Customer with ID %d deleted successfully", id));
             response.setStatus(HttpStatus.OK.value());
+
             log.info(String.format("Customer with ID %d deleted successfully", id));
 
         } catch (Exception e) {
@@ -217,8 +287,6 @@ public class CustomerServiceImpl implements CustomerService {
 
             response.setMessage(e.getMessage());
             response.setStatus(HttpStatus.NO_CONTENT.value());
-
-            throw new DBOperationException(e.getMessage(), e);
         }
         return response;
     }

@@ -16,21 +16,14 @@ public class MooringRequestDto implements Serializable {
 
     private static final long serialVersionUID = 550268063035509L;
 
-    /**
-     * Name of the mooring
-     */
+    private String mooringId;
+
     private String mooringName;
 
     /**
      * Name of the customer associated with the mooring.
      */
     private String customerName;
-
-    /**
-     * Mooring number assigned to the mooring.
-     */
-    @NotNull(message = "Mooring number cannot be null")
-    private String mooringNumber;
 
     /**
      * Harbor where the mooring is located.
