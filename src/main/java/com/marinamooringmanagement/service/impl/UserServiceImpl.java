@@ -110,28 +110,42 @@ public class UserServiceImpl implements UserService {
                         predicates.add(criteriaBuilder.and(criteriaBuilder.like(user.get("phoneNumber"), "%" + userSearchRequest.getPhoneNumber() + "%")));
                     }
 
+                    if(role.equals(AppConstants.Role.OWNER)) {
+                        if(null == customerAdminId) {
+                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_ADMIN)));
+                        } else {
+                            predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
+                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
+                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), customerAdminId)));
+                        }
+                    } else if(role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+                        predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
+                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), getLoggedInUserID())));
+                    } else {
+                        throw new RuntimeException("Not authorized");
+                    }
+
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
             };
 
-            List<User> userList = userRepository.findAll(spec);
+            List<User> filteredUsers = userRepository.findAll(spec);
 
-            List<UserResponseDto> filteredUsers = null;
-
-            if (role.equals(AppConstants.Role.OWNER)) {
-                if (customerAdminId != null) {
-                    filteredUsers = findByCustomerAdminID(customerAdminId, userList);
-                } else {
-                    filteredUsers = findByCUSTOMER_ADMINRole(userList);
-                }
-            } else if (role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
-                filteredUsers = findByCustomerAdminID(customerAdminId, userList);
-            } else {
-                throw new RuntimeException("Not Authorized!!!");
-            }
+            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers.stream()
+                    .map(user -> {
+                        UserResponseDto userResponseDto = UserResponseDto.builder().build();
+                        mapper.maptToUserResponseDto(userResponseDto, user);
+                        userResponseDto.setRole(user.getRole().getName());
+                        if (null != user.getState()) userResponseDto.setState(user.getState().getName());
+                        else userResponseDto.setState("state");
+                        if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
+                        else userResponseDto.setCountry("country");
+                        return userResponseDto;
+                    }).toList();
 
             final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
-            Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUsers, p, filteredUsers.size());
+            Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUserResponseDtoList, p, filteredUserResponseDtoList.size());
 
             response.setContent(pageOfUser);
             response.setMessage("Users fetched successfully");
@@ -389,6 +403,8 @@ public class UserServiceImpl implements UserService {
      */
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId , Integer customerAdminId) {
 
+        final String role = getLoggedInUserRole();
+
         try {
             if (!checkForAuthority(customerAdminId, userRequestDto.getRole()))
                 throw new RuntimeException("Not authorized!!!");
@@ -396,11 +412,12 @@ public class UserServiceImpl implements UserService {
             if(null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
 
             mapper.mapToUser(user, userRequestDto);
+
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-            if(customerAdminId == null) customerAdminId = getLoggedInUserID();
+            if(role.equals(AppConstants.Role.CUSTOMER_ADMIN)) customerAdminId = getLoggedInUserID();
 
-            if(null != customerAdminId) user.setCustomerAdminId(customerAdminId);
+            user.setCustomerAdminId(customerAdminId);
 
             if (null != userRequestDto.getPassword()) {
                 if (userRequestDto.getConfirmPassword().isEmpty() || userRequestDto.getPassword().isBlank())
@@ -417,7 +434,8 @@ public class UserServiceImpl implements UserService {
                 final Role savedRole = optionalRole.get();
                 user.setRole(savedRole);
 
-                if (user.getRole().getName().equals(AppConstants.Role.OWNER) || user.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) user.setCustomerAdminId(null);
+                if (user.getRole().getName().equals(AppConstants.Role.OWNER)
+                        || user.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) user.setCustomerAdminId(null);
             }
 
             if (null != userRequestDto.getState()) {
