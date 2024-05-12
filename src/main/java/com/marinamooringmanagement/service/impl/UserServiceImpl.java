@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
      * @see UserResponseDto
      */
     @Override
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId) {
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId, final String searchText) {
 
         final String role = getLoggedInUserRole();
 
@@ -97,17 +97,12 @@ public class UserServiceImpl implements UserService {
 
                     List<Predicate> predicates = new ArrayList<>();
 
-                    if (null != userSearchRequest.getId()) {
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.like(user.get("id"), "%" + userSearchRequest.getId() + "%")));
-                    }
-                    if (StringUtils.isNotEmpty(userSearchRequest.getName())) {
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.like(user.get("name"), "%" + userSearchRequest.getName() + "%")));
-                    }
-                    if (StringUtils.isNotEmpty(userSearchRequest.getEmail())) {
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.like(user.get("email"), "%" + userSearchRequest.getEmail() + "%")));
-                    }
-                    if (StringUtils.isNotEmpty(userSearchRequest.getPhoneNumber())) {
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.like(user.get("phoneNumber"), "%" + userSearchRequest.getPhoneNumber() + "%")));
+                    if (null != searchText) {
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
+                                criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
+                                criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
+                        ));
                     }
 
                     if(role.equals(AppConstants.Role.OWNER)) {

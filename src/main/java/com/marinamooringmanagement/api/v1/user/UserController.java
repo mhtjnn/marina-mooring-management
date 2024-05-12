@@ -73,13 +73,14 @@ public class UserController {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @RequestParam(value = "customerAdminId", required = false) Integer customerAdminId
+            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,
+            @RequestParam(value = "searchText", required = false) final String searchText
     ) {
         UserSearchRequest userSearchRequest = UserSearchRequest.builder().build();
         userSearchRequest.setPageNumber(pageNumber);
         userSearchRequest.setPageSize(pageSize);
         userSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return userService.fetchUsers(userSearchRequest, customerAdminId);
+        return userService.fetchUsers(userSearchRequest, customerAdminId, searchText);
     }
 
     /**
@@ -88,7 +89,6 @@ public class UserController {
      * This endpoint is used to create a new user with the details provided in the request body.
      *
      * @param user {@link UserRequestDto} containing the user details to be saved.
-     * @param request HttpServletRequest object.
      * @return A {@link BasicRestResponse} indicating the outcome of the save operation.
      */
     @Operation(

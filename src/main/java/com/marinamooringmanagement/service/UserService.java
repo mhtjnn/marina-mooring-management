@@ -29,7 +29,7 @@ public interface UserService {
      * @see UserSearchRequest
      * @see BasicRestResponse
      */
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, Integer customerAdminId);
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId, final String searchText);
 
     /**
      * Saves a new user or updates an existing user.
