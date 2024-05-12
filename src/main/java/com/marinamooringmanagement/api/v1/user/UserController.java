@@ -44,7 +44,6 @@ public class UserController {
      * @param sortBy       Attribute name to sort the users, default is "email".
      * @param sortDir      Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @param customerAdminId ID of the customer admin for filtering users.
-     * @param request      HttpServletRequest object.
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
     @Operation(
@@ -69,19 +68,18 @@ public class UserController {
     )
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "auth")
-    public FetchUsersResponse fetchUsers(
+    public BasicRestResponse fetchUsers(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @RequestParam("customerAdminId") String customerAdminId,
-            final HttpServletRequest request
+            @RequestParam(value = "customerAdminId", required = false) Integer customerAdminId
     ) {
         UserSearchRequest userSearchRequest = UserSearchRequest.builder().build();
         userSearchRequest.setPageNumber(pageNumber);
         userSearchRequest.setPageSize(pageSize);
         userSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return userService.fetchUsers(userSearchRequest, customerAdminId, request);
+        return userService.fetchUsers(userSearchRequest, customerAdminId);
     }
 
     /**
@@ -118,9 +116,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
             @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user,
-            HttpServletRequest request
+            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
     ) {
-        return userService.saveUser(user, request);
+        return userService.saveUser(user, customerAdminId);
     }
 
     /**
@@ -159,9 +157,9 @@ public class UserController {
     public BasicRestResponse updateUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer userId,
             @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto,
-            final HttpServletRequest request
+            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
     ) {
-        return userService.updateUser(userRequestDto, userId, request);
+        return userService.updateUser(userRequestDto, userId, customerAdminId);
     }
 
     /**
@@ -198,9 +196,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("userId") Integer userId,
-            final HttpServletRequest request
+            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
     ) {
-        return userService.deleteUser(userId, request);
+        return userService.deleteUser(userId, customerAdminId);
     }
 
 }

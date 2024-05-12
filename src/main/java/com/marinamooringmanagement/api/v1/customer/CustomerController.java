@@ -28,6 +28,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @Validated
 @RequestMapping(value = "/api/v1/customer")
 @Tag(name = "CustomerController", description = "To perform operations on Customer")
+@CrossOrigin
 public class CustomerController extends Base {
 
 
@@ -111,7 +112,7 @@ public class CustomerController extends Base {
     /**
      * Retrieves a customer along with their moorings based on the provided customer ID.
      *
-     * @param customerId The ID of the customer to fetch along with their moorings.
+     * @param customerName The name of the customer to fetch along with their moorings.
      * @return A BasicRestResponse containing the customer details and their associated moorings.
      * @throws IllegalArgumentException If the customer ID is null or negative.
      */
@@ -136,9 +137,9 @@ public class CustomerController extends Base {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerWithMoorings(
-            @PathVariable("id") final Integer customerId
+            @PathVariable("id") final String customerName
     ) {
-        return customerService.fetchCustomerAndMooringsById(customerId);
+        return customerService.fetchCustomerAndMooringsById(customerName);
     }
 
     /**

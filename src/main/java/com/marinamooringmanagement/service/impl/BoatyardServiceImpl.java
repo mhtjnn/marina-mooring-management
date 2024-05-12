@@ -5,18 +5,12 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.dto.BoatyardDto;
-import com.marinamooringmanagement.model.entity.Boatyard;
-import com.marinamooringmanagement.model.entity.Country;
-import com.marinamooringmanagement.model.entity.Mooring;
-import com.marinamooringmanagement.model.entity.State;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.BoatyardResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
-import com.marinamooringmanagement.repositories.BoatyardRepository;
-import com.marinamooringmanagement.repositories.CountryRepository;
-import com.marinamooringmanagement.repositories.MooringRepository;
-import com.marinamooringmanagement.repositories.StateRepository;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.service.BoatyardService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -60,6 +54,9 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
     private MooringRepository mooringRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
@@ -117,7 +114,10 @@ public class BoatyardServiceImpl implements BoatyardService {
 
                         List<MooringResponseDto> mooringResponseDtoList = boatyard.getMooringList()
                                 .stream()
-                                .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
+                                .map(mooring -> {
+                                    MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                                    return mooringResponseDto;
+                                })
                                 .toList();
                         boatyardResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
                         return boatyardResponseDto;
@@ -167,7 +167,18 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+            Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
+
+            if(optionalBoatyard.isEmpty()) throw new DBOperationException(String.format("No boatyard found with the given id: %1$s", id));
+
+            if(null == optionalBoatyard.get().getBoatyardName()) throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
+
+            List<Mooring> mooringList = mooringRepository.findAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
+
+            mooringRepository.deleteAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
+
             boatYardRepository.deleteById(id);
+
             response.setMessage(String.format("BoatYard with ID %d deleted successfully", id));
             response.setStatus(HttpStatus.OK.value());
             log.info(String.format("BoatYard with ID %d deleted successfully", id));

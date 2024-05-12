@@ -41,6 +41,6 @@ public interface CustomerService {
      */
     BasicRestResponse deleteCustomerbyId(final Integer id);
 
-    BasicRestResponse fetchCustomerAndMooringsById(final Integer mooringId);
+    BasicRestResponse fetchCustomerAndMooringsById(final String customerName);
 }
 

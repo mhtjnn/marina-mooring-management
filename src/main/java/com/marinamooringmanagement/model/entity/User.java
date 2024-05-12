@@ -59,7 +59,7 @@ public class User extends Base {
      * The ID of the customer admin associated with the user.
      */
     @Column(name = "customer_admin_ID")
-    private String customerAdminId;
+    private Integer customerAdminId;
 
     /**
      * The street address of the user.

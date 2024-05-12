@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the CustomerService interface.
@@ -69,6 +68,9 @@ public class CustomerServiceImpl implements CustomerService {
 
             final Customer customer = Customer.builder().build();
 
+            if (null == customerRequestDto.getMooringRequestDto())
+                throw new RuntimeException("Mooring Request not provided");
+
             performSave(customerRequestDto, customer, null);
 
             response.setMessage("Customer saved successfully");
@@ -88,11 +90,11 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             final Pageable p = PageRequest.of(customerSearchRequest.getPageNumber(), customerSearchRequest.getPageSize(), customerSearchRequest.getSort());
 
-            final Page<Customer> pageUser = customerRepository.findAll(p);
+            final Page<Customer> pageCustomer = customerRepository.findAll(p);
 
-            List<Customer> customerList = pageUser.getContent();
+            List<Customer> customerList = pageCustomer.getContent();
 
-            if(customerList.isEmpty()) throw new DBOperationException("No customers found in the database");
+            if (customerList.isEmpty()) throw new DBOperationException("No customers found in the database");
 
             final List<CustomerResponseDto> customerResponseDtoList = customerList.stream().map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer)).toList();
 
@@ -112,14 +114,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId) {
+    public BasicRestResponse fetchCustomerAndMooringsById(final String customerName) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
-            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+            Optional<Customer> optionalCustomer = customerRepository.findByCustomerName(customerName);
 
-            if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException("No customer found with the given ID");
+            if (optionalCustomer.isEmpty()) throw new ResourceNotFoundException("No customer found with the given ID");
 
             CustomerResponseDto customerResponseDto = CustomerResponseDto.builder().build();
             customerMapper.mapToCustomerResponseDto(customerResponseDto, optionalCustomer.get());
@@ -128,7 +130,7 @@ public class CustomerServiceImpl implements CustomerService {
             List<String> boatyardNames = new ArrayList<>();
             List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
 
-            if(!mooringList.isEmpty()) {
+            if (!mooringList.isEmpty()) {
                 boatyardNames = mooringList.stream().map(Mooring::getBoatyardName).toList();
                 mooringResponseDtoList = mooringList.stream().map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring)).toList();
             }
@@ -192,20 +194,19 @@ public class CustomerServiceImpl implements CustomerService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            if (null == customerRequestDto.getId()) {
-                log.info(String.format("Update attempt without a Customer ID provided in the request DTO"));
+            if (null == customerRequestDto.getId())
+                throw new RuntimeException(String.format("Update attempt without a Customer ID provided in the request DTO"));
 
-                throw new ResourceNotFoundException(String.format("Customer not found with id: %1$s", id));
-            }
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
-            if (optionalCustomer.isPresent()) {
 
-                Customer customer = optionalCustomer.get();
-                performSave(customerRequestDto, customer, customerRequestDto.getId());
-                response.setMessage("Customer with the given customer id updated successfully!!!");
-                response.setStatus(HttpStatus.OK.value());
+            if (optionalCustomer.isEmpty())
+                throw new ResourceNotFoundException(String.format("Customer not found with id: %1$s", id));
 
-            }
+            Customer customer = optionalCustomer.get();
+            performSave(customerRequestDto, customer, customerRequestDto.getId());
+            response.setMessage("Customer with the given customer id updated successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+
         } catch (Exception e) {
             log.error(String.format("Error occurred while updating customer: %s", e.getMessage()), e);
             response.setMessage(e.getLocalizedMessage());
@@ -247,15 +248,13 @@ public class CustomerServiceImpl implements CustomerService {
 
                 List<Mooring> mooringExist = mooringList.stream().filter(mooring1 -> mooring1.getMooringId().equals(customerRequestDto.getMooringRequestDto().getMooringId())).toList();
 
-                if(mooringList.isEmpty() || mooringExist.isEmpty()) mooringList.add(mooring);
+                if (mooringList.isEmpty() || mooringExist.isEmpty()) mooringList.add(mooring);
             }
 
             customer.setMooringList(mooringList);
             customer.setLastModifiedDate(new Date());
 
-            mooring.setCustomer(customerRepository.save(customer));
-
-            mooringRepository.save(mooring);
+            customerRepository.save(customer);
 
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
 

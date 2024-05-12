@@ -75,5 +75,6 @@ public class Customer extends Base {
     private String zipCode;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
     private List<Mooring> mooringList;
 }

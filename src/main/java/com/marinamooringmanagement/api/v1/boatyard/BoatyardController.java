@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -110,8 +111,6 @@ public class BoatyardController {
      * @param id The ID of the Boatyard to delete.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    @DeleteMapping(value = "/{id}", produces = {"application/json"})
-    @ResponseStatus(HttpStatus.OK)
     @Operation(
             tags = "Delete BoatYard from the database",
             description = "API to delete BoatYard from the database",
@@ -128,6 +127,9 @@ public class BoatyardController {
                     )
             }
     )
+    @DeleteMapping(value = "/{id}", produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    @Transactional
     public BasicRestResponse deleteBoatyard(@PathVariable(value = "id") Integer id) {
         return boatyardService.deleteBoatyardById(id);
     }

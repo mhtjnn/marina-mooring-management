@@ -50,11 +50,6 @@ public class UserRequestDto implements Serializable {
     private String userID;
 
     /**
-     * The ID of the customer admin associated with the user.
-     */
-    private String customerAdminId;
-
-    /**
      * The role associated with the user.
      */
     private String role;
@@ -83,6 +78,8 @@ public class UserRequestDto implements Serializable {
      * The ZIP code associated with the user.
      */
     private String zipCode;
+
+    private String confirmPassword;
 }
 
 

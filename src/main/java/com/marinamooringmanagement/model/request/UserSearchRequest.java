@@ -25,14 +25,9 @@ public class UserSearchRequest extends BaseSearchRequest {
     private Integer id;
 
     /**
-     * The first name of the user.
+     * The name of the user.
      */
-    private String firstname;
-
-    /**
-     * The last name of the user.
-     */
-    private String lastname;
+    private String name;
 
     /**
      * The email address of the user.
@@ -43,39 +38,4 @@ public class UserSearchRequest extends BaseSearchRequest {
      * The phone number of the user.
      */
     private String phoneNumber;
-
-    /**
-     * The password of the user.
-     */
-    private String password;
-
-    /**
-     * The role associated with the user.
-     */
-    private RoleDto role;
-
-    /**
-     * The state associated with the user.
-     */
-    private String state;
-
-    /**
-     * The country associated with the user.
-     */
-    private String country;
-
-    /**
-     * The street address associated with the user.
-     */
-    private String street;
-
-    /**
-     * The apartment number associated with the user.
-     */
-    private String apt;
-
-    /**
-     * The ZIP code associated with the user.
-     */
-    private String zipCode;
 }

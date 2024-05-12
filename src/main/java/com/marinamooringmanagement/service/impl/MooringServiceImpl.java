@@ -6,12 +6,9 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.entity.Boatyard;
-import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.CustomerAndMooringsCustomResponse;
-import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.BoatyardRepository;
 import com.marinamooringmanagement.repositories.CustomerRepository;
@@ -75,7 +72,6 @@ public class MooringServiceImpl implements MooringService {
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                        mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         return  mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -191,8 +187,6 @@ public class MooringServiceImpl implements MooringService {
                 Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
 
                 if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
-
-                mooring.setBoatyard(optionalBoatyard.get());
 
                 savedMooring = mooringRepository.save(mooring);
 

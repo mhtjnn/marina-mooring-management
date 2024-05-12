@@ -1,9 +1,11 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.User;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,6 +21,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @return an optional containing the user entity corresponding to the given email address, or empty if not found
      */
     Optional<User> findByEmail(String email);
+
+    List<User> findAll(Specification<User> spec);
 }
 
 

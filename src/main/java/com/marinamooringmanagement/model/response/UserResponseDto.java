@@ -46,7 +46,7 @@ public class UserResponseDto implements Serializable {
     /**
      * The ID of the customer admin associated with the user.
      */
-    private String customerAdminId;
+    private Integer customerAdminId;
 
     /**
      * The role associated with the user.

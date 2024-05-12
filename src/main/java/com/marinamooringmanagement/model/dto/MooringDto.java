@@ -125,8 +125,4 @@ public class MooringDto extends BaseDto implements Serializable {
      * Status of the mooring.
      */
     private String status;
-
-    private Boatyard boatyard;
-
-    private Customer customer;
 }

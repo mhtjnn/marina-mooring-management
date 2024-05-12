@@ -29,35 +29,32 @@ public interface UserService {
      * @see UserSearchRequest
      * @see BasicRestResponse
      */
-    public FetchUsersResponse fetchUsers(final UserSearchRequest userSearchRequest, String customerAdminId, final HttpServletRequest request);
+    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, Integer customerAdminId);
 
     /**
      * Saves a new user or updates an existing user.
      *
      * @param userRequestDto The user request DTO.
-     * @param request         The HTTP servlet request.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final HttpServletRequest request);
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final Integer customerAdminId);
 
     /**
      * Deletes a user from the database.
      *
      * @param userId  The ID of the user to be deleted.
-     * @param request The HTTP servlet request.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request);
+    BasicRestResponse deleteUser(final Integer userId, final Integer customerAdminId);
 
     /**
      * Updates an existing user.
      *
      * @param userRequestDto The user request DTO.
-     * @param userId         The ID of the user to be updated.
-     * @param request        The HTTP servlet request.
+     * @param userId         The ID of the user to be updated
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId, final HttpServletRequest request);
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId, final Integer customerAdminId);
 
     /**
      * Finds a user by their email address.

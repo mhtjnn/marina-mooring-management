@@ -52,7 +52,7 @@ public class UserDto extends BaseDto implements Serializable {
     /**
      * The ID of the customer admin associated with the user.
      */
-    private String customerAdminId;
+    private Integer customerAdminId;
 
     /**
      * The role associated with the user.
