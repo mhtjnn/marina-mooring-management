@@ -133,9 +133,7 @@ public class UserServiceImpl implements UserService {
                         mapper.maptToUserResponseDto(userResponseDto, user);
                         userResponseDto.setRole(user.getRole().getName());
                         if (null != user.getState()) userResponseDto.setState(user.getState().getName());
-                        else userResponseDto.setState("state");
                         if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
-                        else userResponseDto.setCountry("country");
                         return userResponseDto;
                     }).toList();
 
@@ -245,7 +243,7 @@ public class UserServiceImpl implements UserService {
             boolean roleTechnicianOrFinance = userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN)
                     || userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE);
 
-            if(roleTechnicianOrFinance) {
+            if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_ADMIN) && roleTechnicianOrFinance) {
                 if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID())) throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 

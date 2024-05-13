@@ -3,6 +3,7 @@ package com.marinamooringmanagement.security.controller;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
@@ -104,7 +105,13 @@ public class AuthenticationController {
             @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
+
         try {
+
+            Optional<User> optionalUser = userRepository.findByEmail(authenticationRequest.getUsername());
+
+            if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("Sorry, we can't find an account with %1$s", authenticationRequest.getUsername()));
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authenticationRequest.getUsername(),
@@ -114,9 +121,12 @@ public class AuthenticationController {
             return generateAuthenticationResponse(authenticationRequest.getUsername(), authenticationResponse);
         } catch (Exception e) {
             final BasicRestResponse response = BasicRestResponse.builder().build();
-            response.setMessage("Authentication failed");
+
+            if(e.getLocalizedMessage().equals("Bad credentials"))
+                response.setMessage(String.format("Incorrect password for %1$s", authenticationRequest.getUsername()));
+            else
+                response.setMessage(e.getLocalizedMessage());
             response.setTime(new Timestamp(System.currentTimeMillis()));
-            response.setErrorList(List.of(e.getMessage()));
             response.setStatus(HttpStatus.FORBIDDEN.value());
             return new ResponseEntity(response, HttpStatus.FORBIDDEN);
         }

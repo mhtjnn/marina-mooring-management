@@ -4,7 +4,6 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.FetchUsersResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
+
 /**
  * Rest Controller for managing {@link com.marinamooringmanagement.model.entity.User} entities.
  */
@@ -39,11 +38,12 @@ public class UserController {
      * <p>
      * This REST API endpoint retrieves all users, supports pagination, and allows sorting by specified attributes.
      *
-     * @param pageNumber   Page number for pagination, default is 0.
-     * @param pageSize     Number of records per page, default is 20.
-     * @param sortBy       Attribute name to sort the users, default is "email".
-     * @param sortDir      Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
+     * @param pageNumber      Page number for pagination, default is 0.
+     * @param pageSize        Number of records per page, default is 20.
+     * @param sortBy          Attribute name to sort the users, default is "id".
+     * @param sortDir         Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
      * @param customerAdminId ID of the customer admin for filtering users.
+     * @param searchText      Optional parameter for searching users by text.
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
     @Operation(
@@ -88,7 +88,8 @@ public class UserController {
      * <p>
      * This endpoint is used to create a new user with the details provided in the request body.
      *
-     * @param user {@link UserRequestDto} containing the user details to be saved.
+     * @param user            {@link UserRequestDto} containing the user details to be saved.
+     * @param customerAdminId ID of the customer admin for saving the user.
      * @return A {@link BasicRestResponse} indicating the outcome of the save operation.
      */
     @Operation(
@@ -108,6 +109,7 @@ public class UserController {
             }
 
     )
+    @SecurityRequirement(name = "auth")
     @RequestMapping(
             value = "/",
             method = RequestMethod.POST,
@@ -128,7 +130,6 @@ public class UserController {
      *
      * @param userId ID of the user to update.
      * @param userRequestDto {@link UserRequestDto} containing updated user details.
-     * @param request HttpServletRequest object.
      * @return A {@link BasicRestResponse} indicating the outcome of the update operation.
      */
     @Operation(
@@ -148,6 +149,7 @@ public class UserController {
             }
 
     )
+    @SecurityRequirement(name = "auth")
     @RequestMapping(
             value = "/{id}",
             method = RequestMethod.PUT,
@@ -168,7 +170,6 @@ public class UserController {
      * This endpoint removes a user from the database, identified by the user ID provided as a path variable.
      *
      * @param userId ID of the user to be deleted.
-     * @param request HttpServletRequest object.
      * @return A {@link BasicRestResponse} indicating the outcome of the delete operation.
      */
     @Operation(
@@ -188,6 +189,7 @@ public class UserController {
             }
 
     )
+    @SecurityRequirement(name = "auth")
     @RequestMapping(
             value = "/{userId}",
             method = RequestMethod.DELETE,

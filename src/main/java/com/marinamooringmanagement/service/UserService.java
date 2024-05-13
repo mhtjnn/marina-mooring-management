@@ -6,8 +6,6 @@ import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.FetchUsersResponse;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Interface for User Service.
@@ -20,7 +18,7 @@ public interface UserService {
      *
      * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
      * @param customerAdminId   The ID of the customer admin.
-     * @param request           The HTTP servlet request.
+     * @param searchText        Optional parameter for searching users by text.
      * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
      * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
      * @apiNote The implementation of this method should handle various search criteria specified in the {@code userSearchRequest} and return the appropriate response.
@@ -35,6 +33,7 @@ public interface UserService {
      * Saves a new user or updates an existing user.
      *
      * @param userRequestDto The user request DTO.
+     * @param customerAdminId The ID of the customer admin for saving the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
     public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final Integer customerAdminId);
@@ -43,6 +42,7 @@ public interface UserService {
      * Deletes a user from the database.
      *
      * @param userId  The ID of the user to be deleted.
+     * @param customerAdminId The ID of the customer admin for deleting the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
     BasicRestResponse deleteUser(final Integer userId, final Integer customerAdminId);
@@ -51,7 +51,8 @@ public interface UserService {
      * Updates an existing user.
      *
      * @param userRequestDto The user request DTO.
-     * @param userId         The ID of the user to be updated
+     * @param userId         The ID of the user to be updated.
+     * @param customerAdminId The ID of the customer admin for updating the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
     public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId, final Integer customerAdminId);
@@ -82,3 +83,4 @@ public interface UserService {
      */
     BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception;
 }
+

@@ -53,8 +53,6 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private CustomerMapper customerMapper;
 
-    public MooringServiceImpl() {}
-
     /**
      * Fetches a paginated list of moorings.
      *
