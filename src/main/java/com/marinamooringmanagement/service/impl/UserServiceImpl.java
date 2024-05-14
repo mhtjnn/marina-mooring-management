@@ -152,38 +152,6 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    private List<UserResponseDto> findByCUSTOMER_ADMINRole(List<User> userList) {
-        return userList.stream()
-                .filter(user -> user.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN))
-                .map(user -> {
-                    UserResponseDto userResponseDto = UserResponseDto.builder().build();
-                    mapper.maptToUserResponseDto(userResponseDto, user);
-                    userResponseDto.setRole(user.getRole().getName());
-                    if (null != user.getState()) userResponseDto.setState(user.getState().getName());
-                    else userResponseDto.setState("state");
-                    if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
-                    else userResponseDto.setCountry("country");
-                    return userResponseDto;
-                })
-                .toList();
-    }
-
-    private List<UserResponseDto> findByCustomerAdminID(Integer customerAdminId, List<User> userList) {
-        return userList.stream()
-                .filter(user -> null != user.getCustomerAdminId() && user.getCustomerAdminId().equals(customerAdminId))
-                .map(user -> {
-                    UserResponseDto userResponseDto = UserResponseDto.builder().build();
-                    mapper.maptToUserResponseDto(userResponseDto, user);
-                    userResponseDto.setRole(user.getRole().getName());
-                    if (null != user.getState()) userResponseDto.setState(user.getState().getName());
-                    else userResponseDto.setState("state");
-                    if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
-                    else userResponseDto.setCountry("country");
-                    return userResponseDto;
-                })
-                .toList();
-    }
-
     /**
      * Function to save User in the database
      *
@@ -201,7 +169,7 @@ public class UserServiceImpl implements UserService {
             final Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
 
             if (optionalUser.isPresent()) {
-                log.info(String.format("Email already presenti"));
+                log.info(String.format("Email already present"));
                 throw new RuntimeException("Email already present");
             }
 
@@ -214,7 +182,6 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             response.setMessage(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.setErrorList(List.of(e.getMessage()));
         }
         return response;
     }
@@ -244,11 +211,16 @@ public class UserServiceImpl implements UserService {
                     || userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE);
 
             if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_ADMIN) && roleTechnicianOrFinance) {
-                if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID())) throw new RuntimeException("Not authorized to delete user with different customer admin ID");
+                if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID()))
+                    throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
             if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) {
-                userRepository.deleteAll(userRepository.findAll().stream().filter(user ->  null != user.getCustomerAdminId() && user.getCustomerAdminId().equals(userToBeDeleted.getId())).toList());
+                userRepository.deleteAll(
+                        userRepository.findAll().stream()
+                        .filter(user ->  null != user.getCustomerAdminId() && user.getCustomerAdminId().equals(userToBeDeleted.getId()))
+                        .toList()
+                );
             }
 
             final List<Token> tokenList = tokenRepository.findByUserId(userId);
@@ -261,13 +233,6 @@ public class UserServiceImpl implements UserService {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
-    }
-
-    private UserRequestDto customMapToUserRequestDto(final User user) {
-        return UserRequestDto.builder()
-                .id(user.getId())
-                .role(user.getRole().getName())
-                .build();
     }
 
     @Override
@@ -427,8 +392,8 @@ public class UserServiceImpl implements UserService {
                 final Role savedRole = optionalRole.get();
                 user.setRole(savedRole);
 
-                if (user.getRole().getName().equals(AppConstants.Role.OWNER)
-                        || user.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) user.setCustomerAdminId(null);
+                if (userRequestDto.getRole().equals(AppConstants.Role.OWNER)
+                        || userRequestDto.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)) user.setCustomerAdminId(null);
             }
 
             if (null != userRequestDto.getState()) {
@@ -458,7 +423,7 @@ public class UserServiceImpl implements UserService {
 
         } catch (Exception e) {
             log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
-            throw new RuntimeException(e.getLocalizedMessage(), e);
+            throw new RuntimeException(e.getLocalizedMessage());
         }
 
         return userRepository.save(user);
@@ -471,10 +436,18 @@ public class UserServiceImpl implements UserService {
                 || role.equals(AppConstants.Role.FINANCE);
 
         if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+            if(role.equals(AppConstants.Role.OWNER) || role.equals(AppConstants.Role.CUSTOMER_ADMIN))
+                throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
+
             return roleTechnicianOrFinance;
         } else if (loggedInUserRole.equals(AppConstants.Role.OWNER)) {
             if(roleTechnicianOrFinance) {
                 if(null == customerAdminId) throw new RuntimeException("Customer Admin ID not provided");
+                Optional<User> optionalUser =  userRepository.findById(customerAdminId);
+                if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
+                if(null == optionalUser.get().getRole()
+                        || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN))
+                    throw new RuntimeException("No user with CUSTOMER_ADMIN role exists with the given customer admin ID");
             }
         } else {
             return false;
@@ -492,12 +465,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    protected String getLoggedInUserRole() {
+    public String getLoggedInUserRole() {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserRole();
     }
 
-    protected Integer getLoggedInUserID() {
+    public Integer getLoggedInUserID() {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserId();
     }

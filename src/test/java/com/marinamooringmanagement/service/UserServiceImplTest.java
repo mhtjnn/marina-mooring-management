@@ -13,6 +13,8 @@ import com.marinamooringmanagement.repositories.RoleRepository;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.config.JwtUtil;
+import com.marinamooringmanagement.security.model.AuthenticationDetails;
+import com.marinamooringmanagement.security.model.AuthenticationResponse;
 import com.marinamooringmanagement.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +26,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,15 +75,23 @@ public class UserServiceImplTest {
 
         when(userRepo.save(any(User.class))).thenReturn(user);
 
-//        when(roleRepo.findByName(any(String.class))).thenReturn(role);
+        when(roleRepo.findByName(any(String.class))).thenReturn(Optional.ofNullable(role));
 
         when(passwordEncoder.encode(null)).thenReturn("test");
 
-//        final User savedUser = service.performSave(userRequestDto, user, null);
+//        when(SecurityContextHolder.)
 
-//        Assertions.assertEquals(savedUser.getEmail(), user.getEmail());
-//        Assertions.assertEquals(savedUser.getFirstname(), user.getFirstname());
-//        Assertions.assertEquals(savedUser.getRole().getName(), user.getRole().getName());
+        when(SecurityContextHolder.getContext().getAuthentication().getDetails()).thenReturn(newAuthenticationDetailsInstance());
+
+        when(service.getLoggedInUserRole()).thenReturn("OWNER");
+
+        when(service.checkForAuthority(any(Integer.class), "OWNER")).thenReturn(true);
+
+        final User savedUser = service.performSave(userRequestDto, user, null, null);
+
+        Assertions.assertEquals(savedUser.getEmail(), user.getEmail());
+        Assertions.assertEquals(savedUser.getName(), user.getName());
+        Assertions.assertEquals(savedUser.getRole().getName(), user.getRole().getName());
 
         verify(userMapper, times(1)).mapToUser(any(User.class), any(UserRequestDto.class));
         verify(userRepo, times(1)).save(any(User.class));
@@ -226,5 +239,13 @@ public class UserServiceImplTest {
         userSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
         userSearchRequest.setSort(Sort.by("id").ascending());
         return userSearchRequest;
+    }
+
+    public AuthenticationDetails newAuthenticationDetailsInstance() {
+        final AuthenticationDetails authDetails = new AuthenticationDetails();
+        authDetails.setLoggedInUserEmail(any(String.class));
+        authDetails.setLoggedInUserId(any(Integer.class));
+        authDetails.setLoggedInUserRole(any(String.class));
+        return authDetails;
     }
 }
