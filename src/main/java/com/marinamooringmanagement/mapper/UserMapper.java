@@ -17,19 +17,19 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface UserMapper {
 
     /**
-     * Function to map User entity to UserDto.
+     * Maps a User entity to a UserDto.
      *
-     * @param dto  {@link UserDto} empty User Dto.
-     * @param user {@link User} the User entity to map.
-     * @return {@link UserDto} the mapped User Dto.
+     * @param dto  empty UserDto.
+     * @param user the User entity to map.
+     * @return the mapped UserDto.
      */
     UserDto mapToUserDto(@MappingTarget UserDto dto, User user);
 
     /**
-     * Function to map User Entity from User Dto.
+     * Maps a UserDto to a User entity.
      *
-     * @param entity  {@link User} the User entity to update.
-     * @param userDto {@link UserDto} the User Dto with updated data.
+     * @param entity  the User entity to update.
+     * @param userDto the User Dto with updated data.
      */
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "state", ignore = true)
@@ -37,10 +37,10 @@ public interface UserMapper {
     void mapToUser(@MappingTarget User entity, UserDto userDto);
 
     /**
-     * Function to map User Entity from User Request Dto.
+     * Maps a User Request Dto to a User entity.
      *
-     * @param entity         {@link User} the User entity to update.
-     * @param userRequestDto {@link UserRequestDto} the User Request Dto with data to map.
+     * @param entity         the User entity to update.
+     * @param userRequestDto the User Request Dto with data to map.
      */
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "state", ignore = true)
@@ -48,10 +48,15 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     void mapToUser(@MappingTarget User entity, UserRequestDto userRequestDto);
 
+    /**
+     * Maps a User entity to a UserResponseDto.
+     *
+     * @param dto  empty UserResponseDto.
+     * @param user the User entity to map.
+     * @return the mapped UserResponseDto.
+     */
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
-    UserResponseDto maptToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
+    UserResponseDto mapToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
 }
-
-

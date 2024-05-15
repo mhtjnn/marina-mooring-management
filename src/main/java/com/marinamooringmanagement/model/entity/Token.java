@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+
 /**
  * Entity class representing a Token.
  * This class inherits common fields from the Base class and includes token-specific attributes.
@@ -25,6 +26,9 @@ public class Token extends Base {
     @Column(name = "token")
     private String token;
 
+    /**
+     * The refresh token value.
+     */
     @Column(name = "refresh_token")
     private String refreshToken;
 
@@ -34,6 +38,9 @@ public class Token extends Base {
     @Column(name = "expire_at")
     private Date tokenExpireAt;
 
+    /**
+     * The expiration date and time of the refresh token.
+     */
     @Column(name = "refresh_token_expire_at")
     private Date refreshTokenExpireAt;
 

@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.List;
 
+/**
+ * Implementation class for Role Service Interface.
+ * This class provides implementation for managing role-related operations.
+ */
 @Service
 public class RoleServiceImpl implements RoleService {
 
@@ -23,17 +27,20 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private RoleRepository roleRepository;
 
+    /**
+     * Fetches all roles from the database.
+     *
+     * @return A {@code BasicRestResponse} containing the list of roles.
+     */
     @Override
     public BasicRestResponse fetchRoles() {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             List<Role> roleList = roleRepository.findAll();
 
-            if(roleList.isEmpty()) {
+            if (roleList.isEmpty()) {
                 log.error("No roles found in the database");
-
                 throw new ResourceNotFoundException("No roles found in the database");
             }
 
@@ -51,7 +58,12 @@ public class RoleServiceImpl implements RoleService {
         return response;
     }
 
-
+    /**
+     * Maps a {@code Role} entity to a {@code RoleResponseDto}.
+     *
+     * @param role The role entity to map.
+     * @return A {@code RoleResponseDto} representing the mapped role.
+     */
     public RoleResponseDto mapToRoleResponseDto(Role role) {
         return RoleResponseDto.builder()
                 .name(role.getName())

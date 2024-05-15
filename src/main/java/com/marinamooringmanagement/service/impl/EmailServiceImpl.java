@@ -69,7 +69,7 @@ public class EmailServiceImpl implements EmailService {
             final ResetPasswordEmailTemplate template = ResetPasswordEmailTemplate.builder().build();
 
             final String resetPasswordToken = tokenService.createPasswordResetToken(forgetPasswordEmailRequest.getEmail());
-            final String contextPath = String.format("%1$s://%2$s:%3$s", request.getScheme(), request.getServerName(), uiPort);
+            final String contextPath = String.format("%1$s://%2$s", request.getScheme(), request.getServerName());
 
             final String url = String.format("%1$s/%2$s?token=%3$s", contextPath, uiForgetPasswordRoute, resetPasswordToken);
             final String message = String.format("Please visit this following link to reset your password:%1$s", url);

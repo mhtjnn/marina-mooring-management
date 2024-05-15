@@ -34,9 +34,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.Optional;
+
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -50,7 +51,6 @@ import java.util.Optional;
 public class AuthenticationController {
 
     private static final String normalTokenStr = "NORMAL_TOKEN";
-
     private static final String refreshTokenStr = "REFRESH_TOKEN";
 
     private final AuthenticationManager authenticationManager;
@@ -98,7 +98,6 @@ public class AuthenticationController {
                             responseCode = "403"
                     )
             }
-
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
@@ -107,7 +106,6 @@ public class AuthenticationController {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
 
         try {
-
             Optional<User> optionalUser = userRepository.findByEmail(authenticationRequest.getUsername());
 
             if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("Sorry, we can't find an account with %1$s", authenticationRequest.getUsername()));
@@ -154,7 +152,6 @@ public class AuthenticationController {
                             responseCode = "400"
                     )
             }
-
     )
     @RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
     public ResponseEntity<?> forgetPassword(
@@ -163,7 +160,6 @@ public class AuthenticationController {
         final SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response, HttpStatus.OK) : new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
-
 
     /**
      * Function to reset password with the new password.
@@ -187,7 +183,6 @@ public class AuthenticationController {
                             responseCode = "500"
                     )
             }
-
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
     public BasicRestResponse resetPasswordWithNewPassword(
@@ -195,7 +190,6 @@ public class AuthenticationController {
             @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) final @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
         return userService.updatePassword(token, newPasswordRequest);
     }
-
 
     /**
      * Function to validate email(existence) and token.
@@ -218,7 +212,6 @@ public class AuthenticationController {
                             responseCode = "500"
                     )
             }
-
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
     public BasicRestResponse validateEmailAndToken(
@@ -226,6 +219,13 @@ public class AuthenticationController {
         return userService.checkEmailAndTokenValid(token);
     }
 
+    /**
+     * Endpoint to refresh the user token.
+     *
+     * @param refreshToken the refresh token value
+     * @return a ResponseEntity containing the refreshed authentication response
+     * @throws Exception if an error occurs during token refresh
+     */
     @Operation(
             tags = "User Refresh",
             description = "API to refresh the user",
@@ -241,11 +241,10 @@ public class AuthenticationController {
                             responseCode = "403"
                     )
             }
-
     )
-    @RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
+    @RequestMapping(value = "/refresh", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationTokenFromRefreshToken(
-            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestParam("refreshToken") String refreshToken
+            @Parameter(description = "Refresh Token", schema = @Schema(implementation = String.class)) final @RequestParam("refreshToken") String refreshToken
     ) throws Exception {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
         try {
@@ -260,6 +259,13 @@ public class AuthenticationController {
         }
     }
 
+    /**
+     * Generates a new authentication token from a refresh token.
+     *
+     * @param refreshToken the refresh token
+     * @param response the authentication response to populate with the new token
+     * @return a ResponseEntity containing the updated authentication response
+     */
     private ResponseEntity<?> generateNormalTokenFromRefreshToken(String refreshToken, final AuthenticationResponse response) {
         try {
             final String username = jwtUtil.getUsernameFromToken(refreshToken);

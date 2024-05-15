@@ -72,6 +72,8 @@ public class UserServiceImpl implements UserService {
      * Fetches users based on the provided search criteria.
      *
      * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @param searchText The text to search for in user data.
      * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
      * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
      * @implNote This method interacts with the database to retrieve users based on the search criteria provided in the {@code userSearchRequest}.
@@ -85,6 +87,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId, final String searchText) {
 
+        // get the role of the logged-in user.
         final String role = getLoggedInUserRole();
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -105,6 +108,16 @@ public class UserServiceImpl implements UserService {
                         ));
                     }
 
+                    /*
+                    * If the logged-in user is of OWNER role then if the customerAdminId is not provided then
+                    * it will add those users with CUSTOMER_ADMIN role.
+                    * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
+                    * and FINANCE role having customerAdminId as given customerAdminId.
+                    *
+                    * If the logged-in user if of role as CUSTOMER_ADMIN then
+                    * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
+                    * as logged-in user ID.
+                    */
                     if(role.equals(AppConstants.Role.OWNER)) {
                         if(null == customerAdminId) {
                             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_ADMIN)));
@@ -125,19 +138,24 @@ public class UserServiceImpl implements UserService {
                 }
             };
 
+            // Fetching the roles based on the specifications.
             List<User> filteredUsers = userRepository.findAll(spec);
 
+            // Convert the filtered users to UserResponseDto
             List<UserResponseDto> filteredUserResponseDtoList = filteredUsers.stream()
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
-                        mapper.maptToUserResponseDto(userResponseDto, user);
+                        mapper.mapToUserResponseDto(userResponseDto, user);
                         userResponseDto.setRole(user.getRole().getName());
                         if (null != user.getState()) userResponseDto.setState(user.getState().getName());
                         if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
                         return userResponseDto;
                     }).toList();
 
+
             final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
+
+            // creating a pageable response of filtered user response dto
             Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUserResponseDtoList, p, filteredUserResponseDtoList.size());
 
             response.setContent(pageOfUser);
@@ -153,10 +171,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to save User in the database
+     * Saves a new user in the database.
      *
-     * @param userRequestDto {@link UserRequestDto}
-     * @return
+     * @param userRequestDto The user details to save.
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
     public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final Integer customerAdminId) {
@@ -166,14 +185,25 @@ public class UserServiceImpl implements UserService {
 
         try {
             final User user = User.builder().build();
+
+            // Fetching the user through the email provided through UI
             final Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
 
+            /*
+             * If the user exists with the given email then this will throw error as no new user can be
+             * created with the email which already exists in the database. If no user is present with
+             * the provided email then it will pass this condition.
+            */
             if (optionalUser.isPresent()) {
                 log.info(String.format("Email already present"));
                 throw new RuntimeException("Email already present");
             }
 
             log.info(String.format("saving user in DB"));
+
+            /*
+             * Calling the function which saves user to database with modification if required.
+             */
             performSave(userRequestDto, user, null, customerAdminId);
 
             response.setMessage("User saved successfully");
@@ -187,9 +217,11 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to delete User from the database
+     * Deletes a user from the database.
      *
-     * @param userId ID of the user which needs deletion.
+     * @param userId The ID of the user to delete.
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
     public BasicRestResponse deleteUser(final Integer userId, final Integer customerAdminId) {
@@ -199,22 +231,44 @@ public class UserServiceImpl implements UserService {
         try {
             log.info(String.format("delete user with given userId"));
 
+            // Fetching the optional of user from the database.
             Optional<User> optionalUser = userRepository.findById(userId);
 
+            /*
+            * If no user exists with the given ID then this condition will throw an error
+            * else this condition will be passed.
+            */
             if (optionalUser.isEmpty()) throw new ResourceNotFoundException("No user found with the given ID");
 
+            // Getting the user which is requested to be deleted.
             User userToBeDeleted = optionalUser.get();
 
+            /*
+            * Calling the function to check if the logged-in user has the authority to perform the delete
+            *  operation on the user which is requested to be deleted.
+            */
             if(!checkForAuthority(customerAdminId, userToBeDeleted.getRole().getName())) throw new RuntimeException("Not authorized");
 
+            /*
+            * A boolean variable which is true if the user(to be deleted) is of FINANCE or TECHNICIAN role.
+            */
             boolean roleTechnicianOrFinance = userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN)
                     || userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE);
 
+            /*
+            * If the logged-in user role is CUSTOMER_ADMIN and the user(to be deleted) is of TECHNICIAN and FINANCE
+            * role then if the user(to be deleted) customerAdminId doesn't match the logged-in user Id then this will
+            * throw error as logged-in user has no authority to delete user with different customerAdminId.
+            */
             if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_ADMIN) && roleTechnicianOrFinance) {
                 if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID()))
                     throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
+            /*
+            * If the user(to be deleted) is of CUSTOMER_ADMIN role then all the TECHNICIAN and FINANCE role
+            * user are also deleted.
+            */
             if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) {
                 userRepository.deleteAll(
                         userRepository.findAll().stream()
@@ -223,9 +277,13 @@ public class UserServiceImpl implements UserService {
                 );
             }
 
+            //  Tokens assigned with the user(to be deleted) are deleted.
             final List<Token> tokenList = tokenRepository.findByUserId(userId);
             tokenRepository.deleteAll(tokenList);
+
+            // deleting the user
             userRepository.deleteById(userId);
+
             response.setMessage("User Deleted Successfully!!!");
             response.setStatus(200);
         } catch (Exception e) {
@@ -235,24 +293,40 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    /**
+     * Updates an existing user in the database.
+     *
+     * @param userRequestDto The updated user details.
+     * @param userId The ID of the user to update.
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @return A {@code BasicRestResponse} indicating the status of the operation.
+     */
     @Override
     public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId, final Integer customerAdminId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            //Fetching the optional of user from the database
             Optional<User> optionalUser = userRepository.findById(userId);
+
             if (optionalUser.isPresent()) {
+                // Getting the user
                 final User user = optionalUser.get();
+
                 log.info(String.format("update user"));
+
+                //This will throw error if the email is requested to change.
                 if (null != userRequestDto.getEmail() && !userRequestDto.getEmail().equals(user.getEmail())) {
-                    response.setMessage("Email cannot be changed!!!");
-                    response.setStatus(400);
-                    return response;
+                    throw new RuntimeException("Email cannot be updated");
                 }
+
+                //calling the performSave() function to update the changes and save the user.
                 performSave(userRequestDto, user, userId, customerAdminId);
                 response.setMessage("User updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             } else {
+                // This will throw error as user(to be updated) doesn't exist in the database.
                 throw new DBOperationException("No User found with given User ID");
             }
         } catch (Exception e) {
@@ -264,10 +338,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to find Email Address of a user from the database
+     * Finds a user by their email address.
      *
-     * @param email Email given by the user
-     * @return {@link UserDto}
+     * @param email The email address of the user to find.
+     * @return A {@code UserDto} representing the user if found, otherwise {@code null}.
      */
     @Override
     public UserDto findByEmailAddress(String email) {
@@ -282,36 +356,49 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to update password for the {@link User} having email as subject of the token.
+     * Updates the password for a user.
      *
-     * @param token              Reset Password Token
-     * @param newPasswordRequest {@link NewPasswordRequest}
-     * @return {@link NewPasswordResponse}
-     * @throws Exception
+     * @param token The reset password token.
+     * @param newPasswordRequest The new password details.
+     * @return A {@code BasicRestResponse} indicating the status of the operation.
+     * @throws Exception If an error occurs during password update.
      */
     @Override
     public BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception {
         final BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
         passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            // Checking if the token is valid or not.
+            if (!jwtUtil.validateToken(token)) {
+                throw new RuntimeException("Token is invalid");
+            }
+
+            //Getting the email/username from the token.
             final String email = jwtUtil.getUsernameFromToken(token);
+
+            //Fetching the optional of user with the username extracted earlier from the token.
             Optional<User> optionalUser = userRepository.findByEmail(email);
+
+            /* If no user is present then exception will be thrown as no user with the extracted
+            * email is present in the database.
+             */
             if (optionalUser.isEmpty()) {
                 throw new ResourceNotFoundException("No User found with the given email ID");
             }
 
-            if (!jwtUtil.validateToken(token)) {
-                throw new RuntimeException("Token is invalid");
-            }
+            //If new password is different password then exception is thrown as "Confirm password doesn't match with New password"
             if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
-                passwordResponse.setMessage("Confirm password doesn't match with New password");
-                passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                throw new RuntimeException("Confirm password doesn't match with New password");
             } else {
+                // Getting the user from the optional of user
                 final User user = optionalUser.get();
+
+                //If the new password is same as old password then exception is thrown as "New password is same as old password".
                 if (passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
-                    passwordResponse.setMessage("New password is same as old password");
-                    passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    throw new RuntimeException("New password is same as old password");
                 } else {
+                    // Setting the new password for the user and then saving it to the database.
                     user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
                     userRepository.save(user);
                     passwordResponse.setMessage("Password changed Successfully!!!");
@@ -326,21 +413,28 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Function to validate email and token.
+     * Validates the email and reset password token.
      *
-     * @param token Reset Password Token
-     * @return {@link SendEmailResponse}
+     * @param token The reset password token.
+     * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
     public BasicRestResponse checkEmailAndTokenValid(final String token) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+            //Getting the email from the token
             final String email = jwtUtil.getUsernameFromToken(token);
+
+            //Getting the optional of user from the database
             Optional<User> optionalUser = userRepository.findByEmail(email);
+
+            //If optional of user is empty then exception is thrown as "No user found with the email extracted from token"
             if (optionalUser.isEmpty()) {
                 throw new ResourceNotFoundException("No user found with the email extracted from token");
             }
+
+            //Validating the token
             if (!jwtUtil.validateToken(token)) {
                 throw new RuntimeException("INVALID TOKEN!!!");
             }
@@ -354,70 +448,102 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Helper function to save the user in the database also update the existing user
+     * Helper function to perform save operation for a user.
      *
-     * @param userRequestDto {@link UserResponseDto}
-     * @param user           {@link User}
+     * @param userRequestDto The user details to save or update.
+     * @param user The {@code User} entity to update or save.
+     * @param userId The ID of the user to update, if applicable.
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @return The saved or updated {@code User} entity.
      */
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId , Integer customerAdminId) {
 
+        //Getting the role of the logged-in role
         final String role = getLoggedInUserRole();
 
         try {
+            //Checking if the logged-in user has the authority to perform save functionality.
             if (!checkForAuthority(customerAdminId, userRequestDto.getRole()))
                 throw new RuntimeException("Not authorized!!!");
 
+            //if userId is null that means user is getting saved for thw first time so we are setting creation date here
             if(null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
 
+            //mapping the simple properties of the user from the given userRequestDto
             mapper.mapToUser(user, userRequestDto);
 
+            //setting the lastModifiedDate
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
+            //If the logged-in user role is CUSTOMER_ADMIN then we are setting the given customerAdminId(can be null) to logged-in user Id
             if(role.equals(AppConstants.Role.CUSTOMER_ADMIN)) customerAdminId = getLoggedInUserID();
 
-            user.setCustomerAdminId(customerAdminId);
+            //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
+            if (userRequestDto.getRole().equals(AppConstants.Role.TECHNICIAN)
+                    || userRequestDto.getRole().equals(AppConstants.Role.FINANCE)) user.setCustomerAdminId(customerAdminId);
 
+            // Setting the password if not null
             if (null != userRequestDto.getPassword()) {
                 if (userRequestDto.getConfirmPassword().isEmpty() || userRequestDto.getPassword().isBlank())
                     throw new RuntimeException("Confirm Password is empty");
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
                     throw new RuntimeException("New Password and confirm password ");
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+            } else {
+                /* if the password in userRequestDto is null and userId is also null that means the user is getting
+                * saved for the first time. So we throw exception as for the first time of saving the user the
+                * password cannot be null.
+                 */
+                if(null == userId) throw new RuntimeException("Password cannot be null");
             }
 
+            //Setting the role if not null
             if (null != userRequestDto.getRole()) {
                 final Optional<Role> optionalRole = roleRepository.findByName(userRequestDto.getRole());
+
+                //If the optional role is empty then we throw exception as "No Role found with the given role"
                 if (optionalRole.isEmpty())
                     throw new ResourceNotFoundException("No Role found with the given role");
                 final Role savedRole = optionalRole.get();
                 user.setRole(savedRole);
-
-                if (userRequestDto.getRole().equals(AppConstants.Role.OWNER)
-                        || userRequestDto.getRole().equals(AppConstants.Role.CUSTOMER_ADMIN)) user.setCustomerAdminId(null);
+            } else {
+                /* if the role in userRequestDto is null and userId is also null that means the user is getting
+                 * saved for the first time. So we throw exception as for the first time of saving the user the
+                 * role cannot be null.
+                 */
+                if(null == userId) throw new RuntimeException("Role cannot be null");
             }
 
+            //Setting the state if not null
             if (null != userRequestDto.getState()) {
                 final Optional<State> optionalState = stateRepository.findByName(userRequestDto.getState());
                 if (optionalState.isPresent()) {
                     user.setState(optionalState.get());
                 } else {
-                    State state = State.builder()
-                            .name(userRequestDto.getState())
-                            .build();
-                    user.setState(stateRepository.save(state));
+                    throw new RuntimeException("No state found with the given state name");
                 }
+            } else {
+                /* if the state in userRequestDto is null and userId is also null that means the user is getting
+                 * saved for the first time. So we throw exception as for the first time of saving the user the
+                 * state cannot be null.
+                 */
+                if(null == userId) throw new RuntimeException("State cannot be null");
             }
 
+            //Setting the country if not null
             if (null != userRequestDto.getCountry()) {
                 final Optional<Country> optionalCountry = countryRepository.findByName(userRequestDto.getCountry());
                 if (optionalCountry.isPresent()) {
                     user.setCountry(optionalCountry.get());
                 } else {
-                    Country country = Country.builder()
-                            .name(userRequestDto.getCountry())
-                            .build();
-                    user.setCountry(countryRepository.save(country));
+                    throw new RuntimeException("No country found with the given country name");
                 }
+            } else {
+                /* if the country in userRequestDto is null and userId is also null that means the user is getting
+                 * saved for the first time. So we throw exception as for the first time of saving the user the
+                 * country cannot be null.
+                 */
+                if(null == userId) throw new RuntimeException("State cannot be null");
             }
 
 
@@ -429,17 +555,36 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Checks if the current user has the authority to perform the specified operation.
+     *
+     * @param customerAdminId The ID of the customer admin if applicable.
+     * @param role The role for which authority is being checked.
+     * @return {@code true} if the current user has the authority, otherwise {@code false}.
+     */
     public boolean checkForAuthority(Integer customerAdminId, final String role) {
+        //Getting the logged-in user role
         String loggedInUserRole = getLoggedInUserRole();
 
+        /*
+         * Boolean variable stating true if the role(of the user on which operations would be performed)
+         * is TECHNICIAN or FINANCE and false for other role.
+         */
         boolean roleTechnicianOrFinance = role.equals(AppConstants.Role.TECHNICIAN)
                 || role.equals(AppConstants.Role.FINANCE);
 
+        /*
+        * If the logged-in user role is CUSTOMER_ADMIN and then if the role(of the user on which operations would be performed)
+        * is OWNER and CUSTOMER_ADMIN then we are throwing error as "Not authorized to perform operations for OWNER/CUSTOMER_ADMIN role"
+        * If the logged-in user is OWNER and if the role(of the user on which operations would be performed) is TECHNICIAN/FINANCE
+        * then if the customerAdminId is not provided then we throw exception as Customer Admin ID not provided but if the
+        * customerAdminId is provided but no user exists with the provided customerAdminId then we throw exception as
+        * No user exists with the given customer admin ID and if the user exists with the given customerAdminId but that user role
+        * is different from CUSTOMER_ADMIN then we throw error as No user with CUSTOMER_ADMIN role exists with the given customer admin ID.
+        */
         if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
             if(role.equals(AppConstants.Role.OWNER) || role.equals(AppConstants.Role.CUSTOMER_ADMIN))
                 throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
-
-            return roleTechnicianOrFinance;
         } else if (loggedInUserRole.equals(AppConstants.Role.OWNER)) {
             if(roleTechnicianOrFinance) {
                 if(null == customerAdminId) throw new RuntimeException("Customer Admin ID not provided");
@@ -450,26 +595,28 @@ public class UserServiceImpl implements UserService {
                     throw new RuntimeException("No user with CUSTOMER_ADMIN role exists with the given customer admin ID");
             }
         } else {
+            //User with TECHNICIAN/FINANCE have no authority to perform operation on user.
             return false;
         }
 
         return true;
     }
 
-    public boolean findByEmailId(final String emailId) {
-        try {
-            Optional<User> optionalUser = userRepository.findByEmail(emailId);
-            return optionalUser.isPresent();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getLocalizedMessage());
-        }
-    }
-
+    /**
+     * Retrieves the role of the currently logged-in user.
+     *
+     * @return The role of the currently logged-in user.
+     */
     public String getLoggedInUserRole() {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserRole();
     }
 
+    /**
+     * Retrieves the ID of the currently logged-in user.
+     *
+     * @return The ID of the currently logged-in user.
+     */
     public Integer getLoggedInUserID() {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserId();
