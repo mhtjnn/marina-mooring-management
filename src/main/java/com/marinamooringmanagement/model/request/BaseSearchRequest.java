@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.request;
 
 import jakarta.persistence.MappedSuperclass;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 @MappedSuperclass
 @ToString
 @EqualsAndHashCode
+//@Builder
 public class BaseSearchRequest {
 
     /**

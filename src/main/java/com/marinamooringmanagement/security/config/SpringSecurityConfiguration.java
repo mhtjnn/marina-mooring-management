@@ -38,7 +38,8 @@ public class SpringSecurityConfiguration{
             "/swagger/resources/**",
             "/swagger-ui/**",
             "/webjars/**",
-            "/v3/api-docs"
+            "/v3/api-docs",
+            "/**"
     };
 
     /**

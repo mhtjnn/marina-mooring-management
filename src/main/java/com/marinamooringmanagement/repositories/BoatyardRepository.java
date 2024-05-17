@@ -1,9 +1,11 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Boatyard;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,4 +21,6 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
      * @return An Optional containing the Boatyard entity if found, or an empty Optional if not found.
      */
     Optional<Boatyard> findByBoatyardName(String boatyardName);
+
+    List<Boatyard> findAll(final Specification<Boatyard> spec);
 }

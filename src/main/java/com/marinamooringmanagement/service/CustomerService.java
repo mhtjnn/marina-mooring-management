@@ -39,8 +39,8 @@ public interface CustomerService {
      *
      * @param id The ID of the customer to delete.
      */
-    BasicRestResponse deleteCustomerbyId(final Integer id);
+    BasicRestResponse deleteCustomerById(final Integer id);
 
-    BasicRestResponse fetchCustomerAndMooringsById(final String customerName);
+    BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId);
 }
 

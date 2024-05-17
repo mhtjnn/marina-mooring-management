@@ -114,12 +114,12 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public BasicRestResponse fetchCustomerAndMooringsById(final String customerName) {
+    public BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
-            Optional<Customer> optionalCustomer = customerRepository.findByCustomerName(customerName);
+            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
 
             if (optionalCustomer.isEmpty()) throw new ResourceNotFoundException("No customer found with the given ID");
 
@@ -146,7 +146,6 @@ public class CustomerServiceImpl implements CustomerService {
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
-            response.setErrorList(List.of(e.getCause().toString()));
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
@@ -271,7 +270,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id The ID of the customer to delete.
      */
     @Override
-    public BasicRestResponse deleteCustomerbyId(final Integer id) {
+    public BasicRestResponse deleteCustomerById(final Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             customerRepository.deleteById(id);

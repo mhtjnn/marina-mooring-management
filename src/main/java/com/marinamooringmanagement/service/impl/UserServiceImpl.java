@@ -14,6 +14,7 @@ import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import com.marinamooringmanagement.service.UserService;
+import com.marinamooringmanagement.utils.ConversionUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -68,6 +69,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper mapper;
 
+    @Autowired
+    private ConversionUtils conversionUtils;
+
     /**
      * Fetches users based on the provided search criteria.
      *
@@ -100,12 +104,24 @@ public class UserServiceImpl implements UserService {
 
                     List<Predicate> predicates = new ArrayList<>();
 
+                    /*
+                    * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
+                    * else we are checking name, email and phone number(saved as string).
+                    */
                     if (null != searchText) {
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
-                                criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
-                                criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
-                        ));
+                        if(conversionUtils.isInteger(searchText)) {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.equal(user.get("id"), Integer.parseInt(searchText)),
+                                    criteriaBuilder.like(user.get("email"), "%" + searchText + "%")
+                            ));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
+                                    criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
+                                    criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
+                            ));
+                        }
                     }
 
                     /*
@@ -621,5 +637,7 @@ public class UserServiceImpl implements UserService {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserId();
     }
+
+
 
 }

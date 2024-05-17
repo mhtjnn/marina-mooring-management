@@ -25,7 +25,7 @@ public interface BoatyardService {
      * @param sortDir    The direction of sorting.
      * @return A list of BoatyardDto objects.
      */
-    BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir);
+    BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir, final String searchText);
 
     /**
      * Retrieves a BoatYard entity by its ID.

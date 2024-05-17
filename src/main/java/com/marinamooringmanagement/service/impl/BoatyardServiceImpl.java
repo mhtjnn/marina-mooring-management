@@ -12,6 +12,11 @@ import com.marinamooringmanagement.model.response.BoatyardResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.service.BoatyardService;
+import com.marinamooringmanagement.utils.ConversionUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +25,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +64,9 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private ConversionUtils conversionUtils;
 
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
@@ -93,14 +103,41 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param sortDir    The direction of sorting.
      * @return A list of BoatYardDto objects.
      */
-    public BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir) {
+    public BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir, final String searchText) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            Specification<Boatyard> spec = new Specification<Boatyard>() {
+                @Override
+                public Predicate toPredicate(Root<Boatyard> boatyard, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (null != searchText) {
+                        if(conversionUtils.isInteger(searchText)) {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.equal(boatyard.get("id"), Integer.parseInt(searchText)),
+                                    criteriaBuilder.like(boatyard.get("address"), "%" + searchText + "%")
+                            ));
+                        }
+                        else {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.like(boatyard.get("name"), "%" + searchText + "%"),
+                                    criteriaBuilder.like(boatyard.get("address"), "%" + searchText + "%")
+                            ));
+                        }
+                    }
+
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            List<Boatyard> boatyardList = boatYardRepository.findAll(spec);
+
             final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
             final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
             final Page<Boatyard> pageUser = boatYardRepository.findAll(p);
-            List<Boatyard> boatyardList = pageUser.getContent();
+//            List<Boatyard> boatyardList = pageUser.getContent();
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 

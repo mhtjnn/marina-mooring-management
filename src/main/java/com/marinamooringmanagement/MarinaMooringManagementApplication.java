@@ -1,8 +1,12 @@
 package com.marinamooringmanagement;
 
+import com.marinamooringmanagement.model.entity.Country;
 import com.marinamooringmanagement.model.entity.Role;
+import com.marinamooringmanagement.model.entity.State;
 import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.repositories.CountryRepository;
 import com.marinamooringmanagement.repositories.RoleRepository;
+import com.marinamooringmanagement.repositories.StateRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -24,6 +28,12 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private StateRepository stateRepository;
+
+	@Autowired
+	private CountryRepository countryRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -98,6 +108,30 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			user.setLastModifiedBy("System");
 
 			userRepository.save(user);
+		}
+
+		final String stateSql = "SELECT * FROM state";
+		final List<Role> stateList = jdbcTemplate.query(stateSql, (resultSet, rowNum) ->
+				null);
+
+		if(stateList.isEmpty()) {
+			State state = State.builder()
+					.name("New York")
+					.build();
+
+			stateRepository.save(state);
+		}
+
+		final String countrySql = "SELECT * FROM country";
+		final List<Role> countryList = jdbcTemplate.query(countrySql, (resultSet, rowNum) ->
+				null);
+
+		if(countryList.isEmpty()) {
+			Country country = Country.builder()
+					.name("USA")
+					.build();
+
+			countryRepository.save(country);
 		}
 	}
 }

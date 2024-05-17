@@ -137,9 +137,9 @@ public class CustomerController extends Base {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerWithMoorings(
-            @PathVariable("id") final String customerName
+            @PathVariable("id") final Integer customerId
     ) {
-        return customerService.fetchCustomerAndMooringsById(customerName);
+        return customerService.fetchCustomerAndMooringsById(customerId);
     }
 
     /**
@@ -218,6 +218,6 @@ public class CustomerController extends Base {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteCustomer(@PathVariable(value = "id") Integer id) {
 
-        return customerService.deleteCustomerbyId(id);
+        return customerService.deleteCustomerById(id);
     }
 }
