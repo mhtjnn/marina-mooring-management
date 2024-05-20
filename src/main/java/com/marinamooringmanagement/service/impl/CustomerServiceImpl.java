@@ -114,7 +114,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId) {
+    public BasicRestResponse fetchCustomerAndMoorings(final Integer customerId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -158,7 +158,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @return The CustomerDto object.
      */
     @Override
-    public CustomerDto getbyId(final Integer id) {
+    public CustomerDto getById(final Integer id) {
         if (id == null) {
             throw new ResourceNotFoundException("ID cannot be null");
         }
@@ -225,32 +225,35 @@ public class CustomerServiceImpl implements CustomerService {
      */
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
+            customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
             customerMapper.mapToCustomer(customer, customerRequestDto);
+
+            Customer savedCustomer =  customerRepository.save(customer);
 
             Optional<Mooring> optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
 
             Mooring mooring = null;
 
-            mooring = (optionalMooring.isPresent()) ?
-                    mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId()) :
-                    mooringService.performSave(customerRequestDto.getMooringRequestDto(), Mooring.builder().build(), null);
-
-            List<Mooring> mooringList = new ArrayList<>();
-
-            if (null == id) {
-                customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
-                customer.setCreationDate(new Date());
-
-                mooringList.add(mooring);
+            if(optionalMooring.isPresent()) {
+                optionalMooring.get().setCustomer(savedCustomer);
+                mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId());
             } else {
-                mooringList = customer.getMooringList();
-
-                List<Mooring> mooringExist = mooringList.stream().filter(mooring1 -> mooring1.getMooringId().equals(customerRequestDto.getMooringRequestDto().getMooringId())).toList();
-
-                if (mooringList.isEmpty() || mooringExist.isEmpty()) mooringList.add(mooring);
+                mooringService.performSave(customerRequestDto.getMooringRequestDto(), Mooring.builder().customer(savedCustomer).build(), null);
             }
 
+            List<Mooring> mooringList = null;
+
+            if (null == id) customer.setCreationDate(new Date());
+
+            mooringList = customer.getMooringList();
+
+            if(null == mooringList) mooringList = new ArrayList<>();
+
+            mooringList.add(mooring);
+
             customer.setMooringList(mooringList);
+
             customer.setLastModifiedDate(new Date());
 
             customerRepository.save(customer);

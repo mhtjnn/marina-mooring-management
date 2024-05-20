@@ -70,6 +70,7 @@ public class MooringServiceImpl implements MooringService {
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                        if(null != mooring.getCustomer())mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         return  mooringResponseDto;
                     })
                     .collect(Collectors.toList());

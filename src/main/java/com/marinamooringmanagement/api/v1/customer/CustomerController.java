@@ -112,7 +112,7 @@ public class CustomerController extends Base {
     /**
      * Retrieves a customer along with their moorings based on the provided customer ID.
      *
-     * @param customerName The name of the customer to fetch along with their moorings.
+     * @param customerId The name of the customer to fetch along with their moorings.
      * @return A BasicRestResponse containing the customer details and their associated moorings.
      * @throws IllegalArgumentException If the customer ID is null or negative.
      */
@@ -139,7 +139,7 @@ public class CustomerController extends Base {
     public BasicRestResponse fetchCustomerWithMoorings(
             @PathVariable("id") final Integer customerId
     ) {
-        return customerService.fetchCustomerAndMooringsById(customerId);
+        return customerService.fetchCustomerAndMoorings(customerId);
     }
 
     /**
@@ -152,7 +152,7 @@ public class CustomerController extends Base {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public CustomerDto getCustomer(@PathVariable(value = "id") Integer id) {
-        return this.customerService.getbyId(id);
+        return this.customerService.getById(id);
     }
 
     /**

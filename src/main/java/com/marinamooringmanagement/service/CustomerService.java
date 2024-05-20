@@ -24,7 +24,7 @@ public interface CustomerService {
      * @param id The ID of the customer.
      * @return The CustomerDto object.
      */
-    CustomerDto getbyId(final Integer id);
+    CustomerDto getById(final Integer id);
 
     /**
      * Updates an existing customer.
@@ -41,6 +41,6 @@ public interface CustomerService {
      */
     BasicRestResponse deleteCustomerById(final Integer id);
 
-    BasicRestResponse fetchCustomerAndMooringsById(final Integer customerId);
+    BasicRestResponse fetchCustomerAndMoorings(final Integer customerId);
 }
 

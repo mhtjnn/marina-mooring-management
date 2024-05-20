@@ -131,4 +131,8 @@ public class Mooring extends Base {
      */
     @Column(name = "status")
     private String status;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }
