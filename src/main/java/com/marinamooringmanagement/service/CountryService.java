@@ -2,7 +2,7 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.dto.CountryDto;
 
-import com.marinamooringmanagement.model.request.CountrySearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 /**
@@ -11,13 +11,12 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 public interface CountryService {
 
     /**
-     * Fetches countries based on the provided search criteria.
+     * Fetches a list of countries based on the provided search request parameters.
      *
-     * @param countrySearchRequest An instance of {@code CountrySearchRequest} containing the search criteria.
-     * @return A {@code BasicRestResponse} object containing the response data, including the list of countries matching the search criteria.
-     * @throws IllegalArgumentException if {@code countrySearchRequest} is {@code null}.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the country search.
      */
-    BasicRestResponse fetchCountries(CountrySearchRequest countrySearchRequest);
+    BasicRestResponse fetchCountries(final BaseSearchRequest baseSearchRequest);
 
     /**
      * Saves a new country into the database.

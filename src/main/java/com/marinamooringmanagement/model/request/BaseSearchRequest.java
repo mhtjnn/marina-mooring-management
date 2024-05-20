@@ -1,10 +1,7 @@
 package com.marinamooringmanagement.model.request;
 
 import jakarta.persistence.MappedSuperclass;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -16,9 +13,9 @@ import org.springframework.data.domain.Sort;
  * @see MappedSuperclass
  */
 @Data
-@MappedSuperclass
-@ToString
-@EqualsAndHashCode
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 //@Builder
 public class BaseSearchRequest {
 
@@ -35,16 +32,10 @@ public class BaseSearchRequest {
     /**
      * The sort order for results.
      */
-    private Sort sort;
+    private String sortBy;
 
     /**
-     * Constructs a {@code Sort} object based on the provided sorting parameters.
-     *
-     * @param sortBy   The field to sort by.
-     * @param sortDir  The direction of sorting (either "asc" for ascending or "desc" for descending).
-     * @return A {@code Sort} object representing the sorting criteria.
+     * The sort direction for results.
      */
-    public Sort getSort(final String sortBy, final String sortDir) {
-        return sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-    }
+    private String sortDir;
 }

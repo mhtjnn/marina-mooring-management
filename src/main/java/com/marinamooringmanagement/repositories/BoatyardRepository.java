@@ -1,6 +1,9 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Boatyard;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -22,5 +25,5 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
      */
     Optional<Boatyard> findByBoatyardName(String boatyardName);
 
-    List<Boatyard> findAll(final Specification<Boatyard> spec);
+    Page<Boatyard> findAll(final Specification<Boatyard> spec, final Pageable pageable);
 }

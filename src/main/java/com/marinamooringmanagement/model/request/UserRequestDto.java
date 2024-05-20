@@ -1,6 +1,8 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,11 +29,14 @@ public class UserRequestDto implements Serializable {
      * The first name of the user.
      */
     @NotNull(message = "First name cannot be null")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format")
     private String name;
 
     /**
      * The email address of the user.
      */
+    @Email(message = "Wrong Format")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email format")
     private String email;
 
     /**
@@ -42,6 +47,7 @@ public class UserRequestDto implements Serializable {
     /**
      * The password of the user.
      */
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$", message = "Invalid password. Password must be at least 8 characters long and contain at least one digit, one lowercase letter, and one uppercase letter.")
     private String password;
 
     /**

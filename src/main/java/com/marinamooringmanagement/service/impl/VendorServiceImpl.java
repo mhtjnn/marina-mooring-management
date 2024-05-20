@@ -4,23 +4,31 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.Vendor;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
-import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.VendorRepository;
 import com.marinamooringmanagement.service.VendorService;
+import com.marinamooringmanagement.utils.SortUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -40,21 +48,59 @@ public class VendorServiceImpl implements VendorService {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @Autowired
+    private SortUtils sortUtils;
+
+    /**
+     * Fetches a list of vendors based on the provided search request parameters and search text.
+     *
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific vendors by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the vendor search.
+     */
     @Override
-    public BasicRestResponse fetchVendors(final VendorSearchRequest vendorSearchRequest) {
+    public BasicRestResponse fetchVendors(final BaseSearchRequest baseSearchRequest, final String searchText) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             logger.info("API called to fetch all the vendors from the database");
-            final Pageable p = PageRequest.of(vendorSearchRequest.getPageNumber(), vendorSearchRequest.getPageSize(), vendorSearchRequest.getSort());
 
-            final Page<Vendor> vendorList = vendorRepository.findAll(p);
+            Specification<Vendor> spec = new Specification<Vendor>() {
+                @Override
+                public Predicate toPredicate(Root<Vendor> vendor, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
 
-            final List<VendorResponseDto> vendorResponseDtoList = vendorList.getContent().stream()
+                    if(null != searchText) {
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(vendor.get("state"), "%"+searchText+"%"),
+                                criteriaBuilder.like(vendor.get("companyName"), "%" + searchText + "%"),
+                                criteriaBuilder.like(vendor.get("website"), "%" + searchText + "%")
+                        ));
+                    }
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+
+            final Page<Vendor> vendorList = vendorRepository.findAll(spec, p);
+
+            if(null == vendorList || vendorList.getContent().isEmpty()) throw new ResourceNotFoundException("No vendor found");
+
+            final List<VendorResponseDto> vendorResponseDtoList = vendorList
+                    .getContent()
+                    .stream()
                     .map(vendor -> vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), vendor))
                     .collect(Collectors.toList());
+
+            final Page<VendorResponseDto> vendorResponseDtoPage = new PageImpl<>(vendorResponseDtoList, p, vendorResponseDtoList.size());
+
             response.setMessage("List of vendors in the database");
-            response.setContent(vendorResponseDtoList);
+            response.setContent(vendorResponseDtoPage);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             logger.error("Error occurred while fetching all the vendors from the database: {}", e.getLocalizedMessage());

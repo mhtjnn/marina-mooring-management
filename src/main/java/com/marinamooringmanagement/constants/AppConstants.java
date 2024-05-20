@@ -11,12 +11,12 @@ public class AppConstants {
         /**
          * Represents a regular user role.
          */
-        public final static String OWNER = "OWNER";
+        public final static String ADMINISTRATOR = "ADMINISTRATOR";
 
         /**
          * Represents an administrator role.
          */
-        public final static String CUSTOMER_ADMIN = "CUSTOMER_ADMIN";
+        public final static String CUSTOMER_OWNER = "CUSTOMER OWNER";
 
         /**
          * Represents a finance user role.

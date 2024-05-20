@@ -2,9 +2,9 @@ package com.marinamooringmanagement.service;
 
 
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
-import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 /**
@@ -14,20 +14,14 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 public interface UserService {
 
     /**
-     * Fetches users based on the provided search criteria.
+     * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
-     * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
-     * @param customerAdminId   The ID of the customer admin.
-     * @param searchText        Optional parameter for searching users by text.
-     * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
-     * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
-     * @apiNote The implementation of this method should handle various search criteria specified in the {@code userSearchRequest} and return the appropriate response.
-     * @implSpec This method should be implemented to interact with the backend system or data source to fetch users based on the provided search criteria.
-     * @implNote Implementations of this method should adhere to the contract defined by {@code BasicRestResponse} for representing REST API responses.
-     * @see UserSearchRequest
-     * @see BasicRestResponse
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param customerAdminId the unique identifier of the customer admin whose associated users are to be fetched.
+     * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the user search.
      */
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId, final String searchText);
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerAdminId, final String searchText);
 
     /**
      * Saves a new user or updates an existing user.

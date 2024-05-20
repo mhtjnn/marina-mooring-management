@@ -58,16 +58,16 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
 		if(roleList.isEmpty()) {
 			roleOwner.setId(1);
-			roleOwner.setDescription("Owner");
-			roleOwner.setName("OWNER");
+			roleOwner.setDescription("Administrator");
+			roleOwner.setName("ADMINISTRATOR");
 			roleOwner.setCreationDate(new Date(System.currentTimeMillis()));
 			roleOwner.setLastModifiedDate(new Date(System.currentTimeMillis()));
 			roleRepository.save(roleOwner);
 
 			final Role roleCustomerAdmin = Role.builder().build();
 			roleCustomerAdmin.setId(2);
-			roleCustomerAdmin.setDescription("Customer Administrator");
-			roleCustomerAdmin.setName("CUSTOMER_ADMIN");
+			roleCustomerAdmin.setDescription("Customer Owner");
+			roleCustomerAdmin.setName("CUSTOMER OWNER");
 			roleCustomerAdmin.setCreationDate(new Date(System.currentTimeMillis()));
 			roleCustomerAdmin.setLastModifiedDate(new Date(System.currentTimeMillis()));
 			roleRepository.save(roleCustomerAdmin);

@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.dto.BoatyardDto;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
@@ -17,15 +18,13 @@ public interface BoatyardService {
     BasicRestResponse saveBoatyard(final BoatyardRequestDto boatyardRequestDto);
 
     /**
-     * Retrieves a list of BoatYard entities.
+     * Fetches a list of boatyards based on the provided search request parameters and search text.
      *
-     * @param pageNumber The page number.
-     * @param pageSize   The size of each page.
-     * @param sortBy     The field to sort by.
-     * @param sortDir    The direction of sorting.
-     * @return A list of BoatyardDto objects.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific boatyards by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the boatyard search.
      */
-    BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir, final String searchText);
+    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText);
 
     /**
      * Retrieves a BoatYard entity by its ID.

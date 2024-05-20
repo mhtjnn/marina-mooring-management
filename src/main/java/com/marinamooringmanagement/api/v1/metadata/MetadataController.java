@@ -1,8 +1,6 @@
 package com.marinamooringmanagement.api.v1.metadata;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
-import com.marinamooringmanagement.model.request.CountrySearchRequest;
-import com.marinamooringmanagement.model.request.StateSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CountryService;
 import com.marinamooringmanagement.service.RoleService;
@@ -73,11 +71,13 @@ public class MetadataController {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        final CountrySearchRequest countrySearchRequest = CountrySearchRequest.builder().build();
-        countrySearchRequest.setPageNumber(page);
-        countrySearchRequest.setPageSize(size);
-        countrySearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return countryService.fetchCountries(countrySearchRequest);
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(page)
+                .pageSize(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return countryService.fetchCountries(baseSearchRequest);
     }
 
     /**
@@ -116,11 +116,13 @@ public class MetadataController {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        final StateSearchRequest stateSearchRequest = StateSearchRequest.builder().build();
-        stateSearchRequest.setPageNumber(page);
-        stateSearchRequest.setPageSize(size);
-        stateSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return stateService.fetchStates(stateSearchRequest);
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(page)
+                .pageSize(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return stateService.fetchStates(baseSearchRequest);
     }
 
     /**
@@ -159,7 +161,13 @@ public class MetadataController {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
-        return roleService.fetchRoles();
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(page)
+                .pageSize(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return roleService.fetchRoles(baseSearchRequest);
     }
 
 }

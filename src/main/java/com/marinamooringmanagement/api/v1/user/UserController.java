@@ -2,7 +2,6 @@ package com.marinamooringmanagement.api.v1.user;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
-import com.marinamooringmanagement.model.request.UserSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.service.UserService;
@@ -76,11 +75,13 @@ public class UserController {
             @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,
             @RequestParam(value = "searchText", required = false) final String searchText
     ) {
-        UserSearchRequest userSearchRequest = UserSearchRequest.builder().build();
-        userSearchRequest.setPageNumber(pageNumber);
-        userSearchRequest.setPageSize(pageSize);
-        userSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return userService.fetchUsers(userSearchRequest, customerAdminId, searchText);
+        BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return userService.fetchUsers(baseSearchRequest, customerAdminId, searchText);
     }
 
     /**

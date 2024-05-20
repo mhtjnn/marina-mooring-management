@@ -2,7 +2,6 @@ package com.marinamooringmanagement.api.v1.mooring;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
-import com.marinamooringmanagement.model.request.MooringSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.MooringService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,8 +32,8 @@ public class MooringController {
     /**
      * Fetches a list of moorings based on pagination and sorting parameters.
      *
-     * @param page    Page number for pagination (default: 1)
-     * @param size    Page size for pagination (default: 10)
+     * @param pageNumber    Page number for pagination (default: 1)
+     * @param pageSize    Page size for pagination (default: 10)
      * @param sortBy  Field to sort by (default: "id")
      * @param sortDir Sorting direction (asc/desc, default: "asc")
      * @return BasicRestResponse containing the fetched moorings
@@ -63,16 +61,19 @@ public class MooringController {
             produces = {"application/json"}
     )
     public BasicRestResponse fetchMoorings(
-            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText
     ) {
-        final MooringSearchRequest mooringSearchRequest = MooringSearchRequest.builder().build();
-        mooringSearchRequest.setPageNumber(page);
-        mooringSearchRequest.setPageSize(size);
-        mooringSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        return mooringService.fetchMoorings(mooringSearchRequest);
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return mooringService.fetchMoorings(baseSearchRequest, searchText);
     }
 
     /**

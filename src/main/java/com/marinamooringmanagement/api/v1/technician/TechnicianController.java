@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.technician;
 
 import com.marinamooringmanagement.model.dto.TechnicianDto;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.TechnicianService;
@@ -92,12 +93,19 @@ public class TechnicianController {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse getTechnicians(
-            @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+            final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            final @RequestParam(value = "searchText", required = false) String searchText
     ) {
-        return technicianService.getTechnicians(pageNumber, pageSize, sortBy, sortDir);
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return technicianService.fetchTechnicians(baseSearchRequest, searchText);
     }
 
     /**

@@ -3,11 +3,12 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.mapper.StateMapper;
 import com.marinamooringmanagement.model.dto.StateDto;
 import com.marinamooringmanagement.model.entity.State;
-import com.marinamooringmanagement.model.request.StateSearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.StateResponseDto;
 import com.marinamooringmanagement.repositories.StateRepository;
 import com.marinamooringmanagement.service.StateService;
+import com.marinamooringmanagement.utils.SortUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service implementation for managing states.
@@ -39,26 +38,36 @@ public class StateServiceImpl implements StateService {
     @Autowired
     private StateMapper stateMapper;
 
+    @Autowired
+    private SortUtils sortUtils;
+
     /**
-     * Fetches a paginated list of states.
+     * Fetches a list of states based on the provided search request parameters.
      *
-     * @param stateSearchRequest The search criteria for fetching states.
-     * @return A BasicRestResponse containing a list of StateResponseDto representing the fetched states.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the state search.
      */
     @Override
-    public BasicRestResponse fetchStates(StateSearchRequest stateSearchRequest) {
+    public BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Pageable p = PageRequest.of(stateSearchRequest.getPageNumber(), stateSearchRequest.getPageSize(), stateSearchRequest.getSort());
+            log.info("fetch all states");
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    );
             final Page<State> stateList = stateRepository.findAll(p);
-            log.info("fetch all users");
-            List<StateResponseDto> userResponseDtoList = new ArrayList<>();
-            if (!stateList.isEmpty())
-                userResponseDtoList = stateList.getContent().stream().map(state -> stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), state)).collect(Collectors.toList());
+
+            List<StateResponseDto> stateResponseDtoList = stateList
+                    .stream()
+                    .map(state -> stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), state))
+                    .toList();
+
             response.setMessage("States fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(userResponseDtoList);
+            response.setContent(stateResponseDtoList);
         } catch (Exception e) {
             response.setMessage("Error Occurred while fetching state from the database");
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

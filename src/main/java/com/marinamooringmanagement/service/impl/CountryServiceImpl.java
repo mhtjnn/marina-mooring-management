@@ -3,11 +3,12 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.mapper.CountryMapper;
 import com.marinamooringmanagement.model.dto.CountryDto;
 import com.marinamooringmanagement.model.entity.Country;
-import com.marinamooringmanagement.model.request.CountrySearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.CountryResponseDto;
 import com.marinamooringmanagement.repositories.CountryRepository;
 import com.marinamooringmanagement.service.CountryService;
+import com.marinamooringmanagement.utils.SortUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service implementation for managing countries.
@@ -39,26 +38,34 @@ public class CountryServiceImpl implements CountryService {
     @Autowired
     private CountryMapper countryMapper;
 
+    @Autowired
+    private SortUtils sortUtils;
+
     /**
-     * Fetches a paginated list of countries.
+     * Fetches a list of countries based on the provided search request parameters.
      *
-     * @param countrySearchRequest The search criteria for fetching countries.
-     * @return A BasicRestResponse containing a list of CountryResponseDto representing the fetched countries.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the country search.
      */
     @Override
-    public BasicRestResponse fetchCountries(CountrySearchRequest countrySearchRequest) {
+    public BasicRestResponse fetchCountries(final BaseSearchRequest baseSearchRequest) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Pageable p = PageRequest.of(countrySearchRequest.getPageNumber(), countrySearchRequest.getPageSize(), countrySearchRequest.getSort());
+            log.info("fetch all countries");
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
             final Page<Country> countryList = countryRepository.findAll(p);
-            log.info("fetch all users");
-            List<CountryResponseDto> userResponseDtoList = new ArrayList<>();
-            if (!countryList.isEmpty())
-                userResponseDtoList = countryList.getContent().stream().map(country -> countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), country)).collect(Collectors.toList());
+
+            final List<CountryResponseDto> countryResponseDtoList = countryList.stream()
+                    .map(country -> countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), country))
+                    .toList();
+
             response.setMessage("Countries fetched Successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(userResponseDtoList);
+            response.setContent(countryResponseDtoList);
         } catch (Exception e) {
             response.setMessage("Error Occurred while fetching country from the database");
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -7,8 +7,8 @@ import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Mooring;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
-import com.marinamooringmanagement.model.request.CustomerSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.CustomerAndMooringsCustomResponse;
 import com.marinamooringmanagement.model.response.CustomerResponseDto;
@@ -16,12 +16,19 @@ import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.service.CustomerService;
+import com.marinamooringmanagement.utils.SortUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +57,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private MooringServiceImpl mooringService;
+
+    @Autowired
+    private SortUtils sortUtils;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -84,21 +94,51 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
-    public BasicRestResponse fetchCustomers(final CustomerSearchRequest customerSearchRequest) {
+    /**
+     * Fetches a list of customers based on the provided search request parameters and search text.
+     *
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific customers by name, email, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the customer search.
+     */
+    @Override
+    public BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Pageable p = PageRequest.of(customerSearchRequest.getPageNumber(), customerSearchRequest.getPageSize(), customerSearchRequest.getSort());
 
-            final Page<Customer> pageCustomer = customerRepository.findAll(p);
+            Specification<Customer> spec = new Specification<Customer>() {
+                @Override
+                public Predicate toPredicate(Root<Customer> customer, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
 
-            List<Customer> customerList = pageCustomer.getContent();
+                    if(null != searchText) {
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(customer.get("email"), "%" + searchText + "%"),
+                                criteriaBuilder.like(customer.get("phoneNumber"), "%" + searchText + "%")
+                        ));
+                    }
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
 
-            if (customerList.isEmpty()) throw new DBOperationException("No customers found in the database");
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+            final Page<Customer> customerList = customerRepository.findAll(spec, p);
 
-            final List<CustomerResponseDto> customerResponseDtoList = customerList.stream().map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer)).toList();
+            if (null == customerList || customerList.getContent().isEmpty()) throw new DBOperationException("No customer found");
 
-            response.setContent(customerResponseDtoList);
+            final List<CustomerResponseDto> customerResponseDtoList = customerList
+                    .getContent()
+                    .stream()
+                    .map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer))
+                    .toList();
+
+            final Page<CustomerResponseDto> customerPage = new PageImpl<>(customerResponseDtoList, p, customerResponseDtoList.size());
+            response.setContent(customerPage);
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 
@@ -226,40 +266,30 @@ public class CustomerServiceImpl implements CustomerService {
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
-
             customerMapper.mapToCustomer(customer, customerRequestDto);
-
             Customer savedCustomer =  customerRepository.save(customer);
-
             Optional<Mooring> optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
-
             Mooring mooring = null;
-
             if(optionalMooring.isPresent()) {
                 optionalMooring.get().setCustomer(savedCustomer);
                 mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId());
             } else {
-                mooringService.performSave(customerRequestDto.getMooringRequestDto(), Mooring.builder().customer(savedCustomer).build(), null);
+                mooringService
+                        .performSave(
+                                customerRequestDto.getMooringRequestDto(),
+                                Mooring.builder().customerName(savedCustomer.getCustomerName()).customer(savedCustomer).build(),
+                                null
+                        );
             }
-
             List<Mooring> mooringList = null;
-
             if (null == id) customer.setCreationDate(new Date());
-
             mooringList = customer.getMooringList();
-
             if(null == mooringList) mooringList = new ArrayList<>();
-
             mooringList.add(mooring);
-
             customer.setMooringList(mooringList);
-
             customer.setLastModifiedDate(new Date());
-
             customerRepository.save(customer);
-
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
-
         } catch (Exception e) {
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
 

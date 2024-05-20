@@ -5,7 +5,7 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
-import com.marinamooringmanagement.model.request.UserSearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
@@ -14,7 +14,7 @@ import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import com.marinamooringmanagement.service.UserService;
-import com.marinamooringmanagement.utils.ConversionUtils;
+import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -70,26 +70,18 @@ public class UserServiceImpl implements UserService {
     private UserMapper mapper;
 
     @Autowired
-    private ConversionUtils conversionUtils;
+    private SortUtils sortUtils;
 
     /**
-     * Fetches users based on the provided search criteria.
+     * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
-     * @param userSearchRequest An instance of {@code UserSearchRequest} containing the search criteria.
-     * @param customerAdminId The ID of the customer admin if applicable.
-     * @param searchText The text to search for in user data.
-     * @return A {@code BasicRestResponse} object containing the response data, including the list of users matching the search criteria.
-     * @throws IllegalArgumentException if {@code userSearchRequest} is {@code null}.
-     * @implNote This method interacts with the database to retrieve users based on the search criteria provided in the {@code userSearchRequest}.
-     * It constructs a {@code BasicRestResponse} object with information about the status of the operation and the fetched user data.
-     * @apiNote The returned {@code BasicRestResponse} includes a list of {@code UserResponseDto} objects representing the fetched users.
-     * @see UserSearchRequest
-     * @see BasicRestResponse
-     * @see User
-     * @see UserResponseDto
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param customerAdminId the unique identifier of the customer admin whose associated users are to be fetched.
+     * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the user search.
      */
     @Override
-    public BasicRestResponse fetchUsers(final UserSearchRequest userSearchRequest, final Integer customerAdminId, final String searchText) {
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerAdminId, final String searchText) {
 
         // get the role of the logged-in user.
         final String role = getLoggedInUserRole();
@@ -109,40 +101,32 @@ public class UserServiceImpl implements UserService {
                     * else we are checking name, email and phone number(saved as string).
                     */
                     if (null != searchText) {
-                        if(conversionUtils.isInteger(searchText)) {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.equal(user.get("id"), Integer.parseInt(searchText)),
-                                    criteriaBuilder.like(user.get("email"), "%" + searchText + "%")
-                            ));
-                        }
-                        else {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
-                                    criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
-                                    criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
-                            ));
-                        }
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
+                                criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
+                                criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
+                        ));
                     }
 
                     /*
-                    * If the logged-in user is of OWNER role then if the customerAdminId is not provided then
-                    * it will add those users with CUSTOMER_ADMIN role.
+                    * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
+                    * it will add those users with CUSTOMER_OWNER role.
                     * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
                     * and FINANCE role having customerAdminId as given customerAdminId.
                     *
-                    * If the logged-in user if of role as CUSTOMER_ADMIN then
+                    * If the logged-in user if of role as CUSTOMER_OWNER then
                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
                     * as logged-in user ID.
                     */
-                    if(role.equals(AppConstants.Role.OWNER)) {
+                    if(role.equals(AppConstants.Role.ADMINISTRATOR)) {
                         if(null == customerAdminId) {
-                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_ADMIN)));
+                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER)));
                         } else {
                             predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
                                     criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
                             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), customerAdminId)));
                         }
-                    } else if(role.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+                    } else if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
                         predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
                                 criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
                         predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), getLoggedInUserID())));
@@ -154,11 +138,21 @@ public class UserServiceImpl implements UserService {
                 }
             };
 
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+
             // Fetching the roles based on the specifications.
-            List<User> filteredUsers = userRepository.findAll(spec);
+            Page<User> filteredUsers = userRepository.findAll(spec, p);
+
+            if(null == filteredUsers || filteredUsers.getContent().isEmpty()) throw new ResourceNotFoundException("No user found");
 
             // Convert the filtered users to UserResponseDto
-            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers.stream()
+            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
+                    .getContent()
+                    .stream()
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
                         mapper.mapToUserResponseDto(userResponseDto, user);
@@ -169,10 +163,8 @@ public class UserServiceImpl implements UserService {
                     }).toList();
 
 
-            final Pageable p = PageRequest.of(userSearchRequest.getPageNumber(), userSearchRequest.getPageSize(), userSearchRequest.getSort());
-
             // creating a pageable response of filtered user response dto
-            Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUserResponseDtoList, p, filteredUserResponseDtoList.size());
+            final Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUserResponseDtoList, p, filteredUserResponseDtoList.size());
 
             response.setContent(pageOfUser);
             response.setMessage("Users fetched successfully");
@@ -272,20 +264,20 @@ public class UserServiceImpl implements UserService {
                     || userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE);
 
             /*
-            * If the logged-in user role is CUSTOMER_ADMIN and the user(to be deleted) is of TECHNICIAN and FINANCE
+            * If the logged-in user role is CUSTOMER_OWNER and the user(to be deleted) is of TECHNICIAN and FINANCE
             * role then if the user(to be deleted) customerAdminId doesn't match the logged-in user Id then this will
             * throw error as logged-in user has no authority to delete user with different customerAdminId.
             */
-            if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_ADMIN) && roleTechnicianOrFinance) {
+            if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
                 if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID()))
                     throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
             /*
-            * If the user(to be deleted) is of CUSTOMER_ADMIN role then all the TECHNICIAN and FINANCE role
+            * If the user(to be deleted) is of CUSTOMER_OWNER role then all the TECHNICIAN and FINANCE role
             * user are also deleted.
             */
-            if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN)) {
+            if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
                 userRepository.deleteAll(
                         userRepository.findAll().stream()
                         .filter(user ->  null != user.getCustomerAdminId() && user.getCustomerAdminId().equals(userToBeDeleted.getId()))
@@ -491,8 +483,8 @@ public class UserServiceImpl implements UserService {
             //setting the lastModifiedDate
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-            //If the logged-in user role is CUSTOMER_ADMIN then we are setting the given customerAdminId(can be null) to logged-in user Id
-            if(role.equals(AppConstants.Role.CUSTOMER_ADMIN)) customerAdminId = getLoggedInUserID();
+            //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
+            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) customerAdminId = getLoggedInUserID();
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
             if (userRequestDto.getRole().equals(AppConstants.Role.TECHNICIAN)
@@ -590,25 +582,25 @@ public class UserServiceImpl implements UserService {
                 || role.equals(AppConstants.Role.FINANCE);
 
         /*
-        * If the logged-in user role is CUSTOMER_ADMIN and then if the role(of the user on which operations would be performed)
-        * is OWNER and CUSTOMER_ADMIN then we are throwing error as "Not authorized to perform operations for OWNER/CUSTOMER_ADMIN role"
-        * If the logged-in user is OWNER and if the role(of the user on which operations would be performed) is TECHNICIAN/FINANCE
+        * If the logged-in user role is CUSTOMER_OWNER and then if the role(of the user on which operations would be performed)
+        * is ADMINISTRATOR and CUSTOMER_OWNER then we are throwing error as "Not authorized to perform operations for ADMINISTRATOR/CUSTOMER_OWNER role"
+        * If the logged-in user is ADMINISTRATOR and if the role(of the user on which operations would be performed) is TECHNICIAN/FINANCE
         * then if the customerAdminId is not provided then we throw exception as Customer Admin ID not provided but if the
         * customerAdminId is provided but no user exists with the provided customerAdminId then we throw exception as
         * No user exists with the given customer admin ID and if the user exists with the given customerAdminId but that user role
-        * is different from CUSTOMER_ADMIN then we throw error as No user with CUSTOMER_ADMIN role exists with the given customer admin ID.
+        * is different from CUSTOMER_OWNER then we throw error as No user with CUSTOMER_OWNER role exists with the given customer admin ID.
         */
-        if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_ADMIN)) {
-            if(role.equals(AppConstants.Role.OWNER) || role.equals(AppConstants.Role.CUSTOMER_ADMIN))
+        if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            if(role.equals(AppConstants.Role.ADMINISTRATOR) || role.equals(AppConstants.Role.CUSTOMER_OWNER))
                 throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
-        } else if (loggedInUserRole.equals(AppConstants.Role.OWNER)) {
+        } else if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
             if(roleTechnicianOrFinance) {
                 if(null == customerAdminId) throw new RuntimeException("Customer Admin ID not provided");
                 Optional<User> optionalUser =  userRepository.findById(customerAdminId);
                 if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
                 if(null == optionalUser.get().getRole()
-                        || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_ADMIN))
-                    throw new RuntimeException("No user with CUSTOMER_ADMIN role exists with the given customer admin ID");
+                        || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException("No user with CUSTOMER_OWNER role exists with the given customer admin ID");
             }
         } else {
             //User with TECHNICIAN/FINANCE have no authority to perform operation on user.

@@ -6,7 +6,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.entity.Boatyard;
-import com.marinamooringmanagement.model.request.MooringSearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
@@ -15,13 +15,20 @@ import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.service.MooringService;
+import com.marinamooringmanagement.utils.SortUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -53,30 +60,63 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private CustomerMapper customerMapper;
 
+    @Autowired
+    private SortUtils sortUtils;
+
     /**
-     * Fetches a paginated list of moorings.
+     * Fetches a list of moorings based on the provided search request parameters and search text.
      *
-     * @return a list of mooring response DTOs
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific moorings by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the mooring search.
      */
     @Override
-    public BasicRestResponse fetchMoorings(final MooringSearchRequest mooringSearchRequest) {
+    public BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("API called to fetch all the moorings in the database");
-            final Pageable pageable = PageRequest.of(mooringSearchRequest.getPageNumber(), mooringSearchRequest.getPageSize(), mooringSearchRequest.getSort());
-            final Page<Mooring> mooringPage = mooringRepository.findAll(pageable);
-            final List<MooringResponseDto> mooringResponseDtoList = mooringPage.getContent()
+
+            Specification<Mooring> spec = new Specification<Mooring>() {
+                @Override
+                public Predicate toPredicate(Root<Mooring> mooring, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (null != searchText) {
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(mooring.get("boatName"), "%" + searchText + "%"),
+                                criteriaBuilder.like(mooring.get("mooringId"), "%" + searchText + "%")
+                        ));
+                    }
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+
+            final Page<Mooring> mooringList = mooringRepository.findAll(spec, pageable);
+
+            if(null == mooringList || mooringList.getContent().isEmpty()) throw new ResourceNotFoundException("No mooring found");
+
+            final List<MooringResponseDto> mooringResponseDtoList = mooringList
+                    .getContent()
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                        if(null != mooring.getCustomer())mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                        return  mooringResponseDto;
+                        if (null != mooring.getCustomer())
+                            mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
+
+            final Page<MooringResponseDto> pageOfMooring = new PageImpl<>(mooringResponseDtoList, pageable, mooringResponseDtoList.size());
+
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(mooringResponseDtoList);
+            response.setContent(pageOfMooring);
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             response.setMessage(e.getMessage());
@@ -149,7 +189,7 @@ public class MooringServiceImpl implements MooringService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
-            if(optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
+            if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
             mooringRepository.deleteById(id);
             Optional<Mooring> optionalMooringAfterDeleteOperation = mooringRepository.findById(id);
             final String message = optionalMooringAfterDeleteOperation.isEmpty() ? String.format("Mooring with id %1$s deleted successfully", id) : String.format("Failed to delete mooring with the given id %1$s", id);
@@ -173,37 +213,25 @@ public class MooringServiceImpl implements MooringService {
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id) {
         try {
             log.info("performSave() function called");
-
             Mooring savedMooring = null;
-
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
-
             if (id == null) {
                 mooring.setCreationDate(new Date(System.currentTimeMillis()));
-
                 mooring.setStatus(AppConstants.Status.GEAR_IN);
-
                 Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
-
-                if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
-
+                if (optionalBoatyard.isEmpty())
+                    throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
                 savedMooring = mooringRepository.save(mooring);
-
                 optionalBoatyard.get().getMooringList().add(savedMooring);
-
                 boatyardRepository.save(optionalBoatyard.get());
             } else {
                 savedMooring = mooringRepository.save(mooring);
             }
-
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
-
             return savedMooring;
-
         } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());
             throw new DBOperationException(e.getMessage(), e);
         }
-
     }
 }

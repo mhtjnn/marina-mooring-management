@@ -93,7 +93,13 @@ public class BoatyardController {
             @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             @RequestParam(value = "searchText", required = false) String searchText
     ) {
-        return boatyardService.fetchBoatyards(pageNumber, pageSize, sortBy, sortDir, searchText);
+        BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return boatyardService.fetchBoatyards(baseSearchRequest, searchText);
     }
 
     /**

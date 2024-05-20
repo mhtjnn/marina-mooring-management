@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 /**
@@ -8,9 +9,10 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 public interface RoleService {
 
     /**
-     * Fetches all roles.
+     * Fetches a list of roles based on the provided search request parameters.
      *
-     * @return A {@code BasicRestResponse} containing the list of roles.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the role search.
      */
-    BasicRestResponse fetchRoles();
+    BasicRestResponse fetchRoles(final BaseSearchRequest baseSearchRequest);
 }

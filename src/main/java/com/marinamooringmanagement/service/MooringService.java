@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.service;
 
-import com.marinamooringmanagement.model.request.MooringSearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
@@ -10,7 +10,14 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
  */
 public interface MooringService {
 
-    BasicRestResponse fetchMoorings(final MooringSearchRequest mooringSearchRequest);
+    /**
+     * Fetches a list of moorings based on the provided search request parameters and search text.
+     *
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific moorings by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the mooring search.
+     */
+    BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText);
 
     /**
      * Saves a mooring based on the provided request DTO.

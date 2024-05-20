@@ -1,7 +1,7 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
-import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 import java.util.List;
@@ -12,8 +12,14 @@ import java.util.List;
  */
 public interface VendorService {
 
-
-    BasicRestResponse fetchVendors(final VendorSearchRequest vendorSearchRequest);
+    /**
+     * Fetches a list of vendors based on the provided search request parameters and search text.
+     *
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific vendors by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the vendor search.
+     */
+    BasicRestResponse fetchVendors(final BaseSearchRequest baseSearchRequest, final String searchText);
 
     /**
      * Saves a vendor based on the provided request DTO.

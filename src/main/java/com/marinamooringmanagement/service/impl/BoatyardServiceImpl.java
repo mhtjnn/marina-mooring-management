@@ -6,13 +6,14 @@ import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.BoatyardResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.service.BoatyardService;
-import com.marinamooringmanagement.utils.ConversionUtils;
+import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -21,10 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -66,7 +64,7 @@ public class BoatyardServiceImpl implements BoatyardService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private ConversionUtils conversionUtils;
+    private SortUtils sortUtils;
 
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
@@ -95,72 +93,65 @@ public class BoatyardServiceImpl implements BoatyardService {
     }
 
     /**
-     * Retrieves a list of BoatYard entities.
+     * Fetches a list of boatyards based on the provided search request parameters and search text.
      *
-     * @param pageNumber The page number.
-     * @param pageSize   The size of each page.
-     * @param sortBy     The field to sort by.
-     * @param sortDir    The direction of sorting.
-     * @return A list of BoatYardDto objects.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @param searchText the text used to search for specific boatyards by name, location, or other relevant criteria.
+     * @return a BasicRestResponse containing the results of the boatyard search.
      */
-    public BasicRestResponse fetchBoatyards(final Integer pageNumber, final Integer pageSize, final String sortBy, final String sortDir, final String searchText) {
+    @Override
+    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             Specification<Boatyard> spec = new Specification<Boatyard>() {
                 @Override
                 public Predicate toPredicate(Root<Boatyard> boatyard, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if (null != searchText) {
-                        if(conversionUtils.isInteger(searchText)) {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.equal(boatyard.get("id"), Integer.parseInt(searchText)),
-                                    criteriaBuilder.like(boatyard.get("address"), "%" + searchText + "%")
-                            ));
-                        }
-                        else {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.like(boatyard.get("name"), "%" + searchText + "%"),
-                                    criteriaBuilder.like(boatyard.get("address"), "%" + searchText + "%")
-                            ));
-                        }
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(boatyard.get("boatyardName"), "%" + searchText + "%"),
+                                criteriaBuilder.like(boatyard.get("street"), "%" + searchText + "%")
+                        ));
                     }
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
             };
 
-            List<Boatyard> boatyardList = boatYardRepository.findAll(spec);
+            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            final Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-            final Pageable p = PageRequest.of(pageNumber, pageSize, sort);
-            final Page<Boatyard> pageUser = boatYardRepository.findAll(p);
-//            List<Boatyard> boatyardList = pageUser.getContent();
-            response.setMessage("All boatyard are fetched successfully");
-            response.setStatus(HttpStatus.OK.value());
+            Page<Boatyard> boatyardList = boatYardRepository.findAll(spec, p);
 
-            final List<BoatyardResponseDto> boatyardDtoList = boatyardList.stream()
+            if(null == boatyardList || boatyardList.getContent().isEmpty()) throw new ResourceNotFoundException("No boatyards found");
+
+            final List<BoatyardResponseDto> boatyardDtoList = boatyardList
+                    .getContent()
+                    .stream()
                     .map(boatyard -> {
-                        BoatyardResponseDto boatyardResponseDto =  BoatyardResponseDto.builder().build();
+                        BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
+                        if(null != boatyard.getState()) boatyardResponseDto.setState(boatyard.getState().getName());
+                        if(null != boatyard.getCountry()) boatyardResponseDto.setCountry(boatyard.getCountry().getName());
 
-                        boatyardResponseDto.setState(boatyard.getState().getName());
-                        boatyardResponseDto.setCountry(boatyard.getCountry().getName());
-
-                        List<MooringResponseDto> mooringResponseDtoList = boatyard.getMooringList()
+                        List<MooringResponseDto> mooringResponseDtoList = null;
+                        if(null != boatyard.getMooringList()) mooringResponseDtoList = boatyard.getMooringList()
                                 .stream()
-                                .map(mooring -> {
-                                    MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                                    return mooringResponseDto;
-                                })
+                                .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
                                 .toList();
                         boatyardResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
+
                         return boatyardResponseDto;
                     })
                     .collect(Collectors.toList());
-            response.setContent(boatyardDtoList);
+
+            Page<BoatyardResponseDto> boatyardResponseDtoPage = new PageImpl<>(boatyardDtoList, p, boatyardDtoList.size());
+
+            response.setContent(boatyardResponseDtoPage);
+            response.setMessage("All boatyard are fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
             log.info(String.format("BoatYard fetched successfully"));
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching BoatYard: %s", e.getMessage()), e);
@@ -206,9 +197,11 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
 
-            if(optionalBoatyard.isEmpty()) throw new DBOperationException(String.format("No boatyard found with the given id: %1$s", id));
+            if (optionalBoatyard.isEmpty())
+                throw new DBOperationException(String.format("No boatyard found with the given id: %1$s", id));
 
-            if(null == optionalBoatyard.get().getBoatyardName()) throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
+            if (null == optionalBoatyard.get().getBoatyardName())
+                throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
 
             List<Mooring> mooringList = mooringRepository.findAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
 
@@ -271,7 +264,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             boatyard.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-            if(StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
+            if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
                     && StringUtils.isNotEmpty(boatyard.getBoatyardName())
                     && !StringUtils.equals(boatyardRequestDto.getBoatyardName(), boatyard.getBoatyardName())) {
 
@@ -285,7 +278,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             boatyardMapper.mapToBoatYard(boatyard, boatyardRequestDto);
 
-            if(null == id) boatyard.setCreationDate(new Date());
+            if (null == id) boatyard.setCreationDate(new Date());
             boatyard.setLastModifiedDate(new Date());
 
             if (null != boatyardRequestDto.getState()) {

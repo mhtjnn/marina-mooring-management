@@ -1,7 +1,7 @@
 package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.dto.StateDto;
-import com.marinamooringmanagement.model.request.StateSearchRequest;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 
 /**
@@ -10,13 +10,12 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 public interface StateService {
 
     /**
-     * Fetches states based on the provided search criteria.
+     * Fetches a list of states based on the provided search request parameters.
      *
-     * @param stateSearchRequest An instance of {@code StateSearchRequest} containing the search criteria.
-     * @return A {@code BasicRestResponse} object containing the response data, including the list of states matching the search criteria.
-     * @throws IllegalArgumentException if {@code stateSearchRequest} is {@code null}.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the state search.
      */
-    BasicRestResponse fetchStates(StateSearchRequest stateSearchRequest);
+    BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest);
 
     /**
      * Saves a new state into the database.

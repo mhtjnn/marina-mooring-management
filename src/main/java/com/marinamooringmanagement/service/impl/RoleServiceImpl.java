@@ -2,13 +2,19 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.entity.Role;
+import com.marinamooringmanagement.model.entity.State;
+import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.RoleResponseDto;
 import com.marinamooringmanagement.repositories.RoleRepository;
 import com.marinamooringmanagement.service.RoleService;
+import com.marinamooringmanagement.utils.SortUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +33,27 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private SortUtils sortUtils;
+
     /**
-     * Fetches all roles from the database.
+     * Fetches a list of roles based on the provided search request parameters.
      *
-     * @return A {@code BasicRestResponse} containing the list of roles.
+     * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
+     * @return a BasicRestResponse containing the results of the role search.
      */
     @Override
-    public BasicRestResponse fetchRoles() {
+    public BasicRestResponse fetchRoles(final BaseSearchRequest baseSearchRequest) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            List<Role> roleList = roleRepository.findAll();
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+
+            final Page<Role> roleList = roleRepository.findAll(p);
 
             if (roleList.isEmpty()) {
                 log.error("No roles found in the database");

@@ -2,7 +2,6 @@ package com.marinamooringmanagement.api.v1.vendor;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
-import com.marinamooringmanagement.model.request.VendorSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.VendorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,20 +63,15 @@ public class VendorController {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
             @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @Parameter(description = "Vendor Id", schema = @Schema(implementation = Integer.class)) @RequestParam(value = "id", required = false) final Integer id,
-            @Parameter(description = "Company Name", schema = @Schema(implementation = String.class)) @RequestParam(value = "companyName", required = false) final String companyName,
-            @Parameter(description = "Phone Number", schema = @Schema(implementation = String.class)) @RequestParam(value = "phoneNumber", required = false) final String phoneNumber,
-            @Parameter(description = "Email Address", schema = @Schema(implementation = String.class)) @RequestParam(value = "emailAddress", required = false) final String emailAddress
+            @Parameter(description = "Email Address", schema = @Schema(implementation = String.class)) @RequestParam(value = "emailAddress", required = false) final String searchText
     ) {
-        VendorSearchRequest vendorSearchRequest = VendorSearchRequest.builder().build();
-        vendorSearchRequest.setPageNumber(page);
-        vendorSearchRequest.setPageSize(size);
-        vendorSearchRequest.setSort(new BaseSearchRequest().getSort(sortBy, sortDir));
-        vendorSearchRequest.setId(id);
-        vendorSearchRequest.setCompanyName(companyName);
-        vendorSearchRequest.setCompanyPhoneNumber(phoneNumber);
-        vendorSearchRequest.setCompanyEmail(emailAddress);
-        return vendorService.fetchVendors(vendorSearchRequest);
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(page)
+                .pageSize(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return vendorService.fetchVendors(baseSearchRequest, searchText);
     }
 
     /**
