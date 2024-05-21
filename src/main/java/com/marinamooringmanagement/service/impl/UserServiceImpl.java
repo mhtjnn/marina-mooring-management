@@ -32,6 +32,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -338,9 +341,8 @@ public class UserServiceImpl implements UserService {
                 throw new DBOperationException("No User found with given User ID");
             }
         } catch (Exception e) {
-            response.setMessage("Error occurred while updating the user");
+            response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.setErrorList(List.of(e.getMessage()));
         }
         return response;
     }
@@ -418,6 +420,28 @@ public class UserServiceImpl implements UserService {
             passwordResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return passwordResponse;
+    }
+
+    /**
+     * Processes MethodArgumentNotValidException and returns a structured response.
+     *
+     * @param ex the exception thrown when method argument validation fails.
+     * @return a BasicRestResponse containing the validation errors.
+     */
+    @Override
+    public BasicRestResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        StringBuilder errorMessage = new StringBuilder();
+        BindingResult result = ex.getBindingResult();
+        for (FieldError fieldError : result.getFieldErrors()) {
+            errorMessage.append(fieldError.getDefaultMessage()).append(" ");
+        }
+
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setMessage(errorMessage.substring(0, errorMessage.length()-1));
+
+        return response;
     }
 
     /**
@@ -595,7 +619,7 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
         } else if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
             if(roleTechnicianOrFinance) {
-                if(null == customerAdminId) throw new RuntimeException("Customer Admin ID not provided");
+                if(null == customerAdminId) throw new RuntimeException("Please select a CUSTOMER OWNER to save user with TECHNICIAN or FINANCE role.");
                 Optional<User> optionalUser =  userRepository.findById(customerAdminId);
                 if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
                 if(null == optionalUser.get().getRole()

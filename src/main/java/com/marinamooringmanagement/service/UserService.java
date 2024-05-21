@@ -6,6 +6,8 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 /**
  * Interface for User Service.
@@ -76,5 +78,13 @@ public interface UserService {
      * @throws Exception If an error occurs during the password update process.
      */
     BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception;
+
+    /**
+     * Processes MethodArgumentNotValidException and returns a structured response.
+     *
+     * @param ex the exception thrown when method argument validation fails.
+     * @return a BasicRestResponse containing the validation errors.
+     */
+    BasicRestResponse handleValidationExceptions(MethodArgumentNotValidException ex);
 }
 

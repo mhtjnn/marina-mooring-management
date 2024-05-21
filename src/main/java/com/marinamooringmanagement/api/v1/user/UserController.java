@@ -14,9 +14,16 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
@@ -31,6 +38,17 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 public class UserController {
     @Autowired
     private UserService userService;
+
+    /**
+     * Handles MethodArgumentNotValidException exceptions.
+     *
+     * @param ex the exception thrown when method argument validation fails.
+     * @return a BasicRestResponse containing the validation errors.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public BasicRestResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+        return userService.handleValidationExceptions(ex);
+    }
 
     /**
      * Fetches a paginated list of users from the database.
