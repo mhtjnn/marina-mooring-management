@@ -150,8 +150,6 @@ public class UserServiceImpl implements UserService {
             // Fetching the roles based on the specifications.
             Page<User> filteredUsers = userRepository.findAll(spec, p);
 
-            if(null == filteredUsers || filteredUsers.getContent().isEmpty()) throw new ResourceNotFoundException("No user found");
-
             // Convert the filtered users to UserResponseDto
             List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
                     .getContent()

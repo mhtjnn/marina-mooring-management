@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -12,6 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +27,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 
 /**
  * Custom Authentication Filter extending {@link OncePerRequestFilter}.
@@ -32,6 +38,11 @@ import java.io.IOException;
 public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtTokenUtil;
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
 
     /**
      * Filter function that processes incoming requests to extract and validate JWT tokens.
@@ -63,8 +74,19 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException | ExpiredJwtException | BadCredentialsException ex) {
-            request.setAttribute("exception", ex);
-            throw new RuntimeException(ex.getMessage(), ex);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value()); // Set the HTTP status code
+
+            BasicRestResponse restResponse = new BasicRestResponse();
+            restResponse.setMessage(ex.getLocalizedMessage());
+            restResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            restResponse.setTime(new Timestamp(System.currentTimeMillis()));
+
+            String jsonResponse = objectMapper().writeValueAsString(restResponse); // Convert the response object to JSON
+
+            response.getWriter().write(jsonResponse); // Write the JSON response to the response body
+            response.getWriter().flush();
+
+            return; // Terminate the method execution
         }
         chain.doFilter(request, response);
     }

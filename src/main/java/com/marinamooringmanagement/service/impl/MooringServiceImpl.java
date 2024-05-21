@@ -99,8 +99,6 @@ public class MooringServiceImpl implements MooringService {
 
             final Page<Mooring> mooringList = mooringRepository.findAll(spec, pageable);
 
-            if(null == mooringList || mooringList.getContent().isEmpty()) throw new ResourceNotFoundException("No mooring found");
-
             final List<MooringResponseDto> mooringResponseDtoList = mooringList
                     .getContent()
                     .stream()

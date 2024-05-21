@@ -112,8 +112,6 @@ public class TechnicianServiceImpl implements TechnicianService {
 
             final Page<Technician> techniciansList = technicianRepository.findAll(spec, p);
 
-            if(null == techniciansList || techniciansList.getContent().isEmpty()) throw new ResourceNotFoundException("No technician found");
-
             List<TechnicianResponseDto> technicianResponseDtoList = techniciansList.getContent().stream()
                     .map(technician -> technicianMapper.mapToTechnicianResponseDto(TechnicianResponseDto.builder().build(), technician))
                     .collect(Collectors.toList());

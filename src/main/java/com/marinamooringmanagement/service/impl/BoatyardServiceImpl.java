@@ -125,8 +125,6 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             Page<Boatyard> boatyardList = boatYardRepository.findAll(spec, p);
 
-            if(null == boatyardList || boatyardList.getContent().isEmpty()) throw new ResourceNotFoundException("No boatyards found");
-
             final List<BoatyardResponseDto> boatyardDtoList = boatyardList
                     .getContent()
                     .stream()

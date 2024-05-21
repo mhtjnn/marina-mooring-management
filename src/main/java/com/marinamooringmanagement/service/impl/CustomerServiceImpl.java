@@ -129,8 +129,6 @@ public class CustomerServiceImpl implements CustomerService {
             );
             final Page<Customer> customerList = customerRepository.findAll(spec, p);
 
-            if (null == customerList || customerList.getContent().isEmpty()) throw new DBOperationException("No customer found");
-
             final List<CustomerResponseDto> customerResponseDtoList = customerList
                     .getContent()
                     .stream()

@@ -89,8 +89,6 @@ public class VendorServiceImpl implements VendorService {
 
             final Page<Vendor> vendorList = vendorRepository.findAll(spec, p);
 
-            if(null == vendorList || vendorList.getContent().isEmpty()) throw new ResourceNotFoundException("No vendor found");
-
             final List<VendorResponseDto> vendorResponseDtoList = vendorList
                     .getContent()
                     .stream()
