@@ -103,6 +103,37 @@ public class BoatyardController {
     }
 
     /**
+     * Fetches Moorings related to a specific boatyard from the database.
+     *
+     * @param id the ID of the boatyard.
+     * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
+     */
+    @Operation(
+            tags = "Fetch Moorings related to boatyard from the database",
+            description = "API to fetch Moorings related to boatyard from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+    )
+    @GetMapping(value = "/fetchMooringsWithBoatyard/{id}",
+            produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchMooringsWithBoatyard(
+            @PathVariable("id") final Integer id
+    ) {
+        return boatyardService.fetchMooringsWithBoatyard(id);
+    }
+
+    /**
      * Endpoint for retrieving a Boatyard by its ID.
      *
      * @param id The ID of the Boatyard to retrieve.

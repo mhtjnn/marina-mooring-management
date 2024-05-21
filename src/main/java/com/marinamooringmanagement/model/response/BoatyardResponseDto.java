@@ -76,6 +76,6 @@ public class BoatyardResponseDto {
     /**
      * List of mooring response DTOs associated with the BoatYard.
      */
-    private List<MooringResponseDto> mooringResponseDtoList;
+    private Integer mooringInventoried;
 }
 

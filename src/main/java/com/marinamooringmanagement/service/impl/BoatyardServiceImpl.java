@@ -133,14 +133,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
                         if(null != boatyard.getState()) boatyardResponseDto.setState(boatyard.getState().getName());
                         if(null != boatyard.getCountry()) boatyardResponseDto.setCountry(boatyard.getCountry().getName());
-
-                        List<MooringResponseDto> mooringResponseDtoList = null;
-                        if(null != boatyard.getMooringList()) mooringResponseDtoList = boatyard.getMooringList()
-                                .stream()
-                                .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
-                                .toList();
-                        boatyardResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
-
+                        boatyardResponseDto.setMooringInventoried(boatyard.getMooringList().size());
                         return boatyardResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -246,6 +239,41 @@ public class BoatyardServiceImpl implements BoatyardService {
             log.error(String.format("Error occurred while updating boatyard: %s", e.getMessage()), e);
 
             throw new DBOperationException(e.getMessage(), e);
+        }
+        return response;
+    }
+
+    /**
+     * Fetches Moorings related to a specific boatyard from the database.
+     *
+     * @param id the ID of the boatyard.
+     * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
+     */
+    @Override
+    public BasicRestResponse fetchMooringsWithBoatyard(final Integer id) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+
+        try {
+            Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
+            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
+
+            List<MooringResponseDto> mooringResponseDtoList = optionalBoatyard
+                    .get()
+                    .getMooringList()
+                    .stream()
+                    .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
+                    .toList();
+
+            log.info(String.format("Moorings fetched with the boatyard id as %1$s", id));
+            response.setMessage(String.format("Moorings fetched with the boatyard id as %1$s", id));
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setContent(mooringResponseDtoList);
+            response.setStatus(HttpStatus.OK.value());
+
+        } catch (Exception e) {
+            response.setMessage(String.format("Error occurred while fetching the moorings related to boatyard id as %1$s", id));
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
     }

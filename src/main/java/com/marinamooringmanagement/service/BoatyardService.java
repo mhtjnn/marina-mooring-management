@@ -44,9 +44,17 @@ public interface BoatyardService {
     /**
      * Updates a BoatYard entity.
      *
-     * @param boatYardRequestDto The BoatYardDto containing the updated data.
+     * @param boatyardRequestDto The BoatYardDto containing the updated data.
      * @param id                 The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
     BasicRestResponse updateBoatyard(final BoatyardRequestDto boatyardRequestDto, final Integer id);
+
+    /**
+     * Fetches Moorings related to a specific boatyard from the database.
+     *
+     * @param id the ID of the boatyard.
+     * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
+     */
+    BasicRestResponse fetchMooringsWithBoatyard(final Integer id);
 }
