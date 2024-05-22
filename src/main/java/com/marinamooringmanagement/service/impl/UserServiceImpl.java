@@ -458,7 +458,7 @@ public class UserServiceImpl implements UserService {
 
             if(null != userRequestDto.getUserID()) {
                 optionalUser = userRepository.findByUserID(userRequestDto.getUserID());
-                if(optionalUser.isPresent() && StringUtils.equals(userRequestDto.getUserID(), optionalUser.get().getUserID())) throw new RuntimeException("Given user ID is already present for some other user");
+                if(optionalUser.isPresent() && !StringUtils.equals(userRequestDto.getUserID(), optionalUser.get().getUserID())) throw new RuntimeException("Given user ID is already present for some other user");
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
@@ -482,18 +482,19 @@ public class UserServiceImpl implements UserService {
                     || userRequestDto.getRole().equals(AppConstants.Role.FINANCE)) user.setCustomerAdminId(customerAdminId);
 
             // Setting the password if not null
-            if (null != userRequestDto.getPassword()) {
-                if (userRequestDto.getConfirmPassword().isEmpty() || userRequestDto.getPassword().isBlank())
-                    throw new RuntimeException("Confirm Password is empty");
+            if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
+                if(null != userId) throw new RuntimeException("Password cannot be updated");
+                if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
+                if (userRequestDto.getConfirmPassword().isBlank()) throw new RuntimeException("Confirm Password is blank");
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
-                    throw new RuntimeException("New Password and confirm password ");
+                    throw new RuntimeException("New Password and confirm password are not equal");
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
             } else {
                 /* if the password in userRequestDto is null and userId is also null that means the user is getting
                 * saved for the first time. So we throw exception as for the first time of saving the user the
                 * password cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("Password cannot be null");
+                if(null == userId) throw new RuntimeException("Password or confirm password cannot be null");
             }
 
             //Setting the role if not null
