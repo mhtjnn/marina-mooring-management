@@ -32,9 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -194,19 +191,6 @@ public class UserServiceImpl implements UserService {
 
         try {
             final User user = User.builder().build();
-
-            // Fetching the user through the email provided through UI
-            final Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
-
-            /*
-             * If the user exists with the given email then this will throw error as no new user can be
-             * created with the email which already exists in the database. If no user is present with
-             * the provided email then it will pass this condition.
-            */
-            if (optionalUser.isPresent()) {
-                log.info(String.format("Email already present"));
-                throw new RuntimeException("Email already present");
-            }
 
             log.info(String.format("saving user in DB"));
 
@@ -421,28 +405,6 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Processes MethodArgumentNotValidException and returns a structured response.
-     *
-     * @param ex the exception thrown when method argument validation fails.
-     * @return a BasicRestResponse containing the validation errors.
-     */
-    @Override
-    public BasicRestResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
-        StringBuilder errorMessage = new StringBuilder();
-        BindingResult result = ex.getBindingResult();
-        for (FieldError fieldError : result.getFieldErrors()) {
-            errorMessage.append(fieldError.getDefaultMessage()).append(" ");
-        }
-
-        response.setTime(new Timestamp(System.currentTimeMillis()));
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setMessage(errorMessage.substring(0, errorMessage.length()-1));
-
-        return response;
-    }
-
-    /**
      * Validates the email and reset password token.
      *
      * @param token The reset password token.
@@ -492,6 +454,13 @@ public class UserServiceImpl implements UserService {
         final String role = getLoggedInUserRole();
 
         try {
+            Optional<User> optionalUser = Optional.empty();
+
+            if(null != userRequestDto.getUserID()) {
+                optionalUser = userRepository.findByUserID(userRequestDto.getUserID());
+                if(optionalUser.isPresent() && StringUtils.equals(userRequestDto.getUserID(), optionalUser.get().getUserID())) throw new RuntimeException("Given user ID is already present for some other user");
+            }
+
             //Checking if the logged-in user has the authority to perform save functionality.
             if (!checkForAuthority(customerAdminId, userRequestDto.getRole()))
                 throw new RuntimeException("Not authorized!!!");
@@ -651,7 +620,5 @@ public class UserServiceImpl implements UserService {
         final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
         return authDetails.getLoggedInUserId();
     }
-
-
 
 }

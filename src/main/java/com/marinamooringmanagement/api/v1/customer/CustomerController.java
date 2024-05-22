@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.customer;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -26,9 +27,8 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/customer")
-@Tag(name = "CustomerController", description = "To perform operations on Customer")
 @CrossOrigin
-public class CustomerController extends Base {
+public class CustomerController extends GlobalExceptionHandler {
 
 
     @Autowired

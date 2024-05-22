@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.boatyard;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
@@ -23,10 +24,10 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
  * Controller class for managing Boatyard operations.
  */
 @RestController
-@Validated
 @RequestMapping(value = "/api/v1/boatyard")
+@Validated
 @CrossOrigin
-public class BoatyardController {
+public class BoatyardController extends GlobalExceptionHandler {
 
     @Autowired
     private BoatyardService boatyardService;

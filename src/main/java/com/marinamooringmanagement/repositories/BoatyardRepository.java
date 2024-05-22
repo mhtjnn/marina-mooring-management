@@ -23,7 +23,11 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
      * @param boatyardName The name of the boatyard to search for.
      * @return An Optional containing the Boatyard entity if found, or an empty Optional if not found.
      */
-    Optional<Boatyard> findByBoatyardName(String boatyardName);
+    Optional<Boatyard> findByBoatyardName(final String boatyardName);
 
     Page<Boatyard> findAll(final Specification<Boatyard> spec, final Pageable pageable);
+
+    Optional<Boatyard> findByEmailAddress(final String emailAddress);
+
+    Optional<Boatyard> findByBoatyardId(final String boatyardId);
 }

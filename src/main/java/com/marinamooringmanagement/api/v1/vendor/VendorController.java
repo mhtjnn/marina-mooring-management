@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.vendor;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -24,7 +25,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/vendor")
 @Validated
 @CrossOrigin("*")
-public class VendorController {
+public class VendorController extends GlobalExceptionHandler {
 
     @Autowired
     private VendorService vendorService;

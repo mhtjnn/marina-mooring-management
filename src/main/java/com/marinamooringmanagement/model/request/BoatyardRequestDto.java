@@ -1,6 +1,9 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +13,7 @@ import lombok.NoArgsConstructor;
  * encapsulating details necessary for managing boatyard requests.
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class BoatyardRequestDto {
@@ -24,11 +28,15 @@ public class BoatyardRequestDto {
     /**
      * The name of the BoatYard.
      */
+    @NotNull(message = "Boatyard name cannot be null")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format.")
     private String boatyardName;
 
     /**
      * The email address of the BoatYard owner.
      */
+    @NotNull(message = "Email cannot be null")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String emailAddress;
 
     /**

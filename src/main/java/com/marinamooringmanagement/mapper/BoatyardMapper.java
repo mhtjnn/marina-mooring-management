@@ -47,7 +47,6 @@ public interface BoatyardMapper {
      */
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
-    @Mapping(target = "mooringResponseDtoList", ignore = true)
     BoatyardResponseDto mapToBoatYardResponseDto(@MappingTarget BoatyardResponseDto dto, Boatyard boatYard);
 
     /**

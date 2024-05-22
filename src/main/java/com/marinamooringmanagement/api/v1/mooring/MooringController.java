@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.mooring;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -24,7 +25,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/mooring")
 @Validated
 @CrossOrigin
-public class MooringController {
+public class MooringController extends GlobalExceptionHandler {
 
     @Autowired
     private MooringService mooringService;

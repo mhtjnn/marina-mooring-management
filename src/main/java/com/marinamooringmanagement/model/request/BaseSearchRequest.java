@@ -16,7 +16,6 @@ import org.springframework.data.domain.Sort;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-//@Builder
 public class BaseSearchRequest {
 
     /**

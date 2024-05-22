@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.technician;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
@@ -24,7 +25,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/technician")
-public class TechnicianController {
+public class TechnicianController extends GlobalExceptionHandler {
 
     @Autowired
     private TechnicianService technicianService;

@@ -288,7 +288,25 @@ public class BoatyardServiceImpl implements BoatyardService {
      */
     public void performSave(final BoatyardRequestDto boatyardRequestDto, final Boatyard boatyard, Integer id) {
         try {
+
             boatyard.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+            Optional<Boatyard> optionalBoatyard = null;
+
+            if(null != boatyardRequestDto.getBoatyardId()) {
+                optionalBoatyard = boatYardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
+                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Boatyard ID is already present");
+            }
+
+            if(null != boatyardRequestDto.getEmailAddress()) {
+                optionalBoatyard = boatYardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
+                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Email Address is already present");
+            }
+
+            if(null != boatyardRequestDto.getBoatyardName()) {
+                optionalBoatyard = boatYardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
+                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Boatyard name is already present");
+            }
 
             if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
                     && StringUtils.isNotEmpty(boatyard.getBoatyardName())
