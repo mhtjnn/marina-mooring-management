@@ -483,11 +483,18 @@ public class UserServiceImpl implements UserService {
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
-                if(null != userId) throw new RuntimeException("Password cannot be updated");
                 if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
                 if (userRequestDto.getConfirmPassword().isBlank()) throw new RuntimeException("Confirm Password is blank");
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
                     throw new RuntimeException("New Password and confirm password are not equal");
+
+                // If the user(to be updated) tries to update its password then we throw exception as Password cannot be updated.
+                if(null != userId) {
+                    if (!passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
+                        throw new RuntimeException("Password cannot be updated");
+                    }
+                }
+
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
             } else {
                 /* if the password in userRequestDto is null and userId is also null that means the user is getting
