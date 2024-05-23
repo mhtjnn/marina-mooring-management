@@ -195,6 +195,11 @@ public class UserServiceImpl implements UserService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
+
+            Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
+
+            if(optionalUser.isPresent()) throw new RuntimeException(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
+
             final User user = User.builder().build();
 
             log.info(String.format("saving user in DB"));
