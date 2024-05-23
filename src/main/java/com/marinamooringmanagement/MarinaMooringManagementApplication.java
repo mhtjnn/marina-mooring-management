@@ -89,6 +89,32 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			roleRepository.save(roleTechnician);
 		}
 
+		State savedState = null;
+		final String stateSql = "SELECT * FROM state";
+		final List<Role> stateList = jdbcTemplate.query(stateSql, (resultSet, rowNum) ->
+				null);
+
+		if(stateList.isEmpty()) {
+			State state = State.builder()
+					.name("New York")
+					.build();
+
+			savedState = stateRepository.save(state);
+		}
+
+		Country savedCountry = null;
+		final String countrySql = "SELECT * FROM country";
+		final List<Role> countryList = jdbcTemplate.query(countrySql, (resultSet, rowNum) ->
+				null);
+
+		if(countryList.isEmpty()) {
+			Country country = Country.builder()
+					.name("USA")
+					.build();
+
+			savedCountry = countryRepository.save(country);
+		}
+
 		final String userSql = "SELECT * FROM _user";
 		final List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) ->
 				null);
@@ -106,32 +132,10 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			user.setRole(roleOwner);
 			user.setCreatedBy("System");
 			user.setLastModifiedBy("System");
-
+			user.setState(savedState);
+			user.setCountry(savedCountry);
 			userRepository.save(user);
 		}
 
-		final String stateSql = "SELECT * FROM state";
-		final List<Role> stateList = jdbcTemplate.query(stateSql, (resultSet, rowNum) ->
-				null);
-
-		if(stateList.isEmpty()) {
-			State state = State.builder()
-					.name("New York")
-					.build();
-
-			stateRepository.save(state);
-		}
-
-		final String countrySql = "SELECT * FROM country";
-		final List<Role> countryList = jdbcTemplate.query(countrySql, (resultSet, rowNum) ->
-				null);
-
-		if(countryList.isEmpty()) {
-			Country country = Country.builder()
-					.name("USA")
-					.build();
-
-			countryRepository.save(country);
-		}
 	}
 }

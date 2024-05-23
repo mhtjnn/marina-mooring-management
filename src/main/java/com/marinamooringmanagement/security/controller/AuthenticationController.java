@@ -116,7 +116,7 @@ public class AuthenticationController {
             Optional<User> optionalUser = userRepository.findByEmail(authenticationRequest.getUsername());
 
             if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("Sorry, we can't find an account with %1$s", authenticationRequest.getUsername()));
-
+            
             byte[] keyBytes = Decoders.BASE64.decode(authenticationRequest.getPassword());
 
             authenticationRequest.setPassword(new String(keyBytes, StandardCharsets.UTF_8));
