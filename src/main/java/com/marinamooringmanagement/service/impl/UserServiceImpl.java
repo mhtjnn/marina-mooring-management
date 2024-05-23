@@ -15,6 +15,7 @@ import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.utils.SortUtils;
+import io.jsonwebtoken.io.Decoders;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -31,7 +32,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -485,6 +488,18 @@ public class UserServiceImpl implements UserService {
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
+
+                byte[] keyBytesForPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
+                String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
+                if(!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
+
+                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
+                String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
+                if(!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
+
+                userRequestDto.setPassword(password);
+                userRequestDto.setConfirmPassword(confirmPassword);
+
                 if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
                 if (userRequestDto.getConfirmPassword().isBlank()) throw new RuntimeException("Confirm Password is blank");
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
@@ -562,6 +577,17 @@ public class UserServiceImpl implements UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    private boolean isInPasswordFormat(String password) {
+        if (password == null) {
+            return false;
+        }
+        // Define the regular expression for password validation
+        String passwordPattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$";
+
+        // Validate the password against the pattern
+        return password.matches(passwordPattern);
     }
 
     /**

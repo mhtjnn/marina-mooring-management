@@ -47,7 +47,6 @@ public class UserRequestDto implements Serializable {
     /**
      * The password of the user.
      */
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$", message = "Invalid password. Password must be at least 8 characters long and contain at least one digit, one lowercase letter, and one uppercase letter.")
     private String password;
 
     /**

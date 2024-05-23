@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.security.config;
 
 import com.marinamooringmanagement.model.dto.UserDto;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.entity.User;
@@ -11,14 +10,11 @@ import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.security.Key;
-import java.sql.Timestamp;
 import java.util.*;
 /**
  * Utility class for JWT token handling.
@@ -163,8 +159,6 @@ public class JwtUtil {
         Long diffTokenExpirationTime = StringUtils.equals(tokenType, "NORMAL_TOKEN") ? normalTokenExpirationTime :
                 StringUtils.equals(tokenType, "REFRESH_TOKEN") ? refreshTokenExpirationTime :
                         resetPasswordTokenExpirationTime;
-
-
 
         return Jwts.builder()
                 .setClaims(claims != null ? claims : new HashMap<>())

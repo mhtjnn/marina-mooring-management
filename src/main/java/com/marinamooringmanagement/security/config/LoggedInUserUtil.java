@@ -13,8 +13,12 @@ public class LoggedInUserUtil {
      * @return The role of the currently logged-in user.
      */
     public String getLoggedInUserRole() {
-        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        return authDetails.getLoggedInUserRole();
+        try {
+            final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+            return authDetails.getLoggedInUserRole();
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while extracting role of logged-in user");
+        }
     }
 
     /**
@@ -23,9 +27,11 @@ public class LoggedInUserUtil {
      * @return The ID of the currently logged-in user.
      */
     public Integer getLoggedInUserID() {
-        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        return authDetails.getLoggedInUserId();
+        try {
+            final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+            return authDetails.getLoggedInUserId();
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while extracting user ID of logged-in user");
+        }
     }
-
-
 }

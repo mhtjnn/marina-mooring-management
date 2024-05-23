@@ -16,6 +16,7 @@ import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.service.TokenService;
+import io.jsonwebtoken.io.Decoders;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +31,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.Optional;
 
 import java.util.Date;
@@ -76,6 +80,9 @@ public class AuthenticationController {
     @Autowired
     private TokenRepository tokenRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     /**
      * Endpoint to create an authentication token based on the provided credentials.
      *
@@ -101,7 +108,7 @@ public class AuthenticationController {
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
-            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @Valid @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
 
@@ -109,6 +116,10 @@ public class AuthenticationController {
             Optional<User> optionalUser = userRepository.findByEmail(authenticationRequest.getUsername());
 
             if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("Sorry, we can't find an account with %1$s", authenticationRequest.getUsername()));
+
+            byte[] keyBytes = Decoders.BASE64.decode(authenticationRequest.getPassword());
+
+            authenticationRequest.setPassword(new String(keyBytes, StandardCharsets.UTF_8));
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
