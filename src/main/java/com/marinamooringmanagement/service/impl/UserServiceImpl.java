@@ -12,7 +12,7 @@ import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.security.config.JwtUtil;
-import com.marinamooringmanagement.security.model.AuthenticationDetails;
+import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -29,7 +29,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -72,6 +71,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private SortUtils sortUtils;
 
+    @Autowired
+    private LoggedInUserUtil loggedInUserUtil;
+
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
@@ -84,7 +86,7 @@ public class UserServiceImpl implements UserService {
     public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerAdminId, final String searchText) {
 
         // get the role of the logged-in user.
-        final String role = getLoggedInUserRole();
+        final String role = loggedInUserUtil.getLoggedInUserRole();
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -129,7 +131,7 @@ public class UserServiceImpl implements UserService {
                     } else if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
                         predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
                                 criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), getLoggedInUserID())));
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), loggedInUserUtil.getLoggedInUserID())));
                     } else {
                         throw new RuntimeException("Not authorized");
                     }
@@ -253,8 +255,8 @@ public class UserServiceImpl implements UserService {
             * role then if the user(to be deleted) customerAdminId doesn't match the logged-in user Id then this will
             * throw error as logged-in user has no authority to delete user with different customerAdminId.
             */
-            if(StringUtils.equals(getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
-                if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), getLoggedInUserID()))
+            if(StringUtils.equals(loggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
+                if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), loggedInUserUtil.getLoggedInUserID()))
                     throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
@@ -451,7 +453,7 @@ public class UserServiceImpl implements UserService {
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId , Integer customerAdminId) {
 
         //Getting the role of the logged-in role
-        final String role = getLoggedInUserRole();
+        final String role = loggedInUserUtil.getLoggedInUserRole();
 
         try {
             Optional<User> optionalUser = Optional.empty();
@@ -475,7 +477,7 @@ public class UserServiceImpl implements UserService {
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
-            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) customerAdminId = getLoggedInUserID();
+            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) customerAdminId = loggedInUserUtil.getLoggedInUserID();
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
             if (userRequestDto.getRole().equals(AppConstants.Role.TECHNICIAN)
@@ -571,7 +573,7 @@ public class UserServiceImpl implements UserService {
      */
     public boolean checkForAuthority(Integer customerAdminId, final String role) {
         //Getting the logged-in user role
-        String loggedInUserRole = getLoggedInUserRole();
+        String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
         /*
          * Boolean variable stating true if the role(of the user on which operations would be performed)
@@ -597,8 +599,7 @@ public class UserServiceImpl implements UserService {
                 if(null == customerAdminId) throw new RuntimeException("Please select a CUSTOMER OWNER to save user with TECHNICIAN or FINANCE role.");
                 Optional<User> optionalUser =  userRepository.findById(customerAdminId);
                 if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
-                if(null == optionalUser.get().getRole()
-                        || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                if(null == optionalUser.get().getRole() || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
                     throw new RuntimeException("No user with CUSTOMER_OWNER role exists with the given customer admin ID");
             }
         } else {
@@ -609,24 +610,24 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
-    /**
-     * Retrieves the role of the currently logged-in user.
-     *
-     * @return The role of the currently logged-in user.
-     */
-    public String getLoggedInUserRole() {
-        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        return authDetails.getLoggedInUserRole();
-    }
-
-    /**
-     * Retrieves the ID of the currently logged-in user.
-     *
-     * @return The ID of the currently logged-in user.
-     */
-    public Integer getLoggedInUserID() {
-        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        return authDetails.getLoggedInUserId();
-    }
+//    /**
+//     * Retrieves the role of the currently logged-in user.
+//     *
+//     * @return The role of the currently logged-in user.
+//     */
+//    public String getLoggedInUserRole() {
+//        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+//        return authDetails.getLoggedInUserRole();
+//    }
+//
+//    /**
+//     * Retrieves the ID of the currently logged-in user.
+//     *
+//     * @return The ID of the currently logged-in user.
+//     */
+//    public Integer getLoggedInUserID() {
+//        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+//        return authDetails.getLoggedInUserId();
+//    }
 
 }

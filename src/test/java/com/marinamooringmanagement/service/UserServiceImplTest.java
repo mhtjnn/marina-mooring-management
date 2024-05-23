@@ -83,7 +83,7 @@ public class UserServiceImplTest {
 
         when(SecurityContextHolder.getContext().getAuthentication().getDetails()).thenReturn(newAuthenticationDetailsInstance());
 
-        when(service.getLoggedInUserRole()).thenReturn("OWNER");
+//        when(service.getLoggedInUserRole()).thenReturn("OWNER");
 
         when(service.checkForAuthority(any(Integer.class), "OWNER")).thenReturn(true);
 
