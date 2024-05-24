@@ -118,10 +118,9 @@ public class UserController extends GlobalExceptionHandler {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
-            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user,
-            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
+            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user
     ) {
-        return userService.saveUser(user, customerAdminId);
+        return userService.saveUser(user);
     }
 
     /**
@@ -159,10 +158,9 @@ public class UserController extends GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer userId,
-            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto,
-            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
+            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto
     ) {
-        return userService.updateUser(userRequestDto, userId, customerAdminId);
+        return userService.updateUser(userRequestDto, userId);
     }
 
     /**

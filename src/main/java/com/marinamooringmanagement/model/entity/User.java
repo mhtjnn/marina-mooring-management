@@ -50,16 +50,13 @@ public class User extends Base {
     private String password;
 
     /**
-     * The user ID.
-     */
-    @Column(name = "user_ID")
-    private String userID;
-
-    /**
      * The ID of the customer admin associated with the user.
      */
-    @Column(name = "customer_admin_ID")
-    private Integer customerAdminId;
+    @Column(name = "customer_owner_ID")
+    private Integer customerOwnerId;
+
+    @Column(name = "company_name")
+    private String companyName;
 
     /**
      * The street address of the user.

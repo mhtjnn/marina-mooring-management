@@ -16,10 +16,7 @@ import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.utils.SortUtils;
 import io.jsonwebtoken.io.Decoders;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +29,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -106,10 +102,12 @@ public class UserServiceImpl implements UserService {
                     * else we are checking name, email and phone number(saved as string).
                     */
                     if (null != searchText) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(user.get("name"), "%" + searchText + "%"),
-                                criteriaBuilder.like(user.get("email"), "%" + searchText + "%"),
-                                criteriaBuilder.like(user.get("phoneNumber"), "%" + searchText + "%")
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 
@@ -185,11 +183,10 @@ public class UserServiceImpl implements UserService {
      * Saves a new user in the database.
      *
      * @param userRequestDto The user details to save.
-     * @param customerAdminId The ID of the customer admin if applicable.
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final Integer customerAdminId) {
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -207,7 +204,7 @@ public class UserServiceImpl implements UserService {
             /*
              * Calling the function which saves user to database with modification if required.
              */
-            performSave(userRequestDto, user, null, customerAdminId);
+            performSave(userRequestDto, user, null, userRequestDto.getCustomerOwnerId());
 
             response.setMessage("User saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
@@ -265,7 +262,7 @@ public class UserServiceImpl implements UserService {
             * throw error as logged-in user has no authority to delete user with different customerAdminId.
             */
             if(StringUtils.equals(loggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
-                if(!Objects.equals(userToBeDeleted.getCustomerAdminId(), loggedInUserUtil.getLoggedInUserID()))
+                if(!Objects.equals(userToBeDeleted.getCustomerOwnerId(), loggedInUserUtil.getLoggedInUserID()))
                     throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
@@ -276,7 +273,7 @@ public class UserServiceImpl implements UserService {
             if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
                 userRepository.deleteAll(
                         userRepository.findAll().stream()
-                        .filter(user ->  null != user.getCustomerAdminId() && user.getCustomerAdminId().equals(userToBeDeleted.getId()))
+                        .filter(user ->  null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
                         .toList()
                 );
             }
@@ -302,11 +299,10 @@ public class UserServiceImpl implements UserService {
      *
      * @param userRequestDto The updated user details.
      * @param userId The ID of the user to update.
-     * @param customerAdminId The ID of the customer admin if applicable.
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId, final Integer customerAdminId) {
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -326,7 +322,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 //calling the performSave() function to update the changes and save the user.
-                performSave(userRequestDto, user, userId, customerAdminId);
+                performSave(userRequestDto, user, userId, userRequestDto.getCustomerOwnerId());
                 response.setMessage("User updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             } else {
@@ -465,15 +461,30 @@ public class UserServiceImpl implements UserService {
         final String role = loggedInUserUtil.getLoggedInUserRole();
 
         try {
-            Optional<User> optionalUser = Optional.empty();
+            Optional<Role> optionalRole = Optional.empty();
 
-            if(null != userRequestDto.getUserID()) {
-                optionalUser = userRepository.findByUserID(userRequestDto.getUserID());
-                if(optionalUser.isPresent() && !StringUtils.equals(userRequestDto.getUserID(), optionalUser.get().getUserID())) throw new RuntimeException("Given user ID is already present for some other user");
+            Role savedRole = null;
+
+            if(null != userRequestDto.getRoleId()) {
+                optionalRole = roleRepository.findById(userRequestDto.getRoleId());
+                if(optionalRole.isEmpty()) throw new RuntimeException("No Role found with the given role");
+                if(null != user.getRole() && !StringUtils.equals(optionalRole.get().getName(), user.getRole().getName())) throw new RuntimeException("Role cannot be updated");
+                savedRole = optionalRole.get();
+                user.setRole(savedRole);
+                if(optionalRole.get().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                    if(null == userRequestDto.getCompanyName()) throw new RuntimeException("Company name cannot be null while saving a new user with CUSTOMER OWNER role");
+                    user.setCompanyName(userRequestDto.getCompanyName());
+                }
+            } else {
+                /* if the role in userRequestDto is null and userId is also null that means the user is getting
+                 * saved for the first time. So we throw exception as for the first time of saving the user the
+                 * role cannot be null.
+                 */
+                if(null == userId) throw new RuntimeException("Role cannot be null");
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(customerAdminId, userRequestDto.getRole()))
+            if (!checkForAuthority(customerAdminId, optionalRole.get().getName()))
                 throw new RuntimeException("Not authorized!!!");
 
             //if userId is null that means user is getting saved for thw first time so we are setting creation date here
@@ -486,11 +497,13 @@ public class UserServiceImpl implements UserService {
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
-            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) customerAdminId = loggedInUserUtil.getLoggedInUserID();
+            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                customerAdminId = loggedInUserUtil.getLoggedInUserID();
+            }
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
-            if (userRequestDto.getRole().equals(AppConstants.Role.TECHNICIAN)
-                    || userRequestDto.getRole().equals(AppConstants.Role.FINANCE)) user.setCustomerAdminId(customerAdminId);
+            if (optionalRole.get().getName().equals(AppConstants.Role.TECHNICIAN)
+                    || optionalRole.get().getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerAdminId);
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
@@ -525,23 +538,6 @@ public class UserServiceImpl implements UserService {
                 * password cannot be null.
                  */
                 if(null == userId) throw new RuntimeException("Password or confirm password cannot be null");
-            }
-
-            //Setting the role if not null
-            if (null != userRequestDto.getRole()) {
-                final Optional<Role> optionalRole = roleRepository.findByName(userRequestDto.getRole());
-
-                //If the optional role is empty then we throw exception as "No Role found with the given role"
-                if (optionalRole.isEmpty())
-                    throw new ResourceNotFoundException("No Role found with the given role");
-                final Role savedRole = optionalRole.get();
-                user.setRole(savedRole);
-            } else {
-                /* if the role in userRequestDto is null and userId is also null that means the user is getting
-                 * saved for the first time. So we throw exception as for the first time of saving the user the
-                 * role cannot be null.
-                 */
-                if(null == userId) throw new RuntimeException("Role cannot be null");
             }
 
             //Setting the state if not null

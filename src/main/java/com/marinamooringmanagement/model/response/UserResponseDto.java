@@ -39,11 +39,6 @@ public class UserResponseDto implements Serializable {
     private String phoneNumber;
 
     /**
-     * The user ID.
-     */
-    private String userID;
-
-    /**
      * The ID of the customer admin associated with the user.
      */
     private Integer customerAdminId;
@@ -77,4 +72,6 @@ public class UserResponseDto implements Serializable {
      * The ZIP code.
      */
     private String zipCode;
+
+    private String companyName;
 }

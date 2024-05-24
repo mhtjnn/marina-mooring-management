@@ -27,10 +27,9 @@ public interface UserService {
      * Saves a new user or updates an existing user.
      *
      * @param userRequestDto The user request DTO.
-     * @param customerAdminId The ID of the customer admin for saving the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final Integer customerAdminId);
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto);
 
     /**
      * Deletes a user from the database.
@@ -46,10 +45,9 @@ public interface UserService {
      *
      * @param userRequestDto The user request DTO.
      * @param userId         The ID of the user to be updated.
-     * @param customerAdminId The ID of the customer admin for updating the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId, final Integer customerAdminId);
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId);
 
     /**
      * Finds a user by their email address.

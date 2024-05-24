@@ -45,11 +45,6 @@ public class UserDto extends BaseDto implements Serializable {
     private String password;
 
     /**
-     * The user ID.
-     */
-    private String userID;
-
-    /**
      * The ID of the customer admin associated with the user.
      */
     private Integer customerAdminId;

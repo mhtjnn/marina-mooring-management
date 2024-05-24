@@ -33,6 +33,4 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
      * @return a list of user entities matching the given specification
      */
     Page<User> findAll(final Specification<User> spec, final Pageable pageable);
-
-    Optional<User> findByUserID(final String userID);
 }

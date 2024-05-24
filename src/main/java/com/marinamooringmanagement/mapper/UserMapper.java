@@ -46,6 +46,8 @@ public interface UserMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "customerOwnerId", ignore = true)
+    @Mapping(target = "companyName", ignore = true)
     void mapToUser(@MappingTarget User entity, UserRequestDto userRequestDto);
 
     /**

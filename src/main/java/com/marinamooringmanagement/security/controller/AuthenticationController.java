@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.security.controller;
 
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.entity.User;
@@ -52,7 +53,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @CrossOrigin
-public class AuthenticationController {
+public class AuthenticationController extends GlobalExceptionHandler {
 
     private static final String normalTokenStr = "NORMAL_TOKEN";
     private static final String refreshTokenStr = "REFRESH_TOKEN";

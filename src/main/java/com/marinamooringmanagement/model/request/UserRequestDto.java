@@ -50,14 +50,13 @@ public class UserRequestDto implements Serializable {
     private String password;
 
     /**
-     * The user ID.
-     */
-    private String userID;
-
-    /**
      * The role associated with the user.
      */
-    private String role;
+    private Integer roleId;
+
+    private Integer customerOwnerId;
+
+    private String companyName;
 
     /**
      * The state associated with the user.
