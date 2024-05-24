@@ -545,8 +545,8 @@ public class UserServiceImpl implements UserService {
             }
 
             //Setting the state if not null
-            if (null != userRequestDto.getState()) {
-                final Optional<State> optionalState = stateRepository.findByName(userRequestDto.getState());
+            if (null != userRequestDto.getStateId()) {
+                final Optional<State> optionalState = stateRepository.findById(userRequestDto.getStateId());
                 if (optionalState.isPresent()) {
                     user.setState(optionalState.get());
                 } else {
@@ -561,8 +561,8 @@ public class UserServiceImpl implements UserService {
             }
 
             //Setting the country if not null
-            if (null != userRequestDto.getCountry()) {
-                final Optional<Country> optionalCountry = countryRepository.findByName(userRequestDto.getCountry());
+            if (null != userRequestDto.getCountryId()) {
+                final Optional<Country> optionalCountry = countryRepository.findById(userRequestDto.getCountryId());
                 if (optionalCountry.isPresent()) {
                     user.setCountry(optionalCountry.get());
                 } else {
@@ -641,25 +641,5 @@ public class UserServiceImpl implements UserService {
 
         return true;
     }
-
-//    /**
-//     * Retrieves the role of the currently logged-in user.
-//     *
-//     * @return The role of the currently logged-in user.
-//     */
-//    public String getLoggedInUserRole() {
-//        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-//        return authDetails.getLoggedInUserRole();
-//    }
-//
-//    /**
-//     * Retrieves the ID of the currently logged-in user.
-//     *
-//     * @return The ID of the currently logged-in user.
-//     */
-//    public Integer getLoggedInUserID() {
-//        final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-//        return authDetails.getLoggedInUserId();
-//    }
 
 }

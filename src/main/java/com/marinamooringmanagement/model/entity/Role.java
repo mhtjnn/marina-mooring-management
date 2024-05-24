@@ -20,6 +20,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Role extends Base {
 
+    private Integer id;
+
     /**
      * The name of the role.
      */

@@ -2,6 +2,8 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.RoleMapper;
+import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.entity.Role;
 import com.marinamooringmanagement.model.entity.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -41,6 +43,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Autowired
     private SortUtils sortUtils;
@@ -85,7 +90,7 @@ public class RoleServiceImpl implements RoleService {
 
             if(!StringUtils.equals(roleStr, AppConstants.Role.FINANCE) && !StringUtils.equals(roleStr, AppConstants.Role.TECHNICIAN)) {
                 final Page<Role> roleList = roleRepository.findAll(spec, p);
-                roleResponseDtoList = roleList.stream().map(this::mapToRoleResponseDto).toList();
+                roleResponseDtoList = roleList.stream().map(role -> roleMapper.mapToRoleResponseDto(RoleResponseDto.builder().build(), role)).toList();
             }
 
             response.setMessage("Roles fetched successfully");
@@ -98,17 +103,5 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return response;
-    }
-
-    /**
-     * Maps a {@code Role} entity to a {@code RoleResponseDto}.
-     *
-     * @param role The role entity to map.
-     * @return A {@code RoleResponseDto} representing the mapped role.
-     */
-    public RoleResponseDto mapToRoleResponseDto(Role role) {
-        return RoleResponseDto.builder()
-                .name(role.getName())
-                .build();
     }
 }

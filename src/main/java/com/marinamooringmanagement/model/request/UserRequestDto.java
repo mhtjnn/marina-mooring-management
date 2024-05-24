@@ -62,12 +62,12 @@ public class UserRequestDto implements Serializable {
     /**
      * The state associated with the user.
      */
-    private String state;
+    private Integer stateId;
 
     /**
      * The country associated with the user.
      */
-    private String country;
+    private Integer countryId;
 
     /**
      * The street address associated with the user.

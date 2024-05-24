@@ -97,6 +97,7 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 		if(stateList.isEmpty()) {
 			State state = State.builder()
 					.name("New York")
+					.label("New York")
 					.build();
 
 			savedState = stateRepository.save(state);
@@ -110,6 +111,7 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 		if(countryList.isEmpty()) {
 			Country country = Country.builder()
 					.name("USA")
+					.label("United States of America")
 					.build();
 
 			savedCountry = countryRepository.save(country);
