@@ -72,7 +72,7 @@ public class UserController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,
+            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId,
             @RequestParam(value = "searchText", required = false) final String searchText
     ) {
         BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
@@ -81,7 +81,7 @@ public class UserController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return userService.fetchUsers(baseSearchRequest, customerAdminId, searchText);
+        return userService.fetchUsers(baseSearchRequest, customerOwnerId, searchText);
     }
 
     /**
@@ -90,7 +90,6 @@ public class UserController extends GlobalExceptionHandler {
      * This endpoint is used to create a new user with the details provided in the request body.
      *
      * @param user            {@link UserRequestDto} containing the user details to be saved.
-     * @param customerAdminId ID of the customer admin for saving the user.
      * @return A {@link BasicRestResponse} indicating the outcome of the save operation.
      */
     @Operation(

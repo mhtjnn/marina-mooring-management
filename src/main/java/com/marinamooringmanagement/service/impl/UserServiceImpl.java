@@ -77,12 +77,12 @@ public class UserServiceImpl implements UserService {
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param customerAdminId the unique identifier of the customer admin whose associated users are to be fetched.
+     * @param customerOwnerId the unique identifier of the customer admin whose associated users are to be fetched.
      * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the user search.
      */
     @Override
-    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerAdminId, final String searchText) {
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId, final String searchText) {
 
         // get the role of the logged-in user.
         final String role = loggedInUserUtil.getLoggedInUserRole();
@@ -122,17 +122,17 @@ public class UserServiceImpl implements UserService {
                     * as logged-in user ID.
                     */
                     if(role.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(null == customerAdminId) {
+                        if(null == customerOwnerId) {
                             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER)));
                         } else {
                             predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
                                     criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
-                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), customerAdminId)));
+                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), customerOwnerId)));
                         }
                     } else if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
                         predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
                                 criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerAdminId"), loggedInUserUtil.getLoggedInUserID())));
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), loggedInUserUtil.getLoggedInUserID())));
                     } else {
                         throw new RuntimeException("Not authorized");
                     }
@@ -480,7 +480,7 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * role cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("Role cannot be null");
+                throw new RuntimeException("Role cannot be null");
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.

@@ -17,11 +17,10 @@ public interface UserService {
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param customerAdminId the unique identifier of the customer admin whose associated users are to be fetched.
      * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the user search.
      */
-    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerAdminId, final String searchText);
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId, final String searchText);
 
     /**
      * Saves a new user or updates an existing user.
