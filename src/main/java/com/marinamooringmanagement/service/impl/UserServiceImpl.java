@@ -480,11 +480,13 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * role cannot be null.
                  */
-                throw new RuntimeException("Role cannot be null");
+                if(null == userId) throw new RuntimeException("Role cannot be null");
+                if(null != user.getRole()) savedRole = user.getRole();
+                else throw new RuntimeException(String.format("No role found for the user with the given id: %1$s", userId));
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(customerAdminId, optionalRole.get().getName()))
+            if (!checkForAuthority(customerAdminId, savedRole.getName()))
                 throw new RuntimeException("Not authorized!!!");
 
             //if userId is null that means user is getting saved for thw first time so we are setting creation date here
@@ -502,8 +504,8 @@ public class UserServiceImpl implements UserService {
             }
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
-            if (optionalRole.get().getName().equals(AppConstants.Role.TECHNICIAN)
-                    || optionalRole.get().getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerAdminId);
+            if (savedRole.getName().equals(AppConstants.Role.TECHNICIAN)
+                    || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerAdminId);
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
