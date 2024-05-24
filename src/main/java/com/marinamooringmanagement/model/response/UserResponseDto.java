@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.dto.RoleDto;
 import lombok.*;
 
 import java.io.Serializable;
@@ -46,17 +47,17 @@ public class UserResponseDto implements Serializable {
     /**
      * The role associated with the user.
      */
-    private String role;
+    private RoleResponseDto roleResponseDto;
 
     /**
      * The state associated with the user.
      */
-    private String state;
+    private StateResponseDto stateResponseDto;
 
     /**
      * The country associated with the user.
      */
-    private String country;
+    private CountryResponseDto countryResponseDto;
 
     /**
      * The street address.

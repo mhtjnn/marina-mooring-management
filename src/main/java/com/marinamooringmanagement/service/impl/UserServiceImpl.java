@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -29,6 +30,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.css.Counter;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -157,9 +159,26 @@ public class UserServiceImpl implements UserService {
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
                         mapper.mapToUserResponseDto(userResponseDto, user);
-                        userResponseDto.setRole(user.getRole().getName());
-                        if (null != user.getState()) userResponseDto.setState(user.getState().getName());
-                        if (null != user.getCountry()) userResponseDto.setCountry(user.getCountry().getName());
+                        RoleResponseDto roleResponseDto = RoleResponseDto.builder()
+                                .id(user.getRole().getId())
+                                .name(user.getRole().getName())
+                                .description(user.getRole().getDescription())
+                                .build();
+                        userResponseDto.setRoleResponseDto(roleResponseDto);
+
+                        StateResponseDto stateResponseDto = StateResponseDto.builder()
+                                .id(user.getState().getId())
+                                .label(user.getState().getLabel())
+                                .name(user.getState().getName())
+                                .build();
+                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateResponseDto);
+
+                        CountryResponseDto countryResponseDto = CountryResponseDto.builder()
+                                .id(user.getCountry().getId())
+                                .label(user.getCountry().getLabel())
+                                .name(user.getCountry().getName())
+                                .build();
+                        if (null != user.getCountry()) userResponseDto.setCountryResponseDto(countryResponseDto);
                         return userResponseDto;
                     }).toList();
 
@@ -368,6 +387,14 @@ public class UserServiceImpl implements UserService {
         passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
 
+            byte[] keyBytesNewPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
+            final String newPassword = new String(keyBytesNewPassword, StandardCharsets.UTF_8);
+
+            if(!isInPasswordFormat(newPassword)) throw new RuntimeException("Invalid Password Format");
+
+            byte[] keyBytesConfirmPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
+            final String confirmPassword = new String(keyBytesConfirmPassword, StandardCharsets.UTF_8);
+
             // Checking if the token is valid or not.
             if (!jwtUtil.validateToken(token)) {
                 throw new RuntimeException("Token is invalid");
@@ -387,18 +414,18 @@ public class UserServiceImpl implements UserService {
             }
 
             //If new password is different password then exception is thrown as "Confirm password doesn't match with New password"
-            if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword())) {
+            if (!StringUtils.equals(newPassword, confirmPassword)) {
                 throw new RuntimeException("Confirm password doesn't match with New password");
             } else {
                 // Getting the user from the optional of user
                 final User user = optionalUser.get();
 
                 //If the new password is same as old password then exception is thrown as "New password is same as old password".
-                if (passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
+                if (passwordEncoder.matches(newPassword, user.getPassword())) {
                     throw new RuntimeException("New password is same as old password");
                 } else {
                     // Setting the new password for the user and then saving it to the database.
-                    user.setPassword(passwordEncoder.encode(newPasswordRequest.getConfirmPassword()));
+                    user.setPassword(passwordEncoder.encode(newPassword));
                     userRepository.save(user);
                     passwordResponse.setMessage("Password changed Successfully!!!");
                     passwordResponse.setStatus(HttpStatus.OK.value());

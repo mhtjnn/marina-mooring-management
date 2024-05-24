@@ -57,8 +57,8 @@ public interface UserMapper {
      * @param user the User entity to map.
      * @return the mapped UserResponseDto.
      */
-    @Mapping(target = "role", ignore = true)
-    @Mapping(target = "state", ignore = true)
-    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "roleResponseDto", ignore = true)
+    @Mapping(target = "stateResponseDto", ignore = true)
+    @Mapping(target = "countryResponseDto", ignore = true)
     UserResponseDto mapToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
 }
