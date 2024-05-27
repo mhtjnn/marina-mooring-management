@@ -54,12 +54,12 @@ public class BoatyardResponseDto {
     /**
      * The state associated with the BoatYard.
      */
-    private String state;
+    private StateResponseDto stateResponseDto;
 
     /**
      * The country associated with the BoatYard.
      */
-    private String country;
+    private CountryResponseDto countryResponseDto;
 
     /**
      * The ZIP code associated with the BoatYard.

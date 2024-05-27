@@ -87,7 +87,7 @@ public class UserServiceImplTest {
 
         when(service.checkForAuthority(any(Integer.class), "OWNER")).thenReturn(true);
 
-        final User savedUser = service.performSave(userRequestDto, user, null, null);
+        final User savedUser = service.performSave(userRequestDto, user, null);
 
         Assertions.assertEquals(savedUser.getEmail(), user.getEmail());
         Assertions.assertEquals(savedUser.getName(), user.getName());
@@ -221,7 +221,7 @@ public class UserServiceImplTest {
         return UserResponseDto.builder()
                 .email("test")
                 .name("test")
-                .role("test")
+//                .role("test")
                 .build();
     }
 

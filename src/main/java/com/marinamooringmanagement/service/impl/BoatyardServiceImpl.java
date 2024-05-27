@@ -3,14 +3,14 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
+import com.marinamooringmanagement.mapper.CountryMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
+import com.marinamooringmanagement.mapper.StateMapper;
 import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.BoatyardResponseDto;
-import com.marinamooringmanagement.model.response.MooringResponseDto;
+import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.service.BoatyardService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -62,6 +62,12 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private StateMapper stateMapper;
+
+    @Autowired
+    private CountryMapper countryMapper;
 
     @Autowired
     private SortUtils sortUtils;
@@ -131,8 +137,8 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
-                        if(null != boatyard.getState()) boatyardResponseDto.setState(boatyard.getState().getName());
-                        if(null != boatyard.getCountry()) boatyardResponseDto.setCountry(boatyard.getCountry().getName());
+                        if(null != boatyard.getState()) boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
+                        if(null != boatyard.getCountry()) boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
                         boatyardResponseDto.setMooringInventoried(boatyard.getMooringList().size());
                         return boatyardResponseDto;
                     })
@@ -325,28 +331,20 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null == id) boatyard.setCreationDate(new Date());
             boatyard.setLastModifiedDate(new Date());
 
-            if (null != boatyardRequestDto.getState()) {
-                final Optional<State> optionalState = stateRepository.findByName(boatyardRequestDto.getState());
-                if (optionalState.isPresent()) {
-                    boatyard.setState(optionalState.get());
-                } else {
-                    State state = State.builder()
-                            .name(boatyardRequestDto.getState())
-                            .build();
-                    boatyard.setState(stateRepository.save(state));
-                }
+            if (null != boatyardRequestDto.getStateId()) {
+                final Optional<State> optionalState = stateRepository.findById(boatyardRequestDto.getStateId());
+                if (optionalState.isEmpty()) throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", boatyardRequestDto.getStateId()));
+                boatyard.setState(optionalState.get());
+            } else {
+                if(null == id) throw new RuntimeException("State cannot be null.");
             }
 
-            if (null != boatyardRequestDto.getCountry()) {
-                final Optional<Country> optionalCountry = countryRepository.findByName(boatyardRequestDto.getCountry());
-                if (optionalCountry.isPresent()) {
-                    boatyard.setCountry(optionalCountry.get());
-                } else {
-                    Country country = Country.builder()
-                            .name(boatyardRequestDto.getCountry())
-                            .build();
-                    boatyard.setCountry(countryRepository.save(country));
-                }
+            if (null != boatyardRequestDto.getCountryId()) {
+                final Optional<Country> optionalCountry = countryRepository.findById(boatyardRequestDto.getCountryId());
+                if (optionalCountry.isEmpty()) throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", boatyardRequestDto.getCountryId()));
+                boatyard.setCountry(optionalCountry.get());
+            } else {
+                if(null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             boatYardRepository.save(boatyard);

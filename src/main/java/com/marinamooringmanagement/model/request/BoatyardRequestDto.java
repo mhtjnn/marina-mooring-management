@@ -57,12 +57,12 @@ public class BoatyardRequestDto {
     /**
      * The state associated with the BoatYard.
      */
-    private String state;
+    private Integer stateId;
 
     /**
      * The country associated with the BoatYard.
      */
-    private String country;
+    private Integer countryId;
 
     /**
      * The zip code of the BoatYard.

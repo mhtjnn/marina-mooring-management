@@ -3,7 +3,6 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
-import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -30,7 +29,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.css.Counter;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -223,7 +221,7 @@ public class UserServiceImpl implements UserService {
             /*
              * Calling the function which saves user to database with modification if required.
              */
-            performSave(userRequestDto, user, null, userRequestDto.getCustomerOwnerId());
+            performSave(userRequestDto, user, null);
 
             response.setMessage("User saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
@@ -341,7 +339,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 //calling the performSave() function to update the changes and save the user.
-                performSave(userRequestDto, user, userId, userRequestDto.getCustomerOwnerId());
+                performSave(userRequestDto, user, userId);
                 response.setMessage("User updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             } else {
@@ -479,11 +477,9 @@ public class UserServiceImpl implements UserService {
      * @param userRequestDto The user details to save or update.
      * @param user The {@code User} entity to update or save.
      * @param userId The ID of the user to update, if applicable.
-     * @param customerAdminId The ID of the customer admin if applicable.
      * @return The saved or updated {@code User} entity.
      */
-    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId , Integer customerAdminId) {
-
+    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId) {
         //Getting the role of the logged-in role
         final String role = loggedInUserUtil.getLoggedInUserRole();
 
@@ -513,10 +509,10 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(customerAdminId, savedRole.getName()))
+            if (!checkForAuthority(userRequestDto.getCustomerOwnerId(), savedRole.getName()))
                 throw new RuntimeException("Not authorized!!!");
 
-            //if userId is null that means user is getting saved for thw first time so we are setting creation date here
+            //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if(null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
 
             //mapping the simple properties of the user from the given userRequestDto
@@ -527,12 +523,12 @@ public class UserServiceImpl implements UserService {
 
             //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
             if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                customerAdminId = loggedInUserUtil.getLoggedInUserID();
+                userRequestDto.setCustomerOwnerId(loggedInUserUtil.getLoggedInUserID());
             }
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
             if (savedRole.getName().equals(AppConstants.Role.TECHNICIAN)
-                    || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerAdminId);
+                    || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(userRequestDto.getCustomerOwnerId());
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
@@ -563,8 +559,8 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
             } else {
                 /* if the password in userRequestDto is null and userId is also null that means the user is getting
-                * saved for the first time. So we throw exception as for the first time of saving the user the
-                * password cannot be null.
+                 * saved for the first time. So we throw exception as for the first time of saving the user the
+                 * password cannot be null.
                  */
                 if(null == userId) throw new RuntimeException("Password or confirm password cannot be null");
             }
@@ -624,11 +620,11 @@ public class UserServiceImpl implements UserService {
     /**
      * Checks if the current user has the authority to perform the specified operation.
      *
-     * @param customerAdminId The ID of the customer admin if applicable.
+     * @param customerOwnerId The ID of the customer admin if applicable.
      * @param role The role for which authority is being checked.
      * @return {@code true} if the current user has the authority, otherwise {@code false}.
      */
-    public boolean checkForAuthority(Integer customerAdminId, final String role) {
+    public boolean checkForAuthority(Integer customerOwnerId, final String role) {
         //Getting the logged-in user role
         String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
@@ -653,15 +649,15 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
         } else if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
             if(roleTechnicianOrFinance) {
-                if(null == customerAdminId) throw new RuntimeException("Please select a CUSTOMER OWNER to save user with TECHNICIAN or FINANCE role.");
-                Optional<User> optionalUser =  userRepository.findById(customerAdminId);
+                if(null == customerOwnerId) throw new RuntimeException("Please select a CUSTOMER OWNER to save user with TECHNICIAN or FINANCE role.");
+                Optional<User> optionalUser =  userRepository.findById(customerOwnerId);
                 if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
                 if(null == optionalUser.get().getRole() || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
                     throw new RuntimeException("No user with CUSTOMER_OWNER role exists with the given customer admin ID");
             }
         } else {
             //User with TECHNICIAN/FINANCE have no authority to perform operation on user.
-            return false;
+            throw new RuntimeException("Not Authorized!!!");
         }
 
         return true;

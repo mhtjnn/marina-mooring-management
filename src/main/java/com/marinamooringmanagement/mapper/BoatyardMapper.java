@@ -45,8 +45,8 @@ public interface BoatyardMapper {
      * @param boatYard The BoatYard entity to be mapped.
      * @return The mapped BoatYardResponseDto.
      */
-    @Mapping(target = "state", ignore = true)
-    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "stateResponseDto", ignore = true)
+    @Mapping(target = "countryResponseDto", ignore = true)
     BoatyardResponseDto mapToBoatYardResponseDto(@MappingTarget BoatyardResponseDto dto, Boatyard boatYard);
 
     /**
