@@ -9,4 +9,16 @@ public interface MetadataService {
     BasicRestResponse fetchBoatType(BaseSearchRequest baseSearchRequest);
 
     BasicRestResponse fetchSizeOfWeight(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchTypeOfWeight(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchTopChainCondition(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchEyeConditions(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchBottomChainConditions(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchShackleSwivelConditions(BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchPennantConditions(BaseSearchRequest baseSearchRequest);
 }

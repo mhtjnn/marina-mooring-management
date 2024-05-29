@@ -54,5 +54,13 @@ public interface MooringMapper {
      * @param dto     The source MooringRequestDto object to map from.
      * @return The mapped Mooring entity.
      */
+    @Mapping(target = "boatType", ignore = true)
+    @Mapping(target = "sizeOfWeight", ignore = true)
+    @Mapping(target = "typeOfWeight", ignore = true)
+    @Mapping(target = "eyeCondition", ignore = true)
+    @Mapping(target = "topChainCondition", ignore = true)
+    @Mapping(target = "bottomChainCondition", ignore = true)
+    @Mapping(target = "shackleSwivelCondition", ignore = true)
+    @Mapping(target = "pennantCondition", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringRequestDto dto);
 }

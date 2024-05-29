@@ -69,8 +69,9 @@ public class Mooring extends Base {
     /**
      * Type of the boat associated with the mooring.
      */
-    @Column(name = "boat_type")
-    private String boatType;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "boat_type_id")
+    private BoatType boatType;
 
     /**
      * Weight of the boat associated with the mooring.
@@ -81,44 +82,51 @@ public class Mooring extends Base {
     /**
      * Size unit of the boat weight.
      */
-    @Column(name = "size_of_weight")
-    private String sizeOfWeight;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "size_of_weight_id")
+    private SizeOfWeight sizeOfWeight;
 
     /**
      * Type of the boat weight.
      */
-    @Column(name = "type_of_weight")
-    private String typeOfWeight;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_of_weight_id")
+    private TypeOfWeight typeOfWeight;
 
     /**
      * Condition of the eye related to the mooring.
      */
-    @Column(name = "condition_of_eye")
-    private String conditionOfEye;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "eye_condition_id")
+    private EyeCondition eyeCondition;
 
     /**
      * Condition of the top chain related to the mooring.
      */
-    @Column(name = "top_chain_condition")
-    private String topChainCondition;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "top_chain_condition_id")
+    private TopChainCondition topChainCondition;
 
     /**
      * Condition of the bottom chain related to the mooring.
      */
-    @Column(name = "bottom_chain_condition")
-    private String bottomChainCondition;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "bottom_chain_condition_id")
+    private BottomChainCondition bottomChainCondition;
 
     /**
      * Condition of the shackle/swivel related to the mooring.
      */
-    @Column(name = "shackle_swivel_condition")
-    private String shackleSwivelCondition;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn (name = "shackle_swivel_condition_id")
+    private ShackleSwivelCondition shackleSwivelCondition;
 
     /**
      * Condition of the pennant related to the mooring.
      */
-    @Column(name = "pennant_condition")
-    private String pennantCondition;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "pennant_condition_id")
+    private PennantCondition pennantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

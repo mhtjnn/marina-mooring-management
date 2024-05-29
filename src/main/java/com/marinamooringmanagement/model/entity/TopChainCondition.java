@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "type_of_weight")
-public class TypeOfWeight extends Base {
+@Table(name = "top_chain_condition")
+public class TopChainCondition extends Base {
 
-    @Column(name = "type")
-    private String type;
+    @Column(name = "condition")
+    private String condition;
 
     @Column(name = "description")
     private String description;

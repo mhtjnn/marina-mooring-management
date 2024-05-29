@@ -218,5 +218,88 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchSizeOfWeight(baseSearchRequest);
     }
 
+    @GetMapping("/typeOfWeight")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchTypeOfWeight(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchTypeOfWeight(baseSearchRequest);
+    }
+
+    @GetMapping("/topChainCondition")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchTopChainConditions(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchTopChainCondition(baseSearchRequest);
+    }
+
+    @GetMapping("/eyeCondition")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchEyeConditions(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchEyeConditions(baseSearchRequest);
+    }
+
+    @GetMapping("/bottomChainConditions")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchBottomChainConditions(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchBottomChainConditions(baseSearchRequest);
+    }
+
+    @GetMapping("/shackleSwivelConditions")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchShackleSwivelConditions(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchShackleSwivelConditions(baseSearchRequest);
+    }
+
+    @GetMapping("/pennantConditions")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchPennantConditions(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchPennantConditions(baseSearchRequest);
+    }
 }
 

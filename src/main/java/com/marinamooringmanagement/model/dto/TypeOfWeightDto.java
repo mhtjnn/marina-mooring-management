@@ -1,25 +1,18 @@
-package com.marinamooringmanagement.model.entity;
+package com.marinamooringmanagement.model.dto;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "type_of_weight")
-public class TypeOfWeight extends Base {
+public class TypeOfWeightDto extends BaseDto{
 
-    @Column(name = "type")
     private String type;
 
-    @Column(name = "description")
     private String description;
-
 }

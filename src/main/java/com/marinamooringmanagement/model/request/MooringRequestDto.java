@@ -59,7 +59,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Type of the boat associated with the mooring.
      */
-    private String boatType;
+    private Integer boatTypeId;
 
     /**
      * Weight of the boat associated with the mooring.
@@ -69,37 +69,37 @@ public class MooringRequestDto implements Serializable {
     /**
      * Size unit of the boat weight.
      */
-    private String sizeOfWeight;
+    private Integer sizeOfWeightId;
 
     /**
      * Type of the boat weight.
      */
-    private String typeOfWeight;
+    private Integer typeOfWeightId;
 
     /**
      * Condition of the eye related to the mooring.
      */
-    private String conditionOfEye;
+    private Integer eyeConditionId;
 
     /**
      * Condition of the top chain related to the mooring.
      */
-    private String topChainCondition;
+    private Integer topChainConditionId;
 
     /**
      * Condition of the bottom chain related to the mooring.
      */
-    private String bottomChainCondition;
+    private Integer bottomChainConditionId;
 
     /**
      * Condition of the shackle/swivel related to the mooring.
      */
-    private String shackleSwivelCondition;
+    private Integer shackleSwivelConditionId;
 
     /**
      * Condition of the pennant related to the mooring.
      */
-    private String pennantCondition;
+    private Integer pennantConditionId;
 
     /**
      * Depth at mean high water at the mooring location.

@@ -1,9 +1,8 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.BoatyardDto;
-import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.dto.MooringStatusDto;
+import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.entity.MooringStatus;
+import com.marinamooringmanagement.model.entity.TopChainCondition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -77,7 +76,7 @@ public class MooringResponseDto implements Serializable {
     /**
      * The type of the boat associated with the mooring.
      */
-    private String boatType;
+    private BoatTypeDto boatType;
 
     /**
      * The weight of the boat associated with the mooring.
@@ -87,37 +86,37 @@ public class MooringResponseDto implements Serializable {
     /**
      * The size of the weight used for the mooring.
      */
-    private String sizeOfWeight;
+    private SizeOfWeightDto sizeOfWeight;
 
     /**
      * The type of the weight used for the mooring.
      */
-    private String typeOfWeight;
+    private TypeOfWeightDto typeOfWeight;
 
     /**
      * The condition of the eye used for the mooring.
      */
-    private String conditionOfEye;
+    private EyeConditionDto eyeCondition;
 
     /**
      * The condition of the top chain of the mooring.
      */
-    private String topChainCondition;
+    private TopChainConditionDto topChainCondition;
 
     /**
      * The condition of the bottom chain of the mooring.
      */
-    private String bottomChainCondition;
+    private BottomChainConditionDto bottomChainCondition;
 
     /**
      * The condition of the shackle or swivel of the mooring.
      */
-    private String shackleSwivelCondition;
+    private ShackleSwivelConditionDto shackleSwivelCondition;
 
     /**
      * The condition of the pennant of the mooring.
      */
-    private String pennantCondition;
+    private PennantConditionDto pennantCondition;
 
     /**
      * The depth at mean high water at the mooring location.

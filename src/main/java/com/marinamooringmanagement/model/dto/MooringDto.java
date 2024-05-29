@@ -2,6 +2,7 @@ package com.marinamooringmanagement.model.dto;
 
 import com.marinamooringmanagement.model.entity.Boatyard;
 import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.entity.TypeOfWeight;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -74,7 +75,7 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Type of the boat associated with the mooring.
      */
-    private String boatType;
+    private BoatTypeDto boatType;
 
     /**
      * Weight of the boat associated with the mooring.
@@ -84,37 +85,37 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Size unit of the boat weight.
      */
-    private String sizeOfWeight;
+    private SizeOfWeightDto sizeOfWeight;
 
     /**
      * Type of the boat weight.
      */
-    private String typeOfWeight;
+    private TypeOfWeightDto typeOfWeight;
 
     /**
      * Condition of the eye related to the mooring.
      */
-    private String conditionOfEye;
+    private EyeConditionDto eyeCondition;
 
     /**
      * Condition of the top chain related to the mooring.
      */
-    private String topChainCondition;
+    private TopChainConditionDto topChainCondition;
 
     /**
      * Condition of the bottom chain related to the mooring.
      */
-    private String bottomChainCondition;
+    private BottomChainConditionDto bottomChainCondition;
 
     /**
      * Condition of the shackle/swivel related to the mooring.
      */
-    private String shackleSwivelCondition;
+    private ShackleSwivelConditionDto shackleSwivelCondition;
 
     /**
      * Condition of the pennant related to the mooring.
      */
-    private String pennantCondition;
+    private PennantConditionDto pennantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

@@ -42,6 +42,24 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 	@Autowired
 	private SizeOfWeightRepository sizeOfWeightRepository;
 
+	@Autowired
+	private TypeOfWeightRepository typeOfWeightRepository;
+
+	@Autowired
+	private TopChainConditionRepository topChainConditionRepository;
+
+	@Autowired
+	private EyeConditionRepository eyeConditionRepository;
+
+	@Autowired
+	private BottomChainConditionRepository bottomChainConditionRepository;
+
+	@Autowired
+	private ShackleSwivelConditionRepository shackleSwivelConditionRepository;
+
+	@Autowired
+	private PennantConditionRepository pennantConditionRepository;
+
 	public static void main(String[] args) {
 		SpringApplication.run(MarinaMooringManagementApplication.class, args);
 	}
@@ -251,6 +269,286 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			);
 
 			sizeOfWeightRepository.saveAll(sizeOfWeights);
+		}
+
+		final String typeOfWeightSql = "SELECT * FROM type_of_weight";
+		final List<TypeOfWeight> typeOfWeightList = jdbcTemplate.query(typeOfWeightSql, (resultSet, rowNum) -> null);
+
+		if(typeOfWeightList.isEmpty()) {
+			List<TypeOfWeight> typeOfWeights = List.of(
+					TypeOfWeight.builder()
+							.type("Displacement")
+							.description("The weight of the water a boat displaces when it is floating. This is equivalent to the boat's overall weight.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Dry Weight")
+							.description("The weight of the boat without any fluids, passengers, cargo, or additional equipment. It includes the hull, engine, and basic fixtures.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Gross Weight")
+							.description("The total weight of the boat including fluids (like fuel and water), passengers, cargo, and any additional equipment.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Load Capacity")
+							.description("The maximum weight a boat is designed to carry, including passengers, cargo, and equipment.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Ballast")
+							.description("Weight added to a boat to improve stability and balance. Often found in sailboats to counteract the force of the wind on the sails.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Trailer Weight")
+							.description("The weight of the boat plus the weight of the trailer used to transport it.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Net Weight")
+							.description("The weight of the boat excluding certain removable items like fuel, water, cargo, and sometimes even passengers.")
+							.build(),
+					TypeOfWeight.builder()
+							.type("Heeling Weight")
+							.description("The effective weight experienced by a boat due to the force of the wind and the angle of heel.")
+							.build()
+			);
+
+			typeOfWeightRepository.saveAll(typeOfWeights);
+		}
+
+		final String topChainConditionSql = "SELECT * FROM top_chain_condition";
+		final List<TopChainCondition> topChainConditionList = jdbcTemplate.query(topChainConditionSql, (resultSet, rowNum) -> null);
+
+		if(topChainConditionList.isEmpty()) {
+			List<TopChainCondition> topChainConditions = List.of(
+					TopChainCondition.builder()
+							.condition("New Condition")
+							.description("The chain is brand new, with no signs of wear or corrosion.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Good Condition")
+							.description("The chain has been used but shows minimal signs of wear. There are no significant rust spots or weakened links.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Moderate Condition")
+							.description("The chain shows some signs of wear and light corrosion but remains structurally sound. Some galvanization may have worn off.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Worn Condition")
+							.description("The chain exhibits noticeable wear, including rust, weakened links, and loss of galvanization.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Corroded Condition")
+							.description("The chain has significant rust and corrosion. The metal may be flaking, and some links may be compromised.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Damaged Condition")
+							.description("The chain has visible damage such as bent or broken links, severe rust, and possible deformation.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Repaired Condition")
+							.description("The chain has undergone repairs to fix damaged or worn sections. Repairs may include welding, replacing individual links, or re-galvanizing.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Stretched Condition")
+							.description("The chain has elongated due to excessive load. Links may appear longer and thinner.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Well-Maintained Condition")
+							.description("Regular inspections, cleaning, and maintenance have been performed. The chain may show minor wear but is overall in excellent condition.")
+							.build(),
+					TopChainCondition.builder()
+							.condition("Neglected Condition")
+							.description("The chain has been ignored and not maintained properly. Heavy rust, corrosion, and wear are present.")
+							.build()
+			);
+
+			topChainConditionRepository.saveAll(topChainConditions);
+		}
+
+		final String eyeConditionSql = "SELECT * FROM eye_condition";
+		final List<EyeCondition> eyeConditionList = jdbcTemplate.query(eyeConditionSql, (resultSet, rowNum) -> null);
+
+		if(eyeConditionList.isEmpty()) {
+			List<EyeCondition> eyeConditions = List.of(
+					EyeCondition.builder()
+							.condition("New Condition")
+							.description("The eye is brand new with no signs of wear, corrosion, or damage.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Good Condition")
+							.description("The eye has been used but shows minimal signs of wear. No significant rust, bending, or damage is present.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Moderate Condition")
+							.description("The eye shows some signs of wear and light corrosion but remains structurally sound. Some minor wear or surface rust may be present.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Worn Condition")
+							.description("The eye exhibits noticeable wear, including rust, minor bending, or light pitting. Some loss of protective coating might be evident.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Corroded Condition")
+							.description("The eye has significant rust and corrosion. Metal may be flaking, and there may be visible weakening.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Damaged Condition")
+							.description("The eye has visible damage such as severe rust, cracks, bending, or deformation.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Repaired Condition")
+							.description("The eye has undergone repairs to fix damage or wear. Repairs may include welding, straightening, or re-coating.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Stretched Condition")
+							.description("The eye has elongated or been deformed due to excessive load. The eye may appear misshapen.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Well-Maintained Condition")
+							.description("Regular inspections, cleaning, and maintenance have been performed. The eye may show minor wear but is overall in excellent condition.")
+							.build(),
+					EyeCondition.builder()
+							.condition("Neglected Condition")
+							.description("The eye has been ignored and not maintained properly. Heavy rust, corrosion, wear, and possible damage are present.")
+							.build()
+			);
+
+			eyeConditionRepository.saveAll(eyeConditions);
+		}
+
+		final String bottomChainConditionSql = "SELECT * FROM bottom_chain_condition";
+		final List<BottomChainCondition> bottomChainConditionList = jdbcTemplate.query(bottomChainConditionSql, (resultSet, resultNum) -> null);
+
+		if(bottomChainConditionList.isEmpty()) {
+			List<BottomChainCondition> bottomChainConditions = List.of(
+					BottomChainCondition.builder()
+							.condition("New Condition")
+							.description("The bottom chain is brand new with no signs of wear, corrosion, or damage.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Good Condition")
+							.description("The bottom chain has been used but shows minimal signs of wear. There are no significant rust spots or weakened links.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Moderate Condition")
+							.description("The bottom chain shows some signs of wear and light corrosion but remains structurally sound. Some galvanization may have worn off.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Worn Condition")
+							.description("The bottom chain exhibits noticeable wear, including rust, weakened links, and loss of galvanization.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Corroded Condition")
+							.description("The bottom chain has significant rust and corrosion. Metal may be flaking, and some links may be compromised.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Damaged Condition")
+							.description("The bottom chain has visible damage such as severe rust, cracks, bending, or deformation.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Repaired Condition")
+							.description("The bottom chain has undergone repairs to fix damaged or worn sections. Repairs may include welding, replacing individual links, or re-galvanizing.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Stretched Condition")
+							.description("The bottom chain has elongated due to excessive load. Links may appear longer and thinner.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Well-Maintained Condition")
+							.description("Regular inspections, cleaning, and maintenance have been performed. The bottom chain may show minor wear but is overall in excellent condition.")
+							.build(),
+					BottomChainCondition.builder()
+							.condition("Neglected Condition")
+							.description("The bottom chain has been ignored and not maintained properly. Heavy rust, corrosion, wear, and possible damage are present.")
+							.build()
+			);
+
+			bottomChainConditionRepository.saveAll(bottomChainConditions);
+		}
+
+		final String shackleSwivelConditionSql = "SELECT * FROM shackle_swivel_condition";
+		final List<ShackleSwivelCondition> shackleSwivelConditionList = jdbcTemplate.query(shackleSwivelConditionSql, (resultSet, resultNum) -> null);
+
+		if(shackleSwivelConditionList.isEmpty()) {
+			List<ShackleSwivelCondition> shackleSwivelConditions = List.of(
+					ShackleSwivelCondition.builder()
+							.condition("New Condition")
+							.description("The shackle swivel is brand new, with no signs of wear or corrosion.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Good Condition")
+							.description("The shackle swivel has been used but shows minimal signs of wear. There are no significant rust spots or deformations.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Moderate Condition")
+							.description("The shackle swivel shows some signs of wear and light corrosion but remains structurally sound.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Worn Condition")
+							.description("The shackle swivel exhibits noticeable wear, including rust, deformation, or loss of functionality.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Corroded Condition")
+							.description("The shackle swivel has significant rust and corrosion. The metal may be flaking, and functionality may be compromised.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Damaged Condition")
+							.description("The shackle swivel has visible damage such as cracks, bends, or breakage.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Repaired Condition")
+							.description("The shackle swivel has undergone repairs to fix damaged or worn sections. Repairs may include welding or replacing components.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Stretched Condition")
+							.description("The shackle swivel has elongated due to excessive load or wear. Functionality may be compromised.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Well-Maintained Condition")
+							.description("Regular inspections, cleaning, and maintenance have been performed. The shackle swivel may show minor wear but is overall in excellent condition.")
+							.build(),
+					ShackleSwivelCondition.builder()
+							.condition("Neglected Condition")
+							.description("The shackle swivel has been ignored and not maintained properly. Heavy rust, corrosion, and wear are present.")
+							.build()
+			);
+
+			shackleSwivelConditionRepository.saveAll(shackleSwivelConditions);
+		}
+
+		final String pennantConditionSql = "SELECT * FROM pennant_condition";
+		final List<PennantCondition> pennatConditionList = jdbcTemplate.query(pennantConditionSql, (resultSet, resultNum) -> null);
+
+		if(pennatConditionList.isEmpty()) {
+			List<PennantCondition> pennantConditions =  List.of(
+					PennantCondition.builder()
+							.condition("New Condition")
+							.description("The pennant is brand new, with no signs of wear, fraying, or damage.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Good Condition")
+							.description("The pennant has been used but shows minimal signs of wear. There are no significant frays, cuts, or weakened areas.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Moderate Condition")
+							.description("The pennant shows some signs of wear, such as minor fraying or abrasions, but remains structurally sound.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Worn Condition")
+							.description("The pennant exhibits noticeable wear, including fraying, cuts, or abrasions. Some sections may be weakened or damaged.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Damaged Condition")
+							.description("The pennant has visible damage, such as significant fraying, cuts, or broken strands. It may be weakened or compromised.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Severely Corroded Condition")
+							.description("If the pennant is made of wire, it may suffer from severe corrosion, leading to weakened or rusted sections.")
+							.build(),
+					PennantCondition.builder()
+							.condition("Tangled Condition")
+							.description("The pennant may become tangled or twisted, affecting its functionality and ease of use.")
+							.build()
+			);
+
+			pennantConditionRepository.saveAll(pennantConditions);
 		}
 	}
 }

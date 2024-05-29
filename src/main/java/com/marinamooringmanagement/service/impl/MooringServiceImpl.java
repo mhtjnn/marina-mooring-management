@@ -7,17 +7,12 @@ import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
 import com.marinamooringmanagement.model.dto.MooringStatusDto;
-import com.marinamooringmanagement.model.entity.Boatyard;
-import com.marinamooringmanagement.model.entity.MooringStatus;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
-import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
-import com.marinamooringmanagement.repositories.BoatyardRepository;
-import com.marinamooringmanagement.repositories.CustomerRepository;
-import com.marinamooringmanagement.repositories.MooringRepository;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
-import com.marinamooringmanagement.repositories.MooringStatusRepository;
 import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -34,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -73,11 +69,35 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private MooringStatusRepository mooringStatusRepository;
 
+    @Autowired
+    private BoatTypeRepository boatTypeRepository;
+
+    @Autowired
+    private SizeOfWeightRepository sizeOfWeightRepository;
+
+    @Autowired
+    private TypeOfWeightRepository typeOfWeightRepository;
+
+    @Autowired
+    private TopChainConditionRepository topChainConditionRepository;
+
+    @Autowired
+    private EyeConditionRepository eyeConditionRepository;
+
+    @Autowired
+    private BottomChainConditionRepository bottomChainConditionRepository;
+
+    @Autowired
+    private ShackleSwivelConditionRepository shackleSwivelConditionRepository;
+
+    @Autowired
+    private PennantConditionRepository pennantConditionRepository;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param searchText the text used to search for specific moorings by name, location, or other relevant criteria.
+     * @param searchText        the text used to search for specific moorings by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the mooring search.
      */
     @Override
@@ -114,7 +134,7 @@ public class MooringServiceImpl implements MooringService {
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                        if(null != mooring.getMooringStatus()) {
+                        if (null != mooring.getMooringStatus()) {
                             mooringResponseDto.setMooringStatusDto(mooringStatusMapper.mapToMooringStatusDto(MooringStatusDto.builder().build(), mooring.getMooringStatus()));
                         }
                         if (null != mooring.getCustomer())
@@ -224,26 +244,99 @@ public class MooringServiceImpl implements MooringService {
             log.info("performSave() function called");
             Mooring savedMooring = null;
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
-            if (id == null) {
-                mooring.setCreationDate(new Date(System.currentTimeMillis()));
-                if(null != mooringRequestDto.getMooringId()) {
-                    Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(mooringRequestDto.getStatusId());
-                    if(optionalMooringStatus.isEmpty()) throw new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId()));
+            if (id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
 
-                    mooring.setMooringStatus(optionalMooringStatus.get());
-                } else {
-                    throw new RuntimeException("Mooring Status cannot be null");
-                }
+            if (null == mooringRequestDto.getBoatyardName()) throw new RuntimeException("Boatyard name cannot be null");
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
+            if (optionalBoatyard.isEmpty())
+                throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
 
-                Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
-                if (optionalBoatyard.isEmpty())
-                    throw new ResourceNotFoundException("No boatyard found with the given boatyard name");
-                savedMooring = mooringRepository.save(mooring);
-                optionalBoatyard.get().getMooringList().add(savedMooring);
-                boatyardRepository.save(optionalBoatyard.get());
+//            if (null != mooringRequestDto.getMooringId()) {
+            Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);
+            if (optionalMooringStatus.isEmpty())
+                throw new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId()));
+
+            mooring.setMooringStatus(optionalMooringStatus.get());
+//            } else {
+//                throw new RuntimeException("Mooring Status cannot be null");
+//            }
+
+            if (null != mooringRequestDto.getBoatTypeId()) {
+                Optional<BoatType> optionalBoatType = boatTypeRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalBoatType.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No boat type found with the given id: %1$s", mooringRequestDto.getBoatTypeId()));
+                mooring.setBoatType(optionalBoatType.get());
+            } else {
+                throw new RuntimeException("Boat type cannot be null");
             }
+
+            if (null != mooringRequestDto.getSizeOfWeightId()) {
+                Optional<SizeOfWeight> optionalSizeOfWeight = sizeOfWeightRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalSizeOfWeight.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Size of weight found with the given id: %1$s", mooringRequestDto.getSizeOfWeightId()));
+                mooring.setSizeOfWeight(optionalSizeOfWeight.get());
+            } else {
+                throw new RuntimeException("Size of weight cannot be null");
+            }
+
+            if (null != mooringRequestDto.getTypeOfWeightId()) {
+                Optional<TypeOfWeight> optionalTypeOfWeight = typeOfWeightRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalTypeOfWeight.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Type of weight found with the given id: %1$s", mooringRequestDto.getTypeOfWeightId()));
+                mooring.setTypeOfWeight(optionalTypeOfWeight.get());
+            } else {
+                throw new RuntimeException("Type of weight cannot be null");
+            }
+
+            if (null != mooringRequestDto.getEyeConditionId()) {
+                Optional<EyeCondition> optionalEyeCondition = eyeConditionRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalEyeCondition.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Eye condition found with the given id: %1$s", mooringRequestDto.getEyeConditionId()));
+                mooring.setEyeCondition(optionalEyeCondition.get());
+            } else {
+                throw new RuntimeException("Eye condition cannot be null");
+            }
+
+            if (null != mooringRequestDto.getTopChainConditionId()) {
+                Optional<TopChainCondition> optionalTopChainCondition = topChainConditionRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalTopChainCondition.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Top chain condition found with the given id: %1$s", mooringRequestDto.getTopChainConditionId()));
+                mooring.setTopChainCondition(optionalTopChainCondition.get());
+            } else {
+                throw new RuntimeException("Top chain condition cannot be null");
+            }
+
+            if (null != mooringRequestDto.getBottomChainConditionId()) {
+                Optional<BottomChainCondition> optionalBottomChainCondition = bottomChainConditionRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalBottomChainCondition.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Bottom chain condition found with the given id: %1$s", mooringRequestDto.getBottomChainConditionId()));
+                mooring.setBottomChainCondition(optionalBottomChainCondition.get());
+            } else {
+                throw new RuntimeException("Bottom chain condition cannot be null");
+            }
+
+            if (null != mooringRequestDto.getShackleSwivelConditionId()) {
+                Optional<ShackleSwivelCondition> optionalShackleSwivelCondition = shackleSwivelConditionRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalShackleSwivelCondition.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No Shackle swivel condition found with the given id: %1$s", mooringRequestDto.getShackleSwivelConditionId()));
+                mooring.setShackleSwivelCondition(optionalShackleSwivelCondition.get());
+            } else {
+                throw new RuntimeException("Shackle swivel condition cannot be null");
+            }
+
+            if (null != mooringRequestDto.getPennantConditionId()) {
+                Optional<PennantCondition> optionalPennantCondition = pennantConditionRepository.findById(mooringRequestDto.getBoatTypeId());
+                if (optionalPennantCondition.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No pennant condition found with the given id: %1$s", mooringRequestDto.getPennantConditionId()));
+                mooring.setPennantCondition(optionalPennantCondition.get());
+            } else {
+                throw new RuntimeException("Pennant condition cannot be null");
+            }
+
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
             savedMooring = mooringRepository.save(mooring);
+            optionalBoatyard.get().getMooringList().add(savedMooring);
+            boatyardRepository.save(optionalBoatyard.get());
             return savedMooring;
         } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());

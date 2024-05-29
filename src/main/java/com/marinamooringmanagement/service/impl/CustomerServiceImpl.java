@@ -293,9 +293,9 @@ public class CustomerServiceImpl implements CustomerService {
             mooringList = customer.getMooringList();
             if(null == mooringList) mooringList = new ArrayList<>();
             mooringList.add(mooring);
-            customer.setMooringList(mooringList);
-            customer.setLastModifiedDate(new Date());
-            customerRepository.save(customer);
+            savedCustomer.setMooringList(mooringList);
+            savedCustomer.setLastModifiedDate(new Date());
+            customerRepository.save(savedCustomer);
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
         } catch (Exception e) {
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
