@@ -129,8 +129,9 @@ public class Mooring extends Base {
     /**
      * Status of the mooring.
      */
-    @Column(name = "status")
-    private String status;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private MooringStatus mooringStatus;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

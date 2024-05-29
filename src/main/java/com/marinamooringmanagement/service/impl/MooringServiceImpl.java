@@ -5,7 +5,10 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
+import com.marinamooringmanagement.mapper.MooringStatusMapper;
+import com.marinamooringmanagement.model.dto.MooringStatusDto;
 import com.marinamooringmanagement.model.entity.Boatyard;
+import com.marinamooringmanagement.model.entity.MooringStatus;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -14,6 +17,7 @@ import com.marinamooringmanagement.repositories.BoatyardRepository;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
+import com.marinamooringmanagement.repositories.MooringStatusRepository;
 import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -63,6 +67,12 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private SortUtils sortUtils;
 
+    @Autowired
+    private MooringStatusMapper mooringStatusMapper;
+
+    @Autowired
+    private MooringStatusRepository mooringStatusRepository;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -104,6 +114,9 @@ public class MooringServiceImpl implements MooringService {
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                        if(null != mooring.getMooringStatus()) {
+                            mooringResponseDto.setMooringStatusDto(mooringStatusMapper.mapToMooringStatusDto(MooringStatusDto.builder().build(), mooring.getMooringStatus()));
+                        }
                         if (null != mooring.getCustomer())
                             mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         return mooringResponseDto;
@@ -213,7 +226,15 @@ public class MooringServiceImpl implements MooringService {
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
             if (id == null) {
                 mooring.setCreationDate(new Date(System.currentTimeMillis()));
-                mooring.setStatus(AppConstants.Status.GEAR_IN);
+                if(null != mooringRequestDto.getMooringId()) {
+                    Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(mooringRequestDto.getStatusId());
+                    if(optionalMooringStatus.isEmpty()) throw new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId()));
+
+                    mooring.setMooringStatus(optionalMooringStatus.get());
+                } else {
+                    throw new RuntimeException("Mooring Status cannot be null");
+                }
+
                 Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardName(mooring.getBoatyardName());
                 if (optionalBoatyard.isEmpty())
                     throw new ResourceNotFoundException("No boatyard found with the given boatyard name");

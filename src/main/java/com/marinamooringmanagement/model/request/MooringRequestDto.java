@@ -109,5 +109,5 @@ public class MooringRequestDto implements Serializable {
     /**
      * The status of the mooring.
      */
-    private String status;
+    private Integer statusId;
 }

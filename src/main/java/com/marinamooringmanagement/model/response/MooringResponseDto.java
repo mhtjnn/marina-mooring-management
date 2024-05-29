@@ -2,6 +2,8 @@ package com.marinamooringmanagement.model.response;
 
 import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.dto.MooringStatusDto;
+import com.marinamooringmanagement.model.entity.MooringStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -125,7 +127,7 @@ public class MooringResponseDto implements Serializable {
     /**
      * The status of mooring
      */
-    private String status;
+    private MooringStatusDto mooringStatusDto;
 
     private List<String> boatyardNames;
 

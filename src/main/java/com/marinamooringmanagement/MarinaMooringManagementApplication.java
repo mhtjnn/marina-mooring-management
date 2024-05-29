@@ -36,6 +36,12 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 	@Autowired
 	private MooringStatusRepository mooringStatusRepository;
 
+	@Autowired
+	private BoatTypeRepository boatTypeRepository;
+
+	@Autowired
+	private SizeOfWeightRepository sizeOfWeightRepository;
+
 	public static void main(String[] args) {
 		SpringApplication.run(MarinaMooringManagementApplication.class, args);
 	}
@@ -166,6 +172,85 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 					.build();
 
 			mooringStatusRepository.save(mooringStatusNOT_IN_USE);
+		}
+
+		final String boatTypeSql = "SELECT * FROM boat_type";
+		final List<BoatType> boatTypeList = jdbcTemplate.query(boatTypeSql, (resultSet, rowNum) -> null);
+
+		if(boatTypeList.isEmpty()) {
+			List<BoatType> boatTypes = List.of(
+					BoatType.builder()
+							.boatType("Sailboats")
+							.description("A sailboat is a type of boat that is primarily propelled by sails. Here are the key aspects and components of a sailboat.")
+							.build(),
+					BoatType.builder()
+							.boatType("Powerboats")
+							.description("A powerboat is a boat that is powered by an engine. Powerboats are fast and used for activities like cruising, waterskiing, and fishing.")
+							.build(),
+					BoatType.builder()
+							.boatType("Fishing Boats")
+							.description("Fishing boats are designed for fishing activities. They come in various sizes and are equipped with features like bait wells and fishing rod holders.")
+							.build(),
+					BoatType.builder()
+							.boatType("Personal Watercraft (PWC)")
+							.description("Personal Watercraft, like Jet Skis, are small, fast watercraft powered by a jet drive and are used for recreation.")
+							.build(),
+					BoatType.builder()
+							.boatType("Houseboats")
+							.description("Houseboats are boats designed for living on the water, equipped with full living amenities like kitchens, bathrooms, and bedrooms.")
+							.build(),
+					BoatType.builder()
+							.boatType("Inflatables")
+							.description("Inflatable boats are lightweight and buoyant. They come in rigid (RIB) and soft (SIB) variants and are used for various purposes including as tenders.")
+							.build(),
+					BoatType.builder()
+							.boatType("Commercial and Utility Boats")
+							.description("Commercial and utility boats, such as tugboats, ferries, and pilot boats, are designed for specific tasks like towing, transporting passengers, and guiding ships.")
+							.build(),
+					BoatType.builder()
+							.boatType("Specialty Boats")
+							.description("Specialty boats include unique types like catamarans, trimarans, dinghies, kayaks, and canoes, each designed for specific activities and conditions.")
+							.build(),
+					BoatType.builder()
+							.boatType("Amphibious Boats")
+							.description("Amphibious boats are capable of operation on both land and water, often used for military or rescue purposes.")
+							.build()
+			);
+			boatTypeRepository.saveAll(boatTypes);
+		}
+
+		final String sizeOfWeightSql = "SELECT * FROM size_of_weight";
+		final List<SizeOfWeight> sizeOfWeightList = jdbcTemplate.query(sizeOfWeightSql, (resultSet, rowNum) -> null);
+
+		if(sizeOfWeightList.isEmpty()) {
+			List<SizeOfWeight> sizeOfWeights = List.of(
+					SizeOfWeight.builder().weight("100-400").unitType("kg").build(), // Dinghy
+					SizeOfWeight.builder().weight("14-32").unitType("kg").build(), // Kayak
+					SizeOfWeight.builder().weight("23-45").unitType("kg").build(), // Canoe
+					SizeOfWeight.builder().weight("45-225").unitType("kg").build(), // Jon Boat
+					SizeOfWeight.builder().weight("680-1800").unitType("kg").build(), // Runabout
+					SizeOfWeight.builder().weight("900-2700").unitType("kg").build(), // Bowrider
+					SizeOfWeight.builder().weight("900-3600").unitType("kg").build(), // Center Console
+					SizeOfWeight.builder().weight("680-2300").unitType("kg").build(), // Pontoon Boat
+					SizeOfWeight.builder().weight("450-1100").unitType("kg").build(), // Bass Boat
+					SizeOfWeight.builder().weight("2300-9000").unitType("kg").build(), // Cabin Cruiser
+					SizeOfWeight.builder().weight("6800-31800").unitType("kg").build(), // Trawler
+					SizeOfWeight.builder().weight("3600-36300").unitType("kg").build(), // Sportfishing Boat
+					SizeOfWeight.builder().weight("9000-36300").unitType("kg").build(), // Houseboat
+					SizeOfWeight.builder().weight("45-225").unitType("kg").build(), // Small Sailboat (Dinghy)
+					SizeOfWeight.builder().weight("900-6800").unitType("kg").build(), // Sloop
+					SizeOfWeight.builder().weight("1800-9000").unitType("kg").build(), // Cutter
+					SizeOfWeight.builder().weight("3600-18000").unitType("kg").build(), // Ketch/Yawl
+					SizeOfWeight.builder().weight("1400-13600").unitType("kg").build(), // Catamaran
+					SizeOfWeight.builder().weight("1400-11300").unitType("kg").build(), // Trimaran
+					SizeOfWeight.builder().weight("36300-227000").unitType("kg").build(), // Luxury Yacht
+					SizeOfWeight.builder().weight("227000+").unitType("kg").build(), // Mega Yacht
+					SizeOfWeight.builder().weight("22700-227000").unitType("kg").build(), // Tugboat
+					SizeOfWeight.builder().weight("45300-2268000").unitType("kg").build(), // Ferry
+					SizeOfWeight.builder().weight("9000-36300").unitType("kg").build() // Pilot Boat
+			);
+
+			sizeOfWeightRepository.saveAll(sizeOfWeights);
 		}
 	}
 }

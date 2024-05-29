@@ -4,7 +4,9 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
+import com.marinamooringmanagement.mapper.MooringStatusMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.dto.MooringStatusDto;
 import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -58,6 +60,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private MooringServiceImpl mooringService;
+
+    @Autowired
+    private MooringStatusMapper mooringStatusMapper;
 
     @Autowired
     private SortUtils sortUtils;
@@ -170,7 +175,11 @@ public class CustomerServiceImpl implements CustomerService {
 
             if (!mooringList.isEmpty()) {
                 boatyardNames = mooringList.stream().map(Mooring::getBoatyardName).toList();
-                mooringResponseDtoList = mooringList.stream().map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring)).toList();
+                mooringResponseDtoList = mooringList.stream().map(mooring -> {
+                    MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                    mooringResponseDto.setMooringStatusDto(mooringStatusMapper.mapToMooringStatusDto(MooringStatusDto.builder().build(), mooring.getMooringStatus()));
+                    return mooringResponseDto;
+                }).toList();
             }
 
             customerResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
