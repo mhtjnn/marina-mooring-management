@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "pennant_condition")
 public class PennantCondition extends Base {
 
-    @Column(name = "condition")
+    @Column(name = "_condition")
     private String condition;
 
     @Column(name = "description")

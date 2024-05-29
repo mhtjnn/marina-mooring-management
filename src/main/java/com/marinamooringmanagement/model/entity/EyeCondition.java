@@ -13,7 +13,7 @@ import lombok.*;
 @Table(name = "eye_condition")
 public class EyeCondition extends Base{
 
-    @Column(name = "condition")
+    @Column(name = "_condition")
     private String condition;
 
     @Column(name = "description")

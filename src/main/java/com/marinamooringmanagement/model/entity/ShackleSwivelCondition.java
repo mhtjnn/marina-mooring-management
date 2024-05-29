@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "shackle_swivel_condition")
 public class ShackleSwivelCondition extends Base{
 
-    @Column(name = "condition")
+    @Column(name = "_condition")
     private String condition;
 
     @Column(name = "description")

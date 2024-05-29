@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "bottom_chain_condition")
 public class BottomChainCondition extends Base{
 
-    @Column(name = "condition")
+    @Column(name = "_condition")
     private String condition;
 
     @Column(name = "description")
