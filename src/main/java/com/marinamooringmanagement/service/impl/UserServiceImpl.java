@@ -181,10 +181,7 @@ public class UserServiceImpl implements UserService {
                     }).toList();
 
 
-            // creating a pageable response of filtered user response dto
-            final Page<UserResponseDto> pageOfUser = new PageImpl<>(filteredUserResponseDtoList, p, filteredUserResponseDtoList.size());
-
-            response.setContent(pageOfUser);
+            response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 

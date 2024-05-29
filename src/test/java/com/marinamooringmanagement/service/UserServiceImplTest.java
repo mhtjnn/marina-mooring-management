@@ -2,29 +2,37 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.mapper.UserMapper;
+import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.entity.Country;
 import com.marinamooringmanagement.model.entity.Role;
+import com.marinamooringmanagement.model.entity.State;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.UserResponseDto;
-import com.marinamooringmanagement.repositories.RoleRepository;
-import com.marinamooringmanagement.repositories.TokenRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
+import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.config.JwtUtil;
+import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import com.marinamooringmanagement.service.impl.UserServiceImpl;
 import com.marinamooringmanagement.utils.SortUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -32,221 +40,290 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UserServiceImplTest {
-
-    @InjectMocks
-    private UserServiceImpl service;
-
-    @Mock
-    private UserRepository userRepo;
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class UserServiceImplTest {
 
     @Mock
-    private RoleRepository roleRepo;
-
-    @Mock
-    private TokenRepository tokenRepo;
-
-    @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
+    private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
-
+    @Mock
+    private RoleRepository roleRepository;
+    @Mock
+    private Authentication authentication;
+    @Mock
+    private SecurityContext securityContext;
+    @Mock
+    private JwtUtil jwtUtil;
+    @Mock
+    private LoggedInUserUtil loggedInUserUtil;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private StateRepository stateRepository;
     @Mock
     private SortUtils sortUtils;
+    @Mock
+    private CountryRepository countryRepository;
+    @InjectMocks
+    private UserServiceImpl userServiceImpl;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp(){
+        MockitoAnnotations.initMocks(this);
     }
-
     @Test
-    public void should_successfully_save_user() {
-        final Role role = newRoleInstance();
+    void fetchUsers() {
+        BaseSearchRequest baseSearchRequest = baseSearchRequestInstance();
 
-        final User user = newUserInstance();
-
-        final UserRequestDto userRequestDto = newUserRequestDtoInstance();
-
-        when(userRepo.save(any(User.class))).thenReturn(user);
-
-        when(roleRepo.findByName(any(String.class))).thenReturn(Optional.ofNullable(role));
-
-        when(passwordEncoder.encode(null)).thenReturn("test");
-
-//        when(SecurityContextHolder.)
-
-        when(SecurityContextHolder.getContext().getAuthentication().getDetails()).thenReturn(newAuthenticationDetailsInstance());
-
-//        when(service.getLoggedInUserRole()).thenReturn("OWNER");
-
-        when(service.checkForAuthority(any(Integer.class), "OWNER")).thenReturn(true);
-
-        final User savedUser = service.performSave(userRequestDto, user, null);
-
-        Assertions.assertEquals(savedUser.getEmail(), user.getEmail());
-        Assertions.assertEquals(savedUser.getName(), user.getName());
-        Assertions.assertEquals(savedUser.getRole().getName(), user.getRole().getName());
-
-        verify(userMapper, times(1)).mapToUser(any(User.class), any(UserRequestDto.class));
-        verify(userRepo, times(1)).save(any(User.class));
-        verify(roleRepo, times(1)).findByName(any(String.class));
-        verify(passwordEncoder, times(1)).encode(null);
-    }
-
-    @Test
-    public void should_fetch_all_users() {
-        final List<UserResponseDto> userResponseDtoList = new ArrayList<>();
-
-        final BaseSearchRequest baseSearchRequest =  newBaseSearchRequestInstance();
-
-        final Role role = newRoleInstance();
-
-        final UserResponseDto userResponseDto = newUserResponseDtoInstance();
-
+        UserResponseDto userResponseDto = userResponseDtoInstance();
+        List<UserResponseDto> userResponseDtoList=new ArrayList<>();
         userResponseDtoList.add(userResponseDto);
 
-        final User user = newUserInstance();
+        BasicRestResponse basicRestResponse= BasicRestResponse.builder().build();
+        basicRestResponse.setContent(userResponseDtoList);
 
-        final List<User> users = new ArrayList<>();
-        users.add(user);
+        User user=userInstance();
+        List<User> userList = new ArrayList<>();
+        userList.add(user);
+        Sort sort = Sort.by("id");
 
-        final Page<User> pagedUserList = new PageImpl<>(users);
+        Page<User> userPage = new PageImpl<>(userList);
 
-        final BasicRestResponse response = BasicRestResponse.builder().build();
-        response.setContent(userResponseDtoList);
+        when(sortUtils.getSort(anyString(), anyString())).thenReturn(sort);
 
-        when(userRepo.findAll(any(Pageable.class))).thenReturn(pagedUserList);
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(userPage);
+        BasicRestResponse result = userServiceImpl.fetchUsers(baseSearchRequest, 1, "");
 
-//        final BasicRestResponse getResponse = service.fetchUsers(baseSearchRequest);
+        assertEquals("Users fetched successfully", result.getMessage());
 
-//        Assertions.assertEquals(response.getContent(), getResponse.getContent());
+        List<UserResponseDto> resultContent = (List<UserResponseDto>) result.getContent();
 
-        verify(userRepo, times(1)).findAll(any(Pageable.class));
+        assertEquals(userResponseDtoList.size(), resultContent.size());
+
+        verify(userRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
-    public void should_successfully_update_user() {
-        final User oldUser = newUserInstance();
-
-        final User updateUser = newUserInstance();
-        updateUser.setEmail("updated");
-
-        final UserRequestDto userRequestDto = newUserRequestDtoInstance();
-        userRequestDto.setEmail("updated");
-
-        when(userRepo.save(any(User.class))).thenReturn(updateUser);
-
-//        final User performSaveUser = service.performSave(userRequestDto, oldUser, 1);
-
-//        Assertions.assertEquals(userRequestDto.getEmail(), performSaveUser.getEmail());
-
-        verify(userRepo, times(1)).save(any(User.class));
+    void saveUser() {
+        UserRequestDto userRequestDto = userRequestDtoInstance();
+        User user=userInstance();
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(roleRepository.findById(userRequestDto.getRoleId())).thenReturn(Optional.of(roleInstance()));
+        when(loggedInUserUtil.getLoggedInUserRole()).thenReturn("ADMINISTRATOR");
+        when(passwordEncoder.encode(any(CharSequence.class))).thenReturn("12345432");
+        when(stateRepository.findById(1)).thenReturn(Optional.ofNullable(newStateInstance()));
+        when(countryRepository.findById(1)).thenReturn(Optional.ofNullable(newCountryInstance()));
+        User savedUser = userServiceImpl.performSave(userRequestDto, user, null);
+        assertEquals(savedUser.getEmail(), user.getEmail());
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
-    public void should_successfully_update_password() throws Exception {
-        final String token = "test";
+    void deleteUser() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        AuthenticationDetails auth=new AuthenticationDetails();
+        auth.setLoggedInUserRole("OWNER");
+        auth.setLoggedInUserId(1);
+        when(authentication.getDetails()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
-        final NewPasswordRequest request = newNewPasswordRequestInstance();
+        User user = userInstance();
 
-        final User oldPasswordUser = newUserInstance();
-        oldPasswordUser.setPassword("old");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        BasicRestResponse result = userServiceImpl.deleteUser(1,2);
+
+        assertEquals("User Deleted Successfully!!!", result.getMessage());
+        assertEquals(200, result.getStatus());
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(userRepository, times(1)).deleteById(user.getId());
+
+    }
 
 
-        when(jwtUtil.getUsernameFromToken(any(String.class))).thenReturn("test");
 
-        when(userRepo.findByEmail("test")).thenReturn(Optional.ofNullable(oldPasswordUser));
+    @Test
+    void updateUser() {
+        UserRequestDto userRequestDto = userRequestDtoInstance();
+        userRequestDto.setEmail("test@example.com");
+        userRequestDto.setPassword(null);
 
-        when(userRepo.save(any(User.class))).thenReturn(any(User.class));
+        User user = userInstance();
+        user.setEmail("test@example.com");
 
-        final BasicRestResponse response = service.updatePassword(token, request);
+        when(userRepository.save(user)).thenReturn(user);
+        when(roleRepository.findById(userRequestDto.getRoleId())).thenReturn(Optional.of(roleInstance()));
+        when(loggedInUserUtil.getLoggedInUserRole()).thenReturn("ADMINISTRATOR");
+        when(stateRepository.findById(1)).thenReturn(Optional.ofNullable(newStateInstance()));
+        when(countryRepository.findById(1)).thenReturn(Optional.ofNullable(newCountryInstance()));
 
-        Assertions.assertEquals(response.getMessage(), String.format("Password changed Successfully!!!"));
+        User result = userServiceImpl.performSave(userRequestDto, user, 1);
 
-        verify(userRepo, times(1)).save(any(User.class));
-        verify(userRepo, times(1)).findByEmail(any(String.class));
-        verify(jwtUtil, times(1)).getUsernameFromToken(any(String.class));
+        assertEquals(userRequestDto.getName(),result.getName());
+        assertEquals(userRequestDto.getEmail(),result.getEmail());
+
+        verify(userRepository, times(1)).save(user);
+
     }
 
     @Test
-    public void should_successfully_check_email_token_valid() {
-        final String token = "test";
+    void findByEmailAddress() {
+        User user = userInstance();
 
-        final User user = newUserInstance();
+        UserDto userDto = new UserDto();
+        userDto.setEmail("user@example.com");
 
-        when(jwtUtil.getUsernameFromToken(token)).thenReturn("test");
+        when(userRepository.findByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
+        when(userMapper.mapToUserDto(any(UserDto.class), eq(user))).thenReturn(userDto);
 
-        when(userRepo.findByEmail(any(String.class))).thenReturn(Optional.ofNullable(user));
+        UserDto result = userServiceImpl.findByEmailAddress(userDto.getEmail());
 
-        when(jwtUtil.validateToken(token)).thenReturn(true);
-
-        final BasicRestResponse response = service.checkEmailAndTokenValid(token);
-
-        Assertions.assertEquals(response.getMessage(), String.format("Email and Token Valid. Please proceed ahead..."));
-
-        verify(userRepo, times(1)).findByEmail(any(String.class));
-        verify(jwtUtil, times(1)).getUsernameFromToken(any(String.class));
-        verify(jwtUtil, times(1)).validateToken(any(String.class));
+        assertEquals(userDto.getEmail(), result.getEmail());
+        verify(userRepository, times(1)).findByEmail(user.getEmail());
+        verify(userMapper, times(1)).mapToUserDto(any(UserDto.class), eq(user));
     }
 
-    public Role newRoleInstance() {
-        return Role.builder()
-                .name("test")
-                .description("test")
+    @Test
+    void updatePassword() throws Exception {
+        User user=userInstance();
+        user.setPassword("password");
+
+        NewPasswordRequest newPasswordRequest=NewPasswordRequest.builder()
+                .newPassword("new Password")
+                .confirmPassword("new Password")
+                .build();
+
+        when(jwtUtil.getUsernameFromToken(any(String.class))).thenReturn("user@example.com");
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        when(jwtUtil.validateToken("user@example.com")).thenReturn(true);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        BasicRestResponse basicRestResponse=userServiceImpl.updatePassword("user@example.com",newPasswordRequest);
+
+        assertEquals("Password changed Successfully!!!",basicRestResponse.getMessage());
+
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).findByEmail(any(String.class));
+    }
+
+    @Test
+    void checkEmailAndTokenValid() {
+
+        User user=userInstance();
+
+        when(jwtUtil.getUsernameFromToken(any(String.class))).thenReturn("user@example.com");
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        when(jwtUtil.validateToken("user@example.com")).thenReturn(true);
+
+        BasicRestResponse basicRestResponse=userServiceImpl.checkEmailAndTokenValid("user@example.com");
+
+        assertEquals("Email and Token Valid. Please proceed ahead...",basicRestResponse.getMessage());
+
+        verify(userRepository,times(1)).findByEmail(user.getEmail());
+    }
+
+    @Test
+    void checkForAuthority() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        AuthenticationDetails auth=new AuthenticationDetails();
+        auth.setLoggedInUserRole("OWNER");
+        auth.setLoggedInUserId(1);
+        when(authentication.getDetails()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User user=userInstance();
+
+        when(userRepository.findById(any(Integer.class))).thenReturn(Optional.of(user));
+
+        boolean response=userServiceImpl.checkForAuthority(1,"TECHNICIAN");
+
+        assertTrue(response);
+
+    }
+
+    public RoleResponseDto roleResponseDtoInstance() {
+        return RoleResponseDto.builder()
+                .id(2)
+                .name("CUSTOMER_OWNER")
+                .description("Customer Owner")
+                .build();
+
+    }
+
+    public UserResponseDto userResponseDtoInstance(){
+        UserResponseDto userResponseDto=UserResponseDto.builder().build();
+        userResponseDto.setCustomerOwnerId(1);
+        userResponseDto.setEmail("user@example.com");
+        userResponseDto.setName("user");
+        userResponseDto.setRoleResponseDto(roleResponseDtoInstance());
+        return userResponseDto;
+    }
+
+    public Role roleInstance(){
+        Role role=Role.builder().build();
+        role.setName("CUSTOMER_ADMIN");
+        return role;
+    }
+
+    public  User userInstance()
+    {
+        User user=User.builder().build();
+        user.setId(1);
+        user.setCustomerOwnerId(1);
+        user.setName("User");
+        user.setEmail("user@example.com");
+        user.setRole(roleInstance());
+        user.setState(newStateInstance());
+        user.setCountry(newCountryInstance());
+
+        return user;
+
+    }
+
+    public BaseSearchRequest baseSearchRequestInstance(){
+        BaseSearchRequest baseSearchRequest=BaseSearchRequest.builder().build();
+        baseSearchRequest.setPageNumber(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM));
+        baseSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
+        baseSearchRequest.setSortBy("id");
+        baseSearchRequest.setSortDir("asc");
+        return baseSearchRequest;
+    }
+
+    public UserRequestDto userRequestDtoInstance(){
+        UserRequestDto userRequestDto=UserRequestDto.builder().build();
+
+        userRequestDto.setId(1);
+        userRequestDto.setName("User");
+        userRequestDto.setEmail("user@example.com");
+        userRequestDto.setPassword("VGVzdGluZ0AxMzQ=");
+        userRequestDto.setConfirmPassword("VGVzdGluZ0AxMzQ=");
+        userRequestDto.setRoleId(3);
+        userRequestDto.setStateId(1);
+        userRequestDto.setCountryId(1);
+
+        return userRequestDto;
+    }
+
+    public State newStateInstance() {
+        return State.builder()
+                .name("New York")
+                .label("New York")
                 .build();
     }
 
-    public User newUserInstance() {
-        return User.builder()
-                .name("test")
-                .email("test")
-                .role(newRoleInstance())
+    public Country newCountryInstance() {
+        return Country.builder()
+                .name("USA")
+                .label("United States of America")
                 .build();
-    }
-
-    public UserRequestDto newUserRequestDtoInstance() {
-        return UserRequestDto.builder()
-                .name("test")
-                .email("test")
-                .build();
-    }
-
-    public UserResponseDto newUserResponseDtoInstance() {
-        return UserResponseDto.builder()
-                .email("test")
-                .name("test")
-//                .role("test")
-                .build();
-    }
-
-    public NewPasswordRequest newNewPasswordRequestInstance() {
-        return NewPasswordRequest
-                .builder()
-                .newPassword("new")
-                .confirmPassword("new")
-                .build();
-    }
-
-    public BaseSearchRequest newBaseSearchRequestInstance() {
-        final BaseSearchRequest userSearchRequest = BaseSearchRequest.builder().build();
-        userSearchRequest.setPageNumber(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM));
-        userSearchRequest.setPageSize(Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE));
-        userSearchRequest.setSortBy("id");
-        userSearchRequest.setSortDir("asc");
-        return userSearchRequest;
-    }
-
-    public AuthenticationDetails newAuthenticationDetailsInstance() {
-        final AuthenticationDetails authDetails = new AuthenticationDetails();
-        authDetails.setLoggedInUserEmail(any(String.class));
-        authDetails.setLoggedInUserId(any(Integer.class));
-        authDetails.setLoggedInUserRole(any(String.class));
-        return authDetails;
     }
 }

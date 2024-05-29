@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -114,8 +115,8 @@ public class CustomerServiceImpl implements CustomerService {
 
                     if(null != searchText) {
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(customer.get("email"), "%" + searchText + "%"),
-                                criteriaBuilder.like(customer.get("phoneNumber"), "%" + searchText + "%")
+                                criteriaBuilder.like(customer.get("emailAddress"), "%" + searchText + "%"),
+                                criteriaBuilder.like(customer.get("phone"), "%" + searchText + "%")
                         ));
                     }
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -135,8 +136,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer))
                     .toList();
 
-            final Page<CustomerResponseDto> customerPage = new PageImpl<>(customerResponseDtoList, p, customerResponseDtoList.size());
-            response.setContent(customerPage);
+            response.setContent(customerResponseDtoList);
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 
@@ -265,6 +265,7 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
+            if (null == id) customer.setCreationDate(new Date());
             Customer savedCustomer =  customerRepository.save(customer);
             Optional<Mooring> optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
             Mooring mooring = null;
@@ -272,7 +273,7 @@ public class CustomerServiceImpl implements CustomerService {
                 optionalMooring.get().setCustomer(savedCustomer);
                 mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId());
             } else {
-                mooringService
+                mooring = mooringService
                         .performSave(
                                 customerRequestDto.getMooringRequestDto(),
                                 Mooring.builder().customerName(savedCustomer.getCustomerName()).customer(savedCustomer).build(),
@@ -280,7 +281,6 @@ public class CustomerServiceImpl implements CustomerService {
                         );
             }
             List<Mooring> mooringList = null;
-            if (null == id) customer.setCreationDate(new Date());
             mooringList = customer.getMooringList();
             if(null == mooringList) mooringList = new ArrayList<>();
             mooringList.add(mooring);
@@ -301,9 +301,21 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id The ID of the customer to delete.
      */
     @Override
+    @Transactional
     public BasicRestResponse deleteCustomerById(final Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
+            Optional<Customer> optionalCustomer = customerRepository.findById(id);
+            if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", id));
+            Customer customer = optionalCustomer.get();
+            List<Mooring> mooringList = customer.getMooringList();
+
+            if(!mooringList.isEmpty()) {
+                mooringRepository.saveAll(mooringList.stream().peek(mooring -> mooring.setCustomer(null)).toList());
+            }
+
+            customer.setMooringList(new ArrayList<>());
+            customerRepository.save(customer);
             customerRepository.deleteById(id);
 
             response.setMessage(String.format("Customer with ID %d deleted successfully", id));

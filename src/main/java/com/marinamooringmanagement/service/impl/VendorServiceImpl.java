@@ -95,10 +95,8 @@ public class VendorServiceImpl implements VendorService {
                     .map(vendor -> vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), vendor))
                     .collect(Collectors.toList());
 
-            final Page<VendorResponseDto> vendorResponseDtoPage = new PageImpl<>(vendorResponseDtoList, p, vendorResponseDtoList.size());
-
             response.setMessage("List of vendors in the database");
-            response.setContent(vendorResponseDtoPage);
+            response.setContent(vendorResponseDtoList);
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             logger.error("Error occurred while fetching all the vendors from the database: {}", e.getLocalizedMessage());

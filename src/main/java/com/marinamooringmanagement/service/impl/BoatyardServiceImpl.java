@@ -144,9 +144,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                     })
                     .collect(Collectors.toList());
 
-            Page<BoatyardResponseDto> boatyardResponseDtoPage = new PageImpl<>(boatyardDtoList, p, boatyardDtoList.size());
-
-            response.setContent(boatyardResponseDtoPage);
+            response.setContent(boatyardDtoList);
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
             log.info(String.format("BoatYard fetched successfully"));

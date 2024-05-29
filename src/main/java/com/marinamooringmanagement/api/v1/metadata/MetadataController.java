@@ -4,6 +4,7 @@ import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.service.CountryService;
+import com.marinamooringmanagement.service.MetadataService;
 import com.marinamooringmanagement.service.RoleService;
 import com.marinamooringmanagement.service.StateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +37,9 @@ public class MetadataController extends GlobalExceptionHandler {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private MetadataService metadataService;
 
     /**
      * Fetches countries from the database.
@@ -169,6 +174,20 @@ public class MetadataController extends GlobalExceptionHandler {
                 .sortDir(sortDir)
                 .build();
         return roleService.fetchRoles(baseSearchRequest);
+    }
+
+    @GetMapping("/status")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchStatus(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchStatus(baseSearchRequest);
     }
 
 }

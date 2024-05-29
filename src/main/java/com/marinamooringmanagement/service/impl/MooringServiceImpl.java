@@ -110,11 +110,9 @@ public class MooringServiceImpl implements MooringService {
                     })
                     .collect(Collectors.toList());
 
-            final Page<MooringResponseDto> pageOfMooring = new PageImpl<>(mooringResponseDtoList, pageable, mooringResponseDtoList.size());
-
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(pageOfMooring);
+            response.setContent(mooringResponseDtoList);
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             response.setMessage(e.getMessage());
@@ -222,10 +220,9 @@ public class MooringServiceImpl implements MooringService {
                 savedMooring = mooringRepository.save(mooring);
                 optionalBoatyard.get().getMooringList().add(savedMooring);
                 boatyardRepository.save(optionalBoatyard.get());
-            } else {
-                savedMooring = mooringRepository.save(mooring);
             }
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            savedMooring = mooringRepository.save(mooring);
             return savedMooring;
         } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());

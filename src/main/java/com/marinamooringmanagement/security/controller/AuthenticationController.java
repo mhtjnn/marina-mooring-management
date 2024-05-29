@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Base64;
 import java.util.Optional;
 
 import java.util.Date;

@@ -1,13 +1,8 @@
 package com.marinamooringmanagement;
 
-import com.marinamooringmanagement.model.entity.Country;
-import com.marinamooringmanagement.model.entity.Role;
-import com.marinamooringmanagement.model.entity.State;
-import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.repositories.CountryRepository;
-import com.marinamooringmanagement.repositories.RoleRepository;
-import com.marinamooringmanagement.repositories.StateRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
+import com.marinamooringmanagement.constants.AppConstants;
+import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -37,6 +32,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private MooringStatusRepository mooringStatusRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(MarinaMooringManagementApplication.class, args);
@@ -118,8 +116,7 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 		}
 
 		final String userSql = "SELECT * FROM _user";
-		final List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) ->
-				null);
+		final List<User> userList = jdbcTemplate.query(userSql, (resultSet, rowNum) -> null);
 
 		if(userList.isEmpty()) {
 			User user = User.builder().build();
@@ -138,5 +135,37 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 			userRepository.save(user);
 		}
 
+		final String mooringStatusSql = "SELECT * FROM mooring_status";
+		final List<MooringStatus> mooringStatusList = jdbcTemplate.query(mooringStatusSql, (resultSet, rowNum) -> null);
+
+		if(mooringStatusList.isEmpty()) {
+			MooringStatus mooringStatusGEAR_IN = MooringStatus.builder()
+					.status(AppConstants.Status.GEAR_IN)
+					.description("Refers to the equipment and tools used for securing a vessel to a dock, pier, or mooring buoy. This gear includes a variety of items that work together to ensure that the vessel remains stationary and safe while docked or anchored.")
+					.build();
+
+			mooringStatusRepository.save(mooringStatusGEAR_IN);
+
+			MooringStatus mooringStatusGEAR_OFF = MooringStatus.builder()
+					.status(AppConstants.Status.GEAR_OFF)
+					.description("Refers to disengaging the engine's gear, which stops the propeller from turning and the boat from moving forward or backward. This action is part of controlling the boat's movement and is essential for safe docking, anchoring, or stopping.")
+					.build();
+
+			mooringStatusRepository.save(mooringStatusGEAR_OFF);
+
+			MooringStatus mooringStatusNEED_INSPECTION = MooringStatus.builder()
+					.status(AppConstants.Status.NEED_INSPECTION)
+					.description("Refers to a status or a condition indicating that an inspection is required. This could apply to various components of the boat or mooring equipment to ensure they are in good working order and safe to use.")
+					.build();
+
+			mooringStatusRepository.save(mooringStatusNEED_INSPECTION);
+
+			MooringStatus mooringStatusNOT_IN_USE = MooringStatus.builder()
+					.status(AppConstants.Status.NOT_IN_USE)
+					.description("Indicating that a particular piece of equipment, a specific part of the vessel, or even the entire vessel is not currently being used. This status can help in organizing, maintaining, and ensuring safety in operations.")
+					.build();
+
+			mooringStatusRepository.save(mooringStatusNOT_IN_USE);
+		}
 	}
 }
