@@ -69,5 +69,7 @@ public class BoatyardDto extends BaseDto {
      * List of moorings associated with the BoatYard.
      */
     private List<MooringDto> mooringDtoList;
+
+    private UserDto user;
 }
 

@@ -24,7 +24,7 @@ public interface BoatyardService {
      * @param searchText the text used to search for specific boatyards by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the boatyard search.
      */
-    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText);
+    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
 
     /**
      * Retrieves a BoatYard entity by its ID.

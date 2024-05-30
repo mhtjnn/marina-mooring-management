@@ -66,7 +66,8 @@ public class MooringController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText
+            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Customer Owner Id", schema = @Schema(implementation = String.class)) final @RequestParam(value = "customerOwnerId", required = false) Integer customerOwnerId
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
@@ -74,7 +75,7 @@ public class MooringController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return mooringService.fetchMoorings(baseSearchRequest, searchText);
+        return mooringService.fetchMoorings(baseSearchRequest, searchText, customerOwnerId);
     }
 
     /**

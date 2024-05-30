@@ -23,7 +23,7 @@ public interface CustomerService {
      * @param searchText the text used to search for specific customers by name, email, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the customer search.
      */
-    public BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText);
+    BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
 
     /**
      * Retrieves a customer by ID.

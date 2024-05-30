@@ -88,11 +88,12 @@ public class BoatyardController extends GlobalExceptionHandler {
             }
     )
     public BasicRestResponse fetchBoatyards(
-            @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @RequestParam(value = "searchText", required = false) String searchText
+            final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            final @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            final @RequestParam(value = "searchText", required = false) String searchText,
+            final @RequestParam(value = "customerOwnerId", required = false) Integer customerOwnerId
     ) {
         BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
@@ -100,7 +101,7 @@ public class BoatyardController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return boatyardService.fetchBoatyards(baseSearchRequest, searchText);
+        return boatyardService.fetchBoatyards(baseSearchRequest, searchText, customerOwnerId);
     }
 
     /**

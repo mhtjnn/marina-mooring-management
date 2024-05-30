@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cache.interceptor.CacheAspectSupport;
 
 import java.util.List;
 
@@ -17,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
+@Table(name = "customer")
 public class Customer extends Base {
     /**
      * The unique identifier of the customer.
@@ -75,5 +75,10 @@ public class Customer extends Base {
     private String zipCode;
 
     @OneToMany(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
     private List<Mooring> mooringList;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

@@ -97,4 +97,8 @@ public class Boatyard extends Base {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "boatyard_id")
     private List<Mooring> mooringList;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

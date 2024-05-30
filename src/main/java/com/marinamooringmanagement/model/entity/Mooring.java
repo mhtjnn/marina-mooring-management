@@ -3,8 +3,6 @@ package com.marinamooringmanagement.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 /**
  * Represents a mooring entity that maps to the "mooring" table in the database.
  */
@@ -142,6 +140,9 @@ public class Mooring extends Base {
     private MooringStatus mooringStatus;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

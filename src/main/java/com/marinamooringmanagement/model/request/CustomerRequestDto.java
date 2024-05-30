@@ -58,6 +58,8 @@ public class CustomerRequestDto {
      */
     private String zipCode;
 
+    private Integer customerOwnerId;
+
     /**
      * Name of the mooring
      */

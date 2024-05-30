@@ -29,11 +29,6 @@ public class MooringResponseDto implements Serializable {
      */
     private Integer id;
 
-    /**
-     * The name of the mooring.
-     */
-    private String mooringName;
-
     private String mooringId;
 
     /**
@@ -126,9 +121,11 @@ public class MooringResponseDto implements Serializable {
     /**
      * The status of mooring
      */
-    private MooringStatusDto mooringStatusDto;
+    private MooringStatusDto mooringStatus;
 
     private List<String> boatyardNames;
 
     private Integer customerId;
+
+    private Integer userId;
 }

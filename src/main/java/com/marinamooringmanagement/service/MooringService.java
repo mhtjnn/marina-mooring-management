@@ -17,7 +17,7 @@ public interface MooringService {
      * @param searchText the text used to search for specific moorings by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the mooring search.
      */
-    BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText);
+    BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
 
     /**
      * Saves a mooring based on the provided request DTO.

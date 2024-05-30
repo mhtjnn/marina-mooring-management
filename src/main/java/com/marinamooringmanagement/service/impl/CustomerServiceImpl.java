@@ -1,14 +1,15 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.dto.MooringStatusDto;
 import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Mooring;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -17,6 +18,8 @@ import com.marinamooringmanagement.model.response.CustomerResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.MooringRepository;
+import com.marinamooringmanagement.repositories.UserRepository;
+import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -27,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -66,6 +68,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private SortUtils sortUtils;
+
+    @Autowired
+    private LoggedInUserUtil loggedInUserUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -108,10 +116,13 @@ public class CustomerServiceImpl implements CustomerService {
      * @return a BasicRestResponse containing the results of the customer search.
      */
     @Override
-    public BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText) {
+    public BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
             Specification<Customer> spec = new Specification<Customer>() {
                 @Override
@@ -124,6 +135,17 @@ public class CustomerServiceImpl implements CustomerService {
                                 criteriaBuilder.like(customer.get("phone"), "%" + searchText + "%")
                         ));
                     }
+
+                    if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                        if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(customer.join("user").get("id"), customerOwnerId)));
+                    } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                        if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserId)) throw new RuntimeException("Not authorized to perform operations on boatyards with different customer owner id");
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(customer.join("user").get("id"), loggedInUserId)));
+                    } else {
+                        throw new RuntimeException("Not Authorized");
+                    }
+
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
             };
@@ -138,7 +160,11 @@ public class CustomerServiceImpl implements CustomerService {
             final List<CustomerResponseDto> customerResponseDtoList = customerList
                     .getContent()
                     .stream()
-                    .map(customer -> customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer))
+                    .map(customer -> {
+                        CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer);
+                        customerResponseDto.setUserId(customer.getUser().getId());
+                        return customerResponseDto;
+                    })
                     .toList();
 
             response.setContent(customerResponseDtoList);
@@ -176,8 +202,9 @@ public class CustomerServiceImpl implements CustomerService {
             if (!mooringList.isEmpty()) {
                 boatyardNames = mooringList.stream().map(Mooring::getBoatyardName).toList();
                 mooringResponseDtoList = mooringList.stream().map(mooring -> {
-                    MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                    mooringResponseDto.setMooringStatusDto(mooringStatusMapper.mapToMooringStatusDto(MooringStatusDto.builder().build(), mooring.getMooringStatus()));
+                    MooringResponseDto mooringResponseDto =  mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                    mooringResponseDto.setUserId(mooring.getUser().getId());
+                    mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                     return mooringResponseDto;
                 }).toList();
             }
@@ -272,11 +299,37 @@ public class CustomerServiceImpl implements CustomerService {
      */
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
+
+            User user = null;
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(null == customerRequestDto.getCustomerOwnerId()) throw new RuntimeException("Please select a customer owner");
+                Optional<User> optionalUser = userRepository.findById(customerRequestDto.getCustomerOwnerId());
+                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
+                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerRequestDto.getCustomerOwnerId()));
+                user = optionalUser.get();
+            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
+                if(null != customerRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(customerRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+                Optional<User> optionalUser = userRepository.findById(loggedInUserId);
+                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
+                user = optionalUser.get();
+            } else {
+                throw new RuntimeException("Not Authorized");
+            }
+
+            customer.setUser(user);
+
+            // Setting the same User Id for mooring.
+            customerRequestDto.getMooringRequestDto().setCustomerOwnerId(customerRequestDto.getCustomerOwnerId());
+
             if (null == id) customer.setCreationDate(new Date());
             Customer savedCustomer =  customerRepository.save(customer);
-            Optional<Mooring> optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
+            Optional<Mooring> optionalMooring = Optional.empty();
+            if(null != customerRequestDto.getMooringRequestDto().getId()) optionalMooring = mooringRepository.findById(customerRequestDto.getMooringRequestDto().getId());
             Mooring mooring = null;
             if(optionalMooring.isPresent()) {
                 optionalMooring.get().setCustomer(savedCustomer);
@@ -289,10 +342,11 @@ public class CustomerServiceImpl implements CustomerService {
                                 null
                         );
             }
-            List<Mooring> mooringList = null;
-            mooringList = customer.getMooringList();
-            if(null == mooringList) mooringList = new ArrayList<>();
-            mooringList.add(mooring);
+            List<Mooring> mooringList = customer.getMooringList();
+            if(null == mooringList || mooringList.isEmpty()) {
+                mooringList = new ArrayList<>();
+                mooringList.add(mooring);
+            }
             savedCustomer.setMooringList(mooringList);
             savedCustomer.setLastModifiedDate(new Date());
             customerRepository.save(savedCustomer);
@@ -314,10 +368,19 @@ public class CustomerServiceImpl implements CustomerService {
     public BasicRestResponse deleteCustomerById(final Integer id) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
+
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", id));
             Customer customer = optionalCustomer.get();
             List<Mooring> mooringList = customer.getMooringList();
+
+            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(!optionalCustomer.get().getUser().getId().equals(loggedInUserID)) throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
+            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+                throw new RuntimeException("Not Authorized");
+            }
 
             if(!mooringList.isEmpty()) {
                 mooringRepository.saveAll(mooringList.stream().peek(mooring -> mooring.setCustomer(null)).toList());

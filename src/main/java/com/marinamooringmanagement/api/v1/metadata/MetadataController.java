@@ -301,5 +301,35 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchPennantConditions(baseSearchRequest);
     }
+
+    @GetMapping("/customers")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchCustomers(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchCustomers(baseSearchRequest, customerOwnerId);
+    }
+
+    @GetMapping("/boatyards")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchBoatyards(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchBoatyards(baseSearchRequest, customerOwnerId);
+    }
 }
 

@@ -25,11 +25,6 @@ public class MooringDto extends BaseDto implements Serializable {
 
     private Integer id;
 
-    /**
-     * Name of the mooring.
-     */
-    private String mooringName;
-
     private String mooringId;
 
     /**
@@ -128,4 +123,6 @@ public class MooringDto extends BaseDto implements Serializable {
     private String status;
 
     private CustomerDto customerDto;
+
+    private UserDto userDto;
 }

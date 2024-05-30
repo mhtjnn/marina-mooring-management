@@ -100,7 +100,8 @@ public class CustomerController extends GlobalExceptionHandler {
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             final @RequestParam(value = "sortBy", defaultValue = "customerId", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            final @RequestParam(value = "searchText", required = false) String searchText
+            final @RequestParam(value = "searchText", required = false) String searchText,
+            final @RequestParam(value = "customerOwnerId", required = false) Integer customerOwnerId
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
@@ -108,7 +109,7 @@ public class CustomerController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return customerService.fetchCustomers(baseSearchRequest, searchText);
+        return customerService.fetchCustomers(baseSearchRequest, searchText, customerOwnerId);
     }
 
     /**

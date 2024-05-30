@@ -64,4 +64,6 @@ public class CustomerDto extends BaseDto {
     private String zipCode;
 
     private List<MooringDto> mooringDtoList;
+
+    private UserDto userDto;
 }

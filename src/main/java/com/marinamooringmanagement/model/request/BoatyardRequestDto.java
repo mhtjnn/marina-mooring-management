@@ -76,5 +76,7 @@ public class BoatyardRequestDto {
     private String mainContact;
 
     private String gpsCoordinates;
+
+    private Integer customerOwnerId;
 }
 

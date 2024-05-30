@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
@@ -12,7 +13,9 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.BoatyardService;
+import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -72,6 +75,15 @@ public class BoatyardServiceImpl implements BoatyardService {
     @Autowired
     private SortUtils sortUtils;
 
+    @Autowired
+    private MooringService mooringService;
+
+    @Autowired
+    private LoggedInUserUtil loggedInUserUtil;
+
+    @Autowired
+    private UserRepository userRepository;
+
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
     /**
@@ -106,10 +118,14 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @return a BasicRestResponse containing the results of the boatyard search.
      */
     @Override
-    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText) {
+    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
             Specification<Boatyard> spec = new Specification<Boatyard>() {
                 @Override
                 public Predicate toPredicate(Root<Boatyard> boatyard, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
@@ -120,6 +136,16 @@ public class BoatyardServiceImpl implements BoatyardService {
                                 criteriaBuilder.like(boatyard.get("boatyardName"), "%" + searchText + "%"),
                                 criteriaBuilder.like(boatyard.get("street"), "%" + searchText + "%")
                         ));
+                    }
+
+                    if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                        if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(boatyard.join("user").get("id"), customerOwnerId)));
+                    } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                        if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserId)) throw new RuntimeException("Not authorized to perform operations on boatyards with different customer owner id");
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(boatyard.join("user").get("id"), loggedInUserId)));
+                    } else {
+                        throw new RuntimeException("Not Authorized");
                     }
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -140,6 +166,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if(null != boatyard.getState()) boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
                         if(null != boatyard.getCountry()) boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
                         boatyardResponseDto.setMooringInventoried(boatyard.getMooringList().size());
+                        boatyardResponseDto.setUserId(boatyard.getUser().getId());
                         return boatyardResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -190,6 +217,9 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
+
             Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
 
             if (optionalBoatyard.isEmpty())
@@ -198,9 +228,15 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null == optionalBoatyard.get().getBoatyardName())
                 throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
 
+            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(!optionalBoatyard.get().getUser().getId().equals(loggedInUserID)) throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
+            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+                throw new RuntimeException("Not Authorized");
+            }
+
             List<Mooring> mooringList = mooringRepository.findAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
 
-            mooringRepository.deleteAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
+            mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId()));
 
             boatYardRepository.deleteById(id);
 
@@ -258,15 +294,28 @@ public class BoatyardServiceImpl implements BoatyardService {
         BasicRestResponse response = BasicRestResponse.builder().build();
 
         try {
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+
             Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
             if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
+
+            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(!optionalBoatyard.get().getUser().getId().equals(loggedInUserUtil.getLoggedInUserID())) throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
+            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+                throw new RuntimeException("Not Authorized");
+            }
 
             List<MooringResponseDto> mooringResponseDtoList = optionalBoatyard
                     .get()
                     .getMooringList()
                     .stream()
-                    .map(mooring -> mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring))
-                    .toList();
+                    .map(mooring -> {
+                        MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+                        return mooringResponseDto;
+                    })
+                    .collect(Collectors.toList());
 
             log.info(String.format("Moorings fetched with the boatyard id as %1$s", id));
             response.setMessage(String.format("Moorings fetched with the boatyard id as %1$s", id));
@@ -275,7 +324,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setStatus(HttpStatus.OK.value());
 
         } catch (Exception e) {
-            response.setMessage(String.format("Error occurred while fetching the moorings related to boatyard id as %1$s", id));
+            response.setMessage(String.format(e.getLocalizedMessage()));
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -292,6 +341,8 @@ public class BoatyardServiceImpl implements BoatyardService {
      */
     public void performSave(final BoatyardRequestDto boatyardRequestDto, final Boatyard boatyard, Integer id) {
         try {
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
             boatyard.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
@@ -311,6 +362,24 @@ public class BoatyardServiceImpl implements BoatyardService {
                 optionalBoatyard = boatYardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
                 if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Boatyard name is already present");
             }
+
+            User user = null;
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(null == boatyardRequestDto.getCustomerOwnerId()) throw new RuntimeException("Please select a customer owner");
+                Optional<User> optionalUser = userRepository.findById(boatyardRequestDto.getCustomerOwnerId());
+                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", boatyardRequestDto.getCustomerOwnerId()));
+                user = optionalUser.get();
+            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
+                if(null != boatyardRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(boatyardRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
+                Optional<User> optionalUser = userRepository.findById(loggedInUserId);
+                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                user = optionalUser.get();
+            } else {
+                throw new RuntimeException("Not Authorized");
+            }
+
+            boatyard.setUser(user);
 
             if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
                     && StringUtils.isNotEmpty(boatyard.getBoatyardName())

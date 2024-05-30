@@ -16,14 +16,14 @@ public class MooringRequestDto implements Serializable {
 
     private static final long serialVersionUID = 550268063035509L;
 
-    private String mooringId;
+    private Integer id;
 
-    private String mooringName;
+    private String mooringId;
 
     /**
      * Name of the customer associated with the mooring.
      */
-    private String customerName;
+    private Integer customerId;
 
     /**
      * Harbor where the mooring is located.
@@ -44,7 +44,7 @@ public class MooringRequestDto implements Serializable {
      * Name of the boatyard associated with the mooring.
      */
     @NotNull(message = "Boatyard name cannot be blank")
-    private String boatyardName;
+    private Integer boatyardId;
 
     /**
      * Name of the boat associated with the mooring.
@@ -110,4 +110,6 @@ public class MooringRequestDto implements Serializable {
      * The status of the mooring.
      */
     private Integer statusId;
+
+    private Integer customerOwnerId;
 }

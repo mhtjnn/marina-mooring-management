@@ -57,5 +57,7 @@ public class CustomerResponseDto {
      */
     private String zipCode;
 
+    private Integer userId;
+
     private List<MooringResponseDto> mooringResponseDtoList;
 }
