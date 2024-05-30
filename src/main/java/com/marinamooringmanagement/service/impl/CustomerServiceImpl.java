@@ -328,6 +328,9 @@ public class CustomerServiceImpl implements CustomerService {
 
             if (null == id) customer.setCreationDate(new Date());
             Customer savedCustomer =  customerRepository.save(customer);
+
+            customerRequestDto.getMooringRequestDto().setCustomerId(savedCustomer.getId());
+
             Optional<Mooring> optionalMooring = Optional.empty();
             if(null != customerRequestDto.getMooringRequestDto().getId()) optionalMooring = mooringRepository.findById(customerRequestDto.getMooringRequestDto().getId());
             Mooring mooring = null;

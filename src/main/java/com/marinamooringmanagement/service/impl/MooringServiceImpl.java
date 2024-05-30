@@ -398,11 +398,13 @@ public class MooringServiceImpl implements MooringService {
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 
-            optionalBoatyard.get().getMooringList()
+            if(null != optionalBoatyard.get().getMooringList()) optionalBoatyard.get().getMooringList()
                     .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
+            else  optionalBoatyard.get().setMooringList(new ArrayList<>());
 
-            optionalCustomer.get().getMooringList()
+            if(null != optionalCustomer.get().getMooringList()) optionalCustomer.get().getMooringList()
                             .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
+            else optionalCustomer.get().setMooringList(new ArrayList<>());
 
             optionalBoatyard.get().getMooringList().add(finalSavedMooring);
             optionalCustomer.get().getMooringList().add(finalSavedMooring);
