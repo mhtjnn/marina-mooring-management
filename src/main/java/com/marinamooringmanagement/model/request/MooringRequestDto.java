@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.request;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.io.Serializable;
@@ -38,6 +39,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * GPS coordinates of the mooring.
      */
+    @Pattern(regexp = "^([-+]?[1-8]?\\d(.\\d+)?|90(.0+)?)\\s+([-+]?(1[0-7]\\d(.\\d+)?|[1-9]?\\d(.\\d+)?|180(.0+)?))$", message = "Invalid GPS coordinates format.")
     private String gpsCoordinates;
 
     /**
