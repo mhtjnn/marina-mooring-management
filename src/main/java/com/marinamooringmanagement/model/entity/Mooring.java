@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -45,12 +46,6 @@ public class Mooring extends Base {
      */
     @Column(name = "gps_coordinates")
     private String gpsCoordinates;
-
-    /**
-     * Name of the boatyard associated with the mooring.
-     */
-    @Column(name = "boatyard_name")
-    private String boatyardName;
 
     /**
      * Name of the boat associated with the mooring.
@@ -140,9 +135,14 @@ public class Mooring extends Base {
     private MooringStatus mooringStatus;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "boatyard_id")
+    private Boatyard boatyard;
 }

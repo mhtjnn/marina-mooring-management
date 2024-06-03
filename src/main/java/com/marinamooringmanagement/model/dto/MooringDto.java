@@ -53,11 +53,6 @@ public class MooringDto extends BaseDto implements Serializable {
     private String gpsCoordinates;
 
     /**
-     * Name of the boatyard associated with the mooring.
-     */
-    private String boatyardName;
-
-    /**
      * Name of the boat associated with the mooring.
      */
     private String boatName;
@@ -125,4 +120,6 @@ public class MooringDto extends BaseDto implements Serializable {
     private CustomerDto customerDto;
 
     private UserDto userDto;
+
+    private BoatyardDto boatyardDto;
 }

@@ -234,7 +234,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                 throw new RuntimeException("Not Authorized");
             }
 
-            List<Mooring> mooringList = mooringRepository.findAllByBoatyardName(optionalBoatyard.get().getBoatyardName());
+            List<Mooring> mooringList = optionalBoatyard.get().getMooringList();
 
             mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId()));
 
@@ -399,18 +399,6 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             boatyard.setUser(user);
 
-            if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
-                    && StringUtils.isNotEmpty(boatyard.getBoatyardName())
-                    && !StringUtils.equals(boatyardRequestDto.getBoatyardName(), boatyard.getBoatyardName())) {
-
-                List<Mooring> mooringList = boatyard.getMooringList().stream().map(mooring -> {
-                    mooring.setBoatyardName(boatyardRequestDto.getBoatyardName());
-                    return mooring;
-                }).toList();
-
-                mooringRepository.saveAll(mooringList);
-            }
-
             boatyardMapper.mapToBoatYard(boatyard, boatyardRequestDto);
 
             if (null == id) boatyard.setCreationDate(new Date());
@@ -432,7 +420,19 @@ public class BoatyardServiceImpl implements BoatyardService {
                 if(null == id) throw new RuntimeException("Country cannot be null.");
             }
 
-            boatYardRepository.save(boatyard);
+            final Boatyard savedBoatyard = boatYardRepository.save(boatyard);
+
+            if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
+                    && StringUtils.isNotEmpty(boatyard.getBoatyardName())
+                    && !StringUtils.equals(boatyardRequestDto.getBoatyardName(), boatyard.getBoatyardName())) {
+
+                List<Mooring> mooringList = boatyard.getMooringList().stream().map(mooring -> {
+                    mooring.setBoatyard(savedBoatyard);
+                    return mooring;
+                }).toList();
+
+                mooringRepository.saveAll(mooringList);
+            }
 
             log.info(String.format("Boatyard saved successfully with ID: %d", boatyard.getId()));
         } catch (Exception e) {

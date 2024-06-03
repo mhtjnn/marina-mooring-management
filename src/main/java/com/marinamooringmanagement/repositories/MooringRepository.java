@@ -18,9 +18,5 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
 
     Optional<Mooring> findByMooringId(final String mooringId);
 
-    void deleteAllByBoatyardName(final String boatyardName);
-
-    List<Mooring> findAllByBoatyardName(final String boatyardName);
-
     Page<Mooring> findAll(final Specification<Mooring> spec, final Pageable pageable);
 }

@@ -24,6 +24,8 @@ public interface MooringMapper {
      * @return The mapped MooringDto object.
      */
     @Mapping(target = "customerDto",ignore = true)
+    @Mapping(target = "boatyardDto",ignore = true)
+    @Mapping(target = "userDto",ignore = true)
     MooringDto mapToMooringDto(@MappingTarget MooringDto dto, Mooring mooring);
 
     /**
@@ -34,6 +36,8 @@ public interface MooringMapper {
      * @return The mapped Mooring entity.
      */
     @Mapping(target = "customer",ignore = true)
+    @Mapping(target = "user",ignore = true)
+    @Mapping(target = "boatyard",ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringDto dto);
 
     /**
@@ -44,6 +48,8 @@ public interface MooringMapper {
      * @return The mapped MooringResponseDto object.
      */
     @Mapping(target = "customerId", ignore = true)
+    @Mapping(target = "boatyardResponseDto", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     MooringResponseDto mapToMooringResponseDto(@MappingTarget MooringResponseDto dto, Mooring mooring);
 
     /**
@@ -53,6 +59,10 @@ public interface MooringMapper {
      * @param dto     The source MooringRequestDto object to map from.
      * @return The mapped Mooring entity.
      */
+    @Mapping(target = "boatyard", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "mooringStatus", ignore = true)
     @Mapping(target = "boatType", ignore = true)
     @Mapping(target = "sizeOfWeight", ignore = true)
     @Mapping(target = "typeOfWeight", ignore = true)

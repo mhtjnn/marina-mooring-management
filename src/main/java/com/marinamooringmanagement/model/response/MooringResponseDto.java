@@ -56,8 +56,6 @@ public class MooringResponseDto implements Serializable {
      */
     private String gpsCoordinates;
 
-    private String boatyardName;
-
     /**
      * The name of the boat associated with the mooring.
      */
@@ -126,4 +124,6 @@ public class MooringResponseDto implements Serializable {
     private Integer customerId;
 
     private Integer userId;
+
+    private BoatyardResponseDto boatyardResponseDto;
 }

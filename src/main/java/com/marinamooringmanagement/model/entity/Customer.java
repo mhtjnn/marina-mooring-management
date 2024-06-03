@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -78,7 +79,6 @@ public class Customer extends Base {
     private String zipCode;
 
     @OneToMany(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

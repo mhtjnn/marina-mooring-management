@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
@@ -73,6 +74,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CountryRepository countryRepository;
+
+    @Autowired
+    private BoatyardMapper boatyardMapper;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -245,7 +249,9 @@ public class CustomerServiceImpl implements CustomerService {
                     if (null != mooring.getUser().getId()) mooringResponseDto.setUserId(mooring.getUser().getId());
                     if (null != mooring.getCustomer().getId())
                         mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                    if (null != mooring.getBoatyardName()) boatyardNames.add(mooring.getBoatyardName());
+                    if(null != mooring.getBoatyard()) {
+                        mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+                    }
                     return mooringResponseDto;
                 }).toList();
             }
@@ -437,7 +443,7 @@ public class CustomerServiceImpl implements CustomerService {
                         throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
                     } else {
                         if (!optionalMooring.get().getId().equals(customerRequestDto.getMooringRequestDto().getId()))
-                            throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
+                            throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", customerRequestDto.getMooringRequestDto().getMooringId()));
                     }
                 }
             } else {
@@ -523,5 +529,8 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
+    public void performSave1(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
 
+
+    }
 }

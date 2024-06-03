@@ -3,12 +3,14 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.BoatyardResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
@@ -97,6 +99,9 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private BoatyardMapper boatyardMapper;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -154,6 +159,7 @@ public class MooringServiceImpl implements MooringService {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
                         if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+                        if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -309,7 +315,7 @@ public class MooringServiceImpl implements MooringService {
                     if(null == id) {
                         throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
                     } else {
-                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
+                        if(!optionalMooring.get().getMooringId().equals(mooringRequestDto.getMooringId())) throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
                     }
                 }
             }
@@ -323,7 +329,7 @@ public class MooringServiceImpl implements MooringService {
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
             if (optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
             if(!mooringRequestDto.getCustomerOwnerId().equals(optionalBoatyard.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Boatyard");
-            mooring.setBoatyardName(optionalBoatyard.get().getBoatyardName());
+            mooring.setBoatyard(optionalBoatyard.get());
 
             Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);
             if (optionalMooringStatus.isEmpty())
