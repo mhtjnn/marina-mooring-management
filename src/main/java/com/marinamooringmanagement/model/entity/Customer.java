@@ -58,16 +58,19 @@ public class Customer extends Base {
      */
     @Column(name = "apt_suite")
     private String aptSuite;
+
     /**
      * The state of the customer's address.
      */
-    @Column(name = "state")
-    private String state;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id")
+    private State state;
     /**
      * The country of the customer's address.
      */
-    @Column(name = "country")
-    private String country;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private Country country;
     /**
      * The zip code of the customer's address.
      */

@@ -37,8 +37,12 @@ public interface CustomerMapper {
     Customer toEntity(@MappingTarget Customer customer, CustomerRequestDto customerRequestDto);
 
     @Mapping(target = "mooringResponseDtoList", ignore = true)
+    @Mapping(target = "stateResponseDto", ignore = true)
+    @Mapping(target = "countryResponseDto", ignore = true)
     CustomerResponseDto mapToCustomerResponseDto(@MappingTarget CustomerResponseDto dto, Customer customer);
 
     @Mapping(target = "mooringList", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "country", ignore = true)
     Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

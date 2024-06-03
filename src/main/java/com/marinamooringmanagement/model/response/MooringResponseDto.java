@@ -123,8 +123,6 @@ public class MooringResponseDto implements Serializable {
      */
     private MooringStatusDto mooringStatus;
 
-    private List<String> boatyardNames;
-
     private Integer customerId;
 
     private Integer userId;

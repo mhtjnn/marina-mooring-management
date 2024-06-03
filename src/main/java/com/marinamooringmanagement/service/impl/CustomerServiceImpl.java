@@ -7,18 +7,11 @@ import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.entity.Customer;
-import com.marinamooringmanagement.model.entity.Mooring;
-import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.CustomerAndMooringsCustomResponse;
-import com.marinamooringmanagement.model.response.CustomerResponseDto;
-import com.marinamooringmanagement.model.response.MooringResponseDto;
-import com.marinamooringmanagement.repositories.CustomerRepository;
-import com.marinamooringmanagement.repositories.MooringRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
+import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -26,6 +19,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +68,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StateRepository stateRepository;
+
+    @Autowired
+    private CountryRepository countryRepository;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -163,6 +163,30 @@ public class CustomerServiceImpl implements CustomerService {
                     .map(customer -> {
                         CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer);
                         customerResponseDto.setUserId(customer.getUser().getId());
+
+                        StateResponseDto stateResponseDto = null;
+
+                        if(null != customer.getState()) {
+                            stateResponseDto = StateResponseDto.builder()
+                                    .id(customer.getState().getId())
+                                    .name(customer.getState().getName())
+                                    .label(customer.getState().getLabel())
+                                    .build();
+                        }
+
+                        CountryResponseDto countryResponseDto = null;
+
+                        if(null != customer.getState()) {
+                            countryResponseDto = CountryResponseDto.builder()
+                                    .id(customer.getCountry().getId())
+                                    .name(customer.getCountry().getName())
+                                    .label(customer.getCountry().getLabel())
+                                    .build();
+                        }
+
+                        customerResponseDto.setStateResponseDto(stateResponseDto);
+                        customerResponseDto.setCountryResponseDto(countryResponseDto);
+
                         return customerResponseDto;
                     })
                     .toList();
@@ -297,23 +321,28 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
+    @Transactional
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
-            customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
-            customerMapper.mapToCustomer(customer, customerRequestDto);
+            if(null == customerRequestDto.getCustomerOwnerId() || null == customerRequestDto.getMooringRequestDto().getCustomerOwnerId()) {
+                throw new RuntimeException("Please select a customer owner");
+            } else {
+                if(!customerRequestDto.getCustomerOwnerId().equals(customerRequestDto.getMooringRequestDto().getCustomerOwnerId())) {
+                    throw new RuntimeException(String.format("Customer owner Id are different in customer: %1$s and in mooring: %2$s", customerRequestDto.getCustomerOwnerId(), customerRequestDto.getMooringRequestDto().getCustomerOwnerId()));
+                }
+            }
 
             User user = null;
             if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(null == customerRequestDto.getCustomerOwnerId()) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerRequestDto.getCustomerOwnerId());
                 if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
                 if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerRequestDto.getCustomerOwnerId()));
                 user = optionalUser.get();
             } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
-                if(null != customerRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(customerRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+                if(!loggedInUserId.equals(customerRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
                 if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
                 user = optionalUser.get();
@@ -321,17 +350,69 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new RuntimeException("Not Authorized");
             }
 
+            if(null != customerRequestDto.getEmailAddress()) {
+                Optional<Customer> optionalCustomer = customerRepository.findByEmailAddress(customerRequestDto.getEmailAddress());
+                if(optionalCustomer.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given email address: %1$s  is already present", customerRequestDto.getEmailAddress()));
+                    } else {
+                        if(!optionalCustomer.get().getId().equals(id)) throw new RuntimeException(String.format("Given email address: %1$s  is already present", customerRequestDto.getEmailAddress()));
+                    }
+                }
+            }
+
+            if(null != customerRequestDto.getCustomerId()) {
+                Optional<Customer> optionalCustomer = customerRepository.findByCustomerId(customerRequestDto.getCustomerId());
+                if(optionalCustomer.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given customer id: %1$s  is already present", customerRequestDto.getCustomerId()));
+                    } else {
+                        if(!optionalCustomer.get().getId().equals(id)) throw new RuntimeException(String.format("Given customer id: %1$s  is already present", customerRequestDto.getCustomerId()));
+                    }
+                }
+            }
+
             customer.setUser(user);
 
             // Setting the same User Id for mooring.
-            customerRequestDto.getMooringRequestDto().setCustomerOwnerId(customerRequestDto.getCustomerOwnerId());
+//            customerRequestDto.getMooringRequestDto().setCustomerOwnerId(customerRequestDto.getCustomerOwnerId());
+
+            Optional<Mooring> optionalMooring = Optional.empty();
+            if(null != customerRequestDto.getMooringRequestDto().getMooringId()) {
+                optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
+                if(optionalMooring.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
+                    } else {
+                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
+                    }
+                }
+            }
+
+            customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            customerMapper.mapToCustomer(customer, customerRequestDto);
+
+            if (null != customerRequestDto.getStateId()) {
+                final Optional<State> optionalState = stateRepository.findById(customerRequestDto.getStateId());
+                if (optionalState.isEmpty()) throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", customerRequestDto.getStateId()));
+                customer.setState(optionalState.get());
+            } else {
+                if(null == id) throw new RuntimeException("State cannot be null.");
+            }
+
+            if (null != customerRequestDto.getCountryId()) {
+                final Optional<Country> optionalCountry = countryRepository.findById(customerRequestDto.getCountryId());
+                if (optionalCountry.isEmpty()) throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", customerRequestDto.getCountryId()));
+                customer.setCountry(optionalCountry.get());
+            } else {
+                if(null == id) throw new RuntimeException("Country cannot be null.");
+            }
 
             if (null == id) customer.setCreationDate(new Date());
             Customer savedCustomer =  customerRepository.save(customer);
 
             customerRequestDto.getMooringRequestDto().setCustomerId(savedCustomer.getId());
 
-            Optional<Mooring> optionalMooring = Optional.empty();
             if(null != customerRequestDto.getMooringRequestDto().getId()) optionalMooring = mooringRepository.findById(customerRequestDto.getMooringRequestDto().getId());
             Mooring mooring = null;
             if(optionalMooring.isPresent()) {

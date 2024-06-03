@@ -2,6 +2,8 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.*;
+import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -62,6 +64,33 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private MooringStatusMapper mooringStatusMapper;
+
+    @Autowired
+    private BoatTypeMapper boatTypeMapper;
+
+    @Autowired
+    private SizeOfWeightMapper sizeOfWeightMapper;
+
+    @Autowired
+    private TypeOfWeightMapper typeOfWeightMapper;
+
+    @Autowired
+    private TopChainConditionMapper topChainConditionMapper;
+
+    @Autowired
+    private EyeConditionMapper eyeConditionMapper;
+
+    @Autowired
+    private BottomChainConditionMapper bottomChainConditionMapper;
+
+    @Autowired
+    private ShackleSwivelConditionMapper shackleSwivelConditionMapper;
+
+    @Autowired
+    private PennantConditionMapper pennantConditionMapper;
+
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -71,9 +100,15 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = mooringStatusRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<MooringStatusDto> mooringStatusDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(mooringStatus -> mooringStatusMapper.mapToMooringStatusDto(MooringStatusDto.builder().build(), mooringStatus))
+                    .toList();
+
             response.setMessage("Status fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(mooringStatusDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -88,12 +123,17 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             content = boatTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<BoatTypeDto> boatTypeDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(boatType -> boatTypeMapper.mapToBoatTypeDto(BoatTypeDto.builder().build(), boatType))
+                    .toList();
 
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(boatTypeDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -108,12 +148,18 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             content = sizeOfWeightRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<SizeOfWeightDto> sizeOfWeightDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(sizeOfWeight -> sizeOfWeightMapper.mapToSizeOfWeightDto(SizeOfWeightDto.builder().build(), sizeOfWeight))
+                    .toList()
+                    ;
 
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(sizeOfWeightDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -128,12 +174,17 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             content = typeOfWeightRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<TypeOfWeightDto> typeOfWeightDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(typeOfWeight -> typeOfWeightMapper.mapToTypeOfWeightDto(TypeOfWeightDto.builder().build(), typeOfWeight))
+                    .toList();
 
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(typeOfWeightDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -151,9 +202,15 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = topChainConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<TopChainConditionDto> topChainConditionDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(topChainCondition ->  topChainConditionMapper.mapToTopChainConditionDto(TopChainConditionDto.builder().build(), topChainCondition))
+                    .toList();
+
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(topChainConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -171,9 +228,15 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = eyeConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<EyeConditionDto> eyeConditionDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(eyeCondition -> eyeConditionMapper.mapToEyeConditionDto(EyeConditionDto.builder().build(), eyeCondition))
+                    .toList();
+
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(eyeConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -191,9 +254,16 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = bottomChainConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<BottomChainConditionDto> bottomChainConditionDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(bottomChainCondition -> bottomChainConditionMapper.mapToBottomChainConditionDto(BottomChainConditionDto.builder().build(), bottomChainCondition))
+                    .toList()
+                    ;
+
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(bottomChainConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -211,9 +281,16 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = shackleSwivelConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<ShackleSwivelConditionDto> shackleSwivelConditionDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(shackleSwivelCondition -> shackleSwivelConditionMapper.mapToShackleSwivelConditionDto(ShackleSwivelConditionDto.builder().build(), shackleSwivelCondition))
+                    .toList()
+                    ;
+
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(shackleSwivelConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -231,9 +308,15 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = pennantConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
+            List<PennantConditionDto> pennantConditionDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(pennantCondition -> pennantConditionMapper.mapToPennantConditionDto(PennantConditionDto.builder().build(), pennantCondition))
+                    .toList();
+
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(content);
+            response.setContent(pennantConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

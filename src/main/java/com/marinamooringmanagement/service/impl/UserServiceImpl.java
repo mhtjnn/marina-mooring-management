@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -164,7 +163,8 @@ public class UserServiceImpl implements UserService {
                                 .build();
                         userResponseDto.setRoleResponseDto(roleResponseDto);
 
-                        StateResponseDto stateResponseDto = StateResponseDto.builder()
+                        StateResponseDto stateResponseDto = null;
+                        if(null != user.getState()) stateResponseDto = StateResponseDto.builder()
                                 .id(user.getState().getId())
                                 .label(user.getState().getLabel())
                                 .name(user.getState().getName())
@@ -642,6 +642,7 @@ public class UserServiceImpl implements UserService {
         * is different from CUSTOMER_OWNER then we throw error as No user with CUSTOMER_OWNER role exists with the given customer admin ID.
         */
         if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserUtil.getLoggedInUserID())) throw new RuntimeException(String.format("Cannot perform operation using other user Id: %1$s", customerOwnerId));
             if(role.equals(AppConstants.Role.ADMINISTRATOR) || role.equals(AppConstants.Role.CUSTOMER_OWNER))
                 throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
         } else if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {

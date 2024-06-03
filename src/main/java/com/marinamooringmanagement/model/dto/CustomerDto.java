@@ -53,11 +53,11 @@ public class CustomerDto extends BaseDto {
     /**
      * The state of the customer's address.
      */
-    private String state;
+    private StateDto state;
     /**
      * The country of the customer's address.
      */
-    private String country;
+    private CustomerDto country;
     /**
      * The zip code of the customer's address.
      */

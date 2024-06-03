@@ -47,11 +47,11 @@ public class CustomerResponseDto {
     /**
      * The state or region of the customer's address.
      */
-    private String state;
+    private StateResponseDto stateResponseDto;
     /**
      * The country of the customer's address.
      */
-    private String country;
+    private CountryResponseDto countryResponseDto;
     /**
      * The pin code of the customer's address.
      */

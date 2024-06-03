@@ -98,9 +98,9 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             final Boatyard boatyard = new Boatyard();
             performSave(boatYardRequestDto, boatyard, null);
-            response.setMessage("BoatYard Saved Successfully");
+            response.setMessage("Boatyard Saved Successfully");
             response.setStatus(HttpStatus.CREATED.value());
-            log.info(String.format("Saving data in the database for BoatYard ID %d", boatYardRequestDto.getId()));
+            log.info(String.format("Saving data in the database for Boatyard ID %d", boatYardRequestDto.getId()));
 
         } catch (Exception e) {
             log.error(String.format("Exception occurred while performing save operation: %s", e.getMessage()), e);
@@ -350,17 +350,35 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             if(null != boatyardRequestDto.getBoatyardId()) {
                 optionalBoatyard = boatYardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
-                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Boatyard ID is already present");
+                if(optionalBoatyard.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
+                    } else {
+                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
+                    }
+                }
             }
 
             if(null != boatyardRequestDto.getEmailAddress()) {
                 optionalBoatyard = boatYardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
-                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Email Address is already present");
+                if(optionalBoatyard.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
+                    } else {
+                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
+                    }
+                }
             }
 
             if(null != boatyardRequestDto.getBoatyardName()) {
                 optionalBoatyard = boatYardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
-                if(optionalBoatyard.isPresent() && !optionalBoatyard.get().getId().equals(id)) throw new RuntimeException("Given Boatyard name is already present");
+                if(optionalBoatyard.isPresent()) {
+                    if(null == id) {
+                        throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
+                    } else {
+                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
+                    }
+                }
             }
 
             User user = null;

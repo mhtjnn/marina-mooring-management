@@ -48,11 +48,11 @@ public class CustomerRequestDto {
     /**
      * The state or region of the customer's address.
      */
-    private String state;
+    private Integer stateId;
     /**
      * The country of the customer's address.
      */
-    private String country;
+    private Integer countryId;
     /**
      * The zip code or postal code of the customer's address.
      */

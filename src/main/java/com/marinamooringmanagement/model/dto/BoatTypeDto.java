@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoatTypeDto {
+public class BoatTypeDto extends BaseDto{
 
     private String boatType;
 
