@@ -440,10 +440,12 @@ public class CustomerServiceImpl implements CustomerService {
                             throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
                     }
                 }
+            } else {
+                throw new RuntimeException("Mooring Id cannot be null");
             }
 
-            if (null != customerRequestDto.getMooringRequestDto().getId())
-                optionalMooring = mooringRepository.findById(customerRequestDto.getMooringRequestDto().getId());
+            if (null != customerRequestDto.getMooringRequestDto().getMooringId())
+                optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
             Mooring mooring = null;
             if (optionalMooring.isPresent()) {
                 optionalMooring.get().setCustomer(savedCustomer);
