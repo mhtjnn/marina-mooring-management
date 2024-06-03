@@ -181,6 +181,9 @@ public class MooringServiceImpl implements MooringService {
         try {
             log.info("API called to save the mooring in the database");
             final Mooring mooring = new Mooring();
+
+            if(null == mooringRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be blank");
+
             performSave(mooringRequestDto, mooring, null);
             response.setMessage("Mooring saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());

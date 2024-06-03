@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -19,6 +20,7 @@ public class MooringRequestDto implements Serializable {
 
     private Integer id;
 
+    @NotNull(message = "Mooring ID cannot be blank")
     private String mooringId;
 
     /**
