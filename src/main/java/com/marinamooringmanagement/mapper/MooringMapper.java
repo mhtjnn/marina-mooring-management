@@ -43,7 +43,6 @@ public interface MooringMapper {
      * @param mooring The source Mooring entity to map from.
      * @return The mapped MooringResponseDto object.
      */
-    @Mapping(target = "boatyardNames", ignore = true)
     @Mapping(target = "customerId", ignore = true)
     MooringResponseDto mapToMooringResponseDto(@MappingTarget MooringResponseDto dto, Mooring mooring);
 
