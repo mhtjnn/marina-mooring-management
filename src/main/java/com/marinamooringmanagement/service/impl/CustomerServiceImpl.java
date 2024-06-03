@@ -338,7 +338,11 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
+    @Transactional
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
+
+        Customer savedCustomer = null;
+
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
@@ -422,7 +426,7 @@ public class CustomerServiceImpl implements CustomerService {
             }
 
             if (null == id) customer.setCreationDate(new Date());
-            Customer savedCustomer = customerRepository.save(customer);
+            savedCustomer = customerRepository.save(customer);
 
             customerRequestDto.getMooringRequestDto().setCustomerId(savedCustomer.getId());
             Optional<Mooring> optionalMooring = Optional.empty();
@@ -463,8 +467,8 @@ public class CustomerServiceImpl implements CustomerService {
             customerRepository.save(savedCustomer);
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
         } catch (Exception e) {
+            if(id == null && null != savedCustomer) customerRepository.deleteById(savedCustomer.getId());
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
-
             throw new DBOperationException(e.getMessage(), e);
         }
     }

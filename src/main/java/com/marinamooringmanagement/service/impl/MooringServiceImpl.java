@@ -272,6 +272,7 @@ public class MooringServiceImpl implements MooringService {
      * @param id                the mooring ID (null for new moorings)
      */
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id) {
+
         try {
             log.info("performSave() function called");
 
