@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SizeOfWeightDto {
+public class SizeOfWeightDto extends BaseDto{
 
     private String weight;
 
