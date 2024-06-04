@@ -4,6 +4,7 @@ import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service interface for managing Customer entities.
@@ -23,7 +24,7 @@ public interface CustomerService {
      * @param searchText the text used to search for specific customers by name, email, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the customer search.
      */
-    BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
+    BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 
     /**
      * Retrieves a customer by ID.

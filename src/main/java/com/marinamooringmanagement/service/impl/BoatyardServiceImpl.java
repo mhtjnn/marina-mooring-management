@@ -21,6 +21,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,17 +115,18 @@ public class BoatyardServiceImpl implements BoatyardService {
      * Fetches a list of boatyards based on the provided search request parameters and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param searchText the text used to search for specific boatyards by name, location, or other relevant criteria.
+     * @param searchText        the text used to search for specific boatyards by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the boatyard search.
      */
     @Override
-    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId) {
+    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Specification<Boatyard> spec = new Specification<Boatyard>() {
                 @Override
@@ -138,11 +140,12 @@ public class BoatyardServiceImpl implements BoatyardService {
                         ));
                     }
 
-                    if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                        if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                         predicates.add(criteriaBuilder.and(criteriaBuilder.equal(boatyard.join("user").get("id"), customerOwnerId)));
-                    } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserId)) throw new RuntimeException("Not authorized to perform operations on boatyards with different customer owner id");
+                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
+                            throw new RuntimeException("Not authorized to perform operations on boatyards with different customer owner id");
                         predicates.add(criteriaBuilder.and(criteriaBuilder.equal(boatyard.join("user").get("id"), loggedInUserId)));
                     } else {
                         throw new RuntimeException("Not Authorized");
@@ -163,8 +166,10 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
-                        if(null != boatyard.getState()) boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
-                        if(null != boatyard.getCountry()) boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
+                        if (null != boatyard.getState())
+                            boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
+                        if (null != boatyard.getCountry())
+                            boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
                         boatyardResponseDto.setMooringInventoried(boatyard.getMooringList().size());
                         boatyardResponseDto.setUserId(boatyard.getUser().getId());
                         return boatyardResponseDto;
@@ -177,7 +182,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             log.info(String.format("BoatYard fetched successfully"));
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching BoatYard: %s", e.getMessage()), e);
-            throw new DBOperationException(e.getMessage(), e);
+            throw e;
         }
         return response;
     }
@@ -228,9 +233,10 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null == optionalBoatyard.get().getBoatyardName())
                 throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
 
-            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(!optionalBoatyard.get().getUser().getId().equals(loggedInUserID)) throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
-            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+            if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (!optionalBoatyard.get().getUser().getId().equals(loggedInUserID))
+                    throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
                 throw new RuntimeException("Not Authorized");
             }
 
@@ -297,11 +303,13 @@ public class BoatyardServiceImpl implements BoatyardService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
             Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
-            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
+            if (optionalBoatyard.isEmpty())
+                throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
 
-            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(!optionalBoatyard.get().getUser().getId().equals(loggedInUserUtil.getLoggedInUserID())) throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
-            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+            if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (!optionalBoatyard.get().getUser().getId().equals(loggedInUserUtil.getLoggedInUserID()))
+                    throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
                 throw new RuntimeException("Not Authorized");
             }
 
@@ -311,8 +319,9 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                        if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+                        if (null != mooring.getCustomer())
+                            mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -348,50 +357,58 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             Optional<Boatyard> optionalBoatyard = null;
 
-            if(null != boatyardRequestDto.getBoatyardId()) {
+            if (null != boatyardRequestDto.getBoatyardId()) {
                 optionalBoatyard = boatYardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
-                if(optionalBoatyard.isPresent()) {
-                    if(null == id) {
+                if (optionalBoatyard.isPresent()) {
+                    if (null == id) {
                         throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
                     } else {
-                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
+                        if (!optionalBoatyard.get().getId().equals(id))
+                            throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
                     }
                 }
             }
 
-            if(null != boatyardRequestDto.getEmailAddress()) {
+            if (null != boatyardRequestDto.getEmailAddress()) {
                 optionalBoatyard = boatYardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
-                if(optionalBoatyard.isPresent()) {
-                    if(null == id) {
+                if (optionalBoatyard.isPresent()) {
+                    if (null == id) {
                         throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
                     } else {
-                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
+                        if (!optionalBoatyard.get().getId().equals(id))
+                            throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
                     }
                 }
             }
 
-            if(null != boatyardRequestDto.getBoatyardName()) {
+            if (null != boatyardRequestDto.getBoatyardName()) {
                 optionalBoatyard = boatYardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
-                if(optionalBoatyard.isPresent()) {
-                    if(null == id) {
+                if (optionalBoatyard.isPresent()) {
+                    if (null == id) {
                         throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
                     } else {
-                        if(!optionalBoatyard.get().getId().equals(id)) throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
+                        if (!optionalBoatyard.get().getId().equals(id))
+                            throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
                     }
                 }
             }
 
             User user = null;
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(null == boatyardRequestDto.getCustomerOwnerId()) throw new RuntimeException("Please select a customer owner");
+            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if (null == boatyardRequestDto.getCustomerOwnerId())
+                    throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(boatyardRequestDto.getCustomerOwnerId());
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
-                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", boatyardRequestDto.getCustomerOwnerId()));
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", boatyardRequestDto.getCustomerOwnerId()));
                 user = optionalUser.get();
-            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
-                if(null != boatyardRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(boatyardRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (null != boatyardRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(boatyardRequestDto.getCustomerOwnerId()))
+                    throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
                 user = optionalUser.get();
             } else {
                 throw new RuntimeException("Not Authorized");
@@ -406,18 +423,20 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             if (null != boatyardRequestDto.getStateId()) {
                 final Optional<State> optionalState = stateRepository.findById(boatyardRequestDto.getStateId());
-                if (optionalState.isEmpty()) throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", boatyardRequestDto.getStateId()));
+                if (optionalState.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", boatyardRequestDto.getStateId()));
                 boatyard.setState(optionalState.get());
             } else {
-                if(null == id) throw new RuntimeException("State cannot be null.");
+                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != boatyardRequestDto.getCountryId()) {
                 final Optional<Country> optionalCountry = countryRepository.findById(boatyardRequestDto.getCountryId());
-                if (optionalCountry.isEmpty()) throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", boatyardRequestDto.getCountryId()));
+                if (optionalCountry.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", boatyardRequestDto.getCountryId()));
                 boatyard.setCountry(optionalCountry.get());
             } else {
-                if(null == id) throw new RuntimeException("Country cannot be null.");
+                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             final Boatyard savedBoatyard = boatYardRepository.save(boatyard);

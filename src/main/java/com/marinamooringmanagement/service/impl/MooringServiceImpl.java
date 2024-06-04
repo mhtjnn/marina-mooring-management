@@ -21,6 +21,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,8 @@ public class MooringServiceImpl implements MooringService {
      * @return a BasicRestResponse containing the results of the mooring search.
      */
     @Override
-    public BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId) {
+    public BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
+
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -118,6 +120,8 @@ public class MooringServiceImpl implements MooringService {
 
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Specification<Mooring> spec = new Specification<Mooring>() {
                 @Override
@@ -131,11 +135,12 @@ public class MooringServiceImpl implements MooringService {
                         ));
                     }
 
-                    if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                        if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                         predicates.add(criteriaBuilder.and(criteriaBuilder.equal(mooring.join("user").get("id"), customerOwnerId)));
-                    } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserId)) throw new RuntimeException("Not authorized to perform operations on boatyards with different customer owner id");
+                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
+                            throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner id");
                         predicates.add(criteriaBuilder.and(criteriaBuilder.equal(mooring.join("user").get("id"), loggedInUserId)));
                     } else {
                         throw new RuntimeException("Not Authorized");
@@ -169,8 +174,7 @@ public class MooringServiceImpl implements MooringService {
             response.setContent(mooringResponseDtoList);
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
-            response.setMessage(e.getMessage());
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw e;
         }
         return response;
     }

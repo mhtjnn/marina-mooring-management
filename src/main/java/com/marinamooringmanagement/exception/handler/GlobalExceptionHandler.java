@@ -182,4 +182,15 @@ public class GlobalExceptionHandler implements ApplicationEventPublisherAware {
 
         return response;
     }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public BasicRestResponse handleNumberFormatException(NumberFormatException ex) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage("Given string value cannot be converted to Integer");
+
+        return response;
+    }
 }

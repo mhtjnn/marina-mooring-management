@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -17,7 +18,7 @@ public interface MooringService {
      * @param searchText the text used to search for specific moorings by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the mooring search.
      */
-    BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
+    BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 
     /**
      * Saves a mooring based on the provided request DTO.

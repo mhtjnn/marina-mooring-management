@@ -4,6 +4,7 @@ import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service interface for managing BoatYard entities.
@@ -24,7 +25,7 @@ public interface BoatyardService {
      * @param searchText the text used to search for specific boatyards by name, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the boatyard search.
      */
-    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer customerOwnerId);
+    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 
     /**
      * Retrieves a BoatYard entity by its ID.

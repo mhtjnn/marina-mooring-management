@@ -102,8 +102,7 @@ public class BoatyardController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        final Integer customerOwnerId = Integer.parseInt(request.getHeader("CUSTOMER_OWNER_ID"));
-        return boatyardService.fetchBoatyards(baseSearchRequest, searchText, customerOwnerId);
+        return boatyardService.fetchBoatyards(baseSearchRequest, searchText, request);
     }
 
     /**

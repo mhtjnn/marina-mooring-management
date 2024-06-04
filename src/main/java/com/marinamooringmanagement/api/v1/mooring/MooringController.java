@@ -76,8 +76,7 @@ public class MooringController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        final Integer customerOwnerId = Integer.parseInt(request.getHeader("CUSTOMER_OWNER_ID"));
-        return mooringService.fetchMoorings(baseSearchRequest, searchText, customerOwnerId);
+        return mooringService.fetchMoorings(baseSearchRequest, searchText, request);
     }
 
     /**

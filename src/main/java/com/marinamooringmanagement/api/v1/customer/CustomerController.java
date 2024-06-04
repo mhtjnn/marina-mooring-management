@@ -110,8 +110,7 @@ public class CustomerController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        final Integer customerOwnerId = Integer.parseInt(request.getHeader("CUSTOMER_OWNER_ID"));
-        return customerService.fetchCustomers(baseSearchRequest, searchText, customerOwnerId);
+        return customerService.fetchCustomers(baseSearchRequest, searchText, request);
     }
 
     /**
