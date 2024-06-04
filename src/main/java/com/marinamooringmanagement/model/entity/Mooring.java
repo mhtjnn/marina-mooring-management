@@ -135,7 +135,6 @@ public class Mooring extends Base {
     private MooringStatus mooringStatus;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
@@ -143,6 +142,5 @@ public class Mooring extends Base {
     private User user;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "boatyard_id")
     private Boatyard boatyard;
 }

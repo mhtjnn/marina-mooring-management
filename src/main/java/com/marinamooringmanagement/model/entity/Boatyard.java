@@ -96,6 +96,7 @@ public class Boatyard extends Base {
      * The list of moorings associated with the BoatYard.
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "boatyard_id")
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
