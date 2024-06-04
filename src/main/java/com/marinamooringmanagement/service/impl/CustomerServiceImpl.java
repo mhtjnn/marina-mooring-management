@@ -244,6 +244,7 @@ public class CustomerServiceImpl implements CustomerService {
 
             List<Mooring> mooringList = new ArrayList<>();
             if(null != optionalCustomer.get().getMooringList()) mooringList = optionalCustomer.get().getMooringList();
+            List<Boatyard> boatyards = new ArrayList<>();
             List<String> boatyardNames = new ArrayList<>();
             List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
 
@@ -255,11 +256,16 @@ public class CustomerServiceImpl implements CustomerService {
                         mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                     if(null != mooring.getBoatyard()) {
                         mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
-                        boatyardNames.add(mooring.getBoatyard().getBoatyardName());
+                        if(!boatyards.contains(mooring.getBoatyard())) {
+                            boatyards.add(mooring.getBoatyard());
+                            boatyardNames.add(mooring.getBoatyard().getBoatyardName());
+                        }
                     }
                     return mooringResponseDto;
                 }).toList();
             }
+
+            boatyards.clear();
 
             customerResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
             customerAndMooringsCustomResponse.setCustomerResponseDto(customerResponseDto);
