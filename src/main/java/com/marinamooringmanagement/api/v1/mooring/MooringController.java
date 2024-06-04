@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -67,14 +68,15 @@ public class MooringController extends GlobalExceptionHandler {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
-            @Parameter(description = "Customer Owner Id", schema = @Schema(implementation = String.class)) final @RequestParam(value = "customerOwnerId", required = false) Integer customerOwnerId
-    ) {
+            final HttpServletRequest request
+            ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
+        final Integer customerOwnerId = Integer.parseInt(request.getHeader("CUSTOMER_OWNER_ID"));
         return mooringService.fetchMoorings(baseSearchRequest, searchText, customerOwnerId);
     }
 

@@ -353,7 +353,6 @@ public class CustomerServiceImpl implements CustomerService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
-
             if (null == customerRequestDto.getMooringRequestDto())
                 throw new RuntimeException("No mooring details found.");
             if (null == customerRequestDto.getCustomerOwnerId() || null == customerRequestDto.getMooringRequestDto().getCustomerOwnerId()) {
@@ -363,7 +362,6 @@ public class CustomerServiceImpl implements CustomerService {
                     throw new RuntimeException(String.format("Customer owner Id are different in customer: %1$s and in mooring: %2$s", customerRequestDto.getCustomerOwnerId(), customerRequestDto.getMooringRequestDto().getCustomerOwnerId()));
                 }
             }
-
 
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
@@ -434,7 +432,9 @@ public class CustomerServiceImpl implements CustomerService {
             if (null == id) customer.setCreationDate(new Date());
             savedCustomer = customerRepository.save(customer);
 
+            // Setting the customer Id here.
             customerRequestDto.getMooringRequestDto().setCustomerId(savedCustomer.getId());
+
             Optional<Mooring> optionalMooring = Optional.empty();
             if (null != customerRequestDto.getMooringRequestDto().getMooringId()) {
                 optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());

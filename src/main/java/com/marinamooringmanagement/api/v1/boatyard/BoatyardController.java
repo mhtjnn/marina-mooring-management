@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -93,14 +94,15 @@ public class BoatyardController extends GlobalExceptionHandler {
             final @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             final @RequestParam(value = "searchText", required = false) String searchText,
-            final @RequestParam(value = "customerOwnerId", required = false) Integer customerOwnerId
-    ) {
+            final HttpServletRequest request
+            ) {
         BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
+        final Integer customerOwnerId = Integer.parseInt(request.getHeader("CUSTOMER_OWNER_ID"));
         return boatyardService.fetchBoatyards(baseSearchRequest, searchText, customerOwnerId);
     }
 
