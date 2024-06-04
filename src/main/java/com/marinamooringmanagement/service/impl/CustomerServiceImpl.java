@@ -239,7 +239,8 @@ public class CustomerServiceImpl implements CustomerService {
                             .build()
             );
 
-            List<Mooring> mooringList = optionalCustomer.get().getMooringList();
+            List<Mooring> mooringList = new ArrayList<>();
+            if(null != optionalCustomer.get().getMooringList()) mooringList = optionalCustomer.get().getMooringList();
             List<String> boatyardNames = new ArrayList<>();
             List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
 
@@ -247,10 +248,11 @@ public class CustomerServiceImpl implements CustomerService {
                 mooringResponseDtoList = mooringList.stream().map(mooring -> {
                     MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
                     if (null != mooring.getUser().getId()) mooringResponseDto.setUserId(mooring.getUser().getId());
-                    if (null != mooring.getCustomer().getId())
+                    if (null != mooring.getCustomer())
                         mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                     if(null != mooring.getBoatyard()) {
                         mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+                        boatyardNames.add(mooring.getBoatyard().getBoatyardName());
                     }
                     return mooringResponseDto;
                 }).toList();
