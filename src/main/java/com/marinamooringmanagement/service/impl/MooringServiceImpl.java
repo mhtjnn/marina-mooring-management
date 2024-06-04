@@ -410,6 +410,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            mooring.setCustomer(optionalCustomer.get());
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 
