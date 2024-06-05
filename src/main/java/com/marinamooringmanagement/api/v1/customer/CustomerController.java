@@ -61,9 +61,11 @@ public class CustomerController extends GlobalExceptionHandler {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveCustomer(@Valid @RequestBody CustomerRequestDto customerRequestDto
+    public BasicRestResponse saveCustomer(
+            final @Valid @RequestBody CustomerRequestDto customerRequestDto,
+            final HttpServletRequest request
     ) {
-        return customerService.saveCustomer(customerRequestDto);
+        return customerService.saveCustomer(customerRequestDto, request);
     }
 
     /**
@@ -186,11 +188,10 @@ public class CustomerController extends GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateCustomer(
             @PathVariable(value = "id", required = true) Integer id,
-            @Valid @RequestBody CustomerRequestDto customerRequestDto
-
+            @Valid @RequestBody CustomerRequestDto customerRequestDto,
+            final HttpServletRequest request
     ) {
-
-        return customerService.updateCustomer(customerRequestDto, id);
+        return customerService.updateCustomer(customerRequestDto, id, request);
     }
 
     /**
@@ -220,8 +221,11 @@ public class CustomerController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse deleteCustomer(@PathVariable(value = "id") Integer id) {
+    public BasicRestResponse deleteCustomer(
+            @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
 
-        return customerService.deleteCustomerById(id);
+        return customerService.deleteCustomerById(id, request);
     }
 }

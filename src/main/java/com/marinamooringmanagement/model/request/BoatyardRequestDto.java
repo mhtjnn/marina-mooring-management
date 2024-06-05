@@ -77,7 +77,5 @@ public class BoatyardRequestDto {
 
     @Pattern(regexp = "^([-+]?[1-8]?\\d(.\\d+)?|90(.0+)?)\\s+([-+]?(1[0-7]\\d(.\\d+)?|[1-9]?\\d(.\\d+)?|180(.0+)?))$", message = "Invalid GPS coordinates format.")
     private String gpsCoordinates;
-
-    private Integer customerOwnerId;
 }
 

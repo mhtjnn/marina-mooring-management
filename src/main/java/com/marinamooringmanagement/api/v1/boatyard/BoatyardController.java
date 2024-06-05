@@ -57,8 +57,11 @@ public class BoatyardController extends GlobalExceptionHandler {
                     )
             }
     )
-    public BasicRestResponse saveBoatyard(@Valid @RequestBody BoatyardRequestDto boatYardRequestDto) {
-        return boatyardService.saveBoatyard(boatYardRequestDto);
+    public BasicRestResponse saveBoatyard(
+            @Valid @RequestBody BoatyardRequestDto boatYardRequestDto,
+            final HttpServletRequest request
+    ) {
+        return boatyardService.saveBoatyard(boatYardRequestDto, request);
     }
 
     /**
@@ -173,8 +176,11 @@ public class BoatyardController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Transactional
-    public BasicRestResponse deleteBoatyard(@PathVariable(value = "id") Integer id) {
-        return boatyardService.deleteBoatyardById(id);
+    public BasicRestResponse deleteBoatyard(
+            @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return boatyardService.deleteBoatyardById(id, request);
     }
 
     /**
@@ -204,8 +210,10 @@ public class BoatyardController extends GlobalExceptionHandler {
     )
     public BasicRestResponse updateBoatyard(
             @PathVariable(value = "id", required = true) Integer id,
-            @Valid @RequestBody BoatyardRequestDto boatYardRequestDto) {
-        return boatyardService.updateBoatyard(boatYardRequestDto, id);
+            @Valid @RequestBody BoatyardRequestDto boatYardRequestDto,
+            final HttpServletRequest request
+    ) {
+        return boatyardService.updateBoatyard(boatYardRequestDto, id, request);
     }
 
 }

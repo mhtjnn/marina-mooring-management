@@ -185,7 +185,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooringRequestDto the mooring request DTO
      */
     @Override
-    public BasicRestResponse saveMooring(final MooringRequestDto mooringRequestDto) {
+    public BasicRestResponse saveMooring(final MooringRequestDto mooringRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -194,7 +194,7 @@ public class MooringServiceImpl implements MooringService {
 
             if(null == mooringRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be blank");
 
-            performSave(mooringRequestDto, mooring, null);
+            performSave(mooringRequestDto, mooring, null, request);
             response.setMessage("Mooring saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
@@ -213,7 +213,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooringId         the mooring ID
      */
     @Override
-    public BasicRestResponse updateMooring(final MooringRequestDto mooringRequestDto, final Integer mooringId) {
+    public BasicRestResponse updateMooring(final MooringRequestDto mooringRequestDto, final Integer mooringId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -223,7 +223,7 @@ public class MooringServiceImpl implements MooringService {
             }
             Optional<Mooring> optionalMooring = mooringRepository.findById(mooringId);
             final Mooring mooring = optionalMooring.orElseThrow(() -> new ResourceNotFoundException(String.format("Mooring not found with id: %1$s", mooringId)));
-            performSave(mooringRequestDto, mooring, mooringId);
+            performSave(mooringRequestDto, mooring, mooringId, request);
             response.setMessage("Mooring updated successfully");
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -241,19 +241,26 @@ public class MooringServiceImpl implements MooringService {
      * @return a message indicating the deletion status
      */
     @Override
-    public BasicRestResponse deleteMooring(Integer id) {
+    public BasicRestResponse deleteMooring(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
 
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
             if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
 
-            if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(!optionalMooring.get().getUser().getId().equals(loggedInUserID)) throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
-            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
+                else if(!customerOwnerId.equals(optionalMooring.get().getUser().getId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+                if (!optionalMooring.get().getUser().getId().equals(loggedInUserID))
+                    throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
+            } else{
                 throw new RuntimeException("Not Authorized");
             }
 
@@ -284,7 +291,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooring           the mooring object to be saved or updated
      * @param id                the mooring ID (null for new moorings)
      */
-    public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id) {
+    public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id, final HttpServletRequest request) {
 
         try {
             log.info("performSave() function called");
@@ -292,17 +299,23 @@ public class MooringServiceImpl implements MooringService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
             User user = null;
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(null == mooringRequestDto.getCustomerOwnerId()) throw new RuntimeException("Please select a customer owner");
-                Optional<User> optionalUser = userRepository.findById(mooringRequestDto.getCustomerOwnerId());
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", mooringRequestDto.getCustomerOwnerId()));
-                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", mooringRequestDto.getCustomerOwnerId()));
+            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
                 user = optionalUser.get();
-            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
-                if(null != mooringRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(mooringRequestDto.getCustomerOwnerId())) throw new RuntimeException("Cannot do operations on mooring with different customer owner Id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
+                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+                customerOwnerId = loggedInUserId;
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", mooringRequestDto.getCustomerOwnerId()));
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
                 user = optionalUser.get();
             } else {
                 throw new RuntimeException("Not Authorized");
@@ -327,12 +340,12 @@ public class MooringServiceImpl implements MooringService {
             if(null == mooringRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");
             Optional<Customer> optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
-            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalCustomer.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Customer");
+//            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalCustomer.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Customer");
 
             if (null == mooringRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Id cannot be null");
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
             if (optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
-            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalBoatyard.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Boatyard");
+//            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalBoatyard.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Boatyard");
             mooring.setBoatyard(optionalBoatyard.get());
 
             Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);

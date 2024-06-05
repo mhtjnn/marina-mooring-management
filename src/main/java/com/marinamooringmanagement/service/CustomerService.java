@@ -15,7 +15,7 @@ public interface CustomerService {
      *
      * @param customerDto The DTO containing customer information.
      */
-    BasicRestResponse saveCustomer(final CustomerRequestDto customerDto);
+    BasicRestResponse saveCustomer(final CustomerRequestDto customerDto, final HttpServletRequest request);
 
     /**
      * Fetches a list of customers based on the provided search request parameters and search text.
@@ -40,14 +40,14 @@ public interface CustomerService {
      * @param customerRequestDto The DTO containing updated customer information.
      * @param id                 The ID of the customer to update.
      */
-    BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id);
+    BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id, final HttpServletRequest request);
 
     /**
      * Deletes a customer by ID.
      *
      * @param id The ID of the customer to delete.
      */
-    BasicRestResponse deleteCustomerById(final Integer id);
+    BasicRestResponse deleteCustomerById(final Integer id, final HttpServletRequest request);
 
     /**
      * Fetches the details of a customer and their associated moorings based on the provided customer ID.

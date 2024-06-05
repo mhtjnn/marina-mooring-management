@@ -106,9 +106,10 @@ public class MooringController extends GlobalExceptionHandler {
             method = RequestMethod.POST,
             produces = {"application/json"})
     public BasicRestResponse saveMooring(
-            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto
+            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto,
+            final HttpServletRequest request
     ) {
-        return mooringService.saveMooring(dto);
+        return mooringService.saveMooring(dto, request);
     }
 
     /**
@@ -140,9 +141,10 @@ public class MooringController extends GlobalExceptionHandler {
             produces = {"application/json"})
     public BasicRestResponse updateMooring(
             @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto,
-            @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer mooringId
+            @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer mooringId,
+            final HttpServletRequest request
     ) {
-        return mooringService.updateMooring(dto, mooringId);
+        return mooringService.updateMooring(dto, mooringId, request);
     }
 
     /**
@@ -172,9 +174,9 @@ public class MooringController extends GlobalExceptionHandler {
             method = RequestMethod.DELETE,
             produces = {"application/json"})
     public BasicRestResponse deleteMooring(
-            @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id
+            @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
+            final HttpServletRequest request
     ) {
-
-        return mooringService.deleteMooring(id);
+        return mooringService.deleteMooring(id, request);
     }
 }

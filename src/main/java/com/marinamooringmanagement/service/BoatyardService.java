@@ -16,7 +16,7 @@ public interface BoatyardService {
      *
      * @param boatyardRequestDto The BoatYardDto containing the data to be saved.
      */
-    BasicRestResponse saveBoatyard(final BoatyardRequestDto boatyardRequestDto);
+    BasicRestResponse saveBoatyard(final BoatyardRequestDto boatyardRequestDto, final HttpServletRequest request);
 
     /**
      * Fetches a list of boatyards based on the provided search request parameters and search text.
@@ -40,7 +40,7 @@ public interface BoatyardService {
      *
      * @param id The ID of the BoatYard to delete.
      */
-    BasicRestResponse deleteBoatyardById(final Integer id);
+    BasicRestResponse deleteBoatyardById(final Integer id, final HttpServletRequest request);
 
     /**
      * Updates a BoatYard entity.
@@ -49,7 +49,7 @@ public interface BoatyardService {
      * @param id                 The ID of the BoatYard to update.
      * @return A BasicRestResponse indicating the status of the operation.
      */
-    BasicRestResponse updateBoatyard(final BoatyardRequestDto boatyardRequestDto, final Integer id);
+    BasicRestResponse updateBoatyard(final BoatyardRequestDto boatyardRequestDto, final Integer id, final HttpServletRequest request);
 
     /**
      * Fetches Moorings related to a specific boatyard from the database.

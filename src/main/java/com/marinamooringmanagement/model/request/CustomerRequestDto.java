@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -58,10 +59,9 @@ public class CustomerRequestDto {
      */
     private String zipCode;
 
-    private Integer customerOwnerId;
-
     /**
      * Name of the mooring
      */
+    @Valid
     private MooringRequestDto mooringRequestDto;
 }

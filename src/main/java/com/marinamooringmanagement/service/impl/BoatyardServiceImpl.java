@@ -93,12 +93,12 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param boatYardRequestDto The BoatYardDto containing the data to be saved.
      */
     @Override
-    public BasicRestResponse saveBoatyard(final BoatyardRequestDto boatYardRequestDto) {
+    public BasicRestResponse saveBoatyard(final BoatyardRequestDto boatYardRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Boatyard boatyard = new Boatyard();
-            performSave(boatYardRequestDto, boatyard, null);
+            performSave(boatYardRequestDto, boatyard, null, request);
             response.setMessage("Boatyard Saved Successfully");
             response.setStatus(HttpStatus.CREATED.value());
             log.info(String.format("Saving data in the database for Boatyard ID %d", boatYardRequestDto.getId()));
@@ -218,12 +218,14 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param id The ID of the BoatYard to delete.
      */
     @Override
-    public BasicRestResponse deleteBoatyardById(final Integer id) {
+    public BasicRestResponse deleteBoatyardById(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
 
@@ -233,16 +235,20 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null == optionalBoatyard.get().getBoatyardName())
                 throw new RuntimeException(String.format("Boatyard Name is not found in the boatyard entity with the id as %1$s", id));
 
-            if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
+                else if(!customerOwnerId.equals(optionalBoatyard.get().getUser().getId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
                 if (!optionalBoatyard.get().getUser().getId().equals(loggedInUserID))
-                    throw new RuntimeException("Not authorized to perform operations on boatyard with different customer owner Id");
-            } else if (loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
+                    throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
+            } else{
                 throw new RuntimeException("Not Authorized");
             }
 
             List<Mooring> mooringList = optionalBoatyard.get().getMooringList();
 
-            mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId()));
+            mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId(), request));
 
             boatYardRepository.deleteById(id);
 
@@ -264,7 +270,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse updateBoatyard(final BoatyardRequestDto boatYardRequestDto, final Integer id) {
+    public BasicRestResponse updateBoatyard(final BoatyardRequestDto boatYardRequestDto, final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             if (null == id) {
@@ -275,7 +281,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             Optional<Boatyard> optionalBoatYard = boatYardRepository.findById(id);
             if (optionalBoatYard.isPresent()) {
                 Boatyard boatyard = optionalBoatYard.get();
-                performSave(boatYardRequestDto, boatyard, id);
+                performSave(boatYardRequestDto, boatyard, id, request);
                 response.setMessage(String.format("BoatYard with the given boatyard id %d updated successfully!!!", id));
                 response.setStatus(HttpStatus.OK.value());
             } else {
@@ -348,7 +354,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @param id                 The ID of the Boatyard entity, if available.
      * @throws DBOperationException If an error occurs during the saving operation.
      */
-    public void performSave(final BoatyardRequestDto boatyardRequestDto, final Boatyard boatyard, Integer id) {
+    public void performSave(final BoatyardRequestDto boatyardRequestDto, final Boatyard boatyard, Integer id, final HttpServletRequest request) {
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
@@ -393,22 +399,23 @@ public class BoatyardServiceImpl implements BoatyardService {
                 }
             }
 
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if (null == boatyardRequestDto.getCustomerOwnerId())
-                    throw new RuntimeException("Please select a customer owner");
-                Optional<User> optionalUser = userRepository.findById(boatyardRequestDto.getCustomerOwnerId());
+                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
                 if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", boatyardRequestDto.getCustomerOwnerId()));
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
                 user = optionalUser.get();
             } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if (null != boatyardRequestDto.getCustomerOwnerId() && !loggedInUserId.equals(boatyardRequestDto.getCustomerOwnerId()))
-                    throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
+                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
+                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+                customerOwnerId = loggedInUserId;
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
                 if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", boatyardRequestDto.getCustomerOwnerId()));
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
                 user = optionalUser.get();
             } else {
                 throw new RuntimeException("Not Authorized");

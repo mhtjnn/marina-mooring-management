@@ -87,7 +87,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @param customerRequestDto The DTO containing customer information.
      */
     @Override
-    public BasicRestResponse saveCustomer(final CustomerRequestDto customerRequestDto) {
+    public BasicRestResponse saveCustomer(final CustomerRequestDto customerRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
@@ -99,7 +99,7 @@ public class CustomerServiceImpl implements CustomerService {
             if (null == customerRequestDto.getMooringRequestDto())
                 throw new RuntimeException("Mooring Request not provided");
 
-            performSave(customerRequestDto, customer, null);
+            performSave(customerRequestDto, customer, null, request);
 
             response.setMessage("Customer saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
@@ -321,7 +321,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @throws DBOperationException if the customer ID is not provided or if an error occurs during the operation.
      */
     @Override
-    public BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id) {
+    public BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -334,7 +334,7 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new ResourceNotFoundException(String.format("Customer not found with id: %1$s", id));
 
             Customer customer = optionalCustomer.get();
-            performSave(customerRequestDto, customer, id);
+            performSave(customerRequestDto, customer, id, request);
             response.setMessage("Customer with the given customer id updated successfully!!!");
             response.setStatus(HttpStatus.OK.value());
 
@@ -356,7 +356,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @throws DBOperationException if an error occurs during the save operation.
      */
     @Transactional
-    public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
+    public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id, final HttpServletRequest request) {
 
         Customer savedCustomer = null;
 
@@ -364,30 +364,23 @@ public class CustomerServiceImpl implements CustomerService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
-            if (null == customerRequestDto.getMooringRequestDto())
-                throw new RuntimeException("No mooring details found.");
-            if (null == customerRequestDto.getCustomerOwnerId() || null == customerRequestDto.getMooringRequestDto().getCustomerOwnerId()) {
-                throw new RuntimeException("Please select a customer owner");
-            } else {
-                if (!customerRequestDto.getCustomerOwnerId().equals(customerRequestDto.getMooringRequestDto().getCustomerOwnerId())) {
-                    throw new RuntimeException(String.format("Customer owner Id are different in customer: %1$s and in mooring: %2$s", customerRequestDto.getCustomerOwnerId(), customerRequestDto.getMooringRequestDto().getCustomerOwnerId()));
-                }
-            }
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                Optional<User> optionalUser = userRepository.findById(customerRequestDto.getCustomerOwnerId());
+                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
                 if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerRequestDto.getCustomerOwnerId()));
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
                 user = optionalUser.get();
             } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if (!loggedInUserId.equals(customerRequestDto.getCustomerOwnerId()))
+                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
                     throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+                customerOwnerId = loggedInUserId;
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
                 if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerRequestDto.getCustomerOwnerId()));
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
                 user = optionalUser.get();
             } else {
                 throw new RuntimeException("Not Authorized");
@@ -466,13 +459,14 @@ public class CustomerServiceImpl implements CustomerService {
             Mooring mooring = null;
             if (optionalMooring.isPresent()) {
                 optionalMooring.get().setCustomer(savedCustomer);
-                mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId());
+                mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId(), request);
             } else {
                 mooring = mooringService
                         .performSave(
                                 customerRequestDto.getMooringRequestDto(),
                                 Mooring.builder().customerName(savedCustomer.getCustomerName()).customer(savedCustomer).build(),
-                                null
+                                null,
+                                request
                         );
             }
             List<Mooring> mooringList = customer.getMooringList();
@@ -499,11 +493,13 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Override
     @Transactional
-    public BasicRestResponse deleteCustomerById(final Integer id) {
+    public BasicRestResponse deleteCustomerById(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if (optionalCustomer.isEmpty())
@@ -511,10 +507,14 @@ public class CustomerServiceImpl implements CustomerService {
             Customer customer = optionalCustomer.get();
             List<Mooring> mooringList = customer.getMooringList();
 
-            if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if (!optionalCustomer.get().getUser().getId().equals(loggedInUserID))
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+              if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
+              else if(!customerOwnerId.equals(customer.getUser().getId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+                if (!customer.getUser().getId().equals(loggedInUserID))
                     throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
-            } else if (loggedInUserRole.equals(AppConstants.Role.FINANCE) || loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
+            } else{
                 throw new RuntimeException("Not Authorized");
             }
 
@@ -540,8 +540,4 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
-    public void performSave1(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id) {
-
-
-    }
 }
