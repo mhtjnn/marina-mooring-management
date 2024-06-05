@@ -22,10 +22,7 @@ import java.util.List;
 public class CustomerDto extends BaseDto {
 
     private Integer id;
-    /**
-     * The name of the customer.
-     */
-    private String customerName;
+
     /**
      * The customer ID.
      */

@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -95,8 +96,8 @@ public class Boatyard extends Base {
     /**
      * The list of moorings associated with the BoatYard.
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "boatyard_id")
+    @OneToMany(mappedBy = "boatyard", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

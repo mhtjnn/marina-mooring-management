@@ -303,6 +303,7 @@ public class MooringServiceImpl implements MooringService {
 
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())
                     throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));

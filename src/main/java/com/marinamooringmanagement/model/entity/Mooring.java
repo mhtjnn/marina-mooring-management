@@ -1,8 +1,11 @@
 package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.Objects;
 
 /**
  * Represents a mooring entity that maps to the "mooring" table in the database.
@@ -22,12 +25,6 @@ public class Mooring extends Base {
 
     @Column(name = "mooring_id")
     private String mooringId;
-
-    /**
-     * Name of the customer associated with the mooring.
-     */
-    @Column(name = "customer_name")
-    private String customerName;
 
     /**
      * Harbor where the mooring is located.
@@ -135,6 +132,8 @@ public class Mooring extends Base {
     private MooringStatus mooringStatus;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    @JsonBackReference
     private Customer customer;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
@@ -142,5 +141,20 @@ public class Mooring extends Base {
     private User user;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "boatyard_id")
+    @JsonBackReference
     private Boatyard boatyard;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Mooring)) return false;
+        Mooring mooring = (Mooring) o;
+        return Objects.equals(id, mooring.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.model.request;
 
+import com.marinamooringmanagement.model.dto.CountryDto;
+import com.marinamooringmanagement.model.dto.StateDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,89 +21,92 @@ public class VendorRequestDto implements Serializable {
 
     private static final long serialVersionUID = 550268603576L;
 
-    /**
-     * Unique identifier for the vendor.
-     */
     private Integer id;
 
     /**
-     * The name of the company. Cannot be null.
+     * Name of the company associated with the vendor.
      */
-    @NotNull(message = "Company name cannot be blank")
     private String companyName;
 
     /**
-     * The phone number of the company.
+     * Phone number of the company associated with the vendor.
      */
     private String companyPhoneNumber;
 
     /**
-     * The website URL of the company.
+     * Website URL of the company associated with the vendor.
      */
     private String website;
 
     /**
-     * The street address of the company.
+     * Street address of the vendor.
      */
     private String street;
 
     /**
-     * The apartment or suite number of the company's address.
+     * Apartment or suite number of the vendor.
      */
     private String aptSuite;
 
     /**
-     * The state or province of the company's address.
+     * State where the vendor is located.
      */
-    private String state;
+    private Integer stateId;
 
     /**
-     * The country of the company's address.
+     * Country where the vendor is located.
      */
-    private String country;
+    private Integer countryId;
 
     /**
-     * The ZIP or postal code of the company's address.
+     * ZIP code of the vendor's location.
      */
     private Integer zipCode;
 
     /**
-     * The email address of the company.
+     * Email address of the company associated with the vendor.
      */
     private String companyEmail;
 
     /**
-     * The account number associated with the company.
+     * Account number associated with the vendor.
      */
     private String accountNumber;
 
+    private String remitStreet;
+
+    private String remitApt;
+
+    private Integer remitStateId;
+
+    private Integer remitCountryId;
+
+    private String remitZipCode;
+
+    private String remitEmailAddress;
+
     /**
-     * The first name of the sales representative.
+     * First name of the primary contact person associated with the vendor.
      */
     private String firstName;
 
     /**
-     * The last name of the sales representative.
+     * Last name of the primary contact person associated with the vendor.
      */
     private String lastName;
 
     /**
-     * The phone number of the sales representative.
+     * Phone number of the sales representative associated with the vendor.
      */
     private String salesRepPhoneNumber;
 
     /**
-     * The email address of the sales representative.
+     * Email address of the sales representative associated with the vendor.
      */
     private String salesRepEmail;
 
     /**
-     * Additional notes about the sales representative.
+     * Note or additional information about the sales representative associated with the vendor.
      */
     private String salesRepNote;
-
-    /**
-     * Indicates if the sales representative is the primary contact.
-     */
-    private boolean primarySalesRep;
 }

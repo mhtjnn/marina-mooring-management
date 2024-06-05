@@ -1,6 +1,9 @@
 package com.marinamooringmanagement.model.dto;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.io.Serializable;
@@ -16,9 +19,6 @@ public class VendorDto extends BaseDto implements Serializable {
 
     private static final long serialVersionUID = 55026860357976L;
 
-    /**
-     * Unique identifier for the vendor.
-     */
     private Integer id;
 
     /**
@@ -49,12 +49,12 @@ public class VendorDto extends BaseDto implements Serializable {
     /**
      * State where the vendor is located.
      */
-    private String state;
+    private StateDto stateDto;
 
     /**
      * Country where the vendor is located.
      */
-    private String country;
+    private CountryDto countryDto;
 
     /**
      * ZIP code of the vendor's location.
@@ -70,6 +70,18 @@ public class VendorDto extends BaseDto implements Serializable {
      * Account number associated with the vendor.
      */
     private String accountNumber;
+
+    private String remitStreet;
+
+    private String remitApt;
+
+    private StateDto remitStateDto;
+
+    private CountryDto remitCountryDto;
+
+    private String remitZipCode;
+
+    private String remitEmailAddress;
 
     /**
      * First name of the primary contact person associated with the vendor.
@@ -95,9 +107,4 @@ public class VendorDto extends BaseDto implements Serializable {
      * Note or additional information about the sales representative associated with the vendor.
      */
     private String salesRepNote;
-
-    /**
-     * Flag indicating whether the sales representative associated with the vendor is primary or not.
-     */
-    private boolean primarySalesRep;
 }

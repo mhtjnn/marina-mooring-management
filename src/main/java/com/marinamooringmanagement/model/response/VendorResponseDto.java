@@ -18,88 +18,94 @@ public class VendorResponseDto {
 
     private static final long serialVersionUID = 5502680635079L;
 
-    /**
-     * The unique identifier for the vendor.
-     */
     private Integer id;
 
     /**
-     * The name of the company.
+     * Name of the company associated with the vendor.
      */
     private String companyName;
 
     /**
-     * The phone number of the company.
+     * Phone number of the company associated with the vendor.
      */
     private String companyPhoneNumber;
 
     /**
-     * The website URL of the company.
+     * Website URL of the company associated with the vendor.
      */
     private String website;
 
     /**
-     * The street address of the company.
+     * Street address of the vendor.
      */
     private String street;
 
     /**
-     * The apartment or suite number of the company, if applicable.
+     * Apartment or suite number of the vendor.
      */
     private String aptSuite;
 
     /**
-     * The state in which the company is located.
+     * State where the vendor is located.
      */
-    private String state;
+    private StateResponseDto stateResponseDto;
 
     /**
-     * The country in which the company is located.
+     * Country where the vendor is located.
      */
-    private String country;
+    private CountryResponseDto countryResponseDto;
 
     /**
-     * The zip code of the company's address.
+     * ZIP code of the vendor's location.
      */
     private Integer zipCode;
 
     /**
-     * The email address of the company.
+     * Email address of the company associated with the vendor.
      */
     private String companyEmail;
 
     /**
-     * The account number associated with the company.
+     * Account number associated with the vendor.
      */
     private String accountNumber;
 
+    private String remitStreet;
+
+    private String remitApt;
+
+    private StateResponseDto remitStateResponseDto;
+
+    private CountryResponseDto remitCountryResponseDto;
+
+    private String remitZipCode;
+
+    private String remitEmailAddress;
+
     /**
-     * The first name of the sales representative.
+     * First name of the primary contact person associated with the vendor.
      */
     private String firstName;
 
     /**
-     * The last name of the sales representative.
+     * Last name of the primary contact person associated with the vendor.
      */
     private String lastName;
 
     /**
-     * The phone number of the sales representative.
+     * Phone number of the sales representative associated with the vendor.
      */
     private String salesRepPhoneNumber;
 
     /**
-     * The email address of the sales representative.
+     * Email address of the sales representative associated with the vendor.
      */
     private String salesRepEmail;
 
     /**
-     * Notes about the sales representative.
+     * Note or additional information about the sales representative associated with the vendor.
      */
     private String salesRepNote;
 
-    /**
-     * Indicates whether the sales representative is the primary representative.
-     */
-    private boolean primarySalesRep;
+    private Integer userId;
 }

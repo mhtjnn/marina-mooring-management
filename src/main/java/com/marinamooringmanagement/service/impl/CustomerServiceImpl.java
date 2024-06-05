@@ -3,14 +3,12 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
-import com.marinamooringmanagement.mapper.BoatyardMapper;
-import com.marinamooringmanagement.mapper.CustomerMapper;
-import com.marinamooringmanagement.mapper.MooringMapper;
-import com.marinamooringmanagement.mapper.MooringStatusMapper;
+import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
@@ -79,6 +77,12 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private BoatyardMapper boatyardMapper;
 
+    @Autowired
+    private StateMapper stateMapper;
+
+    @Autowired
+    private CountryMapper countryMapper;
+
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     /**
@@ -96,8 +100,8 @@ public class CustomerServiceImpl implements CustomerService {
 
             final Customer customer = Customer.builder().build();
 
-            if (null == customerRequestDto.getMooringRequestDto())
-                throw new RuntimeException("Mooring Request not provided");
+            if (null == customerRequestDto.getMooringRequestDtoList())
+                throw new RuntimeException("No mooring given to save.");
 
             performSave(customerRequestDto, customer, null, request);
 
@@ -170,30 +174,10 @@ public class CustomerServiceImpl implements CustomerService {
                     .stream()
                     .map(customer -> {
                         CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer);
-                        customerResponseDto.setUserId(customer.getUser().getId());
+                        if(null != customer.getUser()) customerResponseDto.setUserId(customer.getUser().getId());
 
-                        StateResponseDto stateResponseDto = null;
-
-                        if (null != customer.getState()) {
-                            stateResponseDto = StateResponseDto.builder()
-                                    .id(customer.getState().getId())
-                                    .name(customer.getState().getName())
-                                    .label(customer.getState().getLabel())
-                                    .build();
-                        }
-
-                        CountryResponseDto countryResponseDto = null;
-
-                        if (null != customer.getState()) {
-                            countryResponseDto = CountryResponseDto.builder()
-                                    .id(customer.getCountry().getId())
-                                    .name(customer.getCountry().getName())
-                                    .label(customer.getCountry().getLabel())
-                                    .build();
-                        }
-
-                        customerResponseDto.setStateResponseDto(stateResponseDto);
-                        customerResponseDto.setCountryResponseDto(countryResponseDto);
+                        if (null != customer.getState()) customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState()));
+                        if (null != customer.getCountry()) customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
 
                         return customerResponseDto;
                     })
@@ -368,6 +352,7 @@ public class CustomerServiceImpl implements CustomerService {
 
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())
                     throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
@@ -436,46 +421,52 @@ public class CustomerServiceImpl implements CustomerService {
             if (null == id) customer.setCreationDate(new Date());
             savedCustomer = customerRepository.save(customer);
 
-            // Setting the customer Id here.
-            customerRequestDto.getMooringRequestDto().setCustomerId(savedCustomer.getId());
+            List<Mooring> mooringList = (null == customer.getMooringList()) ? new ArrayList<>() : customer.getMooringList();
 
-            Optional<Mooring> optionalMooring = Optional.empty();
-            if (null != customerRequestDto.getMooringRequestDto().getMooringId()) {
-                optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
-                if (optionalMooring.isPresent()) {
-                    if (null == id) {
-                        throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", customerRequestDto.getMooringRequestDto().getMooringId()));
-                    } else {
-                        if (!optionalMooring.get().getId().equals(customerRequestDto.getMooringRequestDto().getId()))
-                            throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", customerRequestDto.getMooringRequestDto().getMooringId()));
+            for(MooringRequestDto mooringRequestDto: customerRequestDto.getMooringRequestDtoList()) {
+
+                // Setting the customer Id here.
+                mooringRequestDto.setCustomerId(savedCustomer.getId());
+
+                Optional<Mooring> optionalMooring = Optional.empty();
+                if (null != mooringRequestDto.getMooringId()) {
+                    optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+                    if (optionalMooring.isPresent()) {
+                        if (null == id) {
+                            throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
+                        } else {
+                            if (!optionalMooring.get().getId().equals(mooringRequestDto.getId()))
+                                throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
+                        }
                     }
+                } else {
+                    throw new RuntimeException("Mooring Id cannot be null");
                 }
-            } else {
-                throw new RuntimeException("Mooring Id cannot be null");
-            }
 
-            if (null != customerRequestDto.getMooringRequestDto().getMooringId())
-                optionalMooring = mooringRepository.findByMooringId(customerRequestDto.getMooringRequestDto().getMooringId());
-            Mooring mooring = null;
-            if (optionalMooring.isPresent()) {
-                optionalMooring.get().setCustomer(savedCustomer);
-                mooring = mooringService.performSave(customerRequestDto.getMooringRequestDto(), optionalMooring.get(), optionalMooring.get().getId(), request);
-            } else {
-                mooring = mooringService
-                        .performSave(
-                                customerRequestDto.getMooringRequestDto(),
-                                Mooring.builder().customerName(savedCustomer.getCustomerName()).customer(savedCustomer).build(),
-                                null,
-                                request
-                        );
-            }
-            List<Mooring> mooringList = customer.getMooringList();
-            if (null == mooringList || mooringList.isEmpty()) {
-                mooringList = new ArrayList<>();
+                if (null != mooringRequestDto.getMooringId())
+                    optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+                Mooring mooring = null;
+                if (optionalMooring.isPresent()) {
+                    optionalMooring.get().setCustomer(savedCustomer);
+                    mooring = mooringService.performSave(
+                            mooringRequestDto,
+                            optionalMooring.get(),
+                            optionalMooring.get().getId(),
+                            request
+                    );
+                } else {
+                    mooring = mooringService
+                            .performSave(
+                                    mooringRequestDto,
+                                    Mooring.builder().customer(savedCustomer).build(),
+                                    null,
+                                    request
+                            );
+                }
+
                 mooringList.add(mooring);
             }
             savedCustomer.setMooringList(mooringList);
-
             savedCustomer.setLastModifiedDate(new Date());
             customerRepository.save(savedCustomer);
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));

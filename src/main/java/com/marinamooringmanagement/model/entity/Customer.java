@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Entity class representing a Customer.
@@ -78,8 +79,8 @@ public class Customer extends Base {
     @Column(name = "zipcode")
     private String zipCode;
 
-    @OneToMany(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
+    @OneToMany(mappedBy = "customer", cascade = {}, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

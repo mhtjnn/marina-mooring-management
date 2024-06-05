@@ -21,6 +21,7 @@ public interface CustomerMapper {
      * @return The mapped CustomerDto object.
      */
     @Mapping(target = "mooringDtoList", ignore = true)
+    @Mapping(target = "userDto", ignore = true)
     CustomerDto toDto(@MappingTarget CustomerDto dto, Customer customer);
 
     /**
@@ -44,5 +45,6 @@ public interface CustomerMapper {
     @Mapping(target = "mooringList", ignore = true)
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
+    @Mapping(target = "user", ignore = true)
     Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

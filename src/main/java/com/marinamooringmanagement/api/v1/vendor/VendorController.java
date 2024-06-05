@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -64,7 +65,8 @@ public class VendorController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
             @Parameter(description = "Sort By(field to be compared while sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @Parameter(description = "Email Address", schema = @Schema(implementation = String.class)) @RequestParam(value = "emailAddress", required = false) final String searchText
+            @Parameter(description = "Email Address", schema = @Schema(implementation = String.class)) @RequestParam(value = "emailAddress", required = false) final String searchText,
+            final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(page)
@@ -72,7 +74,7 @@ public class VendorController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return vendorService.fetchVendors(baseSearchRequest, searchText);
+        return vendorService.fetchVendors(baseSearchRequest, searchText, request);
     }
 
     /**
@@ -102,9 +104,10 @@ public class VendorController extends GlobalExceptionHandler {
             method = RequestMethod.POST,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse saveVendor(
-            @Parameter(description = "Vendor to save in the database", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto
-    ) {
-        return vendorService.saveVendor(requestDto);
+            @Parameter(description = "Vendor to save in the database", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto,
+            final HttpServletRequest request
+            ) {
+        return vendorService.saveVendor(requestDto, request);
 
     }
 
@@ -135,9 +138,10 @@ public class VendorController extends GlobalExceptionHandler {
             method = RequestMethod.DELETE,
             produces = {"application/json", "application/xml"})
     public BasicRestResponse deleteVendor(
-            @Parameter(description = "Vendor ID to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId
+            @Parameter(description = "Vendor ID to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId,
+            final HttpServletRequest request
     ) {
-        return vendorService.deleteVendor(vendorId);
+        return vendorService.deleteVendor(vendorId, request);
     }
 
     /**
@@ -169,8 +173,9 @@ public class VendorController extends GlobalExceptionHandler {
             produces = {"application/json", "application/xml"})
     public BasicRestResponse updateVendor(
             @Parameter(description = "Fields to update", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto,
-            @Parameter(description = "Vendor ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId
+            @Parameter(description = "Vendor ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId,
+            final HttpServletRequest request
     ) {
-        return vendorService.updateVendor(requestDto, vendorId);
+        return vendorService.updateVendor(requestDto, vendorId, request);
     }
 }

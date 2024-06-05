@@ -53,16 +53,18 @@ public class Vendor extends Base {
     private String aptSuite;
 
     /**
-     * State where the vendor is located.
+     * The state of the customer's address.
      */
-    @Column(name = "state")
-    private String state;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id")
+    private State state;
 
     /**
-     * Country where the vendor is located.
+     * The country of the customer's address.
      */
-    @Column(name = "country")
-    private String country;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private Country country;
 
     /**
      * ZIP code of the vendor's location.
@@ -81,6 +83,27 @@ public class Vendor extends Base {
      */
     @Column(name = "account_number")
     private String accountNumber;
+
+    private String remitStreet;
+
+    private String remitApt;
+
+    /**
+     * The state of the customer's address.
+     */
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "remit_state_id")
+    private State remitState;
+    /**
+     * The country of the customer's address.
+     */
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "remit_country_id")
+    private Country remitCountry;
+
+    private String remitZipCode;
+
+    private String remitEmailAddress;
 
     /**
      * First name of the primary contact person associated with the vendor.
@@ -112,9 +135,7 @@ public class Vendor extends Base {
     @Column(name = "sales_rep_note")
     private String salesRepNote;
 
-    /**
-     * Flag indicating whether the sales representative associated with the vendor is primary or not.
-     */
-    @Column(name = "primary_sales_rep")
-    private boolean primarySalesRep;
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

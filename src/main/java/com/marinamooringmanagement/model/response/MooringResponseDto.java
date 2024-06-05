@@ -32,11 +32,6 @@ public class MooringResponseDto implements Serializable {
     private String mooringId;
 
     /**
-     * The name of the customer who owns or uses the mooring.
-     */
-    private String customerName;
-
-    /**
      * The unique number assigned to the mooring.
      */
     private String mooringNumber;

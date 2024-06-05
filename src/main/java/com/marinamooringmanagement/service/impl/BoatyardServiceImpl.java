@@ -166,12 +166,10 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
-                        if (null != boatyard.getState())
-                            boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
-                        if (null != boatyard.getCountry())
-                            boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
-                        boatyardResponseDto.setMooringInventoried(boatyard.getMooringList().size());
-                        boatyardResponseDto.setUserId(boatyard.getUser().getId());
+                        if (null != boatyard.getState()) boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
+                        if (null != boatyard.getCountry()) boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
+                        boatyardResponseDto.setMooringInventoried((null == boatyard.getMooringList()) ? 0 : boatyard.getMooringList().size());
+                        if(null != boatyard.getUser()) boatyardResponseDto.setUserId(boatyard.getUser().getId());
                         return boatyardResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -403,6 +401,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             User user = null;
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())
                     throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
