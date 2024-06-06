@@ -110,4 +110,6 @@ public class VendorResponseDto {
     private String salesRepNote;
 
     private Integer userId;
+
+    private Integer inventoryItems;
 }

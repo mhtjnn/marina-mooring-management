@@ -29,6 +29,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Phone number of the company associated with the vendor.
      */
+    @Pattern(regexp = "^\\+\\d{1} \\d{3} \\d{3} \\d{4}$", message = "Invalid phone number format.")
     private String companyPhoneNumber;
 
     /**
@@ -103,6 +104,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Phone number of the sales representative associated with the vendor.
      */
+    @Pattern(regexp = "^\\+\\d{1} \\d{3} \\d{3} \\d{4}$", message = "Invalid phone number format.")
     private String salesRepPhoneNumber;
 
     /**
