@@ -532,8 +532,9 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(customerOwnerId, savedRole.getName()))
+            if (!checkForAuthority(customerOwnerId, savedRole.getName())) {
                 throw new RuntimeException("Not authorized!!!");
+            }
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if(null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
@@ -546,7 +547,7 @@ public class UserServiceImpl implements UserService {
 
             //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
             if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                userRequestDto.setCustomerOwnerId(loggedInUserUtil.getLoggedInUserID());
+                customerOwnerId = loggedInUserUtil.getLoggedInUserID();
             }
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
