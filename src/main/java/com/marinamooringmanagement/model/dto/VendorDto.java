@@ -60,7 +60,7 @@ public class VendorDto extends BaseDto implements Serializable {
     /**
      * ZIP code of the vendor's location.
      */
-    private Integer zipCode;
+    private String zipCode;
 
     /**
      * Email address of the company associated with the vendor.

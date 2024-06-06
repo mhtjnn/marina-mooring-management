@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -72,7 +73,7 @@ public class Vendor extends Base {
      * ZIP code of the vendor's location.
      */
     @Column(name = "zip_code")
-    private Integer zipCode;
+    private String zipCode;
 
     /**
      * Email address of the company associated with the vendor.

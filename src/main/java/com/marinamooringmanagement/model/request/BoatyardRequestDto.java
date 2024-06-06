@@ -42,6 +42,7 @@ public class BoatyardRequestDto {
     /**
      * The phone number of the BoatYard.
      */
+    @Pattern(regexp = "^\\d{10}$", message = "Invalid phone number format.")
     private String phone;
 
     /**
@@ -67,6 +68,7 @@ public class BoatyardRequestDto {
     /**
      * The zip code of the BoatYard.
      */
+    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid zipcode format.")
     private String zipCode;
 
     /**

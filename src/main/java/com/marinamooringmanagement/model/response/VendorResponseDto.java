@@ -60,7 +60,7 @@ public class VendorResponseDto {
     /**
      * ZIP code of the vendor's location.
      */
-    private Integer zipCode;
+    private String zipCode;
 
     /**
      * Email address of the company associated with the vendor.
@@ -110,6 +110,4 @@ public class VendorResponseDto {
     private String salesRepNote;
 
     private Integer userId;
-
-    private List<InventoryResponseDto> inventoryResponseDtoList;
 }

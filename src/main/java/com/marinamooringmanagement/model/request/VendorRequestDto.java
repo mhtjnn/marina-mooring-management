@@ -1,8 +1,5 @@
 package com.marinamooringmanagement.model.request;
 
-import com.marinamooringmanagement.model.dto.CountryDto;
-import com.marinamooringmanagement.model.dto.StateDto;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,10 +34,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Website URL of the company associated with the vendor.
      */
-    @Pattern(
-            regexp = "^(https?://)?(www\\.)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}([/a-zA-Z0-9-._~:?#[\\\\]@!$&'()*+,;=%]*)?$",
-            message = "Invalid website format."
-    )
+    @Pattern(regexp = "^(https?://)?(www\\.)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}([/a-zA-Z0-9-._~:?#[\\\\]@!$&'()*+,;=%]*)?$", message = "Invalid website format.")
     private String website;
 
     /**
@@ -66,11 +60,13 @@ public class VendorRequestDto implements Serializable {
     /**
      * ZIP code of the vendor's location.
      */
-    private Integer zipCode;
+    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid Zipcode format.")
+    private String zipCode;
 
     /**
      * Email address of the company associated with the vendor.
      */
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String companyEmail;
 
     /**
@@ -86,18 +82,22 @@ public class VendorRequestDto implements Serializable {
 
     private Integer remitCountryId;
 
+    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid Zipcode format.")
     private String remitZipCode;
 
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String remitEmailAddress;
 
     /**
      * First name of the primary contact person associated with the vendor.
      */
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format.")
     private String firstName;
 
     /**
      * Last name of the primary contact person associated with the vendor.
      */
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format.")
     private String lastName;
 
     /**
