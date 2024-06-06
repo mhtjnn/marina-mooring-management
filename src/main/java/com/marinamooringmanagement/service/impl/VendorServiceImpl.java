@@ -107,10 +107,10 @@ public class VendorServiceImpl implements VendorService {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if(null != searchText) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(vendor.get("state"), "%"+searchText+"%"),
-                                criteriaBuilder.like(vendor.get("companyName"), "%" + searchText + "%"),
-                                criteriaBuilder.like(vendor.get("website"), "%" + searchText + "%")
+                                criteriaBuilder.like(vendor.get("companyName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(vendor.get("website"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 

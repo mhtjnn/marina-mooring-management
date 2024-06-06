@@ -141,9 +141,10 @@ public class CustomerServiceImpl implements CustomerService {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if (null != searchText) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(customer.get("emailAddress"), "%" + searchText + "%"),
-                                criteriaBuilder.like(customer.get("phone"), "%" + searchText + "%")
+                                criteriaBuilder.like(customer.get("emailAddress"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(customer.get("phone"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 

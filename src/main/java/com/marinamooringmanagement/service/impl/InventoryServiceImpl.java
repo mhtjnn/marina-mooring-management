@@ -4,6 +4,7 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.InventoryMapper;
+import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.Inventory;
 import com.marinamooringmanagement.model.entity.InventoryType;
 import com.marinamooringmanagement.model.entity.Vendor;
@@ -11,6 +12,7 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.InventoryRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.InventoryResponseDto;
+import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.InventoryRepository;
 import com.marinamooringmanagement.repositories.InventoryTypeRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
@@ -63,6 +65,9 @@ public class InventoryServiceImpl implements InventoryService {
     @Autowired
     private SortUtils sortUtils;
 
+    @Autowired
+    private VendorMapper vendorMapper;
+
     private static final Logger log = LoggerFactory.getLogger(InventoryServiceImpl.class);
 
     @Override
@@ -99,9 +104,10 @@ public class InventoryServiceImpl implements InventoryService {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if (null != searchText && !searchText.isEmpty()) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(inventory.get("itemName"), "%" + searchText + "%"),
-                                criteriaBuilder.like(inventory.join("inventoryType").get("type"), "%" + searchText + "%")
+                                criteriaBuilder.like(inventory.get("itemName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(inventory.join("inventoryType").get("type"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 
@@ -122,7 +128,11 @@ public class InventoryServiceImpl implements InventoryService {
             List<InventoryResponseDto> inventoryResponseDtoList = inventoryList
                     .getContent()
                     .stream()
-                    .map(inventory -> inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory))
+                    .map(inventory -> {
+                        InventoryResponseDto inventoryResponseDto = inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory);
+                        if(null != inventory.getVendor()) inventoryResponseDto.setVendorResponseDto(vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor()));
+                        return inventoryResponseDto;
+                    })
                     .toList();
 
             response.setContent(inventoryResponseDtoList);

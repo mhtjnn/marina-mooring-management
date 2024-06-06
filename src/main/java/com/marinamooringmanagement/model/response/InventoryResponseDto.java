@@ -26,4 +26,6 @@ public class InventoryResponseDto {
     private Boolean taxable;
 
     private InventoryTypeDto inventoryType;
+
+    private VendorResponseDto vendorResponseDto;
 }

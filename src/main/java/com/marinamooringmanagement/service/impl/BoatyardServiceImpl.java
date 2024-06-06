@@ -134,9 +134,10 @@ public class BoatyardServiceImpl implements BoatyardService {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if (null != searchText) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(boatyard.get("boatyardName"), "%" + searchText + "%"),
-                                criteriaBuilder.like(boatyard.get("street"), "%" + searchText + "%")
+                                criteriaBuilder.like(boatyard.get("boatyardName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(boatyard.get("street"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 
