@@ -96,7 +96,7 @@ public class CustomerServiceImpl implements CustomerService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            log.info(String.format("Saving data in the database for Customer ID %d", customerRequestDto.getId()));
+            log.info(String.format("Save customer method called"));
 
             final Customer customer = Customer.builder().build();
 

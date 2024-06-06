@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Represents a vendor data transfer object (DTO) used for transferring vendor-related information.
@@ -107,4 +108,6 @@ public class VendorDto extends BaseDto implements Serializable {
      * Note or additional information about the sales representative associated with the vendor.
      */
     private String salesRepNote;
+
+    private List<InventoryDto> inventoryDtoList;
 }

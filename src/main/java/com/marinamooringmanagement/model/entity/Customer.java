@@ -2,6 +2,7 @@ package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class Customer extends Base {
      * The phone number of the customer.
      */
     @Column(name = "phone")
+    @Pattern(regexp = "^(\\d[-. ]?){10}$", message = "Invalid phone number format")
     private String phone;
 
     /**

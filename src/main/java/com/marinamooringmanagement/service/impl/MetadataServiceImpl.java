@@ -12,6 +12,7 @@ import com.marinamooringmanagement.model.response.CustomerMetadataResponse;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -90,6 +91,12 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private PennantConditionMapper pennantConditionMapper;
+
+    @Autowired
+    private InventoryTypeRepository inventoryTypeRepository;
+
+    @Autowired
+    private InventoryTypeMapper inventoryTypeMapper;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -328,8 +335,8 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public BasicRestResponse fetchCustomers(
             final BaseSearchRequest baseSearchRequest,
-            final Integer customerOwnerId
-    ) {
+            final HttpServletRequest request
+            ) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -337,23 +344,28 @@ public class MetadataServiceImpl implements MetadataService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
+            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
-                if(null != customerOwnerId && !loggedInUserId.equals(customerOwnerId)) throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
+                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             } else {
                 throw new RuntimeException("Not Authorized");
             }
 
-
             List<CustomerMetadataResponse> customerMetadataResponseList = customerRepository.findAll()
                     .stream()
-                    .filter(customer -> customer.getUser().getId().equals((customerOwnerId == null)?loggedInUserId:customerOwnerId))
+                    .filter(customer -> customer.getUser().getId().equals((customerOwnerId == -1)?loggedInUserId:customerOwnerId))
                     .map(customer -> CustomerMetadataResponse.builder()
                             .id(customer.getId())
                             .customerName(customer.getCustomerName())
@@ -375,7 +387,7 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public BasicRestResponse fetchBoatyards(
             final BaseSearchRequest baseSearchRequest,
-            final Integer customerOwnerId
+            final HttpServletRequest request
     ) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -384,22 +396,28 @@ public class MetadataServiceImpl implements MetadataService {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(null == customerOwnerId) throw new RuntimeException("Please select a customer owner");
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
+            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                if(!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-            } else if(loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)){
-                if(null != customerOwnerId && !loggedInUserId.equals(customerOwnerId)) throw new RuntimeException("Cannot do operations on boatyard with different customer owner Id");
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
+                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
                 Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             } else {
                 throw new RuntimeException("Not Authorized");
             }
 
             List<BoatyardMetadataResponse> boatyardMetadataResponseList = boatyardRepository.findAll()
                     .stream()
-                    .filter(boatyard -> boatyard.getUser().getId().equals((customerOwnerId == null)?loggedInUserId:customerOwnerId))
+                    .filter(boatyard -> boatyard.getUser().getId().equals((customerOwnerId == -1)?loggedInUserId:customerOwnerId))
                     .map(boatyard -> BoatyardMetadataResponse.builder()
                             .id(boatyard.getId())
                             .boatyardName(boatyard.getBoatyardName())
@@ -410,6 +428,33 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Customers fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(boatyardMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchInventoryType(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        Page<InventoryType> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            content = inventoryTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<InventoryTypeDto> inventoryTypeDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(inventoryType -> inventoryTypeMapper.mapToInventoryTypeDto(InventoryTypeDto.builder().build(), inventoryType))
+                    .toList()
+                    ;
+
+            response.setMessage("Types of inventory fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(inventoryTypeDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

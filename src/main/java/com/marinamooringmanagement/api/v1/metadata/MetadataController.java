@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -307,14 +308,14 @@ public class MetadataController extends GlobalExceptionHandler {
     public BasicRestResponse fetchCustomers(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
-            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId
+            final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .build();
 
-        return metadataService.fetchCustomers(baseSearchRequest, customerOwnerId);
+        return metadataService.fetchCustomers(baseSearchRequest, request);
     }
 
     @GetMapping("/boatyards")
@@ -322,14 +323,29 @@ public class MetadataController extends GlobalExceptionHandler {
     public BasicRestResponse fetchBoatyards(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
-            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId
+            final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .build();
 
-        return metadataService.fetchBoatyards(baseSearchRequest, customerOwnerId);
+        return metadataService.fetchBoatyards(baseSearchRequest, request);
+    }
+
+    @GetMapping("/inventoryType")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchInventoryTypes(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+            ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchInventoryType(baseSearchRequest, request);
     }
 }
 

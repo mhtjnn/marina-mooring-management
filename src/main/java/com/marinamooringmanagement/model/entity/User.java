@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class User extends Base {
      * The phone number of the user.
      */
     @Column(name = "phoneNumber")
+    @Pattern(regexp = "^(\\d[-. ]?){10}$", message = "Invalid phone number format")
     private String phoneNumber;
 
     /**

@@ -3,6 +3,7 @@ package com.marinamooringmanagement.model.request;
 import com.marinamooringmanagement.model.dto.CountryDto;
 import com.marinamooringmanagement.model.dto.StateDto;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,6 +37,10 @@ public class VendorRequestDto implements Serializable {
     /**
      * Website URL of the company associated with the vendor.
      */
+    @Pattern(
+            regexp = "^(https?://)?(www\\.)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}([/a-zA-Z0-9-._~:?#[\\\\]@!$&'()*+,;=%]*)?$",
+            message = "Invalid website format."
+    )
     private String website;
 
     /**

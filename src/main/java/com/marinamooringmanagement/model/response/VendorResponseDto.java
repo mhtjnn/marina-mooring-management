@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * The {@code VendorResponseDto} class represents a Data Transfer Object (DTO) for vendor response.
  * This class is used to transfer vendor data, including information about the company, contact details,
@@ -16,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VendorResponseDto {
 
-    private static final long serialVersionUID = 5502680635079L;
+    private static final long serialVersionUID = 55268635079L;
 
     private Integer id;
 
@@ -108,4 +110,6 @@ public class VendorResponseDto {
     private String salesRepNote;
 
     private Integer userId;
+
+    private List<InventoryResponseDto> inventoryResponseDtoList;
 }

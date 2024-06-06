@@ -1,0 +1,29 @@
+package com.marinamooringmanagement.model.response;
+
+import com.marinamooringmanagement.model.dto.InventoryTypeDto;
+import com.marinamooringmanagement.model.dto.VendorDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class InventoryResponseDto {
+
+    private Integer id;
+
+    private String itemName;
+
+    private BigDecimal cost;
+
+    private BigDecimal salePrice;
+
+    private Boolean taxable;
+
+    private InventoryTypeDto inventoryType;
+}

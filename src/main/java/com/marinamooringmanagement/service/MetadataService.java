@@ -2,6 +2,7 @@ package com.marinamooringmanagement.service;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface MetadataService {
     BasicRestResponse fetchStatus(final BaseSearchRequest baseSearchRequest);
@@ -22,7 +23,9 @@ public interface MetadataService {
 
     BasicRestResponse fetchPennantConditions(final BaseSearchRequest baseSearchRequest);
 
-    BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId);
+    BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
-    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId);
+    BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchInventoryType(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 }
