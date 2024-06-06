@@ -333,7 +333,7 @@ public class MooringServiceImpl implements MooringService {
                     if(null == id) {
                         throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
                     } else {
-                        if(!optionalMooring.get().getMooringId().equals(mooringRequestDto.getMooringId())) throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
+                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
                     }
                 }
             }
