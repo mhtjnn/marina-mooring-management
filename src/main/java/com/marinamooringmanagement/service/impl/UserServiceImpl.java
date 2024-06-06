@@ -17,6 +17,7 @@ import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.utils.SortUtils;
 import io.jsonwebtoken.io.Decoders;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,16 +77,17 @@ public class UserServiceImpl implements UserService {
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param customerOwnerId the unique identifier of the customer admin whose associated users are to be fetched.
      * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the user search.
      */
     @Override
-    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId, final String searchText) {
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
 
         // get the role of the logged-in user.
-        final String role = loggedInUserUtil.getLoggedInUserRole();
+        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
+        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
@@ -120,20 +122,26 @@ public class UserServiceImpl implements UserService {
                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
                     * as logged-in user ID.
                     */
-                    if(role.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(null == customerOwnerId) {
-                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER)));
+                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                        if(customerOwnerId == -1) {
+                            predicates.add(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER));
                         } else {
-                            predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
                             predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), customerOwnerId)));
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
+                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
+                            ));
                         }
-                    } else if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        predicates.add(criteriaBuilder.or(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)));
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), loggedInUserUtil.getLoggedInUserID())));
+                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
+                            throw new RuntimeException("Not authorized to perform operations on customer with different customer owner id");
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
+                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
+                                ));
+                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), loggedInUserId)));
                     } else {
-                        throw new RuntimeException("Not authorized");
+                        throw new RuntimeException("Not Authorized");
                     }
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
@@ -200,7 +208,7 @@ public class UserServiceImpl implements UserService {
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse saveUser(final UserRequestDto userRequestDto) {
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final HttpServletRequest request) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -218,7 +226,7 @@ public class UserServiceImpl implements UserService {
             /*
              * Calling the function which saves user to database with modification if required.
              */
-            performSave(userRequestDto, user, null);
+            performSave(userRequestDto, user, null, request);
 
             response.setMessage("User saved successfully");
             response.setStatus(HttpStatus.CREATED.value());
@@ -235,16 +243,21 @@ public class UserServiceImpl implements UserService {
      * Deletes a user from the database.
      *
      * @param userId The ID of the user to delete.
-     * @param customerAdminId The ID of the customer admin if applicable.
+
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse deleteUser(final Integer userId, final Integer customerAdminId) {
+    public BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info(String.format("delete user with given userId"));
+
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
+
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             // Fetching the optional of user from the database.
             Optional<User> optionalUser = userRepository.findById(userId);
@@ -258,11 +271,22 @@ public class UserServiceImpl implements UserService {
             // Getting the user which is requested to be deleted.
             User userToBeDeleted = optionalUser.get();
 
+            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+                if(customerOwnerId == -1 && (userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE) || userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN))) throw new RuntimeException("Please select a customer owner");
+                else if(customerOwnerId != -1 && !customerOwnerId.equals(userToBeDeleted.getCustomerOwnerId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
+                if (!userToBeDeleted.getId().equals(loggedInUserID))
+                    throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
+            } else{
+                throw new RuntimeException("Not Authorized");
+            }
+
             /*
             * Calling the function to check if the logged-in user has the authority to perform the delete
             *  operation on the user which is requested to be deleted.
             */
-            if(!checkForAuthority(customerAdminId, userToBeDeleted.getRole().getName())) throw new RuntimeException("Not authorized");
+            if(!checkForAuthority(customerOwnerId, userToBeDeleted.getRole().getName())) throw new RuntimeException("Not authorized");
 
             /*
             * A boolean variable which is true if the user(to be deleted) is of FINANCE or TECHNICIAN role.
@@ -316,7 +340,7 @@ public class UserServiceImpl implements UserService {
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId) {
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, Integer userId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -336,7 +360,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 //calling the performSave() function to update the changes and save the user.
-                performSave(userRequestDto, user, userId);
+                performSave(userRequestDto, user, userId, request);
                 response.setMessage("User updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             } else {
@@ -476,7 +500,7 @@ public class UserServiceImpl implements UserService {
      * @param userId The ID of the user to update, if applicable.
      * @return The saved or updated {@code User} entity.
      */
-    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId) {
+    public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId, final HttpServletRequest request) {
         //Getting the role of the logged-in role
         final String role = loggedInUserUtil.getLoggedInUserRole();
 
@@ -484,6 +508,8 @@ public class UserServiceImpl implements UserService {
             Optional<Role> optionalRole = Optional.empty();
 
             Role savedRole = null;
+
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             if(null != userRequestDto.getRoleId()) {
                 optionalRole = roleRepository.findById(userRequestDto.getRoleId());
@@ -506,7 +532,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(userRequestDto.getCustomerOwnerId(), savedRole.getName()))
+            if (!checkForAuthority(customerOwnerId, savedRole.getName()))
                 throw new RuntimeException("Not authorized!!!");
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
@@ -525,7 +551,7 @@ public class UserServiceImpl implements UserService {
 
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
             if (savedRole.getName().equals(AppConstants.Role.TECHNICIAN)
-                    || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(userRequestDto.getCustomerOwnerId());
+                    || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerOwnerId);
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
@@ -623,7 +649,8 @@ public class UserServiceImpl implements UserService {
      */
     public boolean checkForAuthority(Integer customerOwnerId, final String role) {
         //Getting the logged-in user role
-        String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
         /*
          * Boolean variable stating true if the role(of the user on which operations would be performed)
@@ -641,21 +668,24 @@ public class UserServiceImpl implements UserService {
         * No user exists with the given customer admin ID and if the user exists with the given customerAdminId but that user role
         * is different from CUSTOMER_OWNER then we throw error as No user with CUSTOMER_OWNER role exists with the given customer admin ID.
         */
-        if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            if(null != customerOwnerId && !customerOwnerId.equals(loggedInUserUtil.getLoggedInUserID())) throw new RuntimeException(String.format("Cannot perform operation using other user Id: %1$s", customerOwnerId));
-            if(role.equals(AppConstants.Role.ADMINISTRATOR) || role.equals(AppConstants.Role.CUSTOMER_OWNER))
-                throw new RuntimeException(String.format("Not authorized to perform operations for %1$s role", role));
-        } else if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(roleTechnicianOrFinance) {
-                if(null == customerOwnerId) throw new RuntimeException("Please select a CUSTOMER OWNER to save user with TECHNICIAN or FINANCE role.");
-                Optional<User> optionalUser =  userRepository.findById(customerOwnerId);
-                if(optionalUser.isEmpty()) throw new RuntimeException("No user exists with the given customer admin ID");
-                if(null == optionalUser.get().getRole() || !optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException("No user with CUSTOMER_OWNER role exists with the given customer admin ID");
+        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+            if(customerOwnerId == -1 && (role.equals(AppConstants.Role.FINANCE) || role.equals(AppConstants.Role.TECHNICIAN))) throw new RuntimeException("Please select a customer owner");
+            if(customerOwnerId != -1) {
+                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
+                if (optionalUser.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
+                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
             }
+        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
+                throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
+            customerOwnerId = loggedInUserId;
+            Optional<User> optionalUser = userRepository.findById(loggedInUserId);
+            if (optionalUser.isEmpty())
+                throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
         } else {
-            //User with TECHNICIAN/FINANCE have no authority to perform operation on user.
-            throw new RuntimeException("Not Authorized!!!");
+            throw new RuntimeException("Not Authorized");
         }
 
         return true;

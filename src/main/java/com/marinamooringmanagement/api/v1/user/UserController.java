@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,6 @@ public class UserController extends GlobalExceptionHandler {
      * @param pageSize        Number of records per page, default is 20.
      * @param sortBy          Attribute name to sort the users, default is "id".
      * @param sortDir         Direction of sorting, can be either "asc" for ascending or "desc" for descending, default is "asc".
-     * @param customerAdminId ID of the customer admin for filtering users.
      * @param searchText      Optional parameter for searching users by text.
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
@@ -72,16 +72,16 @@ public class UserController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field to be compared for sorting)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Direction(asc --> ascending and dsc --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @RequestParam(value = "customerOwnerId", required = false) final Integer customerOwnerId,
-            @RequestParam(value = "searchText", required = false) final String searchText
-    ) {
+            @RequestParam(value = "searchText", required = false) final String searchText,
+            final HttpServletRequest request
+            ) {
         BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return userService.fetchUsers(baseSearchRequest, customerOwnerId, searchText);
+        return userService.fetchUsers(baseSearchRequest, searchText, request);
     }
 
     /**
@@ -117,9 +117,10 @@ public class UserController extends GlobalExceptionHandler {
     )
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse saveUser(
-            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user
+            @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user,
+            final HttpServletRequest request
     ) {
-        return userService.saveUser(user);
+        return userService.saveUser(user, request);
     }
 
     /**
@@ -157,9 +158,10 @@ public class UserController extends GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer userId,
-            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto
+            @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto,
+            final HttpServletRequest request
     ) {
-        return userService.updateUser(userRequestDto, userId);
+        return userService.updateUser(userRequestDto, userId, request);
     }
 
     /**
@@ -196,9 +198,10 @@ public class UserController extends GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse deleteUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("userId") Integer userId,
-            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId
+            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,
+            final HttpServletRequest request
     ) {
-        return userService.deleteUser(userId, customerAdminId);
+        return userService.deleteUser(userId, request);
     }
 
 }

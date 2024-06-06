@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Interface for User Service.
@@ -20,7 +21,7 @@ public interface UserService {
      * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the user search.
      */
-    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final Integer customerOwnerId, final String searchText);
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 
     /**
      * Saves a new user or updates an existing user.
@@ -28,7 +29,7 @@ public interface UserService {
      * @param userRequestDto The user request DTO.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse saveUser(final UserRequestDto userRequestDto);
+    public BasicRestResponse saveUser(final UserRequestDto userRequestDto, final HttpServletRequest request);
 
     /**
      * Deletes a user from the database.
@@ -37,7 +38,7 @@ public interface UserService {
      * @param customerAdminId The ID of the customer admin for deleting the user.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    BasicRestResponse deleteUser(final Integer userId, final Integer customerAdminId);
+    BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request);
 
     /**
      * Updates an existing user.
@@ -46,7 +47,7 @@ public interface UserService {
      * @param userId         The ID of the user to be updated.
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
-    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId);
+    public BasicRestResponse updateUser(final UserRequestDto userRequestDto, final Integer userId, final HttpServletRequest request);
 
     /**
      * Finds a user by their email address.
