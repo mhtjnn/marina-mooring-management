@@ -324,9 +324,9 @@ public class CustomerServiceImpl implements CustomerService {
             response.setStatus(HttpStatus.OK.value());
 
         } catch (Exception e) {
-            log.error(String.format("Error occurred while updating customer: %s", e.getMessage()), e);
+            log.error(e.getLocalizedMessage());
             response.setMessage(e.getLocalizedMessage());
-            response.setStatus(HttpStatus.OK.value());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
     }
@@ -424,50 +424,52 @@ public class CustomerServiceImpl implements CustomerService {
 
             List<Mooring> mooringList = (null == customer.getMooringList()) ? new ArrayList<>() : customer.getMooringList();
 
-            for(MooringRequestDto mooringRequestDto: customerRequestDto.getMooringRequestDtoList()) {
+            if(null != customerRequestDto.getMooringRequestDtoList()) {
+                for (MooringRequestDto mooringRequestDto : customerRequestDto.getMooringRequestDtoList()) {
 
-                // Setting the customer Id here.
-                mooringRequestDto.setCustomerId(savedCustomer.getId());
+                    // Setting the customer Id here.
+                    mooringRequestDto.setCustomerId(savedCustomer.getId());
 
-                Optional<Mooring> optionalMooring = Optional.empty();
-                if (null != mooringRequestDto.getMooringId()) {
-                    optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
-                    if (optionalMooring.isPresent()) {
-                        if (null == id) {
-                            throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
-                        } else {
-                            if (!optionalMooring.get().getId().equals(mooringRequestDto.getId()))
-                                throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
+                    Optional<Mooring> optionalMooring = Optional.empty();
+                    if (null != mooringRequestDto.getMooringId()) {
+                        optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+                        if (optionalMooring.isPresent()) {
+                            if (null == id) {
+                                throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
+                            } else {
+                                if (!optionalMooring.get().getId().equals(mooringRequestDto.getId()))
+                                    throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
+                            }
                         }
+                    } else {
+                        throw new RuntimeException("Mooring Id cannot be null");
                     }
-                } else {
-                    throw new RuntimeException("Mooring Id cannot be null");
-                }
 
-                if (null != mooringRequestDto.getMooringId())
-                    optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
-                Mooring mooring = null;
-                if (optionalMooring.isPresent()) {
-                    optionalMooring.get().setCustomer(savedCustomer);
-                    mooring = mooringService.performSave(
-                            mooringRequestDto,
-                            optionalMooring.get(),
-                            optionalMooring.get().getId(),
-                            request
-                    );
-                } else {
-                    mooring = mooringService
-                            .performSave(
-                                    mooringRequestDto,
-                                    Mooring.builder().customer(savedCustomer).build(),
-                                    null,
-                                    request
-                            );
-                }
+                    if (null != mooringRequestDto.getMooringId())
+                        optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+                    Mooring mooring = null;
+                    if (optionalMooring.isPresent()) {
+                        optionalMooring.get().setCustomer(savedCustomer);
+                        mooring = mooringService.performSave(
+                                mooringRequestDto,
+                                optionalMooring.get(),
+                                optionalMooring.get().getId(),
+                                request
+                        );
+                    } else {
+                        mooring = mooringService
+                                .performSave(
+                                        mooringRequestDto,
+                                        Mooring.builder().customer(savedCustomer).build(),
+                                        null,
+                                        request
+                                );
+                    }
 
-                mooringList.add(mooring);
+                    mooringList.add(mooring);
+                }
+                savedCustomer.setMooringList(mooringList);
             }
-            savedCustomer.setMooringList(mooringList);
             savedCustomer.setLastModifiedDate(new Date());
             customerRepository.save(savedCustomer);
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
