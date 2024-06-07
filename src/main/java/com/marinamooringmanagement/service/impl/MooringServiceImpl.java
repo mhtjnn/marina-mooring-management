@@ -268,8 +268,10 @@ public class MooringServiceImpl implements MooringService {
             if(null != optionalMooring.get().getCustomer()) {
                 Customer customer = optionalMooring.get().getCustomer();
                 List<Mooring> mooringList = customer.getMooringList();
-                mooringList.remove(optionalMooring.get());
+                mooringList.removeIf(mooring -> mooring.getId().equals(optionalMooring.get().getId()));
                 customerRepository.save(customer);
+            } else {
+                throw new RuntimeException(String.format("Mooring with the id: %1$s is not assigned to any customer", id));
             }
 
             mooringRepository.deleteById(id);
@@ -340,14 +342,14 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null == mooringRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");
+
             Optional<Customer> optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
-//            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalCustomer.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Customer");
 
             if (null == mooringRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Id cannot be null");
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
             if (optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
-//            if(!mooringRequestDto.getCustomerOwnerId().equals(optionalBoatyard.get().getUser().getId())) throw new RuntimeException("Customer Owner Id differ in Mooring and Boatyard");
+
             mooring.setBoatyard(optionalBoatyard.get());
 
             Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);

@@ -111,6 +111,8 @@ public class MooringResponseDto implements Serializable {
      */
     private Integer depthAtMeanHighWater;
 
+    private String mainContact;
+
     /**
      * The status of mooring
      */

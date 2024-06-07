@@ -318,6 +318,8 @@ public class BoatyardServiceImpl implements BoatyardService {
                 throw new RuntimeException("Not Authorized");
             }
 
+            final Boatyard boatyard = optionalBoatyard.get();
+
             List<MooringResponseDto> mooringResponseDtoList = optionalBoatyard
                     .get()
                     .getMooringList()
@@ -327,6 +329,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if (null != mooring.getCustomer())
                             mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+                        if(null != boatyard.getMainContact()) mooringResponseDto.setMainContact(boatyard.getMainContact());
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
