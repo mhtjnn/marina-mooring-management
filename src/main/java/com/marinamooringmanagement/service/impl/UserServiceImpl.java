@@ -276,7 +276,7 @@ public class UserServiceImpl implements UserService {
                 else if(customerOwnerId != -1 && !customerOwnerId.equals(userToBeDeleted.getCustomerOwnerId())) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
             } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
                 if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
-                if(null == userToBeDeleted.getCustomerOwnerId()) throw new RuntimeException(String.format("Not Authorized to perform operation with role as Administrator and Customer owner"));
+                if(null == userToBeDeleted.getCustomerOwnerId()) throw new RuntimeException(String.format("Not Authorized to perform operation on user with role as Administrator and Customer owner"));
                 if (!userToBeDeleted.getCustomerOwnerId().equals(loggedInUserID))
                     throw new RuntimeException("Not authorized to perform operations on user with different customer owner Id");
             } else{
@@ -354,11 +354,6 @@ public class UserServiceImpl implements UserService {
                 final User user = optionalUser.get();
 
                 log.info(String.format("update user"));
-
-                //This will throw error if the email is requested to change.
-                if (null != userRequestDto.getEmail() && !userRequestDto.getEmail().equals(user.getEmail())) {
-                    throw new RuntimeException("Email cannot be updated");
-                }
 
                 //calling the performSave() function to update the changes and save the user.
                 performSave(userRequestDto, user, userId, request);
@@ -502,11 +497,12 @@ public class UserServiceImpl implements UserService {
      * @return The saved or updated {@code User} entity.
      */
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId, final HttpServletRequest request) {
-        //Getting the role of the logged-in role
-        final String role = loggedInUserUtil.getLoggedInUserRole();
-
+        User savedUser = null;
         try {
             Optional<Role> optionalRole = Optional.empty();
+
+            //Getting the role of the logged-in role
+            final String role = loggedInUserUtil.getLoggedInUserRole();
 
             Role savedRole = null;
 
@@ -554,6 +550,13 @@ public class UserServiceImpl implements UserService {
             //If the user(called for performSave()) is of TECHNICIAN or FINANCE role then we are setting customerAdminId.
             if (savedRole.getName().equals(AppConstants.Role.TECHNICIAN)
                     || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerOwnerId);
+
+            //Updating email of the user
+            if(null != userRequestDto.getEmail() && !StringUtils.equals(user.getEmail(), userRequestDto.getEmail())) {
+                Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
+                if(optionalUser.isPresent() && !user.getId().equals(optionalUser.get().getId())) throw new RuntimeException(String.format("Given email as: %1$s is already present for some other user", userRequestDto.getEmail()));
+                user.setEmail(userRequestDto.getEmail());
+            }
 
             // Setting the password if not null
             if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
@@ -622,13 +625,14 @@ public class UserServiceImpl implements UserService {
                 if(null == userId) throw new RuntimeException("State cannot be null");
             }
 
+            savedUser = userRepository.save(user);
 
         } catch (Exception e) {
             log.error("Error occurred during perform save method {}", e.getLocalizedMessage());
             throw new RuntimeException(e.getLocalizedMessage());
         }
 
-        return userRepository.save(user);
+        return savedUser;
     }
 
     private boolean isInPasswordFormat(String password) {
@@ -671,7 +675,7 @@ public class UserServiceImpl implements UserService {
         * is different from CUSTOMER_OWNER then we throw error as No user with CUSTOMER_OWNER role exists with the given customer admin ID.
         */
         if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(customerOwnerId == -1 && (role.equals(AppConstants.Role.FINANCE) || role.equals(AppConstants.Role.TECHNICIAN))) throw new RuntimeException("Please select a customer owner");
+            if(customerOwnerId == -1 && roleTechnicianOrFinance) throw new RuntimeException("Please select a customer owner");
             if(customerOwnerId != -1) {
                 Optional<User> optionalUser = userRepository.findById(customerOwnerId);
                 if (optionalUser.isEmpty())

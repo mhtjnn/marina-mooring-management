@@ -45,6 +45,7 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
+    @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "customerOwnerId", ignore = true)
     @Mapping(target = "companyName", ignore = true)
