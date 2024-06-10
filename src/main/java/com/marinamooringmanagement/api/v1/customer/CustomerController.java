@@ -143,9 +143,10 @@ public class CustomerController extends GlobalExceptionHandler {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerWithMoorings(
-            @PathVariable("id") final Integer customerId
+            @PathVariable("id") final Integer customerId,
+            final HttpServletRequest request
     ) {
-        return customerService.fetchCustomerAndMoorings(customerId);
+        return customerService.fetchCustomerAndMoorings(customerId, request);
     }
 
     /**

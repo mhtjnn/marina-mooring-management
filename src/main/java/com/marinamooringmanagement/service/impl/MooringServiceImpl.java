@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
@@ -14,6 +13,7 @@ import com.marinamooringmanagement.model.response.BoatyardResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
+import com.marinamooringmanagement.security.config.AuthorizationUtil;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -103,6 +103,9 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private BoatyardMapper boatyardMapper;
 
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -117,9 +120,6 @@ public class MooringServiceImpl implements MooringService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("API called to fetch all the moorings in the database");
-
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
@@ -136,16 +136,7 @@ public class MooringServiceImpl implements MooringService {
                         ));
                     }
 
-                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(mooring.join("user").get("id"), customerOwnerId)));
-                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
-                            throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner id");
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(mooring.join("user").get("id"), loggedInUserId)));
-                    } else {
-                        throw new RuntimeException("Not Authorized");
-                    }
+                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, mooring, criteriaBuilder));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
@@ -246,23 +237,18 @@ public class MooringServiceImpl implements MooringService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
-
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
             if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
+            final Mooring savedMooring = optionalMooring.get();
 
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-                else if(!customerOwnerId.equals(optionalMooring.get().getUser().getId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
-                if (!optionalMooring.get().getUser().getId().equals(loggedInUserID))
-                    throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
-            } else{
-                throw new RuntimeException("Not Authorized");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            if(null != savedMooring.getUser()) {
+                if(!savedMooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other user", id));
+            } else {
+                throw new RuntimeException(String.format("Mooring with the id: %1$s is not associated with any User", id));
             }
 
             if(null != optionalMooring.get().getCustomer()) {
@@ -299,31 +285,9 @@ public class MooringServiceImpl implements MooringService {
         try {
             log.info("performSave() function called");
 
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
-            User user = null;
-            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
-                if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-                user = optionalUser.get();
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
-                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
-                customerOwnerId = loggedInUserId;
-                Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                user = optionalUser.get();
-            } else {
-                throw new RuntimeException("Not Authorized");
-            }
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Mooring> optionalMooring = Optional.empty();
             Mooring savedMooring = null;
@@ -342,14 +306,18 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null == mooringRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");
-
             Optional<Customer> optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
+            mooring.setCustomer(optionalCustomer.get());
+            final Customer customer = optionalCustomer.get();
+            if(!customer.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
+
 
             if (null == mooringRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Id cannot be null");
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
             if (optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
-
+            final Boatyard boatyard = optionalBoatyard.get();
+            if(!boatyard.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other customer owner", mooringRequestDto.getBoatyardId()));
             mooring.setBoatyard(optionalBoatyard.get());
 
             Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);
@@ -431,7 +399,6 @@ public class MooringServiceImpl implements MooringService {
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
-            mooring.setCustomer(optionalCustomer.get());
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 

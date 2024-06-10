@@ -57,5 +57,5 @@ public interface BoatyardService {
      * @param id the ID of the boatyard.
      * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
      */
-    BasicRestResponse fetchMooringsWithBoatyard(final Integer id);
+    BasicRestResponse fetchMooringsWithBoatyard(final Integer id, final HttpServletRequest request);
 }

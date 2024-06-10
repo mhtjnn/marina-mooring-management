@@ -11,6 +11,7 @@ import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.config.AuthorizationUtil;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -83,6 +84,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private CountryMapper countryMapper;
 
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
+
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     /**
@@ -129,10 +133,6 @@ public class CustomerServiceImpl implements CustomerService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Specification<Customer> spec = new Specification<Customer>() {
@@ -148,16 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
                         ));
                     }
 
-                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(customer.join("user").get("id"), customerOwnerId)));
-                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
-                            throw new RuntimeException("Not authorized to perform operations on customer with different customer owner id");
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(customer.join("user").get("id"), loggedInUserId)));
-                    } else {
-                        throw new RuntimeException("Not Authorized");
-                    }
+                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, customer, criteriaBuilder));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
@@ -199,16 +190,26 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public BasicRestResponse fetchCustomerAndMoorings(final Integer customerId) {
+    public BasicRestResponse fetchCustomerAndMoorings(final Integer customerId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
             Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
 
-            if (optionalCustomer.isEmpty()) throw new ResourceNotFoundException("No customer found with the given ID");
+            if (optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given ID: %1$s", customerId));
 
             final Customer customer = optionalCustomer.get();
+
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            if(null != customer.getUser()) {
+                if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));
+            } else {
+                throw new RuntimeException(String.format("Customer with the id: %1$s is not associated with any User", customerId));
+            }
 
             CustomerResponseDto customerResponseDto = CustomerResponseDto.builder().build();
             customerMapper.mapToCustomerResponseDto(customerResponseDto, customer);
@@ -228,7 +229,9 @@ public class CustomerServiceImpl implements CustomerService {
             );
 
             List<Mooring> mooringList = new ArrayList<>();
-            if(null != optionalCustomer.get().getMooringList()) mooringList = optionalCustomer.get().getMooringList();
+            if(null != optionalCustomer.get().getMooringList())
+                mooringList = optionalCustomer.get().getMooringList().stream().filter(mooring -> mooring.getUser().getId().equals(optionalCustomer.get().getUser().getId())).toList();
+
             List<Boatyard> boatyards = new ArrayList<>();
             List<String> boatyardNames = new ArrayList<>();
             List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
@@ -346,31 +349,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer savedCustomer = null;
 
         try {
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
-            User user = null;
-            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
-                if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-                user = optionalUser.get();
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
-                    throw new RuntimeException("Cannot do operations on customer with different customer owner Id");
-                customerOwnerId = loggedInUserId;
-                Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-                if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                user = optionalUser.get();
-            } else {
-                throw new RuntimeException("Not Authorized");
-            }
+            User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if (null != customerRequestDto.getEmailAddress()) {
                 Optional<Customer> optionalCustomer = customerRepository.findByEmailAddress(customerRequestDto.getEmailAddress());
@@ -490,10 +472,8 @@ public class CustomerServiceImpl implements CustomerService {
     public BasicRestResponse deleteCustomerById(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
-
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
 
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if (optionalCustomer.isEmpty())
@@ -501,15 +481,12 @@ public class CustomerServiceImpl implements CustomerService {
             Customer customer = optionalCustomer.get();
             List<Mooring> mooringList = customer.getMooringList();
 
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-              if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-              else if(!customerOwnerId.equals(customer.getUser().getId())) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on customer with different customer owner id");
-                if (!customer.getUser().getId().equals(loggedInUserID))
-                    throw new RuntimeException("Not authorized to perform operations on mooring with different customer owner Id");
-            } else{
-                throw new RuntimeException("Not Authorized");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            if(null != customer.getUser()) {
+                if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", id));
+            } else {
+                throw new RuntimeException(String.format("Customer with the id: %1$s is not associated with any User", id));
             }
 
             if (!mooringList.isEmpty()) {

@@ -11,6 +11,7 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.security.config.AuthorizationUtil;
 import com.marinamooringmanagement.security.config.JwtUtil;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.UserService;
@@ -73,20 +74,18 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private LoggedInUserUtil loggedInUserUtil;
 
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
+
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
-     * @param searchText the text used to search for specific users by name, email, role, or other relevant criteria.
+     * @param searchText        the text used to search for specific users by name, email, role, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the user search.
      */
     @Override
     public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
-
-        // get the role of the logged-in user.
-        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-
         final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -99,9 +98,9 @@ public class UserServiceImpl implements UserService {
                     List<Predicate> predicates = new ArrayList<>();
 
                     /*
-                    * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
-                    * else we are checking name, email and phone number(saved as string).
-                    */
+                     * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
+                     * else we are checking name, email and phone number(saved as string).
+                     */
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
@@ -113,36 +112,16 @@ public class UserServiceImpl implements UserService {
                     }
 
                     /*
-                    * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
-                    * it will add those users with CUSTOMER_OWNER role.
-                    * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
-                    * and FINANCE role having customerAdminId as given customerAdminId.
-                    *
-                    * If the logged-in user if of role as CUSTOMER_OWNER then
-                    * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
-                    * as logged-in user ID.
-                    */
-                    if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                        if(customerOwnerId == -1) {
-                            predicates.add(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER));
-                        } else {
-                            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), customerOwnerId)));
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
-                            ));
-                        }
-                    } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                        if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
-                            throw new RuntimeException("Difference in customer owner Id");
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                                criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
-                                ));
-                        predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), loggedInUserId)));
-                    } else {
-                        throw new RuntimeException("Not Authorized");
-                    }
+                     * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
+                     * it will add those users with CUSTOMER_OWNER role.
+                     * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
+                     * and FINANCE role having customerAdminId as given customerAdminId.
+                     *
+                     * If the logged-in user if of role as CUSTOMER_OWNER then
+                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
+                     * as logged-in user ID.
+                     */
+                    predicates.add(authorizationUtil.fetchPredicateForUser(customerOwnerId, user, criteriaBuilder));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
@@ -172,7 +151,7 @@ public class UserServiceImpl implements UserService {
                         userResponseDto.setRoleResponseDto(roleResponseDto);
 
                         StateResponseDto stateResponseDto = null;
-                        if(null != user.getState()) stateResponseDto = StateResponseDto.builder()
+                        if (null != user.getState()) stateResponseDto = StateResponseDto.builder()
                                 .id(user.getState().getId())
                                 .label(user.getState().getLabel())
                                 .name(user.getState().getName())
@@ -217,7 +196,8 @@ public class UserServiceImpl implements UserService {
 
             Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
 
-            if(optionalUser.isPresent()) throw new RuntimeException(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
+            if (optionalUser.isPresent())
+                throw new RuntimeException(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
 
             final User user = User.builder().build();
 
@@ -233,7 +213,8 @@ public class UserServiceImpl implements UserService {
 
         } catch (Exception e) {
             response.setMessage(e.getMessage());
-            if(e.getLocalizedMessage().startsWith("Query")) response.setMessage(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
+            if (e.getLocalizedMessage().startsWith("Query"))
+                response.setMessage(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
@@ -243,7 +224,6 @@ public class UserServiceImpl implements UserService {
      * Deletes a user from the database.
      *
      * @param userId The ID of the user to delete.
-
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
@@ -254,66 +234,47 @@ public class UserServiceImpl implements UserService {
         try {
             log.info(String.format("delete user with given userId"));
 
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserID = loggedInUserUtil.getLoggedInUserID();
-
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             // Fetching the optional of user from the database.
             Optional<User> optionalUser = userRepository.findById(userId);
 
             /*
-            * If no user exists with the given ID then this condition will throw an error
-            * else this condition will be passed.
-            */
+             * If no user exists with the given ID then this condition will throw an error
+             * else this condition will be passed.
+             */
             if (optionalUser.isEmpty()) throw new ResourceNotFoundException("No user found with the given ID");
 
             // Getting the user which is requested to be deleted.
             User userToBeDeleted = optionalUser.get();
 
-            if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                if(customerOwnerId == -1 && (userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE) || userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN))) throw new RuntimeException("Please select a customer owner");
-                else if(customerOwnerId != -1 && !customerOwnerId.equals(userToBeDeleted.getCustomerOwnerId())) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
-                if(null == userToBeDeleted.getCustomerOwnerId()) throw new RuntimeException(String.format("Not Authorized to perform operation on user with role as Administrator and Customer owner"));
-                if (!userToBeDeleted.getCustomerOwnerId().equals(loggedInUserID))
-                    throw new RuntimeException("Not authorized to perform operations on user with different customer owner Id");
-            } else{
-                throw new RuntimeException("Not Authorized");
-            }
+            authorizationUtil.checkAuthorityForDeleteUser(customerOwnerId, userToBeDeleted);
 
             /*
-            * Calling the function to check if the logged-in user has the authority to perform the delete
-            *  operation on the user which is requested to be deleted.
-            */
-            if(!checkForAuthority(customerOwnerId, userToBeDeleted.getRole().getName())) throw new RuntimeException("Not authorized");
-
-            /*
-            * A boolean variable which is true if the user(to be deleted) is of FINANCE or TECHNICIAN role.
-            */
+             * A boolean variable which is true if the user(to be deleted) is of FINANCE or TECHNICIAN role.
+             */
             boolean roleTechnicianOrFinance = userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN)
                     || userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE);
 
             /*
-            * If the logged-in user role is CUSTOMER_OWNER and the user(to be deleted) is of TECHNICIAN and FINANCE
-            * role then if the user(to be deleted) customerAdminId doesn't match the logged-in user Id then this will
-            * throw error as logged-in user has no authority to delete user with different customerAdminId.
-            */
-            if(StringUtils.equals(loggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
-                if(!Objects.equals(userToBeDeleted.getCustomerOwnerId(), loggedInUserUtil.getLoggedInUserID()))
+             * If the logged-in user role is CUSTOMER_OWNER and the user(to be deleted) is of TECHNICIAN and FINANCE
+             * role then if the user(to be deleted) customerAdminId doesn't match the logged-in user Id then this will
+             * throw error as logged-in user has no authority to delete user with different customerAdminId.
+             */
+            if (StringUtils.equals(loggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER) && roleTechnicianOrFinance) {
+                if (!Objects.equals(userToBeDeleted.getCustomerOwnerId(), loggedInUserUtil.getLoggedInUserID()))
                     throw new RuntimeException("Not authorized to delete user with different customer admin ID");
             }
 
             /*
-            * If the user(to be deleted) is of CUSTOMER_OWNER role then all the TECHNICIAN and FINANCE role
-            * user are also deleted.
-            */
-            if(userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
+             * If the user(to be deleted) is of CUSTOMER_OWNER role then all the TECHNICIAN and FINANCE role
+             * user are also deleted.
+             */
+            if (userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
                 userRepository.deleteAll(
                         userRepository.findAll().stream()
-                        .filter(user -> null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
-                        .toList()
+                                .filter(user -> null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
+                                .toList()
                 );
             }
 
@@ -337,7 +298,7 @@ public class UserServiceImpl implements UserService {
      * Updates an existing user in the database.
      *
      * @param userRequestDto The updated user details.
-     * @param userId The ID of the user to update.
+     * @param userId         The ID of the user to update.
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
@@ -391,7 +352,7 @@ public class UserServiceImpl implements UserService {
     /**
      * Updates the password for a user.
      *
-     * @param token The reset password token.
+     * @param token              The reset password token.
      * @param newPasswordRequest The new password details.
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      * @throws Exception If an error occurs during password update.
@@ -405,7 +366,7 @@ public class UserServiceImpl implements UserService {
             byte[] keyBytesNewPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
             final String newPassword = new String(keyBytesNewPassword, StandardCharsets.UTF_8);
 
-            if(!isInPasswordFormat(newPassword)) throw new RuntimeException("Invalid Password Format");
+            if (!isInPasswordFormat(newPassword)) throw new RuntimeException("Invalid Password Format");
 
             byte[] keyBytesConfirmPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
             final String confirmPassword = new String(keyBytesConfirmPassword, StandardCharsets.UTF_8);
@@ -422,7 +383,7 @@ public class UserServiceImpl implements UserService {
             Optional<User> optionalUser = userRepository.findByEmail(email);
 
             /* If no user is present then exception will be thrown as no user with the extracted
-            * email is present in the database.
+             * email is present in the database.
              */
             if (optionalUser.isEmpty()) {
                 throw new ResourceNotFoundException("No User found with the given email ID");
@@ -492,8 +453,8 @@ public class UserServiceImpl implements UserService {
      * Helper function to perform save operation for a user.
      *
      * @param userRequestDto The user details to save or update.
-     * @param user The {@code User} entity to update or save.
-     * @param userId The ID of the user to update, if applicable.
+     * @param user           The {@code User} entity to update or save.
+     * @param userId         The ID of the user to update, if applicable.
      * @return The saved or updated {@code User} entity.
      */
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId, final HttpServletRequest request) {
@@ -508,14 +469,16 @@ public class UserServiceImpl implements UserService {
 
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
-            if(null != userRequestDto.getRoleId()) {
+            if (null != userRequestDto.getRoleId()) {
                 optionalRole = roleRepository.findById(userRequestDto.getRoleId());
-                if(optionalRole.isEmpty()) throw new RuntimeException("No Role found with the given role");
-                if(null != user.getRole() && !StringUtils.equals(optionalRole.get().getName(), user.getRole().getName())) throw new RuntimeException("Role cannot be updated");
+                if (optionalRole.isEmpty()) throw new RuntimeException("No Role found with the given role");
+                if (null != user.getRole() && !StringUtils.equals(optionalRole.get().getName(), user.getRole().getName()))
+                    throw new RuntimeException("Role cannot be updated");
                 savedRole = optionalRole.get();
                 user.setRole(savedRole);
-                if(optionalRole.get().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                    if(null == userRequestDto.getCompanyName()) throw new RuntimeException("Company name cannot be null while saving a new user with CUSTOMER OWNER role");
+                if (optionalRole.get().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
+                    if (null == userRequestDto.getCompanyName())
+                        throw new RuntimeException("Company name cannot be null while saving a new user with CUSTOMER OWNER role");
                     user.setCompanyName(userRequestDto.getCompanyName());
                 }
             } else {
@@ -523,18 +486,17 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * role cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("Role cannot be null");
-                if(null != user.getRole()) savedRole = user.getRole();
-                else throw new RuntimeException(String.format("No role found for the user with the given id: %1$s", userId));
+                if (null == userId) throw new RuntimeException("Role cannot be null");
+                if (null != user.getRole()) savedRole = user.getRole();
+                else
+                    throw new RuntimeException(String.format("No role found for the user with the given id: %1$s", userId));
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            if (!checkForAuthority(customerOwnerId, savedRole.getName())) {
-                throw new RuntimeException("Not authorized!!!");
-            }
+            authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
-            if(null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
+            if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
 
             //mapping the simple properties of the user from the given userRequestDto
             mapper.mapToUser(user, userRequestDto);
@@ -543,7 +505,7 @@ public class UserServiceImpl implements UserService {
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             //If the logged-in user role is CUSTOMER_OWNER then we are setting the given customerAdminId(can be null) to logged-in user Id
-            if(role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            if (role.equals(AppConstants.Role.CUSTOMER_OWNER)) {
                 customerOwnerId = loggedInUserUtil.getLoggedInUserID();
             }
 
@@ -552,33 +514,35 @@ public class UserServiceImpl implements UserService {
                     || savedRole.getName().equals(AppConstants.Role.FINANCE)) user.setCustomerOwnerId(customerOwnerId);
 
             //Updating email of the user
-            if(null != userRequestDto.getEmail() && !StringUtils.equals(user.getEmail(), userRequestDto.getEmail())) {
+            if (null != userRequestDto.getEmail() && !StringUtils.equals(user.getEmail(), userRequestDto.getEmail())) {
                 Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
-                if(optionalUser.isPresent() && !user.getId().equals(optionalUser.get().getId())) throw new RuntimeException(String.format("Given email as: %1$s is already present for some other user", userRequestDto.getEmail()));
+                if (optionalUser.isPresent() && !user.getId().equals(optionalUser.get().getId()))
+                    throw new RuntimeException(String.format("Given email as: %1$s is already present for some other user", userRequestDto.getEmail()));
                 user.setEmail(userRequestDto.getEmail());
             }
 
             // Setting the password if not null
-            if(null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
+            if (null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
 
                 byte[] keyBytesForPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
                 String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
-                if(!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
+                if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
 
                 byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
                 String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
-                if(!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
+                if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
 
                 userRequestDto.setPassword(password);
                 userRequestDto.setConfirmPassword(confirmPassword);
 
                 if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
-                if (userRequestDto.getConfirmPassword().isBlank()) throw new RuntimeException("Confirm Password is blank");
+                if (userRequestDto.getConfirmPassword().isBlank())
+                    throw new RuntimeException("Confirm Password is blank");
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
                     throw new RuntimeException("New Password and confirm password are not equal");
 
                 // If the user(to be updated) tries to update its password then we throw exception as Password cannot be updated.
-                if(null != userId) {
+                if (null != userId) {
                     if (!passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
                         throw new RuntimeException("Password cannot be updated");
                     }
@@ -590,7 +554,7 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * password cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("Password or confirm password cannot be null");
+                if (null == userId) throw new RuntimeException("Password or confirm password cannot be null");
             }
 
             //Setting the state if not null
@@ -606,7 +570,7 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * state cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("State cannot be null");
+                if (null == userId) throw new RuntimeException("State cannot be null");
             }
 
             //Setting the country if not null
@@ -622,7 +586,7 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * country cannot be null.
                  */
-                if(null == userId) throw new RuntimeException("State cannot be null");
+                if (null == userId) throw new RuntimeException("State cannot be null");
             }
 
             savedUser = userRepository.save(user);
@@ -645,56 +609,4 @@ public class UserServiceImpl implements UserService {
         // Validate the password against the pattern
         return password.matches(passwordPattern);
     }
-
-    /**
-     * Checks if the current user has the authority to perform the specified operation.
-     *
-     * @param customerOwnerId The ID of the customer admin if applicable.
-     * @param role The role for which authority is being checked.
-     * @return {@code true} if the current user has the authority, otherwise {@code false}.
-     */
-    public boolean checkForAuthority(Integer customerOwnerId, final String role) {
-        //Getting the logged-in user role
-        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-
-        /*
-         * Boolean variable stating true if the role(of the user on which operations would be performed)
-         * is TECHNICIAN or FINANCE and false for other role.
-         */
-        boolean roleTechnicianOrFinance = role.equals(AppConstants.Role.TECHNICIAN)
-                || role.equals(AppConstants.Role.FINANCE);
-
-        /*
-        * If the logged-in user role is CUSTOMER_OWNER and then if the role(of the user on which operations would be performed)
-        * is ADMINISTRATOR and CUSTOMER_OWNER then we are throwing error as "Not authorized to perform operations for ADMINISTRATOR/CUSTOMER_OWNER role"
-        * If the logged-in user is ADMINISTRATOR and if the role(of the user on which operations would be performed) is TECHNICIAN/FINANCE
-        * then if the customerAdminId is not provided then we throw exception as Customer Admin ID not provided but if the
-        * customerAdminId is provided but no user exists with the provided customerAdminId then we throw exception as
-        * No user exists with the given customer admin ID and if the user exists with the given customerAdminId but that user role
-        * is different from CUSTOMER_OWNER then we throw error as No user with CUSTOMER_OWNER role exists with the given customer admin ID.
-        */
-        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(customerOwnerId == -1 && roleTechnicianOrFinance) throw new RuntimeException("Please select a customer owner");
-            if(customerOwnerId != -1) {
-                Optional<User> optionalUser = userRepository.findById(customerOwnerId);
-                if (optionalUser.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-                if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
-                    throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-            }
-        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
-                throw new RuntimeException("Cannot do operations on user with different customer owner Id");
-            customerOwnerId = loggedInUserId;
-            Optional<User> optionalUser = userRepository.findById(loggedInUserId);
-            if (optionalUser.isEmpty())
-                throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
-        } else {
-            throw new RuntimeException("Not Authorized");
-        }
-
-        return true;
-    }
-
 }

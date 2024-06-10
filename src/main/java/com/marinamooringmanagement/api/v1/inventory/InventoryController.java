@@ -90,8 +90,7 @@ public class InventoryController {
             final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             final @RequestParam(value = "searchText", required = false) String searchText,
-            final @RequestParam(value = "vendorId") Integer vendorId,
-            final HttpServletRequest request
+            final @RequestParam(value = "vendorId") Integer vendorId
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
@@ -99,7 +98,7 @@ public class InventoryController {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return inventoryService.fetchInventories(baseSearchRequest, searchText, vendorId, request);
+        return inventoryService.fetchInventories(baseSearchRequest, searchText, vendorId);
     }
 
     /**

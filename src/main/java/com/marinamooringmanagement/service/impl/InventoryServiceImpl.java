@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.InventoryMapper;
@@ -17,6 +16,7 @@ import com.marinamooringmanagement.repositories.InventoryRepository;
 import com.marinamooringmanagement.repositories.InventoryTypeRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.VendorRepository;
+import com.marinamooringmanagement.security.config.AuthorizationUtil;
 import com.marinamooringmanagement.security.config.LoggedInUserUtil;
 import com.marinamooringmanagement.service.InventoryService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -68,6 +68,9 @@ public class InventoryServiceImpl implements InventoryService {
     @Autowired
     private VendorMapper vendorMapper;
 
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
+
     private static final Logger log = LoggerFactory.getLogger(InventoryServiceImpl.class);
 
     @Override
@@ -93,11 +96,10 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public BasicRestResponse fetchInventories(BaseSearchRequest baseSearchRequest, String searchText, Integer vendorId, HttpServletRequest request) {
+    public BasicRestResponse fetchInventories(BaseSearchRequest baseSearchRequest, String searchText, Integer vendorId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Vendor vendor = checkAuthority(vendorId, request);
             Specification<Inventory> specs = new Specification<Inventory>() {
                 @Override
                 public Predicate toPredicate(Root<Inventory> inventory, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
@@ -175,7 +177,7 @@ public class InventoryServiceImpl implements InventoryService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
 
-            Vendor vendor = checkAuthority(vendorId, request);
+            Vendor vendor = authorizationUtil.checkAuthorityForInventory(vendorId, request);
 
             Optional<Inventory> optionalInventory = inventoryRepository.findById(id);
             if(optionalInventory.isEmpty()) throw new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", id));
@@ -206,7 +208,7 @@ public class InventoryServiceImpl implements InventoryService {
             final HttpServletRequest request) {
 
         try {
-            final Vendor vendor = checkAuthority(vendorId, request);
+            final Vendor vendor = authorizationUtil.checkAuthorityForInventory(vendorId, request);
 
             inventoryMapper.mapToInventory(inventory, inventoryRequestDto);
 
@@ -242,31 +244,5 @@ public class InventoryServiceImpl implements InventoryService {
         } catch (Exception e) {
             throw e;
         }
-    }
-
-    private Vendor checkAuthority(final Integer vendorId, final HttpServletRequest request) {
-        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-        Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
-        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
-                throw new RuntimeException("Not authorized to perform operations on customer with different customer owner id");
-            customerOwnerId = loggedInUserId;
-        } else {
-            throw new RuntimeException("Not Authorized");
-        }
-
-        Optional<Vendor> optionalVendor = vendorRepository.findById(vendorId);
-        if(optionalVendor.isEmpty()) throw new ResourceNotFoundException(String.format("No vendor found with the given id: %1$s", vendorId));
-        final Vendor vendor = optionalVendor.get();
-
-        if(null == vendor.getUser()) throw new RuntimeException(String.format("Vendor with id: %1$s has no user", vendorId));
-
-        if(!vendor.getUser().getId().equals(customerOwnerId)) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner"));
-
-        return vendor;
     }
 }

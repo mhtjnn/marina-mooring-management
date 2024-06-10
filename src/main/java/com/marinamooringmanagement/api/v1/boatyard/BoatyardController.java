@@ -134,9 +134,10 @@ public class BoatyardController extends GlobalExceptionHandler {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringsWithBoatyard(
-            @PathVariable("id") final Integer id
+            @PathVariable("id") final Integer id,
+            final HttpServletRequest request
     ) {
-        return boatyardService.fetchMooringsWithBoatyard(id);
+        return boatyardService.fetchMooringsWithBoatyard(id, request);
     }
 
     /**
