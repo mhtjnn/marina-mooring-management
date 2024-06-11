@@ -1,16 +1,13 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
-import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.RoleMapper;
-import com.marinamooringmanagement.model.dto.RoleDto;
 import com.marinamooringmanagement.model.entity.Role;
-import com.marinamooringmanagement.model.entity.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.RoleResponseDto;
 import com.marinamooringmanagement.repositories.RoleRepository;
-import com.marinamooringmanagement.security.config.LoggedInUserUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.RoleService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;

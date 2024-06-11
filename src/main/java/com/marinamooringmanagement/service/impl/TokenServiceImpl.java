@@ -7,7 +7,7 @@ import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.repositories.UserRepository;
-import com.marinamooringmanagement.security.config.JwtUtil;
+import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

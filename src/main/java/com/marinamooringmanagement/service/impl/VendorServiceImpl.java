@@ -1,7 +1,5 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.constants.AppConstants;
-import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CountryMapper;
 import com.marinamooringmanagement.mapper.StateMapper;
@@ -20,8 +18,8 @@ import com.marinamooringmanagement.repositories.CountryRepository;
 import com.marinamooringmanagement.repositories.StateRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.VendorRepository;
-import com.marinamooringmanagement.security.config.AuthorizationUtil;
-import com.marinamooringmanagement.security.config.LoggedInUserUtil;
+import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.VendorService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -33,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 

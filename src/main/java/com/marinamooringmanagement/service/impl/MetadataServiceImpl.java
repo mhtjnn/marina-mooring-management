@@ -10,7 +10,7 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.BoatyardMetadataResponse;
 import com.marinamooringmanagement.model.response.CustomerMetadataResponse;
 import com.marinamooringmanagement.repositories.*;
-import com.marinamooringmanagement.security.config.LoggedInUserUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;

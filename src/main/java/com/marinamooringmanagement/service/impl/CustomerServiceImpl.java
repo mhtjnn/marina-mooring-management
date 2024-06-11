@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
@@ -11,8 +10,8 @@ import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
-import com.marinamooringmanagement.security.config.AuthorizationUtil;
-import com.marinamooringmanagement.security.config.LoggedInUserUtil;
+import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -410,7 +409,12 @@ public class CustomerServiceImpl implements CustomerService {
                 for (MooringRequestDto mooringRequestDto : customerRequestDto.getMooringRequestDtoList()) {
 
                     // Setting the customer Id here.
-                    mooringRequestDto.setCustomerId(savedCustomer.getId());
+                    if(null == mooringRequestDto.getCustomerId()) mooringRequestDto.setCustomerId(savedCustomer.getId());
+                    else {
+                        if(!mooringRequestDto.getCustomerId().equals(savedCustomer.getId())) {
+                            throw new RuntimeException(String.format("Customer Id: %1$s in mooring is different from id: %2$s of the customer.", mooringRequestDto.getCustomerId(), savedCustomer.getId()));
+                        }
+                    }
 
                     Optional<Mooring> optionalMooring = Optional.empty();
                     if (null != mooringRequestDto.getMooringId()) {

@@ -10,7 +10,7 @@ import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
-import com.marinamooringmanagement.security.config.JwtUtil;
+import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;

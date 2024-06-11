@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.security.config;
+package com.marinamooringmanagement.security.util;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;

@@ -2,6 +2,7 @@ package com.marinamooringmanagement.security.config;
 
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.repositories.TokenRepository;
+import com.marinamooringmanagement.security.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

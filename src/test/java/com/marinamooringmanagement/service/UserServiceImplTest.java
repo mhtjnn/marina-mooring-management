@@ -12,8 +12,8 @@
 //import com.marinamooringmanagement.model.request.UserRequestDto;
 //import com.marinamooringmanagement.model.response.*;
 //import com.marinamooringmanagement.repositories.*;
-//import com.marinamooringmanagement.security.config.JwtUtil;
-//import com.marinamooringmanagement.security.config.LoggedInUserUtil;
+//import com.marinamooringmanagement.security.Util.JwtUtil;
+//import com.marinamooringmanagement.security.Util.LoggedInUserUtil;
 //import com.marinamooringmanagement.security.model.AuthenticationDetails;
 //import com.marinamooringmanagement.service.impl.UserServiceImpl;
 //import com.marinamooringmanagement.utils.SortUtils;

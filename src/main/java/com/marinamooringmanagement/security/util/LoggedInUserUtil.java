@@ -1,10 +1,8 @@
-package com.marinamooringmanagement.security.config;
+package com.marinamooringmanagement.security.util;
 
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 public class LoggedInUserUtil {
