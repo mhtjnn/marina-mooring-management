@@ -41,7 +41,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * GPS coordinates of the mooring.
      */
-    @Pattern(regexp = "^([-+]?[1-8]?\\d(.\\d+)?|90(.0+)?)\\s+([-+]?(1[0-7]\\d(.\\d+)?|[1-9]?\\d(.\\d+)?|180(.0+)?))$", message = "Invalid GPS coordinates format.")
+    @Pattern(regexp = "^(-?\\d{1,3}\\.\\d{1,3}\\s-?\\d{1,5}\\.\\d{1,3})|(\\d{3}\\.\\d{2}\\.\\d{3}\\s\\d{3}\\.\\d{2}\\.\\d{3})$", message = "Invalid GPS coordinates format.")
     private String gpsCoordinates;
 
     /**
