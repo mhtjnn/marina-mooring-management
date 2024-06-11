@@ -28,4 +28,8 @@ public interface MetadataService {
     BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
     BasicRestResponse fetchInventoryType(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchMooringsBasedOnCustomerId(final BaseSearchRequest baseSearchRequest, final Integer customerId, final  HttpServletRequest request);
+
+    BasicRestResponse fetchCustomerOwners(BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 }

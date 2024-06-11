@@ -9,10 +9,13 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.BoatyardMetadataResponse;
 import com.marinamooringmanagement.model.response.CustomerMetadataResponse;
+import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
+import com.marinamooringmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +28,6 @@ import java.util.Optional;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
-
     @Autowired
     private MooringStatusRepository mooringStatusRepository;
 
@@ -97,6 +99,9 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private InventoryTypeMapper inventoryTypeMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -459,6 +464,30 @@ public class MetadataServiceImpl implements MetadataService {
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchMooringsBasedOnCustomerId(BaseSearchRequest baseSearchRequest, Integer customerId, HttpServletRequest request) {
+        return null;
+    }
+
+    @Override
+    public BasicRestResponse fetchCustomerOwners(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+
+            if(!StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)) throw new RuntimeException("No Authorized to fetch Customer Owners");
+
+            return userService.fetchUsers(baseSearchRequest, "", request);
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;

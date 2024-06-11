@@ -347,5 +347,40 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchInventoryType(baseSearchRequest, request);
     }
+
+    @GetMapping("/customerOwners")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchCustomerOwners(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+
+        return metadataService.fetchCustomerOwners(baseSearchRequest, request);
+    }
+
+    @GetMapping("/mooringsBasedOnCustomerId")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchMooringsBasedOnCustomerId(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @RequestParam(value = "customerId") final Integer customerId,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchMooringsBasedOnCustomerId(baseSearchRequest, customerId, request);
+    }
 }
 
