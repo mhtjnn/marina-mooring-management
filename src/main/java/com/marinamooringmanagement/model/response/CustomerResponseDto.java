@@ -23,7 +23,9 @@ public class CustomerResponseDto {
     /**
      * The name of the customer.
      */
-    private String customerName;
+    private String firstName;
+
+    private String lastName;
     /**
      * The identification number or code of the customer.
      */

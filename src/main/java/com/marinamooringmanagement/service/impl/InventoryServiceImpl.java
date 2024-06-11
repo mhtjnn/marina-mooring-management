@@ -96,10 +96,13 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public BasicRestResponse fetchInventories(BaseSearchRequest baseSearchRequest, String searchText, Integer vendorId) {
+    public BasicRestResponse fetchInventories(BaseSearchRequest baseSearchRequest, String searchText, Integer vendorId, HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            final Vendor vendor = authorizationUtil.checkAuthorityForInventory(vendorId, request);
+
             Specification<Inventory> specs = new Specification<Inventory>() {
                 @Override
                 public Predicate toPredicate(Root<Inventory> inventory, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {

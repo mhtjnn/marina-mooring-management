@@ -21,12 +21,12 @@ import java.util.List;
 public class CustomerRequestDto {
     private Integer id;
 
-    /**
-     * The customer's identification number or code.
-     */
-    private String customerId;
+    @NotNull(message = "First Name cannot be null")
+    private String firstName;
 
-    private String customerName;
+    @NotNull(message = "Last name cannot be null")
+    @Pattern(regexp = "^.{3,}$", message = "Last name should contain at least 3 character")
+    private String lastName;
 
     /**
      * The email address of the customer.

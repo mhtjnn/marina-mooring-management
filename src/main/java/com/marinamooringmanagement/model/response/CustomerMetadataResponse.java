@@ -13,6 +13,8 @@ public class CustomerMetadataResponse {
 
     private Integer id;
 
-    private String customerName;
+    private String firstName;
+
+    private String lastName;
 
 }

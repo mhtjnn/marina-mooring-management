@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -365,16 +366,19 @@ public class CustomerServiceImpl implements CustomerService {
                 }
             }
 
-            if (null != customerRequestDto.getCustomerId()) {
-                Optional<Customer> optionalCustomer = customerRepository.findByCustomerId(customerRequestDto.getCustomerId());
-                if (optionalCustomer.isPresent()) {
-                    if (null == id) {
-                        throw new RuntimeException(String.format("Given customer id: %1$s  is already present", customerRequestDto.getCustomerId()));
-                    } else {
-                        if (!optionalCustomer.get().getId().equals(id))
-                            throw new RuntimeException(String.format("Given customer id: %1$s  is already present", customerRequestDto.getCustomerId()));
-                    }
+            if(null == id) {
+                if(StringUtils.isEmpty(customerRequestDto.getLastName())) throw new RuntimeException("Last name cannot be null");
+                StringBuilder customerId = createCustomerId(customerRequestDto.getLastName());
+                String customerIdStr = customerId.toString();
+                Optional<Customer> optionalCustomer = customerRepository.findByCustomerId(customerIdStr);
+
+                while (optionalCustomer.isPresent()) {
+                    customerId = createCustomerId(customerRequestDto.getLastName());
+                    customerIdStr = customerId.toString();
+                    optionalCustomer = customerRepository.findByCustomerId(customerIdStr);
                 }
+
+                customer.setCustomerId(customerIdStr);
             }
 
             customer.setUser(user);
@@ -513,6 +517,19 @@ public class CustomerServiceImpl implements CustomerService {
             response.setStatus(HttpStatus.NO_CONTENT.value());
         }
         return response;
+    }
+
+    public StringBuilder createCustomerId(final String lastName) {
+
+        if(null == lastName) throw new RuntimeException("Last name cannot be null");
+        if(lastName.length() < 3) throw new RuntimeException("Last name should be of 3 or more length");
+        final StringBuilder customerId = new StringBuilder();
+        customerId.append(lastName.toUpperCase(), 0, 3);
+        int randomThreeDigitNumber = 100 + (int)(Math.random() * 900);
+        String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
+        customerId.append(randomThreeDigitNumberStr);
+
+        return customerId;
     }
 
 }

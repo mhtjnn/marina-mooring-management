@@ -30,8 +30,12 @@ public class Customer extends Base {
     /**
      * The name of the customer.
      */
-    @Column(name = "customer_name")
-    private String customerName;
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
     /**
      * The customer ID.
      */

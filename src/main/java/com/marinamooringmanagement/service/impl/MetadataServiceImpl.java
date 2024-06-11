@@ -368,7 +368,8 @@ public class MetadataServiceImpl implements MetadataService {
                     .filter(customer -> customer.getUser().getId().equals((customerOwnerId == -1)?loggedInUserId:customerOwnerId))
                     .map(customer -> CustomerMetadataResponse.builder()
                             .id(customer.getId())
-                            .customerName(customer.getCustomerName())
+                            .firstName(customer.getFirstName())
+                            .lastName(customer.getLastName())
                             .build()
                     )
                     .toList();

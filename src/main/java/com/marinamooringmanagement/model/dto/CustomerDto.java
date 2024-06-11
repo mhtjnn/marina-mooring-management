@@ -28,6 +28,10 @@ public class CustomerDto extends BaseDto {
      */
     private String customerId;
 
+    private String firstName;
+
+    private String lastName;
+
     /**
      * The phone number of the customer.
      */

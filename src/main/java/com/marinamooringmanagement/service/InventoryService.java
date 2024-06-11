@@ -7,11 +7,11 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface InventoryService {
-    BasicRestResponse saveInventory(InventoryRequestDto inventoryRequestDto, Integer vendorId, HttpServletRequest request);
+    BasicRestResponse saveInventory(final InventoryRequestDto inventoryRequestDto, final Integer vendorId, final HttpServletRequest request);
 
-    BasicRestResponse fetchInventories(BaseSearchRequest baseSearchRequest, String searchText, Integer vendorId);
+    BasicRestResponse fetchInventories(final BaseSearchRequest baseSearchRequest, final String searchText, final Integer vendorId, final HttpServletRequest request);
 
-    BasicRestResponse updateInventory(InventoryRequestDto inventoryRequestDto, Integer id, Integer vendorId, HttpServletRequest request);
+    BasicRestResponse updateInventory(final InventoryRequestDto inventoryRequestDto, final Integer id, final Integer vendorId, final HttpServletRequest request);
 
-    BasicRestResponse deleteInventory(Integer id, Integer vendorId, HttpServletRequest request);
+    BasicRestResponse deleteInventory(final Integer id, final Integer vendorId, final HttpServletRequest request);
 }
