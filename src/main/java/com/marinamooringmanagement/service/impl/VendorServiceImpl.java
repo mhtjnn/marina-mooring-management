@@ -249,6 +249,40 @@ public class VendorServiceImpl implements VendorService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchVendorById(final Integer vendorId, final HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
+            Optional<Vendor> optionalVendor = vendorRepository.findById(vendorId);
+            if(optionalVendor.isEmpty()) throw new RuntimeException(String.format("No vendor exist with the given id: %1$s", vendorId));
+
+            User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final Vendor vendor = optionalVendor.get();
+
+            final VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), vendor);
+
+            if(null != vendor.getUser()) vendorResponseDto.setUserId(vendor.getUser().getId());
+            if (null != vendor.getState()) vendorResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), vendor.getState()));
+            if (null != vendor.getCountry()) vendorResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), vendor.getCountry()));
+            if (null != vendor.getRemitState()) vendorResponseDto.setRemitStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), vendor.getRemitState()));
+            if (null != vendor.getRemitCountry()) vendorResponseDto.setRemitCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), vendor.getRemitCountry()));
+
+            response.setContent(vendorResponseDto);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage(String.format("Vendor with the given id: %1$s fetched successfully", vendorId));
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage(e.getLocalizedMessage());
+        }
+
+        return response;
+    }
+
     /**
      * Performs the actual saving of a vendor entity based on the request DTO and vendor object.
      *
@@ -267,7 +301,7 @@ public class VendorServiceImpl implements VendorService {
                 vendor.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 

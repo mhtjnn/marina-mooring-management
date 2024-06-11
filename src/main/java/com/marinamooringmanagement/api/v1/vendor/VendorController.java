@@ -178,4 +178,31 @@ public class VendorController extends GlobalExceptionHandler {
     ) {
         return vendorService.updateVendor(requestDto, vendorId, request);
     }
+
+    @Operation(
+            tags = "Fetch vendor based on Id from the database",
+            description = "API to fetch vendor based on Id from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(value = "/{id}",
+            method = RequestMethod.GET,
+            produces = {"application/json", "application/xml"})
+    public BasicRestResponse fetchVendorById(
+            final @PathVariable("id") Integer vendorId,
+            final HttpServletRequest request
+    ) {
+        return vendorService.fetchVendorById(vendorId, request);
+    }
 }

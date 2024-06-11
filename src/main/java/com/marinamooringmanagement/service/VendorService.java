@@ -45,4 +45,6 @@ public interface VendorService {
      * @param vendorId   the vendor ID
      */
     BasicRestResponse updateVendor(final VendorRequestDto requestDto, final Integer vendorId, final HttpServletRequest request);
+
+    BasicRestResponse fetchVendorById(final Integer vendorId, final HttpServletRequest request);
 }
