@@ -1,16 +1,17 @@
 package com.marinamooringmanagement.model.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * Data Transfer Object (DTO) class representing a Technician.
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TechnicianDto extends BaseDto {
@@ -19,7 +20,6 @@ public class TechnicianDto extends BaseDto {
     /**
      * The name of the technician.
      */
-    @NotNull(message = "Technician Name can't be blank")
     private String technicianName;
     /**
      * The ID of the technician.
@@ -28,7 +28,6 @@ public class TechnicianDto extends BaseDto {
     /**
      * The email address of the technician.
      */
-    @Email(message = "Email is not Valid")
     private String emailAddress;
     /**
      * The phone number of the technician.
@@ -45,7 +44,6 @@ public class TechnicianDto extends BaseDto {
     /**
      * The state of the technician's address.
      */
-    @NotEmpty(message = "state can't be empty")
     private String state;
     /**
      * The country of the technician's address.
@@ -54,9 +52,13 @@ public class TechnicianDto extends BaseDto {
     /**
      * The pin code of the technician's address.
      */
-    private String pincode;
+    private String zipcode;
     /**
      * Additional notes or comments about the technician.
      */
     private String note;
+
+    private UserDto userDto;
+
+    private List<WorkOrderDto> workOrderDtoList;
 }

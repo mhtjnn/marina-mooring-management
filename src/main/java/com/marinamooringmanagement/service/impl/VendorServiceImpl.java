@@ -263,6 +263,10 @@ public class VendorServiceImpl implements VendorService {
 
             final Vendor vendor = optionalVendor.get();
 
+            if(null == vendor.getUser()) throw new RuntimeException(String.format("Vendor with the given id: %1$s is associated with no user", vendorId));
+
+            if(!vendor.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Vendor with the given id: %1$s is associated with other customer owner", vendorId));
+
             final VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), vendor);
 
             if(null != vendor.getUser()) vendorResponseDto.setUserId(vendor.getUser().getId());

@@ -145,6 +145,9 @@ public class Mooring extends Base {
     @JsonBackReference
     private Boatyard boatyard;
 
+    @OneToOne(mappedBy = "mooring", cascade = {}, fetch = FetchType.LAZY)
+    private WorkOrder workOrder;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -65,11 +67,18 @@ public class Technician extends Base {
     /**
      * The pin code of the technician's address.
      */
-    @Column(name = "pincode")
-    private String pincode;
+    @Column(name = "zipcode")
+    private String zipcode;
     /**
      * Additional notes or comments about the technician.
      */
     @Column(name = "note")
     private String note;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(cascade = {}, mappedBy = "technician", fetch = FetchType.LAZY)
+    private List<WorkOrder> workOrderList;
 }
