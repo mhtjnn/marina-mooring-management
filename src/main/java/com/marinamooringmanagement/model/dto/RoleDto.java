@@ -17,7 +17,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RoleDto extends BaseDto implements Serializable {
 
-    private static final long serialVersionUID = -3884974621004331133L;
+    private static final long serialVersionUID = -388497461004331133L;
+
+    private Integer id;
 
     /**
      * The name of the role.

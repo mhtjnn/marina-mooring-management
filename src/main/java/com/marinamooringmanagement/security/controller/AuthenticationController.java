@@ -1,17 +1,23 @@
 package com.marinamooringmanagement.security.controller;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.entity.Token;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
-import com.marinamooringmanagement.security.config.JwtUtil;
+import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.service.EmailService;
 import com.marinamooringmanagement.service.UserService;
 import com.marinamooringmanagement.service.TokenService;
+import io.jsonwebtoken.io.Decoders;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +32,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.Optional;
+
+import java.util.Date;
 import java.util.List;
 
 
@@ -40,8 +51,11 @@ import java.util.List;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
-@CrossOrigin("*")
-public class AuthenticationController {
+@CrossOrigin
+public class AuthenticationController extends GlobalExceptionHandler {
+
+    private static final String normalTokenStr = "NORMAL_TOKEN";
+    private static final String refreshTokenStr = "REFRESH_TOKEN";
 
     private final AuthenticationManager authenticationManager;
 
@@ -63,11 +77,16 @@ public class AuthenticationController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     /**
      * Endpoint to create an authentication token based on the provided credentials.
      *
      * @param authenticationRequest the authentication request containing username and password
-     * @param request               the HTTP servlet request
      * @return a ResponseEntity containing the authentication response
      * @throws Exception if an error occurs during authentication
      */
@@ -86,15 +105,22 @@ public class AuthenticationController {
                             responseCode = "403"
                     )
             }
-
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(
-            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @RequestBody AuthenticationRequest authenticationRequest,
-            final HttpServletRequest request
+            @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @Valid @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
         final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
+
         try {
+            Optional<User> optionalUser = userRepository.findByEmail(authenticationRequest.getUsername());
+
+            if(optionalUser.isEmpty()) throw new ResourceNotFoundException(String.format("Sorry, we can't find an account with %1$s", authenticationRequest.getUsername()));
+            
+            byte[] keyBytes = Decoders.BASE64.decode(authenticationRequest.getPassword());
+
+            authenticationRequest.setPassword(new String(keyBytes, StandardCharsets.UTF_8));
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authenticationRequest.getUsername(),
@@ -104,9 +130,12 @@ public class AuthenticationController {
             return generateAuthenticationResponse(authenticationRequest.getUsername(), authenticationResponse);
         } catch (Exception e) {
             final BasicRestResponse response = BasicRestResponse.builder().build();
-            response.setMessage("Authentication failed");
+
+            if(e.getLocalizedMessage().equals("Bad credentials"))
+                response.setMessage(String.format("Incorrect password for %1$s", authenticationRequest.getUsername()));
+            else
+                response.setMessage(e.getLocalizedMessage());
             response.setTime(new Timestamp(System.currentTimeMillis()));
-            response.setErrorList(List.of(e.getMessage()));
             response.setStatus(HttpStatus.FORBIDDEN.value());
             return new ResponseEntity(response, HttpStatus.FORBIDDEN);
         }
@@ -134,7 +163,6 @@ public class AuthenticationController {
                             responseCode = "400"
                     )
             }
-
     )
     @RequestMapping(value = "/forgetPassword", method = RequestMethod.POST)
     public ResponseEntity<?> forgetPassword(
@@ -143,7 +171,6 @@ public class AuthenticationController {
         final SendEmailResponse response = emailService.sendForgetPasswordEmail(request, forgetPasswordEmailRequest);
         return response.isSuccess() ? new ResponseEntity(response, HttpStatus.OK) : new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
-
 
     /**
      * Function to reset password with the new password.
@@ -167,7 +194,6 @@ public class AuthenticationController {
                             responseCode = "500"
                     )
             }
-
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
     public BasicRestResponse resetPasswordWithNewPassword(
@@ -175,7 +201,6 @@ public class AuthenticationController {
             @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) final @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
         return userService.updatePassword(token, newPasswordRequest);
     }
-
 
     /**
      * Function to validate email(existence) and token.
@@ -198,7 +223,6 @@ public class AuthenticationController {
                             responseCode = "500"
                     )
             }
-
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.GET)
     public BasicRestResponse validateEmailAndToken(
@@ -206,6 +230,79 @@ public class AuthenticationController {
         return userService.checkEmailAndTokenValid(token);
     }
 
+    /**
+     * Endpoint to refresh the user token.
+     *
+     * @param refreshToken the refresh token value
+     * @return a ResponseEntity containing the refreshed authentication response
+     * @throws Exception if an error occurs during token refresh
+     */
+    @Operation(
+            tags = "User Refresh",
+            description = "API to refresh the user",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = AuthenticationResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Forbidden",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "403"
+                    )
+            }
+    )
+    @RequestMapping(value = "/refresh", method = RequestMethod.POST)
+    public ResponseEntity<?> createAuthenticationTokenFromRefreshToken(
+            @Parameter(description = "Refresh Token", schema = @Schema(implementation = String.class)) final @RequestParam("refreshToken") String refreshToken
+    ) throws Exception {
+        final AuthenticationResponse authenticationResponse = AuthenticationResponse.builder().build();
+        try {
+            return generateNormalTokenFromRefreshToken(refreshToken, authenticationResponse);
+        } catch (Exception e) {
+            final BasicRestResponse response = BasicRestResponse.builder().build();
+            response.setMessage("Authentication failed");
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setErrorList(List.of(e.getMessage()));
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            return new ResponseEntity(response, HttpStatus.FORBIDDEN);
+        }
+    }
+
+    /**
+     * Generates a new authentication token from a refresh token.
+     *
+     * @param refreshToken the refresh token
+     * @param response the authentication response to populate with the new token
+     * @return a ResponseEntity containing the updated authentication response
+     */
+    private ResponseEntity<?> generateNormalTokenFromRefreshToken(String refreshToken, final AuthenticationResponse response) {
+        try {
+            final String username = jwtUtil.getUsernameFromToken(refreshToken);
+            final UserDto emp = userService.findByEmailAddress(username);
+            final String token = jwtUtil.generateToken(emp, normalTokenStr);
+
+            Date refreshTokenExpirationTime = jwtUtil.getExpireTimeFromToken(refreshToken);
+
+            final Optional<Token> optionalRefreshTokenEntity = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
+
+            if(optionalRefreshTokenEntity.isEmpty()) throw new ResourceNotFoundException("No token entity found with the given token");
+
+            String newRefreshToken = refreshToken;
+
+            if (refreshTokenExpirationTime.before(new Date())) newRefreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+
+            tokenService.saveToken(emp, token, refreshToken);
+            response.setToken(token);
+            response.setRefreshToken(newRefreshToken);
+            response.setUser(emp);
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * Generates the authentication response containing the JWT token and user details.
@@ -215,9 +312,11 @@ public class AuthenticationController {
      */
     private ResponseEntity<?> generateAuthenticationResponse(final String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
-        final String token = jwtUtil.generateToken(emp);
-        tokenService.saveToken(emp, token);
+        final String token = jwtUtil.generateToken(emp, normalTokenStr);
+        final String refreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+        tokenService.saveToken(emp, token, refreshToken);
         response.setToken(token);
+        response.setRefreshToken(refreshToken);
         response.setUser(emp);
         response.setStatus(HttpStatus.OK.value());
         return ResponseEntity.ok(response);

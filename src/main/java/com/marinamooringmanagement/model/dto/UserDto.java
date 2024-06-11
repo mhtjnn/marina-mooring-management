@@ -27,12 +27,7 @@ public class UserDto extends BaseDto implements Serializable {
     /**
      * The first name of the user.
      */
-    private String firstname;
-
-    /**
-     * The last name of the user.
-     */
-    private String lastname;
+    private String name;
 
     /**
      * The email address of the user.
@@ -50,8 +45,40 @@ public class UserDto extends BaseDto implements Serializable {
     private String password;
 
     /**
+     * The ID of the customer admin associated with the user.
+     */
+    private Integer customerAdminId;
+
+    /**
      * The role associated with the user.
      */
     private RoleDto role;
+
+    /**
+     * The state associated with the user.
+     */
+    private StateDto stateDto;
+
+    /**
+     * The country associated with the user.
+     */
+    private CountryDto countryDto;
+
+    /**
+     * The street address of the user.
+     */
+    private String street;
+
+    /**
+     * The apartment number of the user.
+     */
+    private String apt;
+
+    /**
+     * The zip code of the user's location.
+     */
+    private String zipCode;
 }
+
+
 

@@ -1,8 +1,8 @@
 package com.marinamooringmanagement.model.request;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRequestDto implements Serializable {
+
     /**
      * The unique identifier for the user.
      */
@@ -27,33 +28,64 @@ public class UserRequestDto implements Serializable {
     /**
      * The first name of the user.
      */
-    @NotNull(message = "First Name can't be blank")
-    private String firstname;
-
-    /**
-     * The last name of the user.
-     */
-    private String lastname;
+    @NotNull(message = "First name cannot be null")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format.")
+    private String name;
 
     /**
      * The email address of the user.
      */
-    @Email(message = "Email is not Valid")
+    @NotNull(message = "Email cannot be null")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String email;
 
     /**
      * The phone number of the user.
      */
+    @Pattern(regexp = "^\\d{10}$", message = "Invalid phone number format.")
     private String phoneNumber;
 
     /**
-     * The password for the user account.
+     * The password of the user.
      */
-    @NotEmpty(message = "Password can't be blank")
     private String password;
 
     /**
-     * The role ID associated with the user.
+     * The role associated with the user.
      */
     private Integer roleId;
+
+    private Integer customerOwnerId;
+
+    private String companyName;
+
+    /**
+     * The state associated with the user.
+     */
+    private Integer stateId;
+
+    /**
+     * The country associated with the user.
+     */
+    private Integer countryId;
+
+    /**
+     * The street address associated with the user.
+     */
+    private String street;
+
+    /**
+     * The apartment number associated with the user.
+     */
+    private String apt;
+
+    /**
+     * The ZIP code associated with the user.
+     */
+    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid zipcode format.")
+    private String zipCode;
+
+    private String confirmPassword;
 }
+
+

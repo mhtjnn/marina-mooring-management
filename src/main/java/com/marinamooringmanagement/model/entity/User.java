@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "_user")
 public class User extends Base {
 
     /**
@@ -28,14 +29,8 @@ public class User extends Base {
     /**
      * The first name of the user.
      */
-    @Column(name = "firstname")
-    private String firstname;
-
-    /**
-     * The last name of the user.
-     */
-    @Column(name = "lastname")
-    private String lastname;
+    @Column(name = "name")
+    private String name;
 
     /**
      * The email address of the user.
@@ -47,6 +42,7 @@ public class User extends Base {
      * The phone number of the user.
      */
     @Column(name = "phoneNumber")
+    @Pattern(regexp = "^(\\d[-. ]?){10}$", message = "Invalid phone number format")
     private String phoneNumber;
 
     /**
@@ -56,10 +52,51 @@ public class User extends Base {
     private String password;
 
     /**
+     * The ID of the customer admin associated with the user.
+     */
+    @Column(name = "customer_owner_ID")
+    private Integer customerOwnerId;
+
+    @Column(name = "company_name")
+    private String companyName;
+
+    /**
+     * The street address of the user.
+     */
+    @Column(name = "street")
+    private String street;
+
+    /**
+     * The apartment number of the user.
+     */
+    @Column(name = "apt")
+    private String apt;
+
+    /**
+     * The zip code of the user's location.
+     */
+    @Column(name = "zipcode")
+    private String zipCode;
+
+    /**
      * The role associated with the user.
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
+
+    /**
+     * The state associated with the user.
+     */
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id")
+    private State state;
+
+    /**
+     * The country associated with the user.
+     */
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private Country country;
 }
 

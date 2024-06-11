@@ -19,13 +19,14 @@ public interface TokenService {
      * Saves a token associated with a user.
      * @param emp The user DTO
      * @param token The token string
+     * @param refreshToken The refresh token string
      */
-    void saveToken(final UserDto emp, final String token);
+    void saveToken(final UserDto emp, final String token, final String refreshToken);
 
     /**
-     * Create a Reset Password Token
-     * @param email Email given by User
-     * @return
+     * Creates a reset password token for the given email.
+     * @param email The email address of the user
+     * @return The reset password token
      */
     String createPasswordResetToken(final String email);
 }

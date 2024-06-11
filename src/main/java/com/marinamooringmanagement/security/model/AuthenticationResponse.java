@@ -23,6 +23,9 @@ public class AuthenticationResponse implements Serializable {
      * The authentication token generated after successful authentication.
      */
     private String token;
+
+    private String refreshToken;
+
     /**
      * The user details associated with the authenticated user.
      */

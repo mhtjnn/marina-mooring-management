@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.security.model;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,9 +23,11 @@ public class AuthenticationRequest implements Serializable {
     /**
      * The username used for authentication.
      */
+    @NotNull(message = "username cannot be blank")
     private String username;
     /**
      * The password used for authentication.
      */
+    @NotNull(message = "password cannot be blank")
     private String password;
 }
