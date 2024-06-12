@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
-import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.entity.*;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
@@ -116,6 +114,15 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private MooringServiceImpl mooringServiceImpl;
+
+    @Autowired
+    private TechnicianRepository technicianRepository;
+
+    @Autowired
+    private WorkOrderStatusRepository workOrderStatusRepository;
+
+    @Autowired
+    private WorkOrderStatusMapper workOrderStatusMapper;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -407,7 +414,7 @@ public class MetadataServiceImpl implements MetadataService {
                     )
                     .toList();
 
-            response.setMessage("Customers fetched successfully!!!");
+            response.setMessage("Boatyards fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(boatyardMetadataResponseList);
 
@@ -634,6 +641,90 @@ public class MetadataServiceImpl implements MetadataService {
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchMooringIds(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            List<MooringMetadataResponse> mooringMetadataResponseList = mooringRepository.findAll()
+                    .stream()
+                    .filter(mooring -> null != mooring.getUser() && mooring.getUser().getId().equals(user.getId()))
+                    .map(mooring -> MooringMetadataResponse.builder()
+                            .id(mooring.getId())
+                            .mooringId(mooring.getMooringId())
+                            .build()
+                    )
+                    .toList();
+
+            response.setMessage("Moorings fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(mooringMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchTechnicians(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            List<TechnicianMetadataResponse> technicianMetadataResponseList = technicianRepository.findAll()
+                    .stream()
+                    .filter(technician -> null != technician.getUser() && technician.getUser().getId().equals(user.getId()))
+                    .map(technician -> TechnicianMetadataResponse.builder()
+                            .id(technician.getId())
+                            .technicianName(technician.getTechnicianName())
+                            .build()
+                    )
+                    .toList();
+
+            response.setMessage("Technicians fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(technicianMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchWorkOrderStatus(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        Page<WorkOrderStatus> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            content = workOrderStatusRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<WorkOrderStatusDto> workOrderStatusDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(workOrderStatus -> workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrderStatus))
+                    .toList();
+
+            response.setMessage("Work order status fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderStatusDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;

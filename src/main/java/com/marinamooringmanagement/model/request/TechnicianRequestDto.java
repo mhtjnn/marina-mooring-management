@@ -51,7 +51,7 @@ public class TechnicianRequestDto {
     /**
      * The pin code or postal code of the technician's address.
      */
-    private String pincode;
+    private String zipcode;
     /**
      * Additional notes or comments related to the technician request.
      */

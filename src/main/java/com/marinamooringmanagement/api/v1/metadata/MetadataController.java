@@ -333,6 +333,51 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchBoatyards(baseSearchRequest, request);
     }
 
+    @GetMapping("/mooringIds")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchMooringIds(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchMooringIds(baseSearchRequest, request);
+    }
+
+    @GetMapping("/technicians")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchTechnicians(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchTechnicians(baseSearchRequest, request);
+    }
+
+    @GetMapping("/workOrderStatus")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchWorkOrderStatus(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchWorkOrderStatus(baseSearchRequest, request);
+    }
+
     @GetMapping("/inventoryType")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchInventoryTypes(

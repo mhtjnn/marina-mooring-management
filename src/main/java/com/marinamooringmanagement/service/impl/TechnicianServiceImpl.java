@@ -5,17 +5,20 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.TechnicianMapper;
 import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.entity.Technician;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.TechnicianResponseDto;
 import com.marinamooringmanagement.repositories.TechnicianRepository;
+import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.TechnicianService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,20 +52,21 @@ public class TechnicianServiceImpl implements TechnicianService {
     @Autowired
     private SortUtils sortUtils;
 
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
+
     /**
      * Saves a new technician.
      *
      * @param technicianRequestDto The DTO containing technician information.
      */
     @Override
-    public BasicRestResponse saveTechnician(final TechnicianRequestDto technicianRequestDto) {
+    public BasicRestResponse saveTechnician(final TechnicianRequestDto technicianRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
-
-
         try {
             final Technician technician = new Technician();
-            performSave(technicianRequestDto, technician, null);
+            performSave(technicianRequestDto, technician, null, request);
             response.setStatus(HttpStatus.CREATED.value());
             response.setMessage("Technician saved in the database");
             log.info(String.format("Saving data in the database for Technician ID %d", technicianRequestDto.getId()));
@@ -84,11 +88,13 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @return a BasicRestResponse containing the results of the technician search.
      */
     @Override
-    public BasicRestResponse fetchTechnicians(final BaseSearchRequest baseSearchRequest, final String searchText) {
+    public BasicRestResponse fetchTechnicians(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info(String.format("Technicians fetched successfully"));
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             final Specification<Technician> spec = new Specification<Technician>() {
                 @Override
@@ -100,6 +106,9 @@ public class TechnicianServiceImpl implements TechnicianService {
                                 criteriaBuilder.like(technician.get("emailAddress"), "%" + searchText + "%")
                         ));
                     }
+
+                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, technician, criteriaBuilder));
+
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
             };
@@ -122,7 +131,7 @@ public class TechnicianServiceImpl implements TechnicianService {
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching Technicians: %s", e.getMessage()), e);
 
-            response.setMessage("Error occurred while fetching list of technician from the database");
+            response.setMessage(e.getLocalizedMessage());
             response.setContent(e.getMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -136,18 +145,26 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @return The TechnicianDto object.
      */
     @Override
-    public TechnicianDto getbyId(final Integer id) {
-        if (id == null) {
-            throw new ResourceNotFoundException("ID cannot be null");
-        }
+    public TechnicianDto getbyId(final Integer id, final HttpServletRequest request) {
         try {
-            Optional<Technician> technicianEntityOptional = technicianRepository.findById(id);
-            if (technicianEntityOptional.isPresent()) {
+
+            if (id == null) {
+                throw new ResourceNotFoundException("ID cannot be null");
+            }
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Technician> optionalTechnician = technicianRepository.findById(id);
+            if (optionalTechnician.isPresent()) {
                 log.info(String.format("Successfully retrieved Technician data for ID: %d", id));
 
-                return technicianMapper.toDto(technicianEntityOptional.get());
+                final Technician technician = optionalTechnician.get();
 
+                if(null == technician.getUser()) throw new RuntimeException(String.format("Technician with the given id: %1$s is associated with no user", id));
+                if(!technician.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Technician with the given id: %1$s is associated with other customer owner", id));
 
+                return technicianMapper.toDto(TechnicianDto.builder().build(), technician);
             } else {
                 throw new ResourceNotFoundException("Technician with ID : " + id + " doesn't exist");
             }
@@ -164,11 +181,21 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @param id The ID of the technician to delete.
      */
     @Override
-    public BasicRestResponse deleteTechnicianbyId(final Integer id) {
+    public BasicRestResponse deleteTechnicianbyId(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setMessage("Deleted technician");
         response.setStatus(HttpStatus.OK.value());
         try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Technician> optionalTechnician = technicianRepository.findById(id);
+            if(optionalTechnician.isEmpty()) throw new RuntimeException(String.format("No technician exists with the given id: %1$s", id));
+            final Technician technician = optionalTechnician.get();
+
+            if(null == technician.getUser()) throw new RuntimeException(String.format("Technician with the given id: %1$s is associated with no user", id));
+            if(!technician.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Technician with the given id: %1$s is associated with other customer owner", id));
+
             technicianRepository.deleteById(id);
             response.setMessage(String.format("Technician with ID %d deleted successfully", id));
             log.info(String.format("Technician with ID %d deleted successfully", id));
@@ -191,7 +218,7 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @throws DBOperationException if the technician ID is not provided or if an error occurs during the operation.
      */
     @Override
-    public BasicRestResponse updateTechnician(final TechnicianRequestDto technicianRequestDto, final Integer id) {
+    public BasicRestResponse updateTechnician(final TechnicianRequestDto technicianRequestDto, final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             if (null == technicianRequestDto.getId()) {
@@ -204,7 +231,7 @@ public class TechnicianServiceImpl implements TechnicianService {
 
 
                 Technician technician = optionalTechnician.get();
-                performSave(technicianRequestDto, technician, technicianRequestDto.getId());
+                performSave(technicianRequestDto, technician, technicianRequestDto.getId(), request);
                 response.setMessage("Technician with the given technician id updated successfully!!!");
                 response.setStatus(HttpStatus.OK.value());
             }
@@ -225,18 +252,23 @@ public class TechnicianServiceImpl implements TechnicianService {
      * @param id                   The ID of the Technician to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-    public void performSave(final TechnicianRequestDto technicianRequestDto, final Technician technician, final Integer id) {
+    public void performSave(final TechnicianRequestDto technicianRequestDto, final Technician technician, final Integer id, final HttpServletRequest request) {
         try {
-            if (null == id) technician.setCreationDate(new Date(System.currentTimeMillis()));
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
             technicianMapper.mapToTechnician(technician, technicianRequestDto);
+
+            if (null == id) {
+                technician.setCreationDate(new Date(System.currentTimeMillis()));
+                technician.setUser(user);
+            }
+
             technician.setLastModifiedDate(new Date());
             technicianRepository.save(technician);
             log.info(String.format("Technician saved successfully with ID: %d", technician.getId()));
-
-
         } catch (Exception e) {
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
-
             throw new DBOperationException(e.getMessage(), e);
         }
     }

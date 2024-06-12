@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,10 +57,11 @@ public class TechnicianController extends GlobalExceptionHandler {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
-    public BasicRestResponse saveTechnician(@Valid @RequestBody TechnicianRequestDto technicianRequestDto) {
-
-
-        return technicianService.saveTechnician(technicianRequestDto);
+    public BasicRestResponse saveTechnician(
+            final @Valid @RequestBody TechnicianRequestDto technicianRequestDto,
+            final HttpServletRequest request
+            ) {
+        return technicianService.saveTechnician(technicianRequestDto, request);
 
     }
 
@@ -98,7 +100,8 @@ public class TechnicianController extends GlobalExceptionHandler {
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            final @RequestParam(value = "searchText", required = false) String searchText
+            final @RequestParam(value = "searchText", required = false) String searchText,
+            final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
                 .pageNumber(pageNumber)
@@ -106,7 +109,7 @@ public class TechnicianController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return technicianService.fetchTechnicians(baseSearchRequest, searchText);
+        return technicianService.fetchTechnicians(baseSearchRequest, searchText, request);
     }
 
     /**
@@ -118,8 +121,11 @@ public class TechnicianController extends GlobalExceptionHandler {
     @GetMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public TechnicianDto getTechnician(@PathVariable(value = "id") Integer id) {
-        return this.technicianService.getbyId(id);
+    public TechnicianDto getTechnician(
+            @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return this.technicianService.getbyId(id, request);
     }
 
     /**
@@ -149,9 +155,12 @@ public class TechnicianController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse deleteTechnician(@PathVariable(value = "id") Integer id) {
+    public BasicRestResponse deleteTechnician(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
 
-        return technicianService.deleteTechnicianbyId(id);
+        return technicianService.deleteTechnicianbyId(id, request);
     }
 
     @Operation(
@@ -175,10 +184,11 @@ public class TechnicianController extends GlobalExceptionHandler {
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse updateTechnician(
-            @PathVariable(value = "id", required = true) Integer id,
-            @Valid @RequestBody TechnicianRequestDto technicianRequestDto
+            final @PathVariable(value = "id", required = true) Integer id,
+            final @Valid @RequestBody TechnicianRequestDto technicianRequestDto,
+            final HttpServletRequest request
     ) {
 
-        return technicianService.updateTechnician(technicianRequestDto, id);
+        return technicianService.updateTechnician(technicianRequestDto, id, request);
     }
 }

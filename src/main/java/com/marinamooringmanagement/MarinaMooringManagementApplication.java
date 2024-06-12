@@ -63,6 +63,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 	@Autowired
 	private InventoryTypeRepository inventoryTypeRepository;
 
+    @Autowired
+    private WorkOrderStatusRepository workOrderStatusRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
     }
@@ -613,6 +616,44 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             );
 
 			inventoryTypeRepository.saveAll(inventoryTypes);
+        }
+
+        final String workOrderStatusSql = "SELECT * FROM work_order_status";
+        final List<WorkOrderStatus> workOrderStatusList = jdbcTemplate.query(workOrderStatusSql, (resultSet, resultNum) -> null);
+
+        if(workOrderStatusList.isEmpty()) {
+            List<WorkOrderStatus> workOrderStatuses = List.of(
+                    WorkOrderStatus.builder()
+                            .status("New Request")
+                            .description("The work order has been created and is awaiting assignment.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("Work in Progress")
+                            .description("The work order is currently being worked on.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("Parts on Order")
+                            .description("The required parts for the work order have been ordered and are awaited.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("Waiting on Inspection")
+                            .description("The work has been completed and is awaiting inspection.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("On Hold")
+                            .description("The work order is temporarily on hold.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("Pending Approval")
+                            .description("The work order is awaiting approval from the relevant authority.")
+                            .build(),
+                    WorkOrderStatus.builder()
+                            .status("Close")
+                            .description("The work order has been completed and closed.")
+                            .build()
+            );
+
+            workOrderStatusRepository.saveAll(workOrderStatuses);
         }
     }
 }

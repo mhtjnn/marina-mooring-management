@@ -12,16 +12,14 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
  * Mapper interface for mapping between Technician and TechnicianDto objects.
  */
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-
 public interface TechnicianMapper {
 
     /**
      * Maps a Technician entity to a TechnicianDto.
      *
-     * @param technician The Technician entity to map.
      * @return The mapped TechnicianDto object.
      */
-    TechnicianDto toDto(Technician technician);
+    TechnicianDto toDto(@MappingTarget TechnicianDto technicianDto, Technician technician);
 
 
     /**

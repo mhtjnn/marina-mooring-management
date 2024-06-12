@@ -4,6 +4,7 @@ import com.marinamooringmanagement.model.dto.TechnicianDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.TechnicianRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Service interface for managing Technician entities.
@@ -14,7 +15,7 @@ public interface TechnicianService {
      *
      * @param technicianRequestDto The DTO containing technician information.
      */
-    BasicRestResponse saveTechnician(final TechnicianRequestDto technicianRequestDto);
+    BasicRestResponse saveTechnician(final TechnicianRequestDto technicianRequestDto, final HttpServletRequest request);
 
     /**
      * Fetches a list of technicians based on the provided search request parameters and search text.
@@ -23,7 +24,7 @@ public interface TechnicianService {
      * @param searchText the text used to search for specific technicians by name, skill, location, or other relevant criteria.
      * @return a BasicRestResponse containing the results of the technician search.
      */
-    BasicRestResponse fetchTechnicians(final BaseSearchRequest baseSearchRequest, final String searchText);
+    BasicRestResponse fetchTechnicians(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 
     /**
      * Retrieves a technician by ID.
@@ -31,14 +32,14 @@ public interface TechnicianService {
      * @param id The ID of the technician.
      * @return The TechnicianDto object.
      */
-    TechnicianDto getbyId(final Integer id);
+    TechnicianDto getbyId(final Integer id, final HttpServletRequest request);
 
     /**
      * Deletes a technician by ID.
      *
      * @param id The ID of the technician to delete.
      */
-    BasicRestResponse deleteTechnicianbyId(final Integer id);
+    BasicRestResponse deleteTechnicianbyId(final Integer id, final HttpServletRequest request);
 
     /**
      * Updates the details of a technician based on the provided technician request data and technician ID.
@@ -47,5 +48,5 @@ public interface TechnicianService {
      * @param id the unique identifier of the technician to be updated.
      * @return a BasicRestResponse indicating the success or failure of the update operation.
      */
-    BasicRestResponse updateTechnician(final TechnicianRequestDto technicianRequestDto, final Integer id);
+    BasicRestResponse updateTechnician(final TechnicianRequestDto technicianRequestDto, final Integer id, final HttpServletRequest request);
 }

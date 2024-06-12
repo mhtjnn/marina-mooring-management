@@ -53,7 +53,7 @@ public class TechnicianResponseDto {
     /**
      * The pin code of the technician's address.
      */
-    private String pincode;
+    private String zipcode;
     /**
      * Additional notes related to the technician response.
      */
