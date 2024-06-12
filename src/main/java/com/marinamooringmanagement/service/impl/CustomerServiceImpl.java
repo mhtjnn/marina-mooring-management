@@ -511,6 +511,24 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
+    public Customer fetchCustomerById(final Integer customerId, final HttpServletRequest request) {
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+            if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", customerId));
+            final Customer customer = optionalCustomer.get();
+
+            if(null == customer.getUser()) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customerId));
+            if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customerId));
+
+            return customer;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     public StringBuilder createCustomerId(final String lastName) {
 
         if(null == lastName) throw new RuntimeException("Last name cannot be null");

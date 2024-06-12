@@ -420,4 +420,22 @@ public class MooringServiceImpl implements MooringService {
             throw new DBOperationException(e.getMessage(), e);
         }
     }
+
+    public Mooring fetchMooringById(final Integer mooringId, final HttpServletRequest request) {
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Mooring> optionalMooring = mooringRepository.findById(mooringId);
+            if(optionalMooring.isEmpty()) throw new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", mooringId));
+            final Mooring mooring = optionalMooring.get();
+
+            if(null == mooring.getUser()) throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with no user", mooringId));
+            if(!mooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Mooring with given id: %1$s is associated with some other user", mooringId));
+
+            return mooring;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }

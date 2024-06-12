@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
-    private BoatyardRepository boatYardRepository;
+    private BoatyardRepository boatyardRepository;
 
     @Autowired
     private BoatyardMapper boatyardMapper;
@@ -150,7 +150,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            Page<Boatyard> boatyardList = boatYardRepository.findAll(spec, p);
+            Page<Boatyard> boatyardList = boatyardRepository.findAll(spec, p);
 
             final List<BoatyardResponseDto> boatyardDtoList = boatyardList
                     .getContent()
@@ -189,7 +189,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             throw new RuntimeException("ID cannot be null");
         }
         try {
-            Optional<Boatyard> BoatYardEntityOptional = boatYardRepository.findById(id);
+            Optional<Boatyard> BoatYardEntityOptional = boatyardRepository.findById(id);
             if (BoatYardEntityOptional.isPresent()) {
                 return boatyardMapper.toDto(BoatYardEntityOptional.get());
             }
@@ -215,7 +215,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
 
-            Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
 
             if (optionalBoatyard.isEmpty())
                 throw new DBOperationException(String.format("No boatyard found with the given id: %1$s", id));
@@ -237,7 +237,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId(), request));
 
-            boatYardRepository.deleteById(id);
+            boatyardRepository.deleteById(id);
 
             response.setMessage(String.format("BoatYard with ID %d deleted successfully", id));
             response.setStatus(HttpStatus.OK.value());
@@ -265,7 +265,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
                 throw new ResourceNotFoundException(String.format("Boatyard not found with id: %1$s", id));
             }
-            Optional<Boatyard> optionalBoatYard = boatYardRepository.findById(id);
+            Optional<Boatyard> optionalBoatYard = boatyardRepository.findById(id);
             if (optionalBoatYard.isPresent()) {
                 Boatyard boatyard = optionalBoatYard.get();
                 performSave(boatYardRequestDto, boatyard, id, request);
@@ -295,7 +295,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
-            Optional<Boatyard> optionalBoatyard = boatYardRepository.findById(id);
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
             if (optionalBoatyard.isEmpty())
                 throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
 
@@ -355,7 +355,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             Optional<Boatyard> optionalBoatyard = null;
 
             if (null != boatyardRequestDto.getBoatyardId()) {
-                optionalBoatyard = boatYardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
+                optionalBoatyard = boatyardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
                 if (optionalBoatyard.isPresent()) {
                     if (null == id) {
                         throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
@@ -367,7 +367,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             }
 
             if (null != boatyardRequestDto.getEmailAddress()) {
-                optionalBoatyard = boatYardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
+                optionalBoatyard = boatyardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
                 if (optionalBoatyard.isPresent()) {
                     if (null == id) {
                         throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
@@ -379,7 +379,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             }
 
             if (null != boatyardRequestDto.getBoatyardName()) {
-                optionalBoatyard = boatYardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
+                optionalBoatyard = boatyardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
                 if (optionalBoatyard.isPresent()) {
                     if (null == id) {
                         throw new RuntimeException(String.format("Given boatyard name: %1$s is already present", boatyardRequestDto.getBoatyardName()));
@@ -415,7 +415,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                 if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
-            final Boatyard savedBoatyard = boatYardRepository.save(boatyard);
+            final Boatyard savedBoatyard = boatyardRepository.save(boatyard);
 
             if (StringUtils.isNotEmpty(boatyardRequestDto.getBoatyardName())
                     && StringUtils.isNotEmpty(boatyard.getBoatyardName())
@@ -433,6 +433,24 @@ public class BoatyardServiceImpl implements BoatyardService {
         } catch (Exception e) {
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
             throw new DBOperationException(e.getMessage(), e);
+        }
+    }
+
+    public Boatyard fetchBoatyardById(final Integer boatyardId, final HttpServletRequest request) {
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(boatyardId);
+            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", boatyardId));
+            final Boatyard boatyard = optionalBoatyard.get();
+
+            if(null == boatyard.getUser()) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with no user", boatyardId));
+            if(!boatyard.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyardId));
+
+            return boatyard;
+        } catch (Exception e) {
+            throw e;
         }
     }
 }

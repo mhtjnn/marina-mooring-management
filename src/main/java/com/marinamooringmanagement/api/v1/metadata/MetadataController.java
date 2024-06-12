@@ -382,5 +382,70 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchMooringsBasedOnCustomerId(baseSearchRequest, customerId, request);
     }
+
+    @GetMapping("/mooringsBasedOnBoatyardId/{boatyardId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchMooringsBasedOnBoatyardId(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @PathVariable(value = "boatyardId") final Integer boatyardId,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchMooringsBasedOnBoatyardId(baseSearchRequest, boatyardId, request);
+    }
+
+    @GetMapping("/customerBasedOnMooringId/{mooringId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchCustomerBasedOnMooringId(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @PathVariable(value = "mooringId") final Integer mooringId,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchCustomerBasedOnMooringId(baseSearchRequest, mooringId, request);
+    }
+
+    @GetMapping("/boatyardBasedOnMooringId/{mooringId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchBoatyardBasedOnMooringId(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @PathVariable(value = "mooringId") final Integer mooringId,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchBoatyardBasedOnMooringId(baseSearchRequest, mooringId, request);
+    }
+
+    @GetMapping("/mooringBasedOnCustomerIdAndBoatyardId/{customerId}/{boatyardId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchMooringBasedOnCustomerIdAndMooringId(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            @PathVariable(value = "customerId") final Integer customerId,
+            @PathVariable(value = "boatyardId") final Integer boatyardId,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchMooringBasedOnCustomerIdAndMooringId(baseSearchRequest, customerId, boatyardId, request);
+    }
 }
 
