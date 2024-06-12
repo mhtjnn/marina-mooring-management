@@ -367,12 +367,12 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchCustomerOwners(baseSearchRequest, request);
     }
 
-    @GetMapping("/mooringsBasedOnCustomerId")
+    @GetMapping("/mooringsBasedOnCustomerId/{customerId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringsBasedOnCustomerId(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
-            @RequestParam(value = "customerId") final Integer customerId,
+            @PathVariable(value = "customerId") final Integer customerId,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()

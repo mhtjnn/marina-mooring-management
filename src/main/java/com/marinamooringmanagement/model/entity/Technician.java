@@ -8,15 +8,15 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Entity class representing a Technician.
+ */
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
-/**
- * Entity class representing a Technician.
- */
+@Table(name = "technician")
 public class Technician extends Base {
     /**
      * The unique identifier of the technician.

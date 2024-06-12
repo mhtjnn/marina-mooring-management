@@ -6,11 +6,9 @@ import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
-import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.BoatyardMetadataResponse;
-import com.marinamooringmanagement.model.response.CustomerMetadataResponse;
-import com.marinamooringmanagement.model.response.UserResponseDto;
+import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
 import com.marinamooringmanagement.service.UserService;
@@ -23,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +101,9 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -470,11 +472,6 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Override
-    public BasicRestResponse fetchMooringsBasedOnCustomerId(BaseSearchRequest baseSearchRequest, Integer customerId, HttpServletRequest request) {
-        return null;
-    }
-
-    @Override
     public BasicRestResponse fetchCustomerOwners(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -486,6 +483,42 @@ public class MetadataServiceImpl implements MetadataService {
 
             return userService.fetchUsers(baseSearchRequest, "", request);
 
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchMooringsBasedOnCustomerId(BaseSearchRequest baseSearchRequest, Integer customerId, HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user =  authorizationUtil.checkAuthority(customerOwnerId);
+
+            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+            if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given id: %1$s", customerId));
+            final Customer customer = optionalCustomer.get();
+
+            if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customerId));
+
+            List<Mooring> mooringList = customer.getMooringList();
+            List<MooringMetadataResponse> mooringMetadataResponseList = mooringList
+                    .stream()
+                    .filter(mooring -> mooring.getUser().getId().equals(user.getId()))
+                    .map(mooring -> {
+                        MooringMetadataResponse mooringMetadataResponse = MooringMetadataResponse.builder().build();
+                        if(null != mooring.getId()) mooringMetadataResponse.setId(mooring.getId());
+                        if(null != mooring.getMooringId()) mooringMetadataResponse.setMooringId(mooring.getMooringId());
+                        return mooringMetadataResponse;
+                    })
+                    .toList();
+
+            response.setContent(mooringMetadataResponseList);
+            response.setMessage(String.format("Moorings associated with customer of id: %1$s are fetched successfully", customerId));
+            response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
