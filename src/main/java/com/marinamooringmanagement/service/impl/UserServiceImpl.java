@@ -465,6 +465,102 @@ public class UserServiceImpl implements UserService {
         return passwordResponse;
     }
 
+    @Override
+    public BasicRestResponse fetchUsersOfTechnicianRole(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
+        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+
+        try {
+            Specification<User> spec = new Specification<User>() {
+                @Override
+                public Predicate toPredicate(Root<User> user, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    /*
+                     * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
+                     * else we are checking name, email and phone number(saved as string).
+                     */
+                    if (null != searchText) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), "%" + lowerCaseSearchText + "%")
+                        ));
+                    }
+
+                    /*
+                     * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
+                     * it will add those users with CUSTOMER_OWNER role.
+                     * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
+                     * and FINANCE role having customerAdminId as given customerAdminId.
+                     *
+                     * If the logged-in user if of role as CUSTOMER_OWNER then
+                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
+                     * as logged-in user ID.
+                     */
+                    predicates.add(authorizationUtil.fetchPredicateForTechnician(customerOwnerId, user, criteriaBuilder));
+
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+
+            // Fetching the roles based on the specifications.
+            Page<User> filteredUsers = userRepository.findAll(spec, p);
+
+            // Convert the filtered users to UserResponseDto
+            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
+                    .getContent()
+                    .stream()
+                    .map(user -> {
+                        UserResponseDto userResponseDto = UserResponseDto.builder().build();
+                        mapper.mapToUserResponseDto(userResponseDto, user);
+                        RoleResponseDto roleResponseDto = RoleResponseDto.builder()
+                                .id(user.getRole().getId())
+                                .name(user.getRole().getName())
+                                .description(user.getRole().getDescription())
+                                .build();
+                        userResponseDto.setRoleResponseDto(roleResponseDto);
+
+                        StateResponseDto stateResponseDto = null;
+                        if (null != user.getState()) stateResponseDto = StateResponseDto.builder()
+                                .id(user.getState().getId())
+                                .label(user.getState().getLabel())
+                                .name(user.getState().getName())
+                                .build();
+                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateResponseDto);
+
+                        CountryResponseDto countryResponseDto = CountryResponseDto.builder()
+                                .id(user.getCountry().getId())
+                                .label(user.getCountry().getLabel())
+                                .name(user.getCountry().getName())
+                                .build();
+                        if (null != user.getCountry()) userResponseDto.setCountryResponseDto(countryResponseDto);
+                        return userResponseDto;
+                    }).toList();
+
+
+            response.setContent(filteredUserResponseDtoList);
+            response.setMessage("Users of technician role fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return response;
+    }
+
     /**
      * Validates the email and reset password token.
      *

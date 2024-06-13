@@ -103,7 +103,7 @@ public class WorkOrderController {
             method = RequestMethod.POST,
             produces = {"application/json"})
     public BasicRestResponse saveWorkOrder(
-            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto  workOrderRequestDto,
+            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto  workOrderRequestDto,
             final HttpServletRequest request
     ) {
         return workOrderService.saveWorkOrder(workOrderRequestDto, request);
@@ -137,7 +137,7 @@ public class WorkOrderController {
             method = RequestMethod.PUT,
             produces = {"application/json"})
     public BasicRestResponse updateMooring(
-            @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
+            @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
             @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer workOrderId,
             final HttpServletRequest request
     ) {

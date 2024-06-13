@@ -683,21 +683,26 @@ public class MetadataServiceImpl implements MetadataService {
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            List<UserResponseDto> userResponseDtoList = userRepository.findAll()
+            List<UserMetadataResponse> UserMetadataResponseList = userRepository.findAll()
                     .stream()
                     .filter(
                             user1 -> null != user1.getRole()
                                     && null != user1.getRole().getName()
                                     && user1.getRole().getName().equals(AppConstants.Role.TECHNICIAN)
                                     && null != user1.getCustomerOwnerId()
-                                    && user1.getCustomerOwnerId().equals(customerOwnerId)
+                                    && user1.getCustomerOwnerId().equals(user.getId())
                     )
-                    .map(user1 -> userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), user1))
+                    .map(user1 -> {
+                        UserMetadataResponse userMetadataResponse = UserMetadataResponse.builder().build();
+                        if(null != user1.getId()) userMetadataResponse.setId(user1.getId());
+                        if(null != user1.getName()) userMetadataResponse.setName(user1.getName());
+                        return userMetadataResponse;
+                    })
                     .toList();
 
             response.setMessage("Technicians fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(userResponseDtoList);
+            response.setContent(UserMetadataResponseList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
