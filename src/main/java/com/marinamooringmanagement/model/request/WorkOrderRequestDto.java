@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.model.dto;
+package com.marinamooringmanagement.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkOrderDto extends BaseDto{
+public class WorkOrderRequestDto {
 
     private Integer id;
 
@@ -24,11 +24,13 @@ public class WorkOrderDto extends BaseDto{
 
     private String problem;
 
-    private WorkOrderStatusDto workOrderStatusDto;
+    private Integer customerId;
 
-    private MooringDto mooringDto;
+    private Integer mooringId;
 
-    private UserDto customerOwnerUserDto;
+    private Integer boatyardId;
 
-    private UserDto technicianUserDto;
+    private Integer technicianId;
+
+    private Integer workOrderStatusId;
 }

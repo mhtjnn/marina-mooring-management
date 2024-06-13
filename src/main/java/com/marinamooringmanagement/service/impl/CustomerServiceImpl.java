@@ -472,8 +472,8 @@ public class CustomerServiceImpl implements CustomerService {
     public BasicRestResponse deleteCustomerById(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if (optionalCustomer.isEmpty())

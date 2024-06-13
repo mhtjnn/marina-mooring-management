@@ -4,20 +4,14 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CountryMapper;
 import com.marinamooringmanagement.mapper.StateMapper;
 import com.marinamooringmanagement.mapper.VendorMapper;
-import com.marinamooringmanagement.model.entity.Country;
-import com.marinamooringmanagement.model.entity.State;
-import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.model.entity.Vendor;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.CountryResponseDto;
 import com.marinamooringmanagement.model.response.StateResponseDto;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
-import com.marinamooringmanagement.repositories.CountryRepository;
-import com.marinamooringmanagement.repositories.StateRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
-import com.marinamooringmanagement.repositories.VendorRepository;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.VendorService;
@@ -82,6 +76,9 @@ public class VendorServiceImpl implements VendorService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
     /**
      * Fetches a list of vendors based on the provided search request parameters and search text.
@@ -190,9 +187,11 @@ public class VendorServiceImpl implements VendorService {
         try {
             logger.info("API called to delete the vendor from the database");
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             final Optional<Vendor> optionalVendor = vendorRepository.findById(vendorId);
+
             if(optionalVendor.isEmpty()) throw new ResourceNotFoundException(String.format("No vendor found with the given id: %1$s", vendorId));
             final Vendor vendor = optionalVendor.get();
 
@@ -203,6 +202,9 @@ public class VendorServiceImpl implements VendorService {
             } else {
                 throw new RuntimeException(String.format("Vendor with the id: %1$s is not associated with any User", vendorId));
             }
+
+            List<Inventory> inventoryList = vendor.getInventoryList();
+            inventoryRepository.deleteAll(inventoryList);
 
             vendorRepository.deleteById(vendorId);
             final String message = vendorRepository.findById(vendorId).isPresent() ? String.format("Vendor with the id %1$s failed to get deleted", vendorId) : String.format("Vendor with the id %1$s is deleted successfully", vendorId);

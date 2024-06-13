@@ -116,13 +116,13 @@ public class MetadataServiceImpl implements MetadataService {
     private MooringServiceImpl mooringServiceImpl;
 
     @Autowired
-    private TechnicianRepository technicianRepository;
-
-    @Autowired
     private WorkOrderStatusRepository workOrderStatusRepository;
 
     @Autowired
     private WorkOrderStatusMapper workOrderStatusMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -683,19 +683,21 @@ public class MetadataServiceImpl implements MetadataService {
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            List<TechnicianMetadataResponse> technicianMetadataResponseList = technicianRepository.findAll()
+            List<UserResponseDto> userResponseDtoList = userRepository.findAll()
                     .stream()
-                    .filter(technician -> null != technician.getUser() && technician.getUser().getId().equals(user.getId()))
-                    .map(technician -> TechnicianMetadataResponse.builder()
-                            .id(technician.getId())
-                            .technicianName(technician.getTechnicianName())
-                            .build()
+                    .filter(
+                            user1 -> null != user1.getRole()
+                                    && null != user1.getRole().getName()
+                                    && user1.getRole().getName().equals(AppConstants.Role.TECHNICIAN)
+                                    && null != user1.getCustomerOwnerId()
+                                    && user1.getCustomerOwnerId().equals(customerOwnerId)
                     )
+                    .map(user1 -> userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), user1))
                     .toList();
 
             response.setMessage("Technicians fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(technicianMetadataResponseList);
+            response.setContent(userResponseDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

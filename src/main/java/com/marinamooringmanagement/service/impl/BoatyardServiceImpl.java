@@ -212,8 +212,8 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
 
@@ -235,7 +235,10 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             List<Mooring> mooringList = optionalBoatyard.get().getMooringList();
 
-            mooringList.stream().map(mooring -> mooringService.deleteMooring(mooring.getId(), request));
+            for(Mooring mooring: mooringList) {
+                mooringService.deleteMooring(mooring.getId(), request);
+            }
+//            mooringList.stream().map(mooring -> );
 
             boatyardRepository.deleteById(id);
 

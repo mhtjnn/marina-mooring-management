@@ -115,7 +115,6 @@ public class MooringServiceImpl implements MooringService {
      */
     @Override
     public BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
-
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -187,9 +186,9 @@ public class MooringServiceImpl implements MooringService {
             if(null == mooringRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be blank");
 
             performSave(mooringRequestDto, mooring, null, request);
+
             response.setMessage("Mooring saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
-            mooringMapper.mapToMooring(mooring, mooringRequestDto);
         } catch (Exception e) {
             log.error("Error occurred while saving the mooring in the database {}", e.getLocalizedMessage());
             response.setMessage(e.getMessage());
@@ -237,7 +236,8 @@ public class MooringServiceImpl implements MooringService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
             if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
@@ -281,12 +281,10 @@ public class MooringServiceImpl implements MooringService {
      * @param id                the mooring ID (null for new moorings)
      */
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id, final HttpServletRequest request) {
-
         try {
             log.info("performSave() function called");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Mooring> optionalMooring = Optional.empty();

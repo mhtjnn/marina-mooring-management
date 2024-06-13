@@ -105,6 +105,26 @@ public class AuthorizationUtil {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
+    public <T> Predicate fetchPredicateForWorkOrder(final Integer customerOwnerId, Root<T> root, CriteriaBuilder criteriaBuilder) {
+        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+            checksForAdministrator(customerOwnerId);
+            predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), customerOwnerId));
+        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            checksForCustomerOwner(customerOwnerId);
+            predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUserId));
+        } else if (loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+            predicates.add(criteriaBuilder.equal(root.join("technicianUser").get("id"), loggedInUserId));
+        } else {
+            throw new RuntimeException("Not Authorized");
+        }
+
+        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+    }
+
     public <T> Predicate fetchPredicateForUser(final Integer customerOwnerId, Root<T> user, CriteriaBuilder criteriaBuilder) {
         final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
         final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();

@@ -14,7 +14,7 @@ import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
-import com.marinamooringmanagement.service.UserService;
+import com.marinamooringmanagement.service.*;
 import com.marinamooringmanagement.utils.SortUtils;
 import io.jsonwebtoken.io.Decoders;
 import jakarta.persistence.criteria.*;
@@ -30,6 +30,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -76,6 +77,24 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
+
+    @Autowired
+    private BoatyardRepository boatyardRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private BoatyardService boatyardService;
+
+    @Autowired
+    private CustomerService customerService;
+
+    @Autowired
+    private VendorRepository vendorRepository;
+
+    @Autowired
+    private VendorService vendorService;
 
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
@@ -227,6 +246,7 @@ public class UserServiceImpl implements UserService {
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
+//    @Transactional
     public BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -271,16 +291,47 @@ public class UserServiceImpl implements UserService {
              * user are also deleted.
              */
             if (userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                userRepository.deleteAll(
-                        userRepository.findAll().stream()
-                                .filter(user -> null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
-                                .toList()
-                );
+                request.setAttribute("CUSTOMER_OWNER_ID", userToBeDeleted.getId());
+
+                List<Vendor> vendorList = vendorRepository.findAll()
+                        .stream()
+                        .filter(vendor -> null != vendor.getUser() && null != vendor.getUser().getId() && vendor.getUser().getId().equals(userToBeDeleted.getId()))
+                        .toList();
+
+                for(Vendor vendor: vendorList) {
+                    vendorService.deleteVendor(vendor.getId(), request);
+                }
+
+                List<Boatyard> boatyardList = boatyardRepository.findAll().stream()
+                        .filter(boatyard -> null != boatyard.getUser() && null != boatyard.getUser().getId() && boatyard.getUser().getId().equals(userToBeDeleted.getId()))
+                        .toList();
+
+                for(Boatyard boatyard: boatyardList) {
+                    boatyardService.deleteBoatyardById(boatyard.getId(), request);
+                }
+
+                List<Customer> customerList = customerRepository.findAll().stream()
+                        .filter(customer -> null != customer.getUser() && null != customer.getUser().getId() && customer.getUser().getId().equals(userToBeDeleted.getId()))
+                        .toList();
+
+                for(Customer customer: customerList) {
+                    customerService.deleteCustomerById(customer.getId(), request);
+                }
+
+                List<User> userAssociatedWithCurrCustomerOwner = userRepository.findAll().stream()
+                        .filter(user -> null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
+                        .toList();
+
+                for(User user: userAssociatedWithCurrCustomerOwner) {
+                    List<Token> tokenList = tokenRepository.findByUserId(user.getId());
+                    tokenRepository.deleteAll(tokenList);
+                    userRepository.delete(user);
+                }
             }
 
             //  Tokens assigned with the user(to be deleted) are deleted.
             final List<Token> tokenList = tokenRepository.findByUserId(userId);
-            tokenRepository.deleteAll(tokenList);
+            if(null != tokenList && !tokenList.isEmpty()) tokenRepository.deleteAll(tokenList);
 
             // deleting the user
             userRepository.deleteById(userId);
