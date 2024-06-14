@@ -29,6 +29,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -93,7 +97,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(workOrder.get("dueDate"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 
@@ -121,6 +125,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if(null != workOrder.getDueDate()) {
+                            LocalDate dueDate = workOrder.getDueDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String dueDateStr = dueDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setDueDate(dueDateStr);
+                        }
+
+                        if(null != workOrder.getScheduledDate()) {
+                            LocalDate scheduledDate = workOrder.getScheduledDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
+                        }
 
                         return workOrderResponseDto;
                     })
@@ -214,6 +239,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchOpenWorkOrders(Integer technicianId, HttpServletRequest request) {
+        return null;
     }
 
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {

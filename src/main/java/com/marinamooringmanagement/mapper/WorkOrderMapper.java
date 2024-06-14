@@ -36,6 +36,8 @@ public interface WorkOrderMapper {
     @Mapping(target = "technicianUserResponseDto", ignore = true)
     @Mapping(target = "customerOwnerUserResponseDto", ignore = true)
     @Mapping(target = "workOrderStatusDto", ignore = true)
+    @Mapping(target = "dueDate", ignore = true)
+    @Mapping(target = "scheduledDate", ignore = true)
     WorkOrderResponseDto mapToWorkOrderResponseDto(@MappingTarget WorkOrderResponseDto workOrderResponseDto, WorkOrder workOrder);
 
 }

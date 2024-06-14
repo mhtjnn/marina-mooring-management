@@ -17,9 +17,9 @@ public class WorkOrderResponseDto {
 
     private Integer id;
 
-    private Date dueDate;
+    private String dueDate;
 
-    private Date scheduledDate;
+    private String scheduledDate;
 
     private Time time;
 

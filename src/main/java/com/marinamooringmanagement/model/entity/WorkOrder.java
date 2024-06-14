@@ -34,7 +34,7 @@ public class WorkOrder extends Base{
     @Column(name = "problem")
     private String problem;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "mooring_id", unique = true)
     private Mooring mooring;
 

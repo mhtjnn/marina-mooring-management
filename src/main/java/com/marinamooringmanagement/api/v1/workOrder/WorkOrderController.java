@@ -76,10 +76,39 @@ public class WorkOrderController {
         return workOrderService.fetchWorkOrders(baseSearchRequest, searchText, request);
     }
 
+    @Operation(
+            tags = "Fetch open work orders from the database",
+            description = "API to fetch open work orders from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(
+            value = "/fetchOpenWorkOrders/{technicianId}",
+            method = RequestMethod.GET,
+            produces = {"application/json"}
+    )
+    public BasicRestResponse fetchWorkOrders(
+            @Parameter(description = "TechnicianId", schema = @Schema(implementation = Integer.class)) final @PathVariable("technicianId") Integer technicianId,
+            final HttpServletRequest request
+    ) {
+        return workOrderService.fetchOpenWorkOrders(technicianId, request);
+    }
+
     /**
-     * Saves a new mooring.
+     * Saves a new work order.
      *
-     * @param workOrderRequestDto Request DTO containing mooring details
+     * @param workOrderRequestDto Request DTO containing work order details
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
@@ -103,22 +132,22 @@ public class WorkOrderController {
             method = RequestMethod.POST,
             produces = {"application/json"})
     public BasicRestResponse saveWorkOrder(
-            @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto  workOrderRequestDto,
+            @Parameter(description = "Properties of a work order", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto  workOrderRequestDto,
             final HttpServletRequest request
     ) {
         return workOrderService.saveWorkOrder(workOrderRequestDto, request);
     }
 
     /**
-     * Updates an existing mooring.
+     * Updates an existing work order.
      *
-     * @param workOrderRequestDto Request DTO containing updated mooring details
-     * @param workOrderId ID of the mooring to be updated
+     * @param workOrderRequestDto Request DTO containing updated work order details
+     * @param workOrderId ID of the work order to be updated
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
             tags = "Update work order in the database",
-            description = "API to delete work order in the database",
+            description = "API to update work order in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -137,22 +166,22 @@ public class WorkOrderController {
             method = RequestMethod.PUT,
             produces = {"application/json"})
     public BasicRestResponse updateMooring(
-            @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
-            @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer workOrderId,
+            @Parameter(description = "Fields to update in the work order", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
+            @Parameter(description = "ID of the work order to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer workOrderId,
             final HttpServletRequest request
     ) {
         return workOrderService.updateWorkOrder(workOrderRequestDto, workOrderId, request);
     }
 
     /**
-     * Deletes a mooring by ID.
+     * Deletes a work order by ID.
      *
-     * @param id ID of the mooring to be deleted
+     * @param id ID of the work order to be deleted
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete mooring from the database",
-            description = "API to delete mooring from the database",
+            tags = "Delete work order from the database",
+            description = "API to delete work order from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -171,7 +200,7 @@ public class WorkOrderController {
             method = RequestMethod.DELETE,
             produces = {"application/json"})
     public BasicRestResponse deleteMooring(
-            @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
+            @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request
     ) {
         return workOrderService.deleteWorkOrder(id, request);

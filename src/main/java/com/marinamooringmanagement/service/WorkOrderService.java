@@ -13,4 +13,6 @@ public interface WorkOrderService {
     BasicRestResponse updateWorkOrder(final WorkOrderRequestDto workOrderRequestDto, final Integer workOrderId, final HttpServletRequest request);
 
     BasicRestResponse deleteWorkOrder(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse fetchOpenWorkOrders(final Integer technicianId, final HttpServletRequest request);
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -145,8 +146,8 @@ public class Mooring extends Base {
     @JsonBackReference
     private Boatyard boatyard;
 
-    @OneToOne(mappedBy = "mooring", cascade = {}, fetch = FetchType.LAZY)
-    private WorkOrder workOrder;
+    @OneToMany(mappedBy = "mooring", cascade = {}, fetch = FetchType.LAZY)
+    private List<WorkOrder> workOrderList;
 
     @Override
     public boolean equals(Object o) {
