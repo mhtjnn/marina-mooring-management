@@ -380,6 +380,26 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
 
+            if(null != workOrderRequestDto.getDueDate()) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                LocalDate localDate = LocalDate.parse(workOrderRequestDto.getDueDate(), dateTimeFormatter);
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                workOrder.setDueDate(date);
+            } else {
+                if(workOrderId == null) throw new RuntimeException(String.format("Due date cannot be null"));
+            }
+
+            if(null != workOrderRequestDto.getScheduledDate()) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                LocalDate localDate = LocalDate.parse(workOrderRequestDto.getScheduledDate(), dateTimeFormatter);
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                workOrder.setScheduledDate(date);
+            } else {
+                if(workOrderId == null) throw new RuntimeException(String.format("Due date cannot be null"));
+            }
+
             if(null != workOrderRequestDto.getWorkOrderStatusId()) {
                 final Optional<WorkOrderStatus> optionalWorkOrderStatus = workOrderStatusRepository.findById(workOrderRequestDto.getWorkOrderStatusId());
                 if(optionalWorkOrderStatus.isEmpty()) throw new RuntimeException(String.format("No work order status found with the given id: %1$s", workOrderRequestDto.getWorkOrderStatusId()));

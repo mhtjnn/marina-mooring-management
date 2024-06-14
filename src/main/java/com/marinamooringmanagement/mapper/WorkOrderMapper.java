@@ -22,6 +22,8 @@ public interface WorkOrderMapper {
     @Mapping(target = "technicianUser", ignore = true)
     @Mapping(target = "workOrderStatus", ignore = true)
     @Mapping(target = "customerOwnerUser", ignore = true)
+    @Mapping(target = "dueDate", ignore = true)
+    @Mapping(target = "scheduledDate", ignore = true)
     WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderRequestDto workOrderRequestDto);
 
     @Mapping(target = "mooringDto", ignore = true)
