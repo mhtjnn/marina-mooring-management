@@ -34,8 +34,8 @@ public class WorkOrder extends Base{
     @Column(name = "problem")
     private String problem;
 
-    @ManyToOne
-    @JoinColumn(name = "mooring_id", unique = true)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "mooring_id")
     private Mooring mooring;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

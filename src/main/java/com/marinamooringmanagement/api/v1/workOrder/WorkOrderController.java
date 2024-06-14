@@ -98,11 +98,40 @@ public class WorkOrderController {
             method = RequestMethod.GET,
             produces = {"application/json"}
     )
-    public BasicRestResponse fetchWorkOrders(
+    public BasicRestResponse fetchOpenWorkOrders(
             @Parameter(description = "TechnicianId", schema = @Schema(implementation = Integer.class)) final @PathVariable("technicianId") Integer technicianId,
             final HttpServletRequest request
     ) {
         return workOrderService.fetchOpenWorkOrders(technicianId, request);
+    }
+
+    @Operation(
+            tags = "Fetch closed work orders from the database",
+            description = "API to fetch closed work orders from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(
+            value = "/fetchCloseWorkOrders/{technicianId}",
+            method = RequestMethod.GET,
+            produces = {"application/json"}
+    )
+    public BasicRestResponse fetchCloseWorkOrders(
+            @Parameter(description = "TechnicianId", schema = @Schema(implementation = Integer.class)) final @PathVariable("technicianId") Integer technicianId,
+            final HttpServletRequest request
+    ) {
+        return workOrderService.fetchCloseWorkOrders(technicianId, request);
     }
 
     /**

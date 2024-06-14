@@ -70,4 +70,22 @@ public class AppConstants {
         public static final String NOT_IN_USE = "NOT_IN_USE";
     }
 
+    public static class WorkOrderStatusConstants {
+
+        public static final String NEW_REQUEST = "New Request";
+
+        public static final String WORK_IN_PROGRESS = "Work in Progress";
+
+        public static final String PARTS_ON_ORDER = "Parts on Order";
+
+        public static final String WAITING_ON_INSPECTION = "Waiting on Inspection";
+
+        public static final String ON_HOLD = "On Hold";
+
+        public static final String PENDING_APPROVAL = "Pending Approval";
+
+        public static final String Close = "Close";
+
+    }
+
 }

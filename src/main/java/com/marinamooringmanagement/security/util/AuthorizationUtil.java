@@ -218,4 +218,22 @@ public class AuthorizationUtil {
         if (optionalUser.isEmpty())
             throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
     }
+
+    public User checkForTechnician(final Integer technicianId, final HttpServletRequest request) {
+
+        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+        final User user = checkAuthority(customerOwnerId);
+
+        Optional<User> optionalTechnicianUser = userRepository.findById(technicianId);
+        if(optionalTechnicianUser.isEmpty()) throw new RuntimeException(String.format(String.format("No user found with the given id: %1$s", technicianId)));
+        final User technicianUser = optionalTechnicianUser.get();
+
+        if(null == technicianUser.getRole()) throw new RuntimeException(String.format("User with the given id: %1$s has no role", technicianId));
+        if(null == technicianUser.getRole().getName()) throw new RuntimeException(String.format("User with the given id: %1$s has role with no name", technicianId));
+        if(!technicianUser.getRole().getName().equals(AppConstants.Role.TECHNICIAN)) throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", technicianId));
+        if(null == technicianUser.getCustomerOwnerId()) throw new RuntimeException(String.format("User with given id: %1$s is of technician role but has no customer owner id", technicianId));
+        if(!technicianUser.getCustomerOwnerId().equals(user.getId())) throw new RuntimeException(String.format("User with given id: %1$s is associated with other customer owner", technicianId));
+
+        return optionalTechnicianUser.get();
+    }
 }

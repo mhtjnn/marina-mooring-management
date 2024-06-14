@@ -15,4 +15,6 @@ public interface WorkOrderService {
     BasicRestResponse deleteWorkOrder(final Integer id, final HttpServletRequest request);
 
     BasicRestResponse fetchOpenWorkOrders(final Integer technicianId, final HttpServletRequest request);
+
+    BasicRestResponse fetchCloseWorkOrders(final Integer technicianId, final HttpServletRequest request);
 }

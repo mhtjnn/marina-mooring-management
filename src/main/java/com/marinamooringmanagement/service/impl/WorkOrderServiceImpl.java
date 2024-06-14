@@ -18,6 +18,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%"),
                                 criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
@@ -243,7 +245,125 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     public BasicRestResponse fetchOpenWorkOrders(Integer technicianId, HttpServletRequest request) {
-        return null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+
+            List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
+                    .stream()
+                    .filter(
+                            workOrder -> null != workOrder.getTechnicianUser()
+                                    && null != workOrder.getCustomerOwnerUser()
+                                    && null != workOrder.getWorkOrderStatus()
+                                    && null != workOrder.getWorkOrderStatus().getStatus()
+                                    && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.Close)
+                                    && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
+                                    && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                    )
+                    .map(workOrder -> {
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if(null != workOrder.getDueDate()) {
+                            LocalDate dueDate = workOrder.getDueDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String dueDateStr = dueDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setDueDate(dueDateStr);
+                        }
+
+                        if(null != workOrder.getScheduledDate()) {
+                            LocalDate scheduledDate = workOrder.getScheduledDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
+                        }
+
+                        return workOrderResponseDto;
+                    })
+                    .toList();
+
+            response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return  response;
+    }
+
+    @Override
+    public BasicRestResponse fetchCloseWorkOrders(Integer technicianId, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+
+            List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
+                    .stream()
+                    .filter(
+                            workOrder -> null != workOrder.getTechnicianUser()
+                                    && null != workOrder.getCustomerOwnerUser()
+                                    && null != workOrder.getWorkOrderStatus()
+                                    && null != workOrder.getWorkOrderStatus().getStatus()
+                                    && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.Close)
+                                    && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
+                                    && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                    )
+                    .map(workOrder -> {
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if(null != workOrder.getDueDate()) {
+                            LocalDate dueDate = workOrder.getDueDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String dueDateStr = dueDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setDueDate(dueDateStr);
+                        }
+
+                        if(null != workOrder.getScheduledDate()) {
+                            LocalDate scheduledDate = workOrder.getScheduledDate()
+                                    .toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate();
+
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
+                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
+                        }
+                        return workOrderResponseDto;
+                    })
+                    .toList();
+
+            response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return  response;
     }
 
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
