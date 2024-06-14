@@ -12,7 +12,7 @@ import java.sql.Time;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkOrderResponseDto {
+public class EstimateResponseDto {
 
     private Integer id;
 
@@ -35,4 +35,5 @@ public class WorkOrderResponseDto {
     private UserResponseDto customerOwnerUserResponseDto;
 
     private WorkOrderStatusDto workOrderStatusDto;
+
 }

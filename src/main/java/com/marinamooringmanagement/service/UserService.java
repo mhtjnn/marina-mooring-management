@@ -35,7 +35,7 @@ public interface UserService {
      * Deletes a user from the database.
      *
      * @param userId  The ID of the user to be deleted.
-     * @param customerAdminId The ID of the customer admin for deleting the user.
+     * @param request
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      */
     BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request);

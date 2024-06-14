@@ -2,6 +2,7 @@ package com.marinamooringmanagement.security.util;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.model.entity.Estimate;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.repositories.UserRepository;
@@ -225,15 +226,41 @@ public class AuthorizationUtil {
         final User user = checkAuthority(customerOwnerId);
 
         Optional<User> optionalTechnicianUser = userRepository.findById(technicianId);
-        if(optionalTechnicianUser.isEmpty()) throw new RuntimeException(String.format(String.format("No user found with the given id: %1$s", technicianId)));
+        if (optionalTechnicianUser.isEmpty())
+            throw new RuntimeException(String.format(String.format("No user found with the given id: %1$s", technicianId)));
         final User technicianUser = optionalTechnicianUser.get();
 
-        if(null == technicianUser.getRole()) throw new RuntimeException(String.format("User with the given id: %1$s has no role", technicianId));
-        if(null == technicianUser.getRole().getName()) throw new RuntimeException(String.format("User with the given id: %1$s has role with no name", technicianId));
-        if(!technicianUser.getRole().getName().equals(AppConstants.Role.TECHNICIAN)) throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", technicianId));
-        if(null == technicianUser.getCustomerOwnerId()) throw new RuntimeException(String.format("User with given id: %1$s is of technician role but has no customer owner id", technicianId));
-        if(!technicianUser.getCustomerOwnerId().equals(user.getId())) throw new RuntimeException(String.format("User with given id: %1$s is associated with other customer owner", technicianId));
+        if (null == technicianUser.getRole())
+            throw new RuntimeException(String.format("User with the given id: %1$s has no role", technicianId));
+        if (null == technicianUser.getRole().getName())
+            throw new RuntimeException(String.format("User with the given id: %1$s has role with no name", technicianId));
+        if (!technicianUser.getRole().getName().equals(AppConstants.Role.TECHNICIAN))
+            throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", technicianId));
+        if (null == technicianUser.getCustomerOwnerId())
+            throw new RuntimeException(String.format("User with given id: %1$s is of technician role but has no customer owner id", technicianId));
+        if (!technicianUser.getCustomerOwnerId().equals(user.getId()))
+            throw new RuntimeException(String.format("User with given id: %1$s is associated with other customer owner", technicianId));
 
         return optionalTechnicianUser.get();
+    }
+
+    public Predicate fetchPredicateForEstimate(Integer customerOwnerId, Root<Estimate> root, CriteriaBuilder criteriaBuilder) {
+        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+            checksForAdministrator(customerOwnerId);
+            predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), customerOwnerId));
+        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            checksForCustomerOwner(customerOwnerId);
+            predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUserId));
+        } else if (loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)){
+            predicates.add(criteriaBuilder.equal(root.join("technicianUser").get("id"), loggedInUserId));
+        } else {
+            throw new RuntimeException("Not Authorized");
+        }
+
+        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 }

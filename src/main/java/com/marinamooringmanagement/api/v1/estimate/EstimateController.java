@@ -1,9 +1,9 @@
-package com.marinamooringmanagement.api.v1.workOrder;
+package com.marinamooringmanagement.api.v1.estimate;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
-import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
+import com.marinamooringmanagement.model.request.EstimateRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.service.WorkOrderService;
+import com.marinamooringmanagement.service.EstimateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,13 +19,13 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
 
 @RestController
-@RequestMapping("/api/v1/workOrder")
+@RequestMapping("/api/v1/estimate")
 @Validated
 @CrossOrigin
-public class WorkOrderController {
+public class EstimateController {
 
     @Autowired
-    private WorkOrderService workOrderService;
+    private EstimateService estimateService;
 
     /**
      * Fetches a list of moorings based on pagination and sorting parameters.
@@ -37,8 +37,8 @@ public class WorkOrderController {
      * @return BasicRestResponse containing the fetched moorings
      */
     @Operation(
-            tags = "Fetch work orders from the database",
-            description = "API to fetch work orders from the database",
+            tags = "Fetch estimates from the database",
+            description = "API to estimates from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -58,7 +58,7 @@ public class WorkOrderController {
             method = RequestMethod.GET,
             produces = {"application/json"}
     )
-    public BasicRestResponse fetchWorkOrders(
+    public BasicRestResponse fetchEstimates(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
@@ -72,76 +72,18 @@ public class WorkOrderController {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return workOrderService.fetchWorkOrders(baseSearchRequest, searchText, request);
-    }
-
-    @Operation(
-            tags = "Fetch open work orders from the database",
-            description = "API to fetch open work orders from the database",
-            responses = {
-                    @ApiResponse(
-                            description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "200"
-                    ),
-                    @ApiResponse(
-                            description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "400"
-                    )
-            }
-
-    )
-    @RequestMapping(
-            value = "/fetchOpenWorkOrders/{technicianId}",
-            method = RequestMethod.GET,
-            produces = {"application/json"}
-    )
-    public BasicRestResponse fetchOpenWorkOrders(
-            @Parameter(description = "TechnicianId", schema = @Schema(implementation = Integer.class)) final @PathVariable("technicianId") Integer technicianId,
-            final HttpServletRequest request
-    ) {
-        return workOrderService.fetchOpenWorkOrders(technicianId, request);
-    }
-
-    @Operation(
-            tags = "Fetch closed work orders from the database",
-            description = "API to fetch closed work orders from the database",
-            responses = {
-                    @ApiResponse(
-                            description = "Success",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "200"
-                    ),
-                    @ApiResponse(
-                            description = "Internal Server Error",
-                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
-                            responseCode = "400"
-                    )
-            }
-
-    )
-    @RequestMapping(
-            value = "/fetchCloseWorkOrders/{technicianId}",
-            method = RequestMethod.GET,
-            produces = {"application/json"}
-    )
-    public BasicRestResponse fetchCloseWorkOrders(
-            @Parameter(description = "TechnicianId", schema = @Schema(implementation = Integer.class)) final @PathVariable("technicianId") Integer technicianId,
-            final HttpServletRequest request
-    ) {
-        return workOrderService.fetchCloseWorkOrders(technicianId, request);
+        return estimateService.fetchEstimates(baseSearchRequest, searchText, request);
     }
 
     /**
      * Saves a new work order.
      *
-     * @param workOrderRequestDto Request DTO containing work order details
+     * @param estimateRequestDto Request DTO containing work order details
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Save work orders in the database",
-            description = "API to save work orders in the database",
+            tags = "Save estimate in the database",
+            description = "API to save estimates in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -159,23 +101,23 @@ public class WorkOrderController {
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
-    public BasicRestResponse saveWorkOrder(
-            @Parameter(description = "Properties of a work order", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto  workOrderRequestDto,
+    public BasicRestResponse saveEstimate(
+            @Parameter(description = "Properties of a work order", schema = @Schema(implementation = EstimateRequestDto.class)) final @Valid @RequestBody EstimateRequestDto  estimateRequestDto,
             final HttpServletRequest request
     ) {
-        return workOrderService.saveWorkOrder(workOrderRequestDto, request);
+        return estimateService.saveEstimate(estimateRequestDto, request);
     }
 
     /**
      * Updates an existing work order.
      *
-     * @param workOrderRequestDto Request DTO containing updated work order details
-     * @param workOrderId ID of the work order to be updated
+     * @param estimateRequestDto Request DTO containing updated work order details
+     * @param estimateId ID of the work order to be updated
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Update work order in the database",
-            description = "API to update work order in the database",
+            tags = "Update estimates in the database",
+            description = "API to update estimates in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -194,11 +136,11 @@ public class WorkOrderController {
             method = RequestMethod.PUT,
             produces = {"application/json"})
     public BasicRestResponse updateMooring(
-            @Parameter(description = "Fields to update in the work order", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
-            @Parameter(description = "ID of the work order to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer workOrderId,
+            @Parameter(description = "Fields to update in the work order", schema = @Schema(implementation = EstimateRequestDto.class)) final @Valid @RequestBody EstimateRequestDto estimateRequestDto,
+            @Parameter(description = "ID of the work order to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer estimateId,
             final HttpServletRequest request
     ) {
-        return workOrderService.updateWorkOrder(workOrderRequestDto, workOrderId, request);
+        return estimateService.updateEstimate(estimateRequestDto, estimateId, request);
     }
 
     /**
@@ -208,8 +150,8 @@ public class WorkOrderController {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete work order from the database",
-            description = "API to delete work order from the database",
+            tags = "Delete estimates from the database",
+            description = "API to delete estimates from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -231,7 +173,8 @@ public class WorkOrderController {
             @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request
     ) {
-        return workOrderService.deleteWorkOrder(id, request);
+        return estimateService.deleteEstimate(id, request);
     }
+
 
 }

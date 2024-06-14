@@ -30,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -99,7 +98,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(workOrder.join("mooring").join("customer").get("firstName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(workOrder.join("mooring").join("customer").get("lastName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(workOrder.join("mooring").get("mooringId"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(workOrder.join("mooring").join("boatyard").get("boatyardName"), "%" + lowerCaseSearchText + "%"),
+                                criteriaBuilder.like(workOrder.join("technicianUser").get("name"), "%" + lowerCaseSearchText + "%")
                         ));
                     }
 
@@ -157,8 +160,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             response.setStatus(HttpStatus.OK.value());
             response.setContent(workOrderResponseDtoList);
         } catch (Exception e) {
-            log.error("Error occurred while fetching all the work orders in the database", e);
-            throw e;
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
     }
@@ -257,7 +260,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && null != workOrder.getCustomerOwnerUser()
                                     && null != workOrder.getWorkOrderStatus()
                                     && null != workOrder.getWorkOrderStatus().getStatus()
-                                    && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.Close)
+                                    && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
                                     && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                     )
@@ -319,7 +322,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && null != workOrder.getCustomerOwnerUser()
                                     && null != workOrder.getWorkOrderStatus()
                                     && null != workOrder.getWorkOrderStatus().getStatus()
-                                    && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.Close)
+                                    && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
                                     && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                     )

@@ -84,7 +84,7 @@ public class AppConstants {
 
         public static final String PENDING_APPROVAL = "Pending Approval";
 
-        public static final String Close = "Close";
+        public static final String CLOSE = "Close";
 
     }
 
