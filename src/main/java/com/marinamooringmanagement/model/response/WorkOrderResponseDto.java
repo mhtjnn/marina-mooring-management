@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,4 +34,6 @@ public class WorkOrderResponseDto {
     private UserResponseDto technicianUserResponseDto;
 
     private UserResponseDto customerOwnerUserResponseDto;
+
+    private WorkOrderStatusDto workOrderStatusDto;
 }
