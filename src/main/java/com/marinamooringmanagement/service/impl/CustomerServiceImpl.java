@@ -143,8 +143,11 @@ public class CustomerServiceImpl implements CustomerService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(customer.get("emailAddress"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(customer.get("phone"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("customerId")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("emailAddress")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("phone")), lowerCaseSearchText)
                         ));
                     }
 

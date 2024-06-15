@@ -21,6 +21,8 @@ public interface InventoryMapper {
     @Mapping(target = "vendor", ignore = true)
     Inventory mapToInventory(@MappingTarget Inventory inventory, InventoryRequestDto inventoryRequestDto);
 
+    @Mapping(target = "taxable", ignore = true)
+    @Mapping(target = "vendorResponseDto", ignore = true)
     InventoryResponseDto mapToInventoryResponseDto(@MappingTarget InventoryResponseDto inventoryResponseDto, Inventory inventory);
 
 }

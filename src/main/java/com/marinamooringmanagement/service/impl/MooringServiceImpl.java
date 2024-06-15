@@ -130,8 +130,10 @@ public class MooringServiceImpl implements MooringService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(mooring.get("boatName"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(mooring.get("mooringId"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("boatName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringId")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText)
+
                         ));
                     }
 

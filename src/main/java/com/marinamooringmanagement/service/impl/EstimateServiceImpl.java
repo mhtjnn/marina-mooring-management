@@ -102,12 +102,12 @@ public class EstimateServiceImpl implements EstimateService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(workOrder.get("problem"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.join("mooring").join("customer").get("firstName"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.join("mooring").join("customer").get("lastName"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.join("mooring").get("mooringId"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.join("mooring").join("boatyard").get("boatyardName"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(workOrder.join("technicianUser").get("name"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringId")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("name")), lowerCaseSearchText)
                         ));
                     }
 

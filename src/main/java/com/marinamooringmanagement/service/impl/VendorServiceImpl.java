@@ -15,6 +15,7 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.VendorService;
+import com.marinamooringmanagement.utils.ConversionUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -80,6 +81,9 @@ public class VendorServiceImpl implements VendorService {
     @Autowired
     private InventoryRepository inventoryRepository;
 
+    @Autowired
+    private ConversionUtils conversionUtils;
+
     /**
      * Fetches a list of vendors based on the provided search request parameters and search text.
      *
@@ -103,9 +107,17 @@ public class VendorServiceImpl implements VendorService {
 
                     if(null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+
+                        if(conversionUtils.canConvertToInt(lowerCaseSearchText)) {
+                            predicates.add(criteriaBuilder.like(vendor.get("id"), searchText));
+                        }
+
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(vendor.get("companyName"), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(vendor.get("website"), "%" + lowerCaseSearchText + "%")
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("website")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyPhoneNumber")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyEmail")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("website")), lowerCaseSearchText)
                         ));
                     }
 

@@ -23,7 +23,7 @@ public class InventoryResponseDto {
 
     private BigDecimal salePrice;
 
-    private Boolean taxable;
+    private String taxable;
 
     private InventoryTypeDto inventoryType;
 
