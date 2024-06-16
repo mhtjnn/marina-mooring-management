@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.workOrder;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -22,7 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/workOrder")
 @Validated
 @CrossOrigin
-public class WorkOrderController {
+public class WorkOrderController extends GlobalExceptionHandler {
 
     @Autowired
     private WorkOrderService workOrderService;

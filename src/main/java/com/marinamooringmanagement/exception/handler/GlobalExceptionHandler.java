@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.exception.handler;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marinamooringmanagement.exception.*;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import org.springframework.context.ApplicationEventPublisher;
@@ -190,6 +192,17 @@ public class GlobalExceptionHandler implements ApplicationEventPublisherAware {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setMessage("Given string value cannot be converted to Integer");
+
+        return response;
+    }
+
+    @ExceptionHandler(JsonParseException.class)
+    public BasicRestResponse handleJsonProcessingException(JsonParseException ex) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage("Json Parse error: some field could be in wrong format");
 
         return response;
     }

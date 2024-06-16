@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.inventory;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.InventoryRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -22,7 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "api/v1/inventory")
 @Validated
 @CrossOrigin
-public class InventoryController {
+public class InventoryController extends GlobalExceptionHandler {
 
     @Autowired
     private InventoryService inventoryService;

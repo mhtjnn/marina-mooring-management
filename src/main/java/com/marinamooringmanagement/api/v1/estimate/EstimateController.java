@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.estimate;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.EstimateRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -22,7 +23,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/estimate")
 @Validated
 @CrossOrigin
-public class EstimateController {
+public class EstimateController extends GlobalExceptionHandler {
 
     @Autowired
     private EstimateService estimateService;

@@ -16,6 +16,7 @@ import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MooringService;
+import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -105,6 +106,9 @@ public class MooringServiceImpl implements MooringService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
+
+    @Autowired
+    private GPSUtil gpsUtil;
 
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
@@ -303,6 +307,13 @@ public class MooringServiceImpl implements MooringService {
                         if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
                     }
                 }
+            }
+
+            if (null != mooringRequestDto.getGpsCoordinates()) {
+                final String gpsCoordinates = gpsUtil.getGpsCoordinates(mooringRequestDto.getGpsCoordinates());
+                mooring.setGpsCoordinates(gpsCoordinates);
+            } else {
+                if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
             }
 
             if(null == mooringRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");

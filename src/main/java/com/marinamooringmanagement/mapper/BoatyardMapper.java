@@ -59,5 +59,6 @@ public interface BoatyardMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "mooringList", ignore = true)
+    @Mapping(target = "gpsCoordinates", ignore = true)
     Boatyard mapToBoatYard(@MappingTarget Boatyard boatYard, BoatyardRequestDto boatYardDto);
 }

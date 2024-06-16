@@ -16,6 +16,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.BoatyardService;
 import com.marinamooringmanagement.service.MooringService;
+import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -87,6 +88,9 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
+
+    @Autowired
+    private GPSUtil gpsUtil;
 
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
@@ -162,10 +166,12 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
                         boatyardMapper.mapToBoatYardResponseDto(boatyardResponseDto, boatyard);
-                        if (null != boatyard.getState()) boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
-                        if (null != boatyard.getCountry()) boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
+                        if (null != boatyard.getState())
+                            boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
+                        if (null != boatyard.getCountry())
+                            boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
                         boatyardResponseDto.setMooringInventoried((null == boatyard.getMooringList()) ? 0 : boatyard.getMooringList().size());
-                        if(null != boatyard.getUser()) boatyardResponseDto.setUserId(boatyard.getUser().getId());
+                        if (null != boatyard.getUser()) boatyardResponseDto.setUserId(boatyard.getUser().getId());
                         return boatyardResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -217,7 +223,8 @@ public class BoatyardServiceImpl implements BoatyardService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            if (-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID"))
+                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
 
@@ -228,8 +235,9 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(null != boatyard.getUser()) {
-                if(!boatyard.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other user", id));
+            if (null != boatyard.getUser()) {
+                if (!boatyard.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other user", id));
             } else {
                 throw new RuntimeException(String.format("Boatyard with the id: %1$s is not associated with any User", id));
             }
@@ -239,7 +247,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             List<Mooring> mooringList = optionalBoatyard.get().getMooringList();
 
-            for(Mooring mooring: mooringList) {
+            for (Mooring mooring : mooringList) {
                 mooringService.deleteMooring(mooring.getId(), request);
             }
 //            mooringList.stream().map(mooring -> );
@@ -309,8 +317,9 @@ public class BoatyardServiceImpl implements BoatyardService {
             final Boatyard boatyard = optionalBoatyard.get();
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
-            if(null != boatyard.getUser()) {
-                if(!boatyard.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other user", id));
+            if (null != boatyard.getUser()) {
+                if (!boatyard.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other user", id));
             } else {
                 throw new RuntimeException(String.format("Boatyard with the id: %1$s is not associated with any User", id));
             }
@@ -324,7 +333,8 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if (null != mooring.getCustomer())
                             mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
-                        if(null != boatyard.getMainContact()) mooringResponseDto.setMainContact(boatyard.getMainContact());
+                        if (null != boatyard.getMainContact())
+                            mooringResponseDto.setMainContact(boatyard.getMainContact());
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -404,6 +414,13 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null == id) boatyard.setCreationDate(new Date());
             boatyard.setLastModifiedDate(new Date());
 
+            if (null != boatyardRequestDto.getGpsCoordinates()) {
+                final String gpsCoordinates = gpsUtil.getGpsCoordinates(boatyardRequestDto.getGpsCoordinates());
+                boatyard.setGpsCoordinates(gpsCoordinates);
+            } else {
+                if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
+            }
+
             if (null != boatyardRequestDto.getStateId()) {
                 final Optional<State> optionalState = stateRepository.findById(boatyardRequestDto.getStateId());
                 if (optionalState.isEmpty())
@@ -449,11 +466,14 @@ public class BoatyardServiceImpl implements BoatyardService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(boatyardId);
-            if(optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", boatyardId));
+            if (optionalBoatyard.isEmpty())
+                throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", boatyardId));
             final Boatyard boatyard = optionalBoatyard.get();
 
-            if(null == boatyard.getUser()) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with no user", boatyardId));
-            if(!boatyard.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyardId));
+            if (null == boatyard.getUser())
+                throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with no user", boatyardId));
+            if (!boatyard.getUser().getId().equals(user.getId()))
+                throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyardId));
 
             return boatyard;
         } catch (Exception e) {
