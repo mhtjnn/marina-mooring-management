@@ -176,10 +176,14 @@ public class BoatyardServiceImpl implements BoatyardService {
                     })
                     .collect(Collectors.toList());
 
+            log.info(String.format("Boatyard fetched successfully"));
+
             response.setContent(boatyardDtoList);
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            log.info(String.format("Boatyard fetched successfully"));
+            response.setTotalSize(boatyardRepository.count());
+            if(!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
+            else response.setCurrentSize(0);
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching Boatyard: %s", e.getMessage()), e);
             throw e;
@@ -250,7 +254,6 @@ public class BoatyardServiceImpl implements BoatyardService {
             for (Mooring mooring : mooringList) {
                 mooringService.deleteMooring(mooring.getId(), request);
             }
-//            mooringList.stream().map(mooring -> );
 
             boatyardRepository.deleteById(id);
 
@@ -304,7 +307,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
      */
     @Override
-    public BasicRestResponse fetchMooringsWithBoatyard(final Integer id, final HttpServletRequest request) {
+    public BasicRestResponse fetchMooringsWithBoatyard(final BaseSearchRequest baseSearchRequest, final Integer id, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
 
         try {
@@ -324,8 +327,16 @@ public class BoatyardServiceImpl implements BoatyardService {
                 throw new RuntimeException(String.format("Boatyard with the id: %1$s is not associated with any User", id));
             }
 
-            List<MooringResponseDto> mooringResponseDtoList = boatyard
-                    .getMooringList()
+            if (boatyard.getMooringList().isEmpty()) response.setTotalSize(0);
+            else response.setTotalSize(boatyard.getMooringList().size());
+
+            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
+
+            Page<Mooring> mooringPage = new PageImpl<>(boatyard.getMooringList(), p, boatyard.getMooringList().size());
+
+            List<MooringResponseDto> mooringResponseDtoList = mooringPage
+                    .getContent()
                     .stream()
                     .filter(mooring -> mooring.getUser().getId().equals(boatyard.getUser().getId()))
                     .map(mooring -> {
@@ -343,6 +354,10 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setMessage(String.format("Moorings fetched with the boatyard id as %1$s", id));
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setContent(mooringResponseDtoList);
+
+            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(mooringResponseDtoList.size());
+
             response.setStatus(HttpStatus.OK.value());
 
         } catch (Exception e) {

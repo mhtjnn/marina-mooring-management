@@ -38,6 +38,10 @@ public class BasicRestResponse implements Serializable {
      */
     private Timestamp time;
 
+    private long currentSize;
+
+    private long totalSize;
+
     /**
      * The content object of the response.
      */

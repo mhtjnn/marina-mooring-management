@@ -190,6 +190,9 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users fetched successfully");
             response.setStatus(HttpStatus.OK.value());
+            response.setTotalSize(userRepository.count());
+            if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(filteredUserResponseDtoList.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
@@ -552,6 +555,9 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users of technician role fetched successfully");
             response.setStatus(HttpStatus.OK.value());
+            response.setTotalSize(userRepository.count());
+            if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(filteredUserResponseDtoList.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());

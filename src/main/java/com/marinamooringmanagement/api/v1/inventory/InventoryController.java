@@ -29,8 +29,8 @@ public class InventoryController extends GlobalExceptionHandler {
     private InventoryService inventoryService;
 
     @Operation(
-            tags = "Save Vendor in the database",
-            description = "API to save vendor in the database",
+            tags = "Save inventory in the database",
+            description = "API to save inventory in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -85,7 +85,7 @@ public class InventoryController extends GlobalExceptionHandler {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse fetchVendors(
+    public BasicRestResponse fetchInventories(
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
@@ -109,8 +109,8 @@ public class InventoryController extends GlobalExceptionHandler {
      * @param inventoryRequestDto The DTO containing updated customer information.
      */
     @Operation(
-            tags = "Update vendor in the database",
-            description = "API to update vendor in the database",
+            tags = "Update inventory in the database",
+            description = "API to update inventory in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -128,7 +128,7 @@ public class InventoryController extends GlobalExceptionHandler {
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse updateVendor(
+    public BasicRestResponse updateInventory(
             final @PathVariable(value = "id", required = true) Integer id,
             final @Valid @RequestBody InventoryRequestDto inventoryRequestDto,
             final @RequestParam(value = "vendorId") Integer vendorId,
@@ -164,7 +164,7 @@ public class InventoryController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse deleteCustomer(
+    public BasicRestResponse deleteInventory(
             final @PathVariable(value = "id") Integer id,
             final @RequestParam(value = "vendorId") Integer vendorId,
             final HttpServletRequest request

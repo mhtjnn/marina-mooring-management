@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -169,16 +170,24 @@ public class CustomerServiceImpl implements CustomerService {
                     .stream()
                     .map(customer -> {
                         CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer);
-                        if(null != customer.getUser()) customerResponseDto.setUserId(customer.getUser().getId());
 
-                        if (null != customer.getState()) customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState()));
-                        if (null != customer.getCountry()) customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
+                        if (null != customer.getUser()) customerResponseDto.setUserId(customer.getUser().getId());
+                        if (null != customer.getState())
+                            customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState()));
+                        if (null != customer.getCountry())
+                            customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
 
                         return customerResponseDto;
                     })
                     .toList();
 
             response.setContent(customerResponseDtoList);
+
+            if(customerResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(customerResponseDtoList.size());
+
+            response.setTotalSize(customerRepository.count());
+
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
 
@@ -193,7 +202,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public BasicRestResponse fetchCustomerAndMoorings(final Integer customerId, final HttpServletRequest request) {
+    public BasicRestResponse fetchCustomerAndMoorings(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -203,13 +212,15 @@ public class CustomerServiceImpl implements CustomerService {
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
             Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
 
-            if (optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given ID: %1$s", customerId));
+            if (optionalCustomer.isEmpty())
+                throw new ResourceNotFoundException(String.format("No customer found with the given ID: %1$s", customerId));
 
             final Customer customer = optionalCustomer.get();
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
-            if(null != customer.getUser()) {
-                if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));
+            if (null != customer.getUser()) {
+                if (!customer.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));
             } else {
                 throw new RuntimeException(String.format("Customer with the id: %1$s is not associated with any User", customerId));
             }
@@ -232,29 +243,46 @@ public class CustomerServiceImpl implements CustomerService {
             );
 
             List<Mooring> mooringList = new ArrayList<>();
-            if(null != optionalCustomer.get().getMooringList())
+            if (null != optionalCustomer.get().getMooringList())
                 mooringList = optionalCustomer.get().getMooringList().stream().filter(mooring -> mooring.getUser().getId().equals(optionalCustomer.get().getUser().getId())).toList();
+
+            if(mooringList.isEmpty()) response.setTotalSize(0);
+            else response.setTotalSize(mooringList.size());
 
             List<Boatyard> boatyards = new ArrayList<>();
             List<String> boatyardNames = new ArrayList<>();
             List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
 
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+            Page<Mooring> mooringPage = new PageImpl<>(mooringList, p, mooringList.size());
+
             if (!mooringList.isEmpty()) {
-                mooringResponseDtoList = mooringList.stream().map(mooring -> {
-                    MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                    if (null != mooring.getUser().getId()) mooringResponseDto.setUserId(mooring.getUser().getId());
-                    if (null != mooring.getCustomer())
-                        mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                    if(null != mooring.getBoatyard()) {
-                        mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
-                        if(!boatyards.contains(mooring.getBoatyard())) {
-                            boatyards.add(mooring.getBoatyard());
-                            boatyardNames.add(mooring.getBoatyard().getBoatyardName());
-                        }
-                    }
-                    return mooringResponseDto;
-                }).toList();
+                mooringResponseDtoList = mooringPage
+                        .getContent()
+                        .stream()
+                        .map(mooring -> {
+                            MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                            if (null != mooring.getUser().getId())
+                                mooringResponseDto.setUserId(mooring.getUser().getId());
+                            if (null != mooring.getCustomer())
+                                mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                            if (null != mooring.getBoatyard()) {
+                                mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+                                if (!boatyards.contains(mooring.getBoatyard())) {
+                                    boatyards.add(mooring.getBoatyard());
+                                    boatyardNames.add(mooring.getBoatyard().getBoatyardName());
+                                }
+                            }
+                            return mooringResponseDto;
+                        }).toList();
             }
+
+            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(mooringResponseDtoList.size());
 
             boatyards.clear();
 
@@ -369,8 +397,9 @@ public class CustomerServiceImpl implements CustomerService {
                 }
             }
 
-            if(null == id) {
-                if(StringUtils.isEmpty(customerRequestDto.getLastName())) throw new RuntimeException("Last name cannot be null");
+            if (null == id) {
+                if (StringUtils.isEmpty(customerRequestDto.getLastName()))
+                    throw new RuntimeException("Last name cannot be null");
                 StringBuilder customerId = createCustomerId(customerRequestDto.getLastName());
                 String customerIdStr = customerId.toString();
                 Optional<Customer> optionalCustomer = customerRepository.findByCustomerId(customerIdStr);
@@ -412,13 +441,14 @@ public class CustomerServiceImpl implements CustomerService {
 
             List<Mooring> mooringList = (null == customer.getMooringList()) ? new ArrayList<>() : customer.getMooringList();
 
-            if(null != customerRequestDto.getMooringRequestDtoList()) {
+            if (null != customerRequestDto.getMooringRequestDtoList()) {
                 for (MooringRequestDto mooringRequestDto : customerRequestDto.getMooringRequestDtoList()) {
 
                     // Setting the customer Id here.
-                    if(null == mooringRequestDto.getCustomerId()) mooringRequestDto.setCustomerId(savedCustomer.getId());
+                    if (null == mooringRequestDto.getCustomerId())
+                        mooringRequestDto.setCustomerId(savedCustomer.getId());
                     else {
-                        if(!mooringRequestDto.getCustomerId().equals(savedCustomer.getId())) {
+                        if (!mooringRequestDto.getCustomerId().equals(savedCustomer.getId())) {
                             throw new RuntimeException(String.format("Customer Id: %1$s in mooring is different from id: %2$s of the customer.", mooringRequestDto.getCustomerId(), savedCustomer.getId()));
                         }
                     }
@@ -429,8 +459,10 @@ public class CustomerServiceImpl implements CustomerService {
                         optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
                         if (optionalMooring.isPresent()) {
                             mooring = optionalMooring.get();
-                            if(null == mooring.getUser()) throw new RuntimeException(String.format("Mooring with the id: %1$s is not associated with any user", mooring.getMooringId()));
-                            if(!mooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other customer owner", mooring.getMooringId()));
+                            if (null == mooring.getUser())
+                                throw new RuntimeException(String.format("Mooring with the id: %1$s is not associated with any user", mooring.getMooringId()));
+                            if (!mooring.getUser().getId().equals(user.getId()))
+                                throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other customer owner", mooring.getMooringId()));
                             mooring.setCustomer(savedCustomer);
                             mooring = mooringService.performSave(
                                     mooringRequestDto,
@@ -459,7 +491,7 @@ public class CustomerServiceImpl implements CustomerService {
             customerRepository.save(savedCustomer);
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
         } catch (Exception e) {
-            if(id == null && null != savedCustomer) customerRepository.deleteById(savedCustomer.getId());
+            if (id == null && null != savedCustomer) customerRepository.deleteById(savedCustomer.getId());
             log.error(String.format("Error occurred during performSave() function: %s", e.getMessage()), e);
             throw new DBOperationException(e.getMessage(), e);
         }
@@ -476,7 +508,8 @@ public class CustomerServiceImpl implements CustomerService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
             Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            if (-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID"))
+                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if (optionalCustomer.isEmpty())
@@ -486,8 +519,9 @@ public class CustomerServiceImpl implements CustomerService {
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(null != customer.getUser()) {
-                if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", id));
+            if (null != customer.getUser()) {
+                if (!customer.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", id));
             } else {
                 throw new RuntimeException(String.format("Customer with the id: %1$s is not associated with any User", id));
             }
@@ -520,11 +554,14 @@ public class CustomerServiceImpl implements CustomerService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
-            if(optionalCustomer.isEmpty()) throw new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", customerId));
+            if (optionalCustomer.isEmpty())
+                throw new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", customerId));
             final Customer customer = optionalCustomer.get();
 
-            if(null == customer.getUser()) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customerId));
-            if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customerId));
+            if (null == customer.getUser())
+                throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customerId));
+            if (!customer.getUser().getId().equals(user.getId()))
+                throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customerId));
 
             return customer;
         } catch (Exception e) {
@@ -534,11 +571,11 @@ public class CustomerServiceImpl implements CustomerService {
 
     public StringBuilder createCustomerId(final String lastName) {
 
-        if(null == lastName) throw new RuntimeException("Last name cannot be null");
-        if(lastName.length() < 3) throw new RuntimeException("Last name should be of 3 or more length");
+        if (null == lastName) throw new RuntimeException("Last name cannot be null");
+        if (lastName.length() < 3) throw new RuntimeException("Last name should be of 3 or more length");
         final StringBuilder customerId = new StringBuilder();
         customerId.append(lastName.toUpperCase(), 0, 3);
-        int randomThreeDigitNumber = 100 + (int)(Math.random() * 900);
+        int randomThreeDigitNumber = 100 + (int) (Math.random() * 900);
         String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
         customerId.append(randomThreeDigitNumberStr);
 

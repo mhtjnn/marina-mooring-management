@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -247,7 +248,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchOpenWorkOrders(Integer technicianId, HttpServletRequest request) {
+    public BasicRestResponse fetchOpenWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -298,9 +299,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     })
                     .toList();
 
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+            Page<WorkOrderResponseDto> workOrderResponseDtoPage = new PageImpl<>(workOrderResponseDtoList, pageable, workOrderResponseDtoList.size());
+
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderResponseDtoList);
+            response.setContent(workOrderResponseDtoPage.getContent());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -309,7 +317,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchCloseWorkOrders(Integer technicianId, HttpServletRequest request) {
+    public BasicRestResponse fetchCloseWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -359,9 +367,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     })
                     .toList();
 
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+            Page<WorkOrderResponseDto> workOrderResponseDtoPage = new PageImpl<>(workOrderResponseDtoList, pageable, workOrderResponseDtoList.size());
+
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderResponseDtoList);
+            response.setContent(workOrderResponseDtoPage.getContent());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

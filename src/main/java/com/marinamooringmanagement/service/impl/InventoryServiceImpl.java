@@ -138,7 +138,7 @@ public class InventoryServiceImpl implements InventoryService {
                     }
 
                     // Always add the vendor ID predicate
-                    predicates.add(criteriaBuilder.equal(inventory.join("vendor").get("id"), vendorId));
+                    predicates.add(criteriaBuilder.equal(inventory.join("vendor").get("id"), vendor.getId()));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
                 }
@@ -174,6 +174,9 @@ public class InventoryServiceImpl implements InventoryService {
             response.setContent(inventoryResponseDtoList);
             response.setMessage(String.format("Inventories with vendor: %1$s fetched successfully", vendorId));
             response.setStatus(HttpStatus.OK.value());
+            response.setTotalSize(inventoryRepository.count());
+            if(inventoryResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(inventoryResponseDtoList.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
@@ -242,8 +245,8 @@ public class InventoryServiceImpl implements InventoryService {
             final Inventory inventory,
             final Integer vendorId,
             final Integer inventoryId,
-            final HttpServletRequest request) {
-
+            final HttpServletRequest request
+    ) {
         try {
             final Vendor vendor = authorizationUtil.checkAuthorityForInventory(vendorId, request);
 

@@ -179,7 +179,7 @@ public class VendorServiceImpl implements VendorService {
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {
             logger.error("Error occurred while saving the vendor in the database {}", e.getLocalizedMessage());
-            response.setMessage("Error occurred while saving the vendor in the database");
+            response.setMessage(e.getLocalizedMessage());
             response.setContent(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }

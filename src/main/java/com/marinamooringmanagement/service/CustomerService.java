@@ -55,6 +55,6 @@ public interface CustomerService {
      * @param customerId the unique identifier of the customer whose details and moorings are to be fetched.
      * @return a BasicRestResponse containing the customer details and their associated moorings.
      */
-    BasicRestResponse fetchCustomerAndMoorings(final Integer customerId, final HttpServletRequest request);
+    BasicRestResponse fetchCustomerAndMoorings(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request);
 }
 

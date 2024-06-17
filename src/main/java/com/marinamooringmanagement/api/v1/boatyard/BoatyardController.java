@@ -135,9 +135,19 @@ public class BoatyardController extends GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringsWithBoatyard(
             @PathVariable("id") final Integer id,
+            final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            final @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             final HttpServletRequest request
     ) {
-        return boatyardService.fetchMooringsWithBoatyard(id, request);
+        BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return boatyardService.fetchMooringsWithBoatyard(baseSearchRequest, id, request);
     }
 
     /**

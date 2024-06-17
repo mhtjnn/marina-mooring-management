@@ -169,6 +169,9 @@ public class MooringServiceImpl implements MooringService {
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(mooringResponseDtoList);
+            response.setTotalSize(mooringRepository.count());
+            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(mooringResponseDtoList.size());
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             throw e;
