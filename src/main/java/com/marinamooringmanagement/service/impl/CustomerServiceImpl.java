@@ -258,11 +258,19 @@ public class CustomerServiceImpl implements CustomerService {
                     baseSearchRequest.getPageSize(),
                     sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
-            Page<Mooring> mooringPage = new PageImpl<>(mooringList, p, mooringList.size());
+
+            int start = (int) p.getOffset();
+            int end = Math.min((start + p.getPageSize()), mooringList.size());
+
+            List<Mooring> paginatedMoorings;
+            if (start > mooringList.size()) {
+                paginatedMoorings = List.of(); // Return an empty list if the start index is out of bounds
+            } else {
+                paginatedMoorings = mooringList.subList(start, end);
+            }
 
             if (!mooringList.isEmpty()) {
-                mooringResponseDtoList = mooringPage
-                        .getContent()
+                mooringResponseDtoList = paginatedMoorings
                         .stream()
                         .map(mooring -> {
                             MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);

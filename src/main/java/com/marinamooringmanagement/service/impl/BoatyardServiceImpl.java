@@ -182,7 +182,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setTotalSize(boatyardRepository.count());
-            if(!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
+            if (!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
             else response.setCurrentSize(0);
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching Boatyard: %s", e.getMessage()), e);
@@ -330,22 +330,35 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (boatyard.getMooringList().isEmpty()) response.setTotalSize(0);
             else response.setTotalSize(boatyard.getMooringList().size());
 
+            List<Mooring> filteredMoorings = boatyard.getMooringList().stream()
+                    .filter(mooring -> mooring.getUser().getId().equals(boatyard.getUser().getId()))
+                    .collect(Collectors.toList());
+
             final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            Page<Mooring> mooringPage = new PageImpl<>(boatyard.getMooringList(), p, boatyard.getMooringList().size());
+            int start = (int) p.getOffset();
+            int end = Math.min((start + p.getPageSize()), filteredMoorings.size());
 
-            List<MooringResponseDto> mooringResponseDtoList = mooringPage
-                    .getContent()
-                    .stream()
-                    .filter(mooring -> mooring.getUser().getId().equals(boatyard.getUser().getId()))
+            List<Mooring> paginatedMoorings;
+            if (start > filteredMoorings.size()) {
+                paginatedMoorings = List.of(); // Return an empty list if the start index is out of bounds
+            } else {
+                paginatedMoorings = filteredMoorings.subList(start, end);
+            }
+
+            List<MooringResponseDto> mooringResponseDtoList = paginatedMoorings.stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-                        if (null != mooring.getCustomer())
+                        if (mooring.getCustomer() != null) {
                             mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                        if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
-                        if (null != boatyard.getMainContact())
+                        }
+                        if (mooring.getUser() != null) {
+                            mooringResponseDto.setUserId(mooring.getUser().getId());
+                        }
+                        if (boatyard.getMainContact() != null) {
                             mooringResponseDto.setMainContact(boatyard.getMainContact());
+                        }
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -355,7 +368,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setContent(mooringResponseDtoList);
 
-            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            if (mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(mooringResponseDtoList.size());
 
             response.setStatus(HttpStatus.OK.value());

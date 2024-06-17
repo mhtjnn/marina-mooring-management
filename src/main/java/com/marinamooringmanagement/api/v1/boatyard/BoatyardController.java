@@ -94,7 +94,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     public BasicRestResponse fetchBoatyards(
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            final @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
+            final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             final @RequestParam(value = "searchText", required = false) String searchText,
             final HttpServletRequest request
@@ -137,7 +137,7 @@ public class BoatyardController extends GlobalExceptionHandler {
             @PathVariable("id") final Integer id,
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
-            final @RequestParam(value = "sortBy", defaultValue = "boatyardId", required = false) String sortBy,
+            final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             final HttpServletRequest request
     ) {
