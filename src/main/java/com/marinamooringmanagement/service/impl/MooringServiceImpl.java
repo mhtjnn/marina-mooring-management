@@ -265,8 +265,6 @@ public class MooringServiceImpl implements MooringService {
                 List<Mooring> mooringList = customer.getMooringList();
                 mooringList.removeIf(mooring -> mooring.getId().equals(optionalMooring.get().getId()));
                 customerRepository.save(customer);
-            } else {
-                throw new RuntimeException(String.format("Mooring with the id: %1$s is not assigned to any customer", id));
             }
 
             mooringRepository.deleteById(id);
