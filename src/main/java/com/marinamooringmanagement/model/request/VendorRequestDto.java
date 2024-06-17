@@ -73,6 +73,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Account number associated with the vendor.
      */
+    @Pattern(regexp = "^\\d{8,12}$", message = "Invalid account number format (must be 8 or 12 digits)")
     private String accountNumber;
 
     private String remitStreet;

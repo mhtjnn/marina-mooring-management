@@ -1,8 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.io.Serializable;
@@ -36,7 +34,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Water depth at the mooring location.
      */
-    private String waterDepth;
+    private Integer waterDepth;
 
     /**
      * GPS coordinates of the mooring.
@@ -57,7 +55,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Size of the boat associated with the mooring.
      */
-    private String boatSize;
+    private Integer boatSize;
 
     /**
      * Type of the boat associated with the mooring.
@@ -67,7 +65,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Weight of the boat associated with the mooring.
      */
-    private String boatWeight;
+    private Integer boatWeight;
 
     /**
      * Size unit of the boat weight.

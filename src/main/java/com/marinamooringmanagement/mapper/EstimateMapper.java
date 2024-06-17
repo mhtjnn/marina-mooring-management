@@ -22,6 +22,8 @@ public interface EstimateMapper {
     @Mapping(target = "technicianUser", ignore = true)
     @Mapping(target = "workOrderStatus", ignore = true)
     @Mapping(target = "customerOwnerUser", ignore = true)
+    @Mapping(target = "dueDate", ignore = true)
+    @Mapping(target = "scheduledDate", ignore = true)
     Estimate mapToEstimate(@MappingTarget Estimate estimate, EstimateRequestDto estimateRequestDto);
 
     @Mapping(target = "mooringDto", ignore = true)

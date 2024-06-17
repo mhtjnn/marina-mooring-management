@@ -246,7 +246,7 @@ public class UserServiceImpl implements UserService {
      * @return A {@code BasicRestResponse} indicating the status of the operation.
      */
     @Override
-//    @Transactional
+    @Transactional
     public BasicRestResponse deleteUser(final Integer userId, final HttpServletRequest request) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();

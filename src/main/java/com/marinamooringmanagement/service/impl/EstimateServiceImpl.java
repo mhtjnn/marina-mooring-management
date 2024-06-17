@@ -262,6 +262,26 @@ public class EstimateServiceImpl implements EstimateService {
 
             workOrderMapper.mapToEstimate(estimate, estimateRequestDto);
 
+            if(null != estimateRequestDto.getDueDate()) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                LocalDate localDate = LocalDate.parse(estimateRequestDto.getDueDate(), dateTimeFormatter);
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                estimate.setDueDate(date);
+            } else {
+                if(estimateId == null) throw new RuntimeException(String.format("Due date cannot be null"));
+            }
+
+            if(null != estimateRequestDto.getScheduledDate()) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                LocalDate localDate = LocalDate.parse(estimateRequestDto.getScheduledDate(), dateTimeFormatter);
+                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+                estimate.setScheduledDate(date);
+            } else {
+                if(estimateId == null) throw new RuntimeException(String.format("Due date cannot be null"));
+            }
+
             if(null != estimateRequestDto.getWorkOrderStatusId()) {
                 final Optional<WorkOrderStatus> optionalWorkOrderStatus = workOrderStatusRepository.findById(estimateRequestDto.getWorkOrderStatusId());
                 if(optionalWorkOrderStatus.isEmpty()) throw new RuntimeException(String.format("No work order status found with the given id: %1$s", estimateRequestDto.getWorkOrderStatusId()));
