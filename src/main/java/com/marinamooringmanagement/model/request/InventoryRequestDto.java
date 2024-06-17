@@ -23,5 +23,5 @@ public class InventoryRequestDto {
 
     private BigDecimal salePrice;
 
-    private Boolean taxable;
+    private String taxable;
 }

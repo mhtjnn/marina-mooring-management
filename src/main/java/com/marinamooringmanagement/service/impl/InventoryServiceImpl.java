@@ -175,7 +175,7 @@ public class InventoryServiceImpl implements InventoryService {
             response.setMessage(String.format("Inventories with vendor: %1$s fetched successfully", vendorId));
             response.setStatus(HttpStatus.OK.value());
             response.setTotalSize(inventoryRepository.count());
-            if(inventoryResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            if (inventoryResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(inventoryResponseDtoList.size());
 
         } catch (Exception e) {
@@ -261,6 +261,18 @@ public class InventoryServiceImpl implements InventoryService {
                 inventory.setVendor(vendor);
             } else {
                 inventory.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            }
+
+            if(null != inventoryRequestDto.getTaxable()) {
+                if(inventoryRequestDto.getTaxable().equals("yes")) {
+                    inventory.setTaxable(true);
+                } else if (inventoryRequestDto.getTaxable().equals("no")){
+                    inventory.setTaxable(false);
+                } else {
+                    throw new RuntimeException("Taxable can only be yes or no");
+                }
+            } else {
+                if(null == inventoryId) throw new RuntimeException(String.format("Taxable cannot be null during save"));
             }
 
             if (null != inventoryRequestDto.getInventoryTypeId()) {

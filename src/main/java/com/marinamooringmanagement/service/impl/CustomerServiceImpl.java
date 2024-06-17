@@ -354,7 +354,7 @@ public class CustomerServiceImpl implements CustomerService {
 
             Customer customer = optionalCustomer.get();
             performSave(customerRequestDto, customer, id, request);
-            response.setMessage("Customer with the given customer id updated successfully!!!");
+            response.setMessage(String.format("Customer with the given customer id: %1$s updated successfully!!!", id));
             response.setStatus(HttpStatus.OK.value());
 
         } catch (Exception e) {
