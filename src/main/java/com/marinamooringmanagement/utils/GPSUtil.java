@@ -7,11 +7,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class GPSUtil extends GlobalExceptionHandler {
 
-    public String getGpsCoordinates(final String gpsCoordinates) {
+    public String getGpsCoordinates(String gpsCoordinates) {
         try {
             boolean eastHemisphere = false;
 
-            if (gpsCoordinates.charAt(gpsCoordinates.length() - 1) == 'E') eastHemisphere = true;
+            if (gpsCoordinates.charAt(gpsCoordinates.length() - 1) == 'E') {
+                gpsCoordinates = gpsCoordinates.substring(0, gpsCoordinates.length()-1);
+                eastHemisphere = true;
+            }
+
+            if(!Character.isDigit(gpsCoordinates.charAt(gpsCoordinates.length()-1))) throw new RuntimeException("Wrong GPS coordinates");
 
             int spaceInd = 0;
             while (gpsCoordinates.charAt(spaceInd) != ' ') spaceInd++;
@@ -59,7 +64,7 @@ public class GPSUtil extends GlobalExceptionHandler {
 
             return latitudeString + " " + longitudeString;
         } catch (Exception e) {
-            throw e;
+            throw new RuntimeException("Wrong GPS coordinate");
         }
     }
 

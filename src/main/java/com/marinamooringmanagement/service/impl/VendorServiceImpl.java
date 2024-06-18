@@ -152,6 +152,8 @@ public class VendorServiceImpl implements VendorService {
 
             response.setMessage("List of vendors in the database");
             response.setContent(vendorResponseDtoList);
+            response.setTotalSize(vendorRepository.count());
+            response.setCurrentSize(vendorResponseDtoList.size());
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             logger.error("Error occurred while fetching all the vendors from the database: {}", e.getLocalizedMessage());
