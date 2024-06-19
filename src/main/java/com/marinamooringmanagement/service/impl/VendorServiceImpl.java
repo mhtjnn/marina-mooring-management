@@ -322,8 +322,9 @@ public class VendorServiceImpl implements VendorService {
             }
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            if(null != vendor.getUser() && !vendor.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner", id));
 
             vendor.setUser(user);
 

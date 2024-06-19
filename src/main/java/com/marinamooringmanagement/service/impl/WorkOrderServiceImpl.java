@@ -157,6 +157,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     })
                     .collect(Collectors.toList());
 
+            response.setTotalSize(workOrderRepository.count());
+            response.setCurrentSize(workOrderResponseDtoList.size());
             response.setMessage("All work orders fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(workOrderResponseDtoList);
@@ -304,11 +306,20 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
-            Page<WorkOrderResponseDto> workOrderResponseDtoPage = new PageImpl<>(workOrderResponseDtoList, pageable, workOrderResponseDtoList.size());
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), workOrderResponseDtoList.size());
+
+            List<WorkOrderResponseDto> paginatedWorkOrder;
+            if(start > workOrderResponseDtoList.size()) {
+                paginatedWorkOrder = new ArrayList<>();
+            } else {
+                paginatedWorkOrder = workOrderResponseDtoList.subList(start, end);
+            }
 
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderResponseDtoPage.getContent());
+            response.setContent(paginatedWorkOrder);
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -371,11 +382,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
-            Page<WorkOrderResponseDto> workOrderResponseDtoPage = new PageImpl<>(workOrderResponseDtoList, pageable, workOrderResponseDtoList.size());
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), workOrderResponseDtoList.size());
+
+            List<WorkOrderResponseDto> paginatedWorkOrder;
+            if(start > workOrderResponseDtoList.size()) {
+                paginatedWorkOrder = new ArrayList<>();
+            } else {
+                paginatedWorkOrder = workOrderResponseDtoList.subList(start, end);
+            }
 
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderResponseDtoPage.getContent());
+            response.setContent(paginatedWorkOrder);
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

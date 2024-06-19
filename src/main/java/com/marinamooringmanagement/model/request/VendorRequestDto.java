@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Name of the company associated with the vendor.
      */
+    @NotNull(message = "Company name cannot be blank")
     private String companyName;
 
     /**
@@ -51,11 +53,13 @@ public class VendorRequestDto implements Serializable {
     /**
      * State where the vendor is located.
      */
+    @NotNull(message = "State cannot be blank")
     private Integer stateId;
 
     /**
      * Country where the vendor is located.
      */
+    @NotNull(message = "Country cannot be blank")
     private Integer countryId;
 
     /**
@@ -111,6 +115,7 @@ public class VendorRequestDto implements Serializable {
     /**
      * Email address of the sales representative associated with the vendor.
      */
+    @NotNull(message = "Sales Representation email cannot be blank")
     private String salesRepEmail;
 
     /**

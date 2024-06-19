@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.utils;
 
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
-import jakarta.persistence.Column;
 import org.springframework.stereotype.Component;
 
 @Component
