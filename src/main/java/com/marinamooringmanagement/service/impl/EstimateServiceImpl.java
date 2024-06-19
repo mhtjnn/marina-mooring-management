@@ -124,7 +124,7 @@ public class EstimateServiceImpl implements EstimateService {
 
             final Page<Estimate> estimateList = estimateRepository.findAll(spec, pageable);
 
-            final List<EstimateResponseDto> workOrderResponseDtoList = estimateList
+            final List<EstimateResponseDto> estimateResponseDtoList = estimateList
                     .getContent()
                     .stream()
                     .map(workOrder -> {
@@ -162,8 +162,10 @@ public class EstimateServiceImpl implements EstimateService {
                     .collect(Collectors.toList());
 
             response.setMessage("All estimates fetched successfully.");
+            response.setTotalSize(estimateRepository.count());
+            response.setCurrentSize(estimateResponseDtoList.size());
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderResponseDtoList);
+            response.setContent(estimateResponseDtoList);
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -116,8 +116,7 @@ public class VendorServiceImpl implements VendorService {
                                 criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(vendor.get("website")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyPhoneNumber")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyEmail")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("website")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(vendor.get("companyEmail")), lowerCaseSearchText)
                         ));
                     }
 
