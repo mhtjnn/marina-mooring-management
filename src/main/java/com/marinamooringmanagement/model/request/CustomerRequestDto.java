@@ -31,14 +31,14 @@ public class CustomerRequestDto {
     /**
      * The email address of the customer.
      */
-    @NotNull(message = "Email cannot be null")
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String emailAddress;
 
     /**
      * The phone number of the customer.
      */
-    @Pattern(regexp = "^\\d{10}$", message = "Invalid phone number format.")
+    @NotNull(message = "Phone number cannot be blank")
+    @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String phone;
 
     /**

@@ -46,5 +46,6 @@ public interface CustomerMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "phone", ignore = true)
     Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

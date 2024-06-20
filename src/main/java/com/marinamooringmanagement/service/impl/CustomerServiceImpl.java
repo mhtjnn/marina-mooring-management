@@ -426,6 +426,35 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
 
+            if(null != customerRequestDto.getPhone()) {
+                final String givenPhoneNumber = customerRequestDto.getPhone();
+                int hyphenCount = 0;
+                for(char ch: givenPhoneNumber.toCharArray()) {
+                    if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
+                    if(ch == '-') {
+                        hyphenCount++;
+                    }
+                }
+
+                if(hyphenCount == 0) {
+                    if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
+                    String phoneNumber = givenPhoneNumber.substring(0, 3)
+                            + "-" +
+                            givenPhoneNumber.substring(3, 6)
+                            + "-" +
+                            givenPhoneNumber.substring(6, 10);
+                    customer.setPhone(phoneNumber);
+                } else if (hyphenCount == 2) {
+                    if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
+                    customer.setPhone(givenPhoneNumber);
+                } else {
+                    throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
+                }
+
+            } else {
+                if(null == id) throw new RuntimeException(String.format("Phone cannot be blank during save"));
+            }
+
             if (null != customerRequestDto.getStateId()) {
                 final Optional<State> optionalState = stateRepository.findById(customerRequestDto.getStateId());
                 if (optionalState.isEmpty())
