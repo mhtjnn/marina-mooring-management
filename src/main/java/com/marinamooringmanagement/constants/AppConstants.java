@@ -88,4 +88,16 @@ public class AppConstants {
 
     }
 
+    public static class CustomerTypeConstants {
+        public static final String NEW_INSTALL = "New Install";
+
+        public static final String RETAIL = "Retail";
+
+        public static final String INTERNET = "Internet";
+
+        public static final String FORMER = "Former";
+
+        public static final String DOCK = "Dock";
+    }
+
 }

@@ -21,8 +21,6 @@ public interface MetadataService {
 
     BasicRestResponse fetchShackleSwivelConditions(final BaseSearchRequest baseSearchRequest);
 
-    BasicRestResponse fetchPennantConditions(final BaseSearchRequest baseSearchRequest);
-
     BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
     BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
@@ -46,4 +44,6 @@ public interface MetadataService {
     BasicRestResponse fetchTechnicians(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
     BasicRestResponse fetchWorkOrderStatus(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchCustomerTypes(final BaseSearchRequest baseSearchRequest);
 }

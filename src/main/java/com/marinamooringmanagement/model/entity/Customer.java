@@ -55,6 +55,12 @@ public class Customer extends Base {
     @Column(name = "email_address")
     private String emailAddress;
 
+    @Lob
+    @Column(name = "customer_image", length = 10000)
+    private byte[] imageData;
+
+    @Column(name = "note")
+    private String note;
     /**
      * The street and house number of the customer's address.
      */
@@ -84,6 +90,10 @@ public class Customer extends Base {
      */
     @Column(name = "zipcode")
     private String zipCode;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_type_id")
+    private CustomerType customerType;
 
     @OneToMany(mappedBy = "customer", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference

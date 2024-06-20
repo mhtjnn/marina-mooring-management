@@ -74,7 +74,7 @@ public class MooringResponseDto implements Serializable {
     /**
      * The size of the weight used for the mooring.
      */
-    private SizeOfWeightDto sizeOfWeight;
+    private Integer sizeOfWeight;
 
     /**
      * The type of the weight used for the mooring.
@@ -104,7 +104,7 @@ public class MooringResponseDto implements Serializable {
     /**
      * The condition of the pennant of the mooring.
      */
-    private PennantConditionDto pennantCondition;
+    private String pennantCondition;
 
     /**
      * The depth at mean high water at the mooring location.

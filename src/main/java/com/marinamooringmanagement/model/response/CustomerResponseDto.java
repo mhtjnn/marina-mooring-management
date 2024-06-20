@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.dto.CustomerTypeDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +39,9 @@ public class CustomerResponseDto {
      * The email address of the customer.
      */
     private String emailAddress;
+
+    private String note;
+
     /**
      * The street and house details of the customer's address.
      */
@@ -58,6 +62,8 @@ public class CustomerResponseDto {
      * The pin code of the customer's address.
      */
     private String zipCode;
+
+    private CustomerTypeDto customerTypeDto;
 
     private Integer userId;
 

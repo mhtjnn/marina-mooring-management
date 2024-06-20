@@ -1,10 +1,5 @@
 package com.marinamooringmanagement.model.dto;
 
-import com.marinamooringmanagement.model.entity.Mooring;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,6 +37,10 @@ public class CustomerDto extends BaseDto {
      */
     private String emailAddress;
 
+    private String note;
+
+    private byte[] image;
+
     /**
      * The street and house number of the customer's address.
      */
@@ -63,6 +62,8 @@ public class CustomerDto extends BaseDto {
      * The zip code of the customer's address.
      */
     private String zipCode;
+
+    private CustomerTypeDto customerTypeDto;
 
     private List<MooringDto> mooringDtoList;
 

@@ -124,6 +124,12 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private CustomerTypeRepository customerTypeRepository;
+
+    @Autowired
+    private CustomerTypeMapper customerTypeMapper;
+
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -324,32 +330,6 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Types of Boat fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(shackleSwivelConditionDtoList);
-
-        } catch (Exception ex) {
-            response.setMessage(ex.getLocalizedMessage());
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
-        return response;
-    }
-
-    @Override
-    public BasicRestResponse fetchPennantConditions(BaseSearchRequest baseSearchRequest) {
-        Page<PennantCondition> content = null;
-        BasicRestResponse response = BasicRestResponse.builder().build();
-        response.setTime(new Timestamp(System.currentTimeMillis()));
-        try {
-
-            content = pennantConditionRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
-
-            List<PennantConditionDto> pennantConditionDtoList = content
-                    .getContent()
-                    .stream()
-                    .map(pennantCondition -> pennantConditionMapper.mapToPennantConditionDto(PennantConditionDto.builder().build(), pennantCondition))
-                    .toList();
-
-            response.setMessage("Types of Boat fetched successfully!!!");
-            response.setStatus(HttpStatus.OK.value());
-            response.setContent(pennantConditionDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -729,6 +709,33 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Work order status fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(workOrderStatusDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchCustomerTypes(BaseSearchRequest baseSearchRequest) {
+        Page<CustomerType> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            content = customerTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<CustomerTypeDto> customerTypeDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(customerType -> customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customerType))
+                    .toList()
+                    ;
+
+            response.setMessage("Types of customer fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(customerTypeDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

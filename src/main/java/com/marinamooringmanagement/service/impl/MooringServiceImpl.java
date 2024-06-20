@@ -1,11 +1,13 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
+import com.marinamooringmanagement.model.dto.CustomerTypeDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -109,6 +111,9 @@ public class MooringServiceImpl implements MooringService {
 
     @Autowired
     private GPSUtil gpsUtil;
+
+    @Autowired
+    private CustomerTypeRepository customerTypeRepository;
 
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
@@ -324,6 +329,8 @@ public class MooringServiceImpl implements MooringService {
             final Customer customer = optionalCustomer.get();
             if(!customer.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
 
+            final CustomerType customerType = customerTypeRepository.findByType(AppConstants.CustomerTypeConstants.DOCK);
+            if(null != mooringRequestDto.getIsDock() && mooringRequestDto.getIsDock()) customer.setCustomerType(customerType);
 
             if (null == mooringRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Id cannot be null");
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
@@ -343,17 +350,6 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalBoatType.isEmpty())
                     throw new ResourceNotFoundException(String.format("No boat type found with the given id: %1$s", mooringRequestDto.getBoatTypeId()));
                 mooring.setBoatType(optionalBoatType.get());
-            } else {
-                throw new RuntimeException("Boat type cannot be null");
-            }
-
-            if (null != mooringRequestDto.getSizeOfWeightId()) {
-                Optional<SizeOfWeight> optionalSizeOfWeight = sizeOfWeightRepository.findById(mooringRequestDto.getSizeOfWeightId());
-                if (optionalSizeOfWeight.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No Size of weight found with the given id: %1$s", mooringRequestDto.getSizeOfWeightId()));
-                mooring.setSizeOfWeight(optionalSizeOfWeight.get());
-            } else {
-                throw new RuntimeException("Size of weight cannot be null");
             }
 
             if (null != mooringRequestDto.getTypeOfWeightId()) {
@@ -399,15 +395,6 @@ public class MooringServiceImpl implements MooringService {
                 mooring.setShackleSwivelCondition(optionalShackleSwivelCondition.get());
             } else {
                 throw new RuntimeException("Shackle swivel condition cannot be null");
-            }
-
-            if (null != mooringRequestDto.getPennantConditionId()) {
-                Optional<PennantCondition> optionalPennantCondition = pennantConditionRepository.findById(mooringRequestDto.getPennantConditionId());
-                if (optionalPennantCondition.isEmpty())
-                    throw new ResourceNotFoundException(String.format("No pennant condition found with the given id: %1$s", mooringRequestDto.getPennantConditionId()));
-                mooring.setPennantCondition(optionalPennantCondition.get());
-            } else {
-                throw new RuntimeException("Pennant condition cannot be null");
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));

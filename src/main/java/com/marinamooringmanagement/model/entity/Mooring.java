@@ -73,9 +73,7 @@ public class Mooring extends Base {
     /**
      * Size unit of the boat weight.
      */
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "size_of_weight_id")
-    private SizeOfWeight sizeOfWeight;
+    private Integer sizeOfWeight;
 
     /**
      * Type of the boat weight.
@@ -115,9 +113,7 @@ public class Mooring extends Base {
     /**
      * Condition of the pennant related to the mooring.
      */
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pennant_condition_id")
-    private PennantCondition pennantCondition;
+    private String pendantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

@@ -74,7 +74,7 @@ public class MetadataController extends GlobalExceptionHandler {
     )
     public BasicRestResponse fetchCountries(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = "500", required = false) Integer size,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
@@ -119,7 +119,7 @@ public class MetadataController extends GlobalExceptionHandler {
     )
     public BasicRestResponse fetchStates(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "page", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
-            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "size", defaultValue = "500", required = false) Integer size,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
     ) {
@@ -287,20 +287,6 @@ public class MetadataController extends GlobalExceptionHandler {
                 .build();
 
         return metadataService.fetchShackleSwivelConditions(baseSearchRequest);
-    }
-
-    @GetMapping("/pennantConditions")
-    @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse fetchPennantConditions(
-            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize
-    ) {
-        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
-                .pageNumber(pageNumber)
-                .pageSize(pageSize)
-                .build();
-
-        return metadataService.fetchPennantConditions(baseSearchRequest);
     }
 
     @GetMapping("/customers")
@@ -491,6 +477,21 @@ public class MetadataController extends GlobalExceptionHandler {
                 .build();
 
         return metadataService.fetchMooringBasedOnCustomerIdAndMooringId(baseSearchRequest, customerId, boatyardId, request);
+    }
+
+    @GetMapping("/customerTypes")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchCustomerTypes(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchCustomerTypes(baseSearchRequest);
     }
 }
 

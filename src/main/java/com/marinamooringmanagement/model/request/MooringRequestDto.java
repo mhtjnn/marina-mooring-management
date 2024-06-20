@@ -41,6 +41,8 @@ public class MooringRequestDto implements Serializable {
      */
     private String gpsCoordinates;
 
+    private Boolean isDock;
+
     /**
      * Name of the boatyard associated with the mooring.
      */
@@ -70,7 +72,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Size unit of the boat weight.
      */
-    private Integer sizeOfWeightId;
+    private Integer sizeOfWeight;
 
     /**
      * Type of the boat weight.
@@ -100,7 +102,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Condition of the pennant related to the mooring.
      */
-    private Integer pennantConditionId;
+    private String pennantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

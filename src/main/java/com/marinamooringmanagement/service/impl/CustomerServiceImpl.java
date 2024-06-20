@@ -4,6 +4,7 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.CustomerDto;
+import com.marinamooringmanagement.model.dto.CustomerTypeDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
@@ -87,6 +88,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
+
+    @Autowired
+    private CustomerTypeRepository customerTypeRepository;
+
+    @Autowired
+    private CustomerTypeMapper customerTypeMapper;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -176,6 +183,8 @@ public class CustomerServiceImpl implements CustomerService {
                             customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState()));
                         if (null != customer.getCountry())
                             customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
+                        if(null != customer.getCustomerType())
+                            customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
 
                         return customerResponseDto;
                     })
@@ -228,19 +237,13 @@ public class CustomerServiceImpl implements CustomerService {
             CustomerResponseDto customerResponseDto = CustomerResponseDto.builder().build();
             customerMapper.mapToCustomerResponseDto(customerResponseDto, customer);
             if (null != customer.getState()) customerResponseDto.setStateResponseDto(
-                    StateResponseDto.builder()
-                            .id(customer.getState().getId())
-                            .name(customer.getState().getName())
-                            .label(customer.getState().getLabel())
-                            .build()
+                    stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState())
             );
             if (null != customer.getCountry()) customerResponseDto.setCountryResponseDto(
-                    CountryResponseDto.builder()
-                            .id(customer.getCountry().getId())
-                            .name(customer.getCountry().getName())
-                            .label(customer.getCountry().getLabel())
-                            .build()
+                    countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry())
             );
+            if(null != customer.getCustomerType())
+                customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
 
             List<Mooring> mooringList = new ArrayList<>();
             if (null != optionalCustomer.get().getMooringList())
@@ -471,6 +474,15 @@ public class CustomerServiceImpl implements CustomerService {
                 customer.setCountry(optionalCountry.get());
             } else {
                 if (null == id) throw new RuntimeException("Country cannot be null.");
+            }
+
+            if(null != customerRequestDto.getCustomerTypeId()) {
+                final Optional<CustomerType> optionalCustomerType = customerTypeRepository.findById(customerRequestDto.getCustomerTypeId());
+                if(optionalCustomerType.isEmpty())
+                    throw new RuntimeException(String.format("No customer type found with the given id: %1$s", customerRequestDto.getCustomerTypeId()));
+                customer.setCustomerType(optionalCustomerType.get());
+            } else {
+                if(id == null) throw new RuntimeException(String.format("Customer type cannot be null during save customer"));
             }
 
             if (null == id) customer.setCreationDate(new Date());

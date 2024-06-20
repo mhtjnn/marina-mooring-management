@@ -42,7 +42,8 @@ public class UserRequestDto implements Serializable {
     /**
      * The phone number of the user.
      */
-    @Pattern(regexp = "^\\d{10}$", message = "Invalid phone number format.")
+    @NotNull(message = "Phone number cannot be blank")
+    @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String phoneNumber;
 
     /**

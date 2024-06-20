@@ -75,7 +75,7 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Size unit of the boat weight.
      */
-    private SizeOfWeightDto sizeOfWeight;
+    private Integer sizeOfWeight;
 
     /**
      * Type of the boat weight.
@@ -105,7 +105,7 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Condition of the pennant related to the mooring.
      */
-    private PennantConditionDto pennantCondition;
+    private String pennantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

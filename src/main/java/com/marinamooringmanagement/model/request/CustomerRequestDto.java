@@ -41,6 +41,8 @@ public class CustomerRequestDto {
     @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String phone;
 
+    private String note;
+
     /**
      * The street and house details of the customer's address.
      */
@@ -66,6 +68,8 @@ public class CustomerRequestDto {
      */
     @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid zipcode format.")
     private String zipCode;
+
+    private Integer customerTypeId;
 
     @Valid
     private List<MooringRequestDto> mooringRequestDtoList;

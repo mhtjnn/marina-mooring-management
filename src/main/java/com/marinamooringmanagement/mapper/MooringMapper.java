@@ -70,7 +70,6 @@ public interface MooringMapper {
     @Mapping(target = "topChainCondition", ignore = true)
     @Mapping(target = "bottomChainCondition", ignore = true)
     @Mapping(target = "shackleSwivelCondition", ignore = true)
-    @Mapping(target = "pennantCondition", ignore = true)
     @Mapping(target = "gpsCoordinates", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringRequestDto dto);
 }
