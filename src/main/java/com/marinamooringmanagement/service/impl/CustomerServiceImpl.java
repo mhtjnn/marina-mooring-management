@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -399,6 +400,11 @@ public class CustomerServiceImpl implements CustomerService {
 
             final Customer initialCustomer = copyCustomer(customer);
 
+            if(id == null) {
+                if(null == customerRequestDto.getFirstName()) throw new RuntimeException("First name cannot be null during save");
+                if(null == customerRequestDto.getLastName()) throw new RuntimeException("Last name cannot be null during save");
+            }
+
             if (null != customerRequestDto.getEmailAddress()) {
                 Optional<Customer> optionalCustomer = customerRepository.findByEmailAddress(customerRequestDto.getEmailAddress());
                 if (optionalCustomer.isPresent()) {
@@ -466,8 +472,6 @@ public class CustomerServiceImpl implements CustomerService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", customerRequestDto.getStateId()));
                 customer.setState(optionalState.get());
-            } else {
-                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != customerRequestDto.getCountryId()) {
@@ -475,8 +479,6 @@ public class CustomerServiceImpl implements CustomerService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", customerRequestDto.getCountryId()));
                 customer.setCountry(optionalCountry.get());
-            } else {
-                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             if(null != customerRequestDto.getCustomerTypeId()) {
@@ -484,8 +486,6 @@ public class CustomerServiceImpl implements CustomerService {
                 if(optionalCustomerType.isEmpty())
                     throw new RuntimeException(String.format("No customer type found with the given id: %1$s", customerRequestDto.getCustomerTypeId()));
                 customer.setCustomerType(optionalCustomerType.get());
-            } else {
-                if(id == null) throw new RuntimeException(String.format("Customer type cannot be null during save customer"));
             }
 
             if (null == id) customer.setCreationDate(new Date());

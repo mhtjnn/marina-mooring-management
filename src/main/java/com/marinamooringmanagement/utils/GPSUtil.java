@@ -8,7 +8,8 @@ public class GPSUtil extends GlobalExceptionHandler {
 
     public String getGpsCoordinates(String gpsCoordinates) {
         try {
-            boolean eastHemisphere = false;
+            boolean westernHemisphere = false;
+            boolean southernHemisphere = false;
 
             int spaceInd = 0;
             while (gpsCoordinates.charAt(spaceInd) != ' ') spaceInd++;
@@ -18,10 +19,6 @@ public class GPSUtil extends GlobalExceptionHandler {
             String latitude = gpsCoordinates.substring(0, spaceInd);
             String longitude = gpsCoordinates.substring(spaceInd);
 
-            int zeroIndLat = 0;
-            while (latitude.charAt(zeroIndLat) == '0' || latitude.charAt(zeroIndLat) == ' ') zeroIndLat++;
-            latitude = latitude.substring(zeroIndLat);
-
             double decimalLatitude = 0;
             double decimalLongitude = 0;
 
@@ -30,7 +27,19 @@ public class GPSUtil extends GlobalExceptionHandler {
             if (latDotCount < 1 || latDotCount > 3)
                 throw new RuntimeException(String.format("Latitude: %1$s is in wrong format", latitude));
             if (latDotCount == 2) {
+
+                int zeroIndLat = 0;
+                while (latitude.charAt(zeroIndLat) == '0' || latitude.charAt(zeroIndLat) == ' ') zeroIndLat++;
+                latitude = latitude.substring(zeroIndLat);
+
+                if(latitude.charAt(0) == '-') {
+                    southernHemisphere = true;
+                    latitude = latitude.substring(1);
+                }
+
                 decimalLatitude = convertToDecimalDegrees(latitude);
+
+                if(southernHemisphere) decimalLatitude = -decimalLatitude;
             }
             else decimalLatitude = Double.parseDouble(latitude);
 
@@ -40,20 +49,18 @@ public class GPSUtil extends GlobalExceptionHandler {
                 throw new RuntimeException(String.format("Longitude: %1$s is in wrong format", longitude));
             if (longDotCount == 2) {
 
-                if (gpsCoordinates.charAt(gpsCoordinates.length() - 1) == 'E') {
-                    gpsCoordinates = gpsCoordinates.substring(0, gpsCoordinates.length()-1);
-                    eastHemisphere = true;
-                }
-
-                if(!Character.isDigit(gpsCoordinates.charAt(gpsCoordinates.length()-1))) throw new RuntimeException("Wrong GPS coordinates");
-
                 int zeroIndLong = 0;
                 while (longitude.charAt(zeroIndLong) == '0' || longitude.charAt(zeroIndLong) == ' ') zeroIndLong++;
                 longitude = longitude.substring(zeroIndLong);
 
+                if(latitude.charAt(0) == '-') {
+                    westernHemisphere = true;
+                    longitude = longitude.substring(1);
+                }
+
                 decimalLongitude = convertToDecimalDegrees(longitude);
 
-                if (!eastHemisphere) decimalLongitude = -decimalLongitude;
+                if (westernHemisphere) decimalLongitude = -decimalLongitude;
             }
             else decimalLongitude = Double.parseDouble(longitude);
 
