@@ -14,6 +14,7 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -94,6 +95,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerTypeMapper customerTypeMapper;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -288,6 +292,9 @@ public class CustomerServiceImpl implements CustomerService {
                                     boatyardNames.add(mooring.getBoatyard().getBoatyardName());
                                 }
                             }
+                            if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                            if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
+                            if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                             return mooringResponseDto;
                         }).toList();
             }

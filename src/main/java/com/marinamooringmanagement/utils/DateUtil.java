@@ -23,7 +23,7 @@ public class DateUtil {
     public String dateToString(Date date) {
         try {
             LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             return localDate.format(dateTimeFormatter);
         } catch (Exception e) {
             throw e;
