@@ -80,9 +80,19 @@ public class GPSUtil extends GlobalExceptionHandler {
 
     public double convertToDecimalDegrees(String dmm) throws NumberFormatException {
         String[] parts = dmm.split("\\.");
+        if (parts.length != 3) {
+            throw new NumberFormatException("Invalid DMM format");
+        }
+
         int degrees = Integer.parseInt(parts[0]);
         double minutes = Double.parseDouble(parts[1] + "." + parts[2]);
-        return degrees + (minutes / 60);
+
+        // Check if the degrees part was negative and adjust accordingly
+        if (degrees < 0) {
+            return degrees - (minutes / 60);
+        } else {
+            return degrees + (minutes / 60);
+        }
     }
 
     public boolean isValidLatitude(double latitude) {
