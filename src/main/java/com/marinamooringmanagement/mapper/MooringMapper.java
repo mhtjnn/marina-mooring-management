@@ -67,7 +67,6 @@ public interface MooringMapper {
     @Mapping(target = "customer", ignore = true)
     @Mapping(target = "mooringStatus", ignore = true)
     @Mapping(target = "boatType", ignore = true)
-    @Mapping(target = "sizeOfWeight", ignore = true)
     @Mapping(target = "typeOfWeight", ignore = true)
     @Mapping(target = "eyeCondition", ignore = true)
     @Mapping(target = "topChainCondition", ignore = true)
