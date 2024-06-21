@@ -1,15 +1,12 @@
 package com.marinamooringmanagement.model.response;
 
 import com.marinamooringmanagement.model.dto.*;
-import com.marinamooringmanagement.model.entity.MooringStatus;
-import com.marinamooringmanagement.model.entity.TopChainCondition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * The {@code MooringResponseDto} class represents a Data Transfer Object (DTO) for mooring response.
@@ -29,8 +26,6 @@ public class MooringResponseDto implements Serializable {
      */
     private Integer id;
 
-    private String mooringId;
-
     /**
      * The unique number assigned to the mooring.
      */
@@ -39,17 +34,18 @@ public class MooringResponseDto implements Serializable {
     /**
      * The harbor where the mooring is located.
      */
-    private String harbor;
-
-    /**
-     * The depth of the water at the mooring location.
-     */
-    private String waterDepth;
+    private String harborOrArea;
 
     /**
      * The GPS coordinates of the mooring location.
      */
     private String gpsCoordinates;
+
+    private String installBottomChainDate;
+
+    private String installTopChainDate;
+
+    private String installConditionOfEyeDate;
 
     /**
      * The name of the boat associated with the mooring.

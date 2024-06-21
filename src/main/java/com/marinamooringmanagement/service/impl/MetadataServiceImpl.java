@@ -467,7 +467,7 @@ public class MetadataServiceImpl implements MetadataService {
                     .map(mooring -> {
                         MooringMetadataResponse mooringMetadataResponse = MooringMetadataResponse.builder().build();
                         if(null != mooring.getId()) mooringMetadataResponse.setId(mooring.getId());
-                        if(null != mooring.getMooringId()) mooringMetadataResponse.setMooringId(mooring.getMooringId());
+                        if(null != mooring.getMooringNumber()) mooringMetadataResponse.setMooringNumber(mooring.getMooringNumber());
                         return mooringMetadataResponse;
                     })
                     .toList();
@@ -499,7 +499,7 @@ public class MetadataServiceImpl implements MetadataService {
                     .map(mooring -> {
                         MooringMetadataResponse mooringMetadataResponse = MooringMetadataResponse.builder().build();
                         if(null != mooring.getId()) mooringMetadataResponse.setId(mooring.getId());
-                        if(null != mooring.getMooringId()) mooringMetadataResponse.setMooringId(mooring.getMooringId());
+                        if(null != mooring.getMooringNumber()) mooringMetadataResponse.setMooringNumber(mooring.getMooringNumber());
                         return mooringMetadataResponse;
                     })
                     .toList();
@@ -609,7 +609,7 @@ public class MetadataServiceImpl implements MetadataService {
                     .map(mooring -> {
                         final MooringMetadataResponse mooringMetadataResponse = MooringMetadataResponse.builder().build();
                         if(null != mooring.getId()) mooringMetadataResponse.setId(mooring.getId());
-                        if(null != mooring.getMooringId()) mooringMetadataResponse.setMooringId(mooring.getMooringId());
+                        if(null != mooring.getMooringNumber()) mooringMetadataResponse.setMooringNumber(mooring.getMooringNumber());
 
                         return mooringMetadataResponse;
                     })
@@ -639,7 +639,7 @@ public class MetadataServiceImpl implements MetadataService {
                     .filter(mooring -> null != mooring.getUser() && mooring.getUser().getId().equals(user.getId()))
                     .map(mooring -> MooringMetadataResponse.builder()
                             .id(mooring.getId())
-                            .mooringId(mooring.getMooringId())
+                            .mooringNumber(mooring.getMooringNumber())
                             .build()
                     )
                     .toList();

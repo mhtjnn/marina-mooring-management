@@ -464,7 +464,7 @@ public class MetadataController extends GlobalExceptionHandler {
 
     @GetMapping("/mooringBasedOnCustomerIdAndBoatyardId/{customerId}/{boatyardId}")
     @ResponseStatus(HttpStatus.OK)
-    public BasicRestResponse fetchMooringBasedOnCustomerIdAndMooringId(
+    public BasicRestResponse fetchMooringBasedOnCustomerIdAndBoatyardId(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
             @PathVariable(value = "customerId") final Integer customerId,

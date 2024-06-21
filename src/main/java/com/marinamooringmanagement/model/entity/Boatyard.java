@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,20 +41,7 @@ public class Boatyard extends Base {
      */
     @Column(name = "boatyard_name")
     private String boatyardName;
-
-    /**
-     * The email address of the BoatYard owner.
-     */
-    @Column(name = "email_address")
-    private String emailAddress;
-
-    /**
-     * The phone number of the BoatYard.
-     */
-    @Column(name = "phone")
-    @Pattern(regexp = "^(\\d[-. ]?){10}$", message = "Invalid phone number format")
-    private String phone;
-
+    
     /**
      * The address associated with an entity, such as a customer or location.
      */

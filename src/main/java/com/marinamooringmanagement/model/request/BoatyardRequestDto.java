@@ -33,19 +33,6 @@ public class BoatyardRequestDto {
     private String boatyardName;
 
     /**
-     * The email address of the BoatYard owner.
-     */
-    @NotNull(message = "Email cannot be null")
-    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
-    private String emailAddress;
-
-    /**
-     * The phone number of the BoatYard.
-     */
-    @Pattern(regexp = "^\\d{10}$", message = "Invalid phone number format.")
-    private String phone;
-
-    /**
      * The address associated with an entity, such as a customer or location.
      */
     private String street;

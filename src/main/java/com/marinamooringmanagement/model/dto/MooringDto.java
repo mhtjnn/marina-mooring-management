@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,7 +26,10 @@ public class MooringDto extends BaseDto implements Serializable {
 
     private Integer id;
 
-    private String mooringId;
+    /**
+     * Mooring number assigned to the mooring.
+     */
+    private String mooringNumber;
 
     /**
      * Name of the customer associated with the mooring.
@@ -33,24 +37,20 @@ public class MooringDto extends BaseDto implements Serializable {
     private String customerName;
 
     /**
-     * Mooring number assigned to the mooring.
-     */
-    private String mooringNumber;
-
-    /**
      * Harbor where the mooring is located.
      */
-    private String harbor;
-
-    /**
-     * Water depth at the mooring location.
-     */
-    private String waterDepth;
+    private String harborOrArea;
 
     /**
      * GPS coordinates of the mooring.
      */
     private String gpsCoordinates;
+
+    private Date installBottomChainDate;
+
+    private Date installTopChainDate;
+
+    private Date installConditionOfEyeDate;
 
     /**
      * Name of the boat associated with the mooring.

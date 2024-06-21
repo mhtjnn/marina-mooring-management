@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * Data Transfer Object (DTO) representing a response from a boatyard,
  * encapsulating details about the boatyard, mooring, and owner.
@@ -30,16 +28,6 @@ public class BoatyardResponseDto {
      * The name of the BoatYard.
      */
     private String boatyardName;
-
-    /**
-     * The email address of the BoatYard owner.
-     */
-    private String emailAddress;
-
-    /**
-     * The phone number of the BoatYard.
-     */
-    private String phone;
 
     /**
      * The address associated with an entity, such as a customer or location.

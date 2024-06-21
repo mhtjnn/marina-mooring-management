@@ -411,18 +411,6 @@ public class BoatyardServiceImpl implements BoatyardService {
                 }
             }
 
-            if (null != boatyardRequestDto.getEmailAddress()) {
-                optionalBoatyard = boatyardRepository.findByEmailAddress(boatyardRequestDto.getEmailAddress());
-                if (optionalBoatyard.isPresent()) {
-                    if (null == id) {
-                        throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
-                    } else {
-                        if (!optionalBoatyard.get().getId().equals(id))
-                            throw new RuntimeException(String.format("Given email address: %1$s is already present", boatyardRequestDto.getEmailAddress()));
-                    }
-                }
-            }
-
             if (null != boatyardRequestDto.getBoatyardName()) {
                 optionalBoatyard = boatyardRepository.findByBoatyardName(boatyardRequestDto.getBoatyardName());
                 if (optionalBoatyard.isPresent()) {

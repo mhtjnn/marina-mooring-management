@@ -12,6 +12,7 @@ import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.WorkOrderService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -79,6 +79,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private WorkOrderStatusMapper workOrderStatusMapper;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -131,28 +134,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) {
-                            LocalDate dueDate = workOrder.getDueDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                            String dueDateStr = dueDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setDueDate(dueDateStr);
-                        }
-
-                        if(null != workOrder.getScheduledDate()) {
-                            LocalDate scheduledDate = workOrder.getScheduledDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
-                        }
-
+                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
                         return workOrderResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -275,27 +258,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) {
-                            LocalDate dueDate = workOrder.getDueDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String dueDateStr = dueDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setDueDate(dueDateStr);
-                        }
-
-                        if(null != workOrder.getScheduledDate()) {
-                            LocalDate scheduledDate = workOrder.getScheduledDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
-                        }
+                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
                         return workOrderResponseDto;
                     })
@@ -353,27 +317,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) {
-                            LocalDate dueDate = workOrder.getDueDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
+                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String dueDateStr = dueDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setDueDate(dueDateStr);
-                        }
-
-                        if(null != workOrder.getScheduledDate()) {
-                            LocalDate scheduledDate = workOrder.getScheduledDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
-                        }
                         return workOrderResponseDto;
                     })
                     .toList();
@@ -414,21 +360,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
 
             if(null != workOrderRequestDto.getDueDate()) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                LocalDate localDate = LocalDate.parse(workOrderRequestDto.getDueDate(), dateTimeFormatter);
-                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-                workOrder.setDueDate(date);
+                workOrder.setDueDate(dateUtil.stringToDate(workOrderRequestDto.getDueDate()));
             } else {
                 if(workOrderId == null) throw new RuntimeException(String.format("Due date cannot be null"));
             }
 
             if(null != workOrderRequestDto.getScheduledDate()) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                LocalDate localDate = LocalDate.parse(workOrderRequestDto.getScheduledDate(), dateTimeFormatter);
-                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-                workOrder.setScheduledDate(date);
+                workOrder.setScheduledDate(dateUtil.stringToDate(workOrderRequestDto.getScheduledDate()));
             } else {
                 if(workOrderId == null) throw new RuntimeException(String.format("Due date cannot be null"));
             }

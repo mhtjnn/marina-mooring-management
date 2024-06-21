@@ -7,7 +7,6 @@ import com.marinamooringmanagement.mapper.BoatyardMapper;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.MooringStatusMapper;
-import com.marinamooringmanagement.model.dto.CustomerTypeDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -18,6 +17,7 @@ import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MooringService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -34,6 +34,7 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -114,6 +115,9 @@ public class MooringServiceImpl implements MooringService {
 
     @Autowired
     private CustomerTypeRepository customerTypeRepository;
+
+    @Autowired
+    private DateUtil dateUtil;
 
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
@@ -197,7 +201,7 @@ public class MooringServiceImpl implements MooringService {
             log.info("API called to save the mooring in the database");
             final Mooring mooring = new Mooring();
 
-            if(null == mooringRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be blank");
+            if(null == mooringRequestDto.getMooringNumber()) throw new RuntimeException("Mooring number cannot be blank");
 
             performSave(mooringRequestDto, mooring, null, request);
 
@@ -299,20 +303,40 @@ public class MooringServiceImpl implements MooringService {
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
+            if(id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
+
             Optional<Mooring> optionalMooring = Optional.empty();
             Mooring savedMooring = null;
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
             mooring.setUser(user);
 
-            if(null != mooringRequestDto.getMooringId()) {
-                optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+            if(null != mooringRequestDto.getMooringNumber()) {
+                optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                 if(optionalMooring.isPresent()) {
                     if(null == id) {
-                        throw new RuntimeException(String.format("Given mooring Id: %1$s is already present", mooringRequestDto.getMooringId()));
+                        throw new RuntimeException(String.format("Given mooring number: %1$s is already present", mooringRequestDto.getMooringNumber()));
                     } else {
-                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring Id: %1$s is associated with other mooring", mooringRequestDto.getMooringId()));
+                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring number: %1$s is associated with other mooring", mooringRequestDto.getMooringNumber()));
                     }
                 }
+            }
+
+            if(null != mooringRequestDto.getInstallBottomChainDate()) {
+                mooring.setInstallBottomChainDate(dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate()));
+            } else {
+                if(null == id) throw new RuntimeException("Install bottom chain date cannot be null during mooring save");
+            }
+
+            if(null != mooringRequestDto.getInstallTopChainDate()) {
+                mooring.setInstallTopChainDate(dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate()));
+            } else {
+                if(null == id) throw new RuntimeException("Install top chain date cannot be null during mooring save");
+            }
+
+            if(null != mooringRequestDto.getInstallConditionOfEyeDate()) {
+                mooring.setInstallConditionOfEyeDate(dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate()));
+            } else {
+                if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
             }
 
             if (null != mooringRequestDto.getGpsCoordinates()) {
@@ -398,6 +422,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 

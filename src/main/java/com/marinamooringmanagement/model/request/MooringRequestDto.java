@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -18,8 +19,8 @@ public class MooringRequestDto implements Serializable {
 
     private Integer id;
 
-    @NotNull(message = "Mooring ID cannot be blank")
-    private String mooringId;
+    @NotNull(message = "Mooring number cannot be blank")
+    private String mooringNumber;
 
     /**
      * Name of the customer associated with the mooring.
@@ -29,17 +30,18 @@ public class MooringRequestDto implements Serializable {
     /**
      * Harbor where the mooring is located.
      */
-    private String harbor;
-
-    /**
-     * Water depth at the mooring location.
-     */
-    private Integer waterDepth;
+    private String harborOrArea;
 
     /**
      * GPS coordinates of the mooring.
      */
     private String gpsCoordinates;
+
+    private String installBottomChainDate;
+
+    private String installTopChainDate;
+
+    private String installConditionOfEyeDate;
 
     private Boolean isDock;
 

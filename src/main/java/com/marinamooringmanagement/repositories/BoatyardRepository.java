@@ -27,7 +27,5 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
 
     Page<Boatyard> findAll(final Specification<Boatyard> spec, final Pageable pageable);
 
-    Optional<Boatyard> findByEmailAddress(final String emailAddress);
-
     Optional<Boatyard> findByBoatyardId(final String boatyardId);
 }

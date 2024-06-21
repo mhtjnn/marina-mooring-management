@@ -13,6 +13,6 @@ public class MooringMetadataResponse {
 
     private Integer id;
 
-    private String mooringId;
+    private String mooringNumber;
 
 }

@@ -504,14 +504,14 @@ public class CustomerServiceImpl implements CustomerService {
 
                     Optional<Mooring> optionalMooring = Optional.empty();
                     Mooring mooring = null;
-                    if (null != mooringRequestDto.getMooringId()) {
-                        optionalMooring = mooringRepository.findByMooringId(mooringRequestDto.getMooringId());
+                    if (null != mooringRequestDto.getMooringNumber()) {
+                        optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                         if (optionalMooring.isPresent()) {
                             mooring = optionalMooring.get();
                             if (null == mooring.getUser())
-                                throw new RuntimeException(String.format("Mooring with the id: %1$s is not associated with any user", mooring.getMooringId()));
+                                throw new RuntimeException(String.format("Mooring with the number: %1$s is not associated with any user", mooring.getMooringNumber()));
                             if (!mooring.getUser().getId().equals(user.getId()))
-                                throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other customer owner", mooring.getMooringId()));
+                                throw new RuntimeException(String.format("Mooring with the number: %1$s is associated with some other customer owner", mooring.getMooringNumber()));
                             mooring.setCustomer(savedCustomer);
                             mooring = mooringService.performSave(
                                     mooringRequestDto,

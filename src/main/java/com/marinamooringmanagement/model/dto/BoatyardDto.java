@@ -30,16 +30,6 @@ public class BoatyardDto extends BaseDto {
     private String boatyardName;
 
     /**
-     * The email address of the BoatYard owner.
-     */
-    private String emailAddress;
-
-    /**
-     * The phone number of the BoatYard.
-     */
-    private String phone;
-
-    /**
      * The address associated with an entity, such as a customer or location.
      */
     private String street;

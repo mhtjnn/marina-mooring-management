@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,25 +26,28 @@ public class Mooring extends Base {
     private Integer id;
 
     @Column(name = "mooring_id")
-    private String mooringId;
+    private String mooringNumber;
 
     /**
      * Harbor where the mooring is located.
      */
     @Column(name = "harbor")
-    private String harbor;
-
-    /**
-     * Water depth at the mooring location.
-     */
-    @Column(name = "water_depth")
-    private String waterDepth;
+    private String harborOrArea;
 
     /**
      * GPS coordinates of the mooring.
      */
     @Column(name = "gps_coordinates")
     private String gpsCoordinates;
+
+    @Column(name = "install_bottom_chain_date")
+    private Date installBottomChainDate;
+
+    @Column(name = "install_top_chain_date")
+    private Date installTopChainDate;
+
+    @Column(name = "install_condition_of_eye_date")
+    private Date installConditionOfEyeDate;
 
     /**
      * Name of the boat associated with the mooring.

@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface MooringRepository extends JpaRepository<Mooring, Integer> {
 
-    Optional<Mooring> findByMooringId(final String mooringId);
+    Optional<Mooring> findByMooringNumber(final String mooringId);
 
     Page<Mooring> findAll(final Specification<Mooring> spec, final Pageable pageable);
 }

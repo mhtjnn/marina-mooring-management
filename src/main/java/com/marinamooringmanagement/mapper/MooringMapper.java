@@ -50,6 +50,9 @@ public interface MooringMapper {
     @Mapping(target = "customerId", ignore = true)
     @Mapping(target = "boatyardResponseDto", ignore = true)
     @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "installBottomChainDate", ignore = true)
+    @Mapping(target = "installTopChainDate", ignore = true)
+    @Mapping(target = "installConditionOfEyeDate", ignore = true)
     MooringResponseDto mapToMooringResponseDto(@MappingTarget MooringResponseDto dto, Mooring mooring);
 
     /**
@@ -71,5 +74,8 @@ public interface MooringMapper {
     @Mapping(target = "bottomChainCondition", ignore = true)
     @Mapping(target = "shackleSwivelCondition", ignore = true)
     @Mapping(target = "gpsCoordinates", ignore = true)
+    @Mapping(target = "installBottomChainDate", ignore = true)
+    @Mapping(target = "installTopChainDate", ignore = true)
+    @Mapping(target = "installConditionOfEyeDate", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringRequestDto dto);
 }
