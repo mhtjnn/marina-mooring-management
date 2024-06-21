@@ -113,9 +113,6 @@ public class CustomerServiceImpl implements CustomerService {
 
             final Customer customer = Customer.builder().build();
 
-            if (null == customerRequestDto.getMooringRequestDtoList())
-                throw new RuntimeException("No mooring given to save.");
-
             performSave(customerRequestDto, customer, null, request);
 
             response.setMessage("Customer saved successfully");
