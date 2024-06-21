@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.model.request;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -43,7 +42,7 @@ public class MooringRequestDto implements Serializable {
 
     private String installConditionOfEyeDate;
 
-    private Boolean isDock;
+    private Boolean addDock;
 
     /**
      * Name of the boatyard associated with the mooring.
@@ -104,7 +103,7 @@ public class MooringRequestDto implements Serializable {
     /**
      * Condition of the pennant related to the mooring.
      */
-    private String pennantCondition;
+    private String pendantCondition;
 
     /**
      * Depth at mean high water at the mooring location.

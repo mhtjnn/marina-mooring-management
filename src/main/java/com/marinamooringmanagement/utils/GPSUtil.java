@@ -22,14 +22,16 @@ public class GPSUtil extends GlobalExceptionHandler {
             while (latitude.charAt(zeroIndLat) == '0' || latitude.charAt(zeroIndLat) == ' ') zeroIndLat++;
             latitude = latitude.substring(zeroIndLat);
 
-            int latDotCount = 0;
             double decimalLatitude = 0;
             double decimalLongitude = 0;
 
+            int latDotCount = 0;
             for (char ch : latitude.toCharArray()) if (ch == '.') latDotCount++;
             if (latDotCount < 1 || latDotCount > 3)
                 throw new RuntimeException(String.format("Latitude: %1$s is in wrong format", latitude));
-            if (latDotCount == 2) decimalLatitude = convertToDecimalDegrees(latitude);
+            if (latDotCount == 2) {
+                decimalLatitude = convertToDecimalDegrees(latitude);
+            }
             else decimalLatitude = Double.parseDouble(latitude);
 
             int longDotCount = 0;

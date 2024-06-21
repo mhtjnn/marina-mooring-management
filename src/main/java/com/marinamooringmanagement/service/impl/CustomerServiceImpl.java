@@ -35,10 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Implementation of the CustomerService interface.
@@ -403,6 +400,8 @@ public class CustomerServiceImpl implements CustomerService {
 
             User user = authorizationUtil.checkAuthority(customerOwnerId);
 
+            final Customer initialCustomer = copyCustomer(customer);
+
             if (null != customerRequestDto.getEmailAddress()) {
                 Optional<Customer> optionalCustomer = customerRepository.findByEmailAddress(customerRequestDto.getEmailAddress());
                 if (optionalCustomer.isPresent()) {
@@ -545,6 +544,9 @@ public class CustomerServiceImpl implements CustomerService {
             }
             savedCustomer.setLastModifiedDate(new Date());
             customerRepository.save(savedCustomer);
+
+            customerChangedLogs(initialCustomer, savedCustomer, user);
+
             log.info(String.format("Customer saved successfully with ID: %d", customer.getId()));
         } catch (Exception e) {
             if (id == null && null != savedCustomer) customerRepository.deleteById(savedCustomer.getId());
@@ -638,4 +640,87 @@ public class CustomerServiceImpl implements CustomerService {
         return customerId;
     }
 
+
+    private void customerChangedLogs(final Customer initialCustomer, final Customer savedCustomer, final User user) {
+        if(initialCustomer.getId() != null && savedCustomer.getId() != null && !initialCustomer.getId().equals(savedCustomer.getId()))
+            log.info(String.format("Customer (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getId(), savedCustomer.getId(), user.getId(), user.getName()));
+
+        if(initialCustomer.getFirstName() != null && savedCustomer.getFirstName() != null && !initialCustomer.getFirstName().equals(savedCustomer.getFirstName()))
+            log.info(String.format("Customer first name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getFirstName(), savedCustomer.getFirstName(), user.getId(), user.getName()));
+
+        if(initialCustomer.getLastName() != null && savedCustomer.getLastName() != null && !initialCustomer.getLastName().equals(savedCustomer.getLastName()))
+            log.info(String.format("Customer last name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getLastName(), savedCustomer.getLastName(), user.getId(), user.getName()));
+
+        if(initialCustomer.getCustomerId() != null && savedCustomer.getCustomerId() != null && !initialCustomer.getCustomerId().equals(savedCustomer.getCustomerId()))
+            log.info(String.format("Customer (String) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerId(), savedCustomer.getCustomerId(), user.getId(), user.getName()));
+
+        if(initialCustomer.getPhone() != null && savedCustomer.getPhone() != null && !initialCustomer.getPhone().equals(savedCustomer.getPhone()))
+            log.info(String.format("Customer phone number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getPhone(), savedCustomer.getPhone(), user.getId(), user.getName()));
+
+        if(initialCustomer.getEmailAddress() != null && savedCustomer.getEmailAddress() != null && !initialCustomer.getEmailAddress().equals(savedCustomer.getEmailAddress()))
+            log.info(String.format("Customer email address changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getEmailAddress(), savedCustomer.getEmailAddress(), user.getId(), user.getName()));
+
+        if(initialCustomer.getImageData() != null && savedCustomer.getImageData() != null && !Arrays.equals(initialCustomer.getImageData(), savedCustomer.getImageData()))
+            log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", Arrays.toString(initialCustomer.getImageData()), Arrays.toString(savedCustomer.getImageData()), user.getId(), user.getName()));
+
+        if(initialCustomer.getNote() != null && savedCustomer.getNote() != null && !initialCustomer.getNote().equals(savedCustomer.getNote()))
+            log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNote(), savedCustomer.getNote(), user.getId(), user.getName()));
+
+        if(initialCustomer.getStreetHouse() != null && savedCustomer.getStreetHouse() != null && !initialCustomer.getStreetHouse().equals(savedCustomer.getStreetHouse()))
+            log.info(String.format("Customer street/house changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getStreetHouse(), savedCustomer.getStreetHouse(), user.getId(), user.getName()));
+
+        if(initialCustomer.getAptSuite() != null && savedCustomer.getAptSuite() != null && !initialCustomer.getAptSuite().equals(savedCustomer.getAptSuite()))
+            log.info(String.format("Customer apt/suite changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getAptSuite(), savedCustomer.getAptSuite(), user.getId(), user.getName()));
+
+        if(initialCustomer.getState() != null && savedCustomer.getState() != null && initialCustomer.getState().getName() != null && savedCustomer.getState().getName() != null && !initialCustomer.getState().getName().equals(savedCustomer.getState().getName()))
+            log.info(String.format("Customer state changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getState().getName(), savedCustomer.getState().getName(), user.getId(), user.getName()));
+
+        if(initialCustomer.getCountry() != null && savedCustomer.getCountry() != null && initialCustomer.getCountry().getName() != null && savedCustomer.getCountry().getName() != null && !initialCustomer.getCountry().getName().equals(savedCustomer.getCountry().getName()))
+            log.info(String.format("Customer country changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCountry().getName(), savedCustomer.getCountry().getName(), user.getId(), user.getName()));
+
+        if(initialCustomer.getZipCode() != null && savedCustomer.getZipCode() != null && !initialCustomer.getZipCode().equals(savedCustomer.getZipCode()))
+            log.info(String.format("Customer zipcode changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getZipCode(), savedCustomer.getZipCode(), user.getId(), user.getName()));
+
+        if(
+                initialCustomer.getCustomerType() != null
+                        && savedCustomer.getCustomerType() != null
+                        && initialCustomer.getCustomerType().getType() != null
+                        && savedCustomer.getCustomerType().getType() != null
+                        && !initialCustomer.getCustomerType().getType().equals(savedCustomer.getCustomerType().getType())
+        )
+            log.info(String.format("Customer type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerType().getType(), savedCustomer.getCustomerType().getType(), user.getId(), user.getName()));
+
+        if(
+                initialCustomer.getUser() != null
+                        && savedCustomer.getUser() != null
+                        && initialCustomer.getUser().getId() != null
+                        && savedCustomer.getUser().getId() != null
+                        && !initialCustomer.getUser().getId().equals(savedCustomer.getUser().getId())
+        )
+            log.info(String.format("Customer customer owner changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getUser().getId(), savedCustomer.getUser().getId(), user.getId(), user.getName()));
+
+    }
+
+    private Customer copyCustomer(Customer customer) {
+
+        final Customer copyCustomer = Customer.builder().build();
+        if(customer.getId() != null) copyCustomer.setId(customer.getId());
+        if(customer.getFirstName() != null) copyCustomer.setFirstName(customer.getFirstName());
+        if(customer.getLastName() != null) copyCustomer.setLastName(customer.getLastName());
+        if(customer.getCustomerId() != null) copyCustomer.setCustomerId(customer.getCustomerId());
+        if(customer.getPhone() != null) copyCustomer.setPhone(customer.getPhone());
+        if(customer.getEmailAddress() != null) copyCustomer.setEmailAddress(customer.getEmailAddress());
+        if(customer.getImageData() != null) copyCustomer.setImageData(customer.getImageData());
+        if(customer.getNote() != null) copyCustomer.setNote(customer.getNote());
+        if(customer.getStreetHouse() != null) copyCustomer.setStreetHouse(customer.getStreetHouse());
+        if(customer.getAptSuite() != null) copyCustomer.setAptSuite(customer.getAptSuite());
+        if(customer.getState() != null) copyCustomer.setState(customer.getState());
+        if(customer.getCountry() != null) copyCustomer.setCountry(customer.getCountry());
+        if(customer.getZipCode() != null) copyCustomer.setZipCode(customer.getZipCode());
+        if(customer.getCustomerType() != null) copyCustomer.setCustomerType(customer.getCustomerType());
+        if(customer.getMooringList() != null) copyCustomer.setMooringList(customer.getMooringList());
+        if(customer.getUser() != null) copyCustomer.setUser(customer.getUser());
+
+        return copyCustomer;
+    }
 }
