@@ -100,7 +100,7 @@ public class MooringResponseDto implements Serializable {
     /**
      * The condition of the pennant of the mooring.
      */
-    private String pennantCondition;
+    private String pendantCondition;
 
     /**
      * The depth at mean high water at the mooring location.

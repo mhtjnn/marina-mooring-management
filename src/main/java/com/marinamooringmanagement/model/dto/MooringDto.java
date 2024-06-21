@@ -105,7 +105,7 @@ public class MooringDto extends BaseDto implements Serializable {
     /**
      * Condition of the pennant related to the mooring.
      */
-    private String pennantCondition;
+    private String pendantCondition;
 
     /**
      * Depth at mean high water at the mooring location.
