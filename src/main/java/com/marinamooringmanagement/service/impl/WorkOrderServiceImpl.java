@@ -390,9 +390,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if(null == workOrderRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null during saving/updating work order");
                 if(null == workOrderRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
                 if(null == mooring.getCustomer()) throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
-                if(null == mooring.getBoatyard()) throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", workOrderRequestDto.getBoatyardId()));
+                if(null == mooring.getBoatyard()) throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
+                if(null == mooring.getUser()) throw new RuntimeException(String.format("No user found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
                 if(!mooring.getCustomer().getId().equals(workOrderRequestDto.getCustomerId())) throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
                 if(!mooring.getBoatyard().getId().equals(workOrderRequestDto.getBoatyardId())) throw new RuntimeException(String.format("Boatyard Id is different in mooring with given id: %1$s", mooring.getId()));
+                if(!mooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer owner is different in mooring with given id: %1$s", mooring.getId()));
 
                 workOrder.setMooring(mooring);
             } else {
@@ -406,8 +408,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 final User technician = optionalTechnician.get();
 
                 if(null == technician.getRole()) throw new RuntimeException(String.format("User with id: %1$s is not assigned to any role", technician.getId()));
-
                 if(!technician.getRole().getName().equals(AppConstants.Role.TECHNICIAN)) throw new RuntimeException(String.format("User with the id: %1$s is not of technician role", technician.getId()));
+                if(null == technician.getCustomerOwnerId()) throw new RuntimeException(String.format("Technician with the id: %1$s is not associated with any customer owner", workOrderRequestDto.getTechnicianId()));
+                if(!technician.getCustomerOwnerId().equals(user.getId())) throw new RuntimeException(String.format("Customer owner is different in technician of id: %1$s", workOrderRequestDto.getTechnicianId()));
 
                 workOrder.setTechnicianUser(technician);
             } else {
