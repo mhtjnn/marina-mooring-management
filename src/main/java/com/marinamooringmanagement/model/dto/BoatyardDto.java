@@ -2,6 +2,7 @@ package com.marinamooringmanagement.model.dto;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,9 +13,10 @@ import java.util.List;
  * Data Transfer Object (DTO) for BoatYard entities.
  * This DTO represents a BoatYard and is used for transferring data between layers of the application.
  */
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 public class BoatyardDto extends BaseDto {
 
     private Integer id;

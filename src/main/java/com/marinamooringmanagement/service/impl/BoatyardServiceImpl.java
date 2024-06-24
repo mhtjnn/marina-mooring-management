@@ -205,7 +205,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             Optional<Boatyard> BoatYardEntityOptional = boatyardRepository.findById(id);
             if (BoatYardEntityOptional.isPresent()) {
-                return boatyardMapper.toDto(BoatYardEntityOptional.get());
+                return boatyardMapper.toDto(BoatyardDto.builder().build(), BoatYardEntityOptional.get());
             }
             throw new DBOperationException(String.format("Boatyard with ID : %d doesn't exist", id));
         } catch (Exception e) {

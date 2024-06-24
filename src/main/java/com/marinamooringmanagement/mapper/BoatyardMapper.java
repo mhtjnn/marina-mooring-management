@@ -24,7 +24,8 @@ public interface BoatyardMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "mooringDtoList", ignore = true)
-    BoatyardDto toDto(Boatyard boatYard);
+    @Mapping(target = "user", ignore = true)
+    BoatyardDto toDto(@MappingTarget BoatyardDto boatyardDto, Boatyard boatYard);
 
     /**
      * Updates an existing BoatYard entity with data from a BoatYardDto.

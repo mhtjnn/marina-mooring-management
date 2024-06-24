@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -154,13 +153,11 @@ public class UserServiceImpl implements UserService {
             );
 
             // Fetching the roles based on the specifications.
-            List<User> filteredUsers = userRepository.findAll(spec);
-            response.setTotalSize(filteredUsers.size());
-
-            Page<User> filteredUsersPage = new PageImpl<>(filteredUsers, p, filteredUsers.size());
+            Page<User> filteredUsers = userRepository.findAll(spec, p);
+            response.setTotalSize(userRepository.findAll(spec).size());
 
             // Convert the filtered users to UserResponseDto
-            List<UserResponseDto> filteredUserResponseDtoList = filteredUsersPage
+            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
                     .getContent()
                     .stream()
                     .map(user -> {
@@ -714,7 +711,7 @@ public class UserServiceImpl implements UserService {
             }
 
             if(null != userRequestDto.getPhoneNumber()) {
-                final String givenPhoneNumber = userRequestDto.getPhoneNumber();
+                String givenPhoneNumber = userRequestDto.getPhoneNumber();
                 int hyphenCount = 0;
                 for(char ch: givenPhoneNumber.toCharArray()) {
                     if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
@@ -725,18 +722,21 @@ public class UserServiceImpl implements UserService {
 
                 if(hyphenCount == 0) {
                     if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
-                    String phoneNumber = givenPhoneNumber.substring(0, 3)
+                    givenPhoneNumber = givenPhoneNumber.substring(0, 3)
                             + "-" +
                             givenPhoneNumber.substring(3, 6)
                             + "-" +
                             givenPhoneNumber.substring(6, 10);
-                    user.setPhoneNumber(phoneNumber);
                 } else if (hyphenCount == 2) {
                     if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                    user.setPhoneNumber(givenPhoneNumber);
                 } else {
                     throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
                 }
+
+                Optional<User> optionalUser = userRepository.findByPhoneNumber(givenPhoneNumber);
+                if(optionalUser.isPresent()) throw new RuntimeException(String.format("User already present with the given phone number: %1$s", givenPhoneNumber));
+
+                user.setPhoneNumber(givenPhoneNumber);
 
             } else {
                 if(null == userId) throw new RuntimeException(String.format("Phone cannot be blank during save"));
