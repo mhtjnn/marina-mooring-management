@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -31,4 +32,6 @@ public class WorkOrderDto extends BaseDto{
     private UserDto customerOwnerUserDto;
 
     private UserDto technicianUserDto;
+
+    private List<ImageDto> imageDtoList;
 }

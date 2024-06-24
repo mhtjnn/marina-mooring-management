@@ -13,6 +13,7 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.DateUtil;
+import com.marinamooringmanagement.utils.ImageUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -81,6 +82,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private DateUtil dateUtil;
+
+    @Autowired
+    private ImageUtils imageUtils;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
@@ -358,6 +362,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrder.setCustomerOwnerUser(user);
 
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
+
+            if(null != workOrderRequestDto.getEncodedImages()) {
+                List<Image> imageList = new ArrayList<>();
+                if(null != workOrder.getImageList() && workOrder.getImageList().isEmpty()) imageList = workOrder.getImageList();
+                for(String endcodedImageString: workOrderRequestDto.getEncodedImages()) {
+                    Image image = Image.builder().build();
+                    image.setImageData(imageUtils.validateEncodedString(endcodedImageString));
+                    imageList.add(image);
+                }
+
+                workOrder.setImageList(imageList);
+            }
 
             if(null != workOrderRequestDto.getDueDate()) {
                 workOrder.setDueDate(dateUtil.stringToDate(workOrderRequestDto.getDueDate()));

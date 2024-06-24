@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -49,4 +50,8 @@ public class WorkOrder extends Base{
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_status_id")
     private WorkOrderStatus workOrderStatus;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_order_image_id")
+    private List<Image> imageList;
 }

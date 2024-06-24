@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -33,4 +34,6 @@ public class WorkOrderRequestDto {
     private Integer technicianId;
 
     private Integer workOrderStatusId;
+
+    private List<String> encodedImages;
 }
