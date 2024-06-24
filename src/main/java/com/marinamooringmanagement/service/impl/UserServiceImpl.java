@@ -726,7 +726,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 Optional<User> optionalUser = userRepository.findByPhoneNumber(givenPhoneNumber);
-                if(optionalUser.isPresent()) throw new RuntimeException(String.format("User already present with the given phone number: %1$s", givenPhoneNumber));
+                if(optionalUser.isPresent() && null != user.getId() && null != optionalUser.get().getId() && !optionalUser.get().getId().equals(user.getId())) throw new RuntimeException(String.format("User already present with the given phone number: %1$s", givenPhoneNumber));
 
                 user.setPhoneNumber(givenPhoneNumber);
 

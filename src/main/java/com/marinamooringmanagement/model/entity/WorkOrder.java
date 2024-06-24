@@ -51,7 +51,7 @@ public class WorkOrder extends Base{
     @JoinColumn(name = "work_order_status_id")
     private WorkOrderStatus workOrderStatus;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_image_id")
     private List<Image> imageList;
 }

@@ -32,9 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -363,12 +360,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
 
-            if(null != workOrderRequestDto.getEncodedImages()) {
+            if(null != workOrderRequestDto.getEncodedImages() && !workOrderRequestDto.getEncodedImages().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
-                if(null != workOrder.getImageList() && workOrder.getImageList().isEmpty()) imageList = workOrder.getImageList();
+                if(null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) imageList = workOrder.getImageList();
                 for(String endcodedImageString: workOrderRequestDto.getEncodedImages()) {
                     Image image = Image.builder().build();
                     image.setImageData(imageUtils.validateEncodedString(endcodedImageString));
+                    image.setCreationDate(new Date(System.currentTimeMillis()));
+                    image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
                 }
 
