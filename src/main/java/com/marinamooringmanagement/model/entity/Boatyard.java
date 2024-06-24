@@ -83,6 +83,9 @@ public class Boatyard extends Base {
     @Column(name = "gps_coordinates")
     private String gpsCoordinates;
 
+    @Column(name = "storage_areas")
+    private List<String> storageAreas;
+
     /**
      * The list of moorings associated with the BoatYard.
      */

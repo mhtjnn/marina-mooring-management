@@ -420,8 +420,6 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalShackleSwivelCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Shackle swivel condition found with the given id: %1$s", mooringRequestDto.getShackleSwivelConditionId()));
                 mooring.setShackleSwivelCondition(optionalShackleSwivelCondition.get());
-            } else {
-                throw new RuntimeException("Shackle swivel condition cannot be null");
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));

@@ -63,6 +63,8 @@ public class CustomerRequestDto {
      */
     private Integer countryId;
 
+    private List<String> encodedImages;
+
     /**
      * The zip code or postal code of the customer's address.
      */

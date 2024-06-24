@@ -39,8 +39,6 @@ public class CustomerDto extends BaseDto {
 
     private String note;
 
-    private byte[] image;
-
     /**
      * The street and house number of the customer's address.
      */
@@ -68,4 +66,6 @@ public class CustomerDto extends BaseDto {
     private List<MooringDto> mooringDtoList;
 
     private UserDto userDto;
+
+    private List<ImageDto> imageDtoList;
 }

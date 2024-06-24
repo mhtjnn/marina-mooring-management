@@ -56,6 +56,8 @@ public class BoatyardDto extends BaseDto {
 
     private String gpsCoordinates;
 
+    private List<String> storageAreas;
+
     /**
      * List of moorings associated with the BoatYard.
      */

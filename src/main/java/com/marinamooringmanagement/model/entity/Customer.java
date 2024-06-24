@@ -54,10 +54,6 @@ public class Customer extends Base {
     @Column(name = "email_address")
     private String emailAddress;
 
-    @Lob
-    @Column(name = "customer_image", length = 10000)
-    private byte[] imageData;
-
     @Column(name = "note")
     private String note;
     /**
@@ -101,4 +97,8 @@ public class Customer extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_image_id")
+    private List<Image> imageList;
 }

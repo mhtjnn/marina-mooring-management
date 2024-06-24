@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 /**
  * Data Transfer Object (DTO) representing a request to or from a boatyard,
@@ -65,5 +67,7 @@ public class BoatyardRequestDto {
     private String mainContact;
 
     private String gpsCoordinates;
+
+    private List<String> storageAreas;
 }
 

@@ -23,6 +23,7 @@ public interface CustomerMapper {
     @Mapping(target = "mooringDtoList", ignore = true)
     @Mapping(target = "userDto", ignore = true)
     @Mapping(target = "customerTypeDto", ignore = true)
+    @Mapping(target = "imageDtoList", ignore = true)
     CustomerDto toDto(@MappingTarget CustomerDto dto, Customer customer);
 
     /**
@@ -35,12 +36,8 @@ public interface CustomerMapper {
     @Mapping(target = "mooringList", ignore = true)
     @Mapping(target = "customerType", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "imageList", ignore = true)
     Customer toEntity(@MappingTarget Customer customer, CustomerDto customerDto);
-
-    @Mapping(target = "mooringList", ignore = true)
-    @Mapping(target = "customerType", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    Customer toEntity(@MappingTarget Customer customer, CustomerRequestDto customerRequestDto);
 
     @Mapping(target = "mooringResponseDtoList", ignore = true)
     @Mapping(target = "stateResponseDto", ignore = true)
@@ -54,5 +51,6 @@ public interface CustomerMapper {
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "phone", ignore = true)
     @Mapping(target = "customerType", ignore = true)
+    @Mapping(target = "imageList", ignore = true)
     Customer mapToCustomer(@MappingTarget Customer customer, CustomerRequestDto dto);
 }

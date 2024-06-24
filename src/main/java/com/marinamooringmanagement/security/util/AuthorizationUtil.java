@@ -29,7 +29,7 @@ public class AuthorizationUtil {
     @Autowired
     private VendorRepository vendorRepository;
 
-    public <T> User checkAuthority(final Integer customerOwnerId) {
+    public User checkAuthority(final Integer customerOwnerId) {
         final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
         User user;

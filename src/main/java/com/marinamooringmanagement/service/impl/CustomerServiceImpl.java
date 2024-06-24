@@ -15,6 +15,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.DateUtil;
+import com.marinamooringmanagement.utils.ImageUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -26,12 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,6 +95,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private DateUtil dateUtil;
+
+    @Autowired
+    private ImageUtils imageUtils;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -435,6 +437,18 @@ public class CustomerServiceImpl implements CustomerService {
 
             customer.setUser(user);
 
+            if(null != customerRequestDto.getEncodedImages()) {
+                List<Image> imageList = new ArrayList<>();
+                if(null != customer.getImageList() && customer.getImageList().isEmpty()) imageList = customer.getImageList();
+                for(String endcodedImageString: customerRequestDto.getEncodedImages()) {
+                    Image image = Image.builder().build();
+                    image.setImageData(imageUtils.validateEncodedString(endcodedImageString));
+                    imageList.add(image);
+                }
+
+                customer.setImageList(imageList);
+            }
+
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
 
@@ -657,8 +671,8 @@ public class CustomerServiceImpl implements CustomerService {
         if(initialCustomer.getEmailAddress() != null && savedCustomer.getEmailAddress() != null && !initialCustomer.getEmailAddress().equals(savedCustomer.getEmailAddress()))
             log.info(String.format("Customer email address changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getEmailAddress(), savedCustomer.getEmailAddress(), user.getId(), user.getName()));
 
-        if(initialCustomer.getImageData() != null && savedCustomer.getImageData() != null && !Arrays.equals(initialCustomer.getImageData(), savedCustomer.getImageData()))
-            log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", Arrays.toString(initialCustomer.getImageData()), Arrays.toString(savedCustomer.getImageData()), user.getId(), user.getName()));
+//        if(initialCustomer.getImageDataList() != null && savedCustomer.getImageDataList() != null && !Arrays.equals(initialCustomer.getImageDataList(), savedCustomer.getImageDataList()))
+//            log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", Arrays.toString(initialCustomer.getImageDataList()), Arrays.toString(savedCustomer.getImageDataList()), user.getId(), user.getName()));
 
         if(initialCustomer.getNote() != null && savedCustomer.getNote() != null && !initialCustomer.getNote().equals(savedCustomer.getNote()))
             log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNote(), savedCustomer.getNote(), user.getId(), user.getName()));
@@ -707,7 +721,7 @@ public class CustomerServiceImpl implements CustomerService {
         if(customer.getCustomerId() != null) copyCustomer.setCustomerId(customer.getCustomerId());
         if(customer.getPhone() != null) copyCustomer.setPhone(customer.getPhone());
         if(customer.getEmailAddress() != null) copyCustomer.setEmailAddress(customer.getEmailAddress());
-        if(customer.getImageData() != null) copyCustomer.setImageData(customer.getImageData());
+//        if(customer.getImageDataList() != null) copyCustomer.setImageDataList(customer.getImageDataList());
         if(customer.getNote() != null) copyCustomer.setNote(customer.getNote());
         if(customer.getStreetHouse() != null) copyCustomer.setStreetHouse(customer.getStreetHouse());
         if(customer.getAptSuite() != null) copyCustomer.setAptSuite(customer.getAptSuite());
