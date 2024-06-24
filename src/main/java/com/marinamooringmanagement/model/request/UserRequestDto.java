@@ -28,14 +28,14 @@ public class UserRequestDto implements Serializable {
     /**
      * The first name of the user.
      */
-    @NotNull(message = "First name cannot be null")
+    @NotNull(message = "First name cannot be blank")
     @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Invalid name format.")
     private String name;
 
     /**
      * The email address of the user.
      */
-    @NotNull(message = "Email cannot be null")
+    @NotNull(message = "Email cannot be blank")
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
     private String email;
 

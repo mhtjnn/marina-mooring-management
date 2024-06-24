@@ -215,12 +215,6 @@ public class UserServiceImpl implements UserService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-
-            Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
-
-            if (optionalUser.isPresent())
-                throw new RuntimeException(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
-
             final User user = User.builder().build();
 
             log.info(String.format("saving user in DB"));
@@ -519,6 +513,7 @@ public class UserServiceImpl implements UserService {
 
             // Fetching the roles based on the specifications.
             Page<User> filteredUsers = userRepository.findAll(spec, p);
+            response.setTotalSize(userRepository.findAll(spec).size());
 
             // Convert the filtered users to UserResponseDto
             List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
@@ -555,7 +550,6 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users of technician role fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(userRepository.count());
             if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(filteredUserResponseDtoList.size());
 
@@ -669,7 +663,7 @@ public class UserServiceImpl implements UserService {
             //Updating email of the user
             if (null != userRequestDto.getEmail() && !StringUtils.equals(user.getEmail(), userRequestDto.getEmail())) {
                 Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
-                if (optionalUser.isPresent() && !user.getId().equals(optionalUser.get().getId()))
+                if (optionalUser.isPresent())
                     throw new RuntimeException(String.format("Given email as: %1$s is already present for some other user", userRequestDto.getEmail()));
                 user.setEmail(userRequestDto.getEmail());
             }
