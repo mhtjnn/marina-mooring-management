@@ -229,8 +229,6 @@ public class UserServiceImpl implements UserService {
 
         } catch (Exception e) {
             response.setMessage(e.getMessage());
-            if (e.getLocalizedMessage().startsWith("Query"))
-                response.setMessage(String.format("User with email Id as %1$s is already present", userRequestDto.getEmail()));
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
