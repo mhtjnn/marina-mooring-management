@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -153,10 +154,13 @@ public class UserServiceImpl implements UserService {
             );
 
             // Fetching the roles based on the specifications.
-            Page<User> filteredUsers = userRepository.findAll(spec, p);
+            List<User> filteredUsers = userRepository.findAll(spec);
+            response.setTotalSize(filteredUsers.size());
+
+            Page<User> filteredUsersPage = new PageImpl<>(filteredUsers, p, filteredUsers.size());
 
             // Convert the filtered users to UserResponseDto
-            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
+            List<UserResponseDto> filteredUserResponseDtoList = filteredUsersPage
                     .getContent()
                     .stream()
                     .map(user -> {
@@ -190,7 +194,6 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(userRepository.count());
             if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(filteredUserResponseDtoList.size());
 
