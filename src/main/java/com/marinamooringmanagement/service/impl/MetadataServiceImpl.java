@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -515,6 +516,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse fetchCustomerBasedOnMooringId(BaseSearchRequest baseSearchRequest, Integer mooringId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));

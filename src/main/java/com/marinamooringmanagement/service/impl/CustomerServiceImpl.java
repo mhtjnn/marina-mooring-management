@@ -111,6 +111,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @param customerRequestDto The DTO containing customer information.
      */
     @Override
+    @Transactional
     public BasicRestResponse saveCustomer(final CustomerRequestDto customerRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -371,6 +372,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @throws DBOperationException if the customer ID is not provided or if an error occurs during the operation.
      */
     @Override
+    @Transactional
     public BasicRestResponse updateCustomer(final CustomerRequestDto customerRequestDto, final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -639,6 +641,7 @@ public class CustomerServiceImpl implements CustomerService {
         return response;
     }
 
+    @Transactional
     public Customer fetchCustomerById(final Integer customerId, final HttpServletRequest request) {
         try {
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
@@ -660,6 +663,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
+    @Transactional
     public StringBuilder createCustomerId(final String lastName) {
 
         if (null == lastName) throw new RuntimeException("Last name cannot be null");
@@ -673,7 +677,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerId;
     }
 
-
+    @Transactional
     private void customerChangedLogs(final Customer initialCustomer, final Customer savedCustomer, final User user) {
         if(initialCustomer.getId() != null && savedCustomer.getId() != null && !initialCustomer.getId().equals(savedCustomer.getId()))
             log.info(String.format("Customer (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getId(), savedCustomer.getId(), user.getId(), user.getName()));
@@ -734,6 +738,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     }
 
+    @Transactional
     private Customer copyCustomer(Customer customer) {
 
         final Customer copyCustomer = Customer.builder().build();

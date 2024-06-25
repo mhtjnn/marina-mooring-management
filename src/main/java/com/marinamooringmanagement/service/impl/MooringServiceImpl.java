@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -125,6 +126,7 @@ public class MooringServiceImpl implements MooringService {
      * @return a BasicRestResponse containing the results of the mooring search.
      */
     @Override
+    @Transactional
     public BasicRestResponse fetchMoorings(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -195,6 +197,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooringRequestDto the mooring request DTO
      */
     @Override
+    @Transactional
     public BasicRestResponse saveMooring(final MooringRequestDto mooringRequestDto, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -223,6 +226,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooringId         the mooring ID
      */
     @Override
+    @Transactional
     public BasicRestResponse updateMooring(final MooringRequestDto mooringRequestDto, final Integer mooringId, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -251,6 +255,7 @@ public class MooringServiceImpl implements MooringService {
      * @return a message indicating the deletion status
      */
     @Override
+    @Transactional
     public BasicRestResponse deleteMooring(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -297,6 +302,7 @@ public class MooringServiceImpl implements MooringService {
      * @param mooring           the mooring object to be saved or updated
      * @param id                the mooring ID (null for new moorings)
      */
+    @Transactional
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id, final HttpServletRequest request) {
         try {
             log.info("performSave() function called");
@@ -449,6 +455,7 @@ public class MooringServiceImpl implements MooringService {
         }
     }
 
+    @Transactional
     public Mooring fetchMooringById(final Integer mooringId, final HttpServletRequest request) {
         try {
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
@@ -467,6 +474,7 @@ public class MooringServiceImpl implements MooringService {
         }
     }
 
+    @Transactional
     private Mooring copyMooring(final Mooring mooring) {
 
         final Mooring copyMooring = Mooring.builder().build();
@@ -499,6 +507,7 @@ public class MooringServiceImpl implements MooringService {
 
     }
 
+    @Transactional
     private void mooringChangedLogs(final Mooring initialMooring, final Mooring savedMooring, final User user) {
 
         if(initialMooring.getId() != null && savedMooring.getId() != null && !initialMooring.getId().equals(savedMooring.getId()))
