@@ -331,19 +331,25 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null != mooringRequestDto.getInstallBottomChainDate()) {
-                mooring.setInstallBottomChainDate(dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate()));
+                Date installBottomChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
+                if(installBottomChainDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", installBottomChainDate, new Date(System.currentTimeMillis())));
+                mooring.setInstallBottomChainDate(installBottomChainDate);
             } else {
                 if(null == id) throw new RuntimeException("Install bottom chain date cannot be null during mooring save");
             }
 
             if(null != mooringRequestDto.getInstallTopChainDate()) {
-                mooring.setInstallTopChainDate(dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate()));
+                Date installTopChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
+                if(installTopChainDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", installTopChainDate, new Date(System.currentTimeMillis())));
+                mooring.setInstallBottomChainDate(installTopChainDate);
             } else {
                 if(null == id) throw new RuntimeException("Install top chain date cannot be null during mooring save");
             }
 
             if(null != mooringRequestDto.getInstallConditionOfEyeDate()) {
-                mooring.setInstallConditionOfEyeDate(dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate()));
+                Date conditionOfEyeDate = dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
+                if(conditionOfEyeDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", conditionOfEyeDate, new Date(System.currentTimeMillis())));
+                mooring.setInstallBottomChainDate(conditionOfEyeDate);
             } else {
                 if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
             }
