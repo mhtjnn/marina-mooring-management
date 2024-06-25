@@ -16,6 +16,7 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     Page<Customer> findAll(final Specification<Customer> spec, final Pageable p);
+    List<Customer> findAll(final Specification<Customer> spec);
 
     Optional<Customer> findByEmailAddress(String emailAddress);
 

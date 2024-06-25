@@ -179,7 +179,7 @@ public class MooringServiceImpl implements MooringService {
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(mooringResponseDtoList);
-            response.setTotalSize(mooringRepository.count());
+            response.setTotalSize(mooringRepository.findAll(spec).size());
             if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(mooringResponseDtoList.size());
         } catch (Exception e) {

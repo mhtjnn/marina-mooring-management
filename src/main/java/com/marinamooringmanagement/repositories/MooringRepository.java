@@ -19,4 +19,6 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
     Optional<Mooring> findByMooringNumber(final String mooringId);
 
     Page<Mooring> findAll(final Specification<Mooring> spec, final Pageable pageable);
+
+    List<Mooring> findAll(final Specification<Mooring> spec);
 }

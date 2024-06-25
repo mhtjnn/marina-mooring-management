@@ -64,6 +64,7 @@ public class BoatyardRequestDto {
      * The main contact detail, typically a name or a primary phone number,
      * for reaching the primary contact person associated with this entity.
      */
+    @NotNull(message = "main contact cannot be null")
     private String mainContact;
 
     private String gpsCoordinates;

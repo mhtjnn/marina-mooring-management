@@ -17,4 +17,6 @@ public interface VendorRepository extends JpaRepository<Vendor, Integer> {
 
     Page<Vendor> findAll(final Specification<Vendor> spec, final Pageable pageable);
 
+    List<Vendor> findAll(final Specification<Vendor> spec);
+
 }

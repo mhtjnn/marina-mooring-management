@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Time;
+import java.util.List;
 
 @Data
 @Builder
@@ -35,4 +37,6 @@ public class WorkOrderResponseDto {
     private UserResponseDto customerOwnerUserResponseDto;
 
     private WorkOrderStatusDto workOrderStatusDto;
+
+    private List<ImageDto> imageDtoList;
 }

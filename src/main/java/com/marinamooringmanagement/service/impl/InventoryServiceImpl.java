@@ -174,7 +174,7 @@ public class InventoryServiceImpl implements InventoryService {
             response.setContent(inventoryResponseDtoList);
             response.setMessage(String.format("Inventories with vendor: %1$s fetched successfully", vendorId));
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(inventoryRepository.count());
+            response.setTotalSize(inventoryRepository.findAll(specs).size());
             if (inventoryResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(inventoryResponseDtoList.size());
 

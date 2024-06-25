@@ -4,6 +4,7 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
+import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -83,6 +84,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private ImageUtils imageUtils;
 
+    @Autowired
+    private ImageMapper imageMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -137,11 +141,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
                         if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
                         if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+                        if(null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
                         return workOrderResponseDto;
                     })
                     .collect(Collectors.toList());
 
-            response.setTotalSize(workOrderRepository.count());
+            response.setTotalSize(workOrderRepository.findAll(spec).size());
             response.setCurrentSize(workOrderResponseDtoList.size());
             response.setMessage("All work orders fetched successfully.");
             response.setStatus(HttpStatus.OK.value());

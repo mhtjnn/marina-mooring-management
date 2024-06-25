@@ -181,7 +181,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setContent(boatyardDtoList);
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(boatyardRepository.count());
+            response.setTotalSize(boatyardRepository.findAll(spec).size());
             if (!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
             else response.setCurrentSize(0);
         } catch (Exception e) {
