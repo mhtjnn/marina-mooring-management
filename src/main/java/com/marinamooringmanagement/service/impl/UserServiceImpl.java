@@ -129,12 +129,23 @@ public class UserServiceImpl implements UserService {
                      */
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), "%" + lowerCaseSearchText + "%")
-                        ));
+
+                        if(conversionUtils.canConvertToInt(searchText)) {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.equal(user.get("id"), searchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                            ));
+                        } else {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                            ));
+                        }
                     }
 
                     /*
@@ -563,20 +574,25 @@ public class UserServiceImpl implements UserService {
                         List<WorkOrder> openWorkOrderList = workOrderRepository.findAll()
                                 .stream()
                                 .filter(
-                                        workOrder ->
-                                                null != workOrder.getWorkOrderStatus()
+                                        workOrder -> null != workOrder.getWorkOrderStatus()
                                                 && null != workOrder.getWorkOrderStatus().getStatus()
+                                                && null != workOrder.getTechnicianUser()
+                                                && null != workOrder.getTechnicianUser().getId()
+                                                && workOrder.getTechnicianUser().getId().equals(user.getId())
                                                 && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+
                                 )
                                 .toList();
 
                         List<WorkOrder> closeWorkOrderList = workOrderRepository.findAll()
                                 .stream()
                                 .filter(
-                                        workOrder ->
-                                                null != workOrder.getWorkOrderStatus()
-                                                        && null != workOrder.getWorkOrderStatus().getStatus()
-                                                        && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                        workOrder -> null != workOrder.getWorkOrderStatus()
+                                                && null != workOrder.getWorkOrderStatus().getStatus()
+                                                && null != workOrder.getTechnicianUser()
+                                                && null != workOrder.getTechnicianUser().getId()
+                                                && workOrder.getTechnicianUser().getId().equals(user.getId())
+                                                && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
                                 )
                                 .toList();
 
