@@ -488,15 +488,21 @@ public class UserServiceImpl implements UserService {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
                         if(conversionUtils.canConvertToInt(searchText)) {
-                            predicates.add(criteriaBuilder.equal(user.get("id"), searchText));
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.equal(user.get("id"), searchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                            ));
+                        } else {
+                            predicates.add(criteriaBuilder.or(
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
+                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                            ));
                         }
-
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), "%" + lowerCaseSearchText + "%"),
-                                criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), "%" + lowerCaseSearchText + "%")
-                        ));
                     }
 
                     /*
