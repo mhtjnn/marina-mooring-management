@@ -104,7 +104,8 @@ public class WorkOrderController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Filter date from", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateFrom", required = false) String filterDateFrom,
+            @Parameter(description = "Filter date to", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateTo", required = false) String filterDateTo,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
@@ -113,7 +114,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return workOrderService.fetchOpenWorkOrders(baseSearchRequest, technicianId, request);
+        return workOrderService.fetchOpenWorkOrders(baseSearchRequest, technicianId, request, filterDateFrom, filterDateTo);
     }
 
     @Operation(
@@ -144,7 +145,8 @@ public class WorkOrderController extends GlobalExceptionHandler {
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Filter date from", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateFrom", required = false) String filterDateFrom,
+            @Parameter(description = "Filter date to", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateTo", required = false) String filterDateTo,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
@@ -153,7 +155,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return workOrderService.fetchCloseWorkOrders(baseSearchRequest, technicianId, request);
+        return workOrderService.fetchCloseWorkOrders(baseSearchRequest, technicianId, request, filterDateFrom, filterDateTo);
     }
 
     /**

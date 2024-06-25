@@ -245,11 +245,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchOpenWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request) {
+    public BasicRestResponse fetchOpenWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+
+            final Date filterFromDate = dateUtil.stringToDate(filterDateFrom);
+            final Date filterToDate = dateUtil.stringToDate(filterDateTo);
+
+            if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
 
             List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
                     .stream()
@@ -261,6 +266,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
                                     && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                                    && null != workOrder.getScheduledDate()
+                                    && null != workOrder.getDueDate()
+                                    && !workOrder.getScheduledDate().before(filterFromDate)
+                                    && !workOrder.getDueDate().after(filterToDate)
                     )
                     .map(workOrder -> {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
@@ -293,6 +302,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 paginatedWorkOrder = workOrderResponseDtoList.subList(start, end);
             }
 
+            response.setCurrentSize(paginatedWorkOrder.size());
+            response.setTotalSize(workOrderResponseDtoList.size());
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
             response.setContent(paginatedWorkOrder);
@@ -304,11 +315,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchCloseWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request) {
+    public BasicRestResponse fetchCloseWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+
+            final Date filterFromDate = dateUtil.stringToDate(filterDateFrom);
+            final Date filterToDate = dateUtil.stringToDate(filterDateTo);
 
             List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
                     .stream()
@@ -320,6 +334,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
                                     && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                                    && null != workOrder.getScheduledDate()
+                                    && null != workOrder.getDueDate()
+                                    && !workOrder.getScheduledDate().before(filterFromDate)
+                                    && !workOrder.getDueDate().after(filterToDate)
                     )
                     .map(workOrder -> {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
@@ -350,6 +368,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 paginatedWorkOrder = workOrderResponseDtoList.subList(start, end);
             }
 
+            response.setCurrentSize(paginatedWorkOrder.size());
+            response.setTotalSize(workOrderResponseDtoList.size());
             response.setMessage(String.format("Work orders with technician of given id: %1$s fetched successfully", technicianId));
             response.setStatus(HttpStatus.OK.value());
             response.setContent(paginatedWorkOrder);

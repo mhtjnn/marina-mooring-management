@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.*;
 
 import java.io.Serializable;

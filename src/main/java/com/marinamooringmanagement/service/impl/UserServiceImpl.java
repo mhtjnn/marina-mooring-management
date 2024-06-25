@@ -15,6 +15,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.*;
+import com.marinamooringmanagement.utils.ConversionUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import io.jsonwebtoken.io.Decoders;
 import jakarta.persistence.criteria.*;
@@ -95,6 +96,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private VendorService vendorService;
+
+    @Autowired
+    private ConversionUtils conversionUtils;
+
+    @Autowired
+    private WorkOrderRepository workOrderRepository;
 
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
@@ -479,6 +486,11 @@ public class UserServiceImpl implements UserService {
                      */
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+
+                        if(conversionUtils.canConvertToInt(searchText)) {
+                            predicates.add(criteriaBuilder.equal(user.get("id"), searchText));
+                        }
+
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), "%" + lowerCaseSearchText + "%"),
                                 criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), "%" + lowerCaseSearchText + "%"),
@@ -514,18 +526,18 @@ public class UserServiceImpl implements UserService {
             response.setTotalSize(userRepository.findAll(spec).size());
 
             // Convert the filtered users to UserResponseDto
-            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
+            List<TechnicianUserResponseDto> filteredTechnicianUserResponseDtoList = filteredUsers
                     .getContent()
                     .stream()
                     .map(user -> {
-                        UserResponseDto userResponseDto = UserResponseDto.builder().build();
-                        mapper.mapToUserResponseDto(userResponseDto, user);
+                        TechnicianUserResponseDto technicianUserResponseDto = TechnicianUserResponseDto.builder().build();
+                        mapper.mapToTechnicianUserResponseDto(technicianUserResponseDto, user);
                         RoleResponseDto roleResponseDto = RoleResponseDto.builder()
                                 .id(user.getRole().getId())
                                 .name(user.getRole().getName())
                                 .description(user.getRole().getDescription())
                                 .build();
-                        userResponseDto.setRoleResponseDto(roleResponseDto);
+                        technicianUserResponseDto.setRoleResponseDto(roleResponseDto);
 
                         StateResponseDto stateResponseDto = null;
                         if (null != user.getState()) stateResponseDto = StateResponseDto.builder()
@@ -533,23 +545,49 @@ public class UserServiceImpl implements UserService {
                                 .label(user.getState().getLabel())
                                 .name(user.getState().getName())
                                 .build();
-                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateResponseDto);
+                        if (null != user.getState()) technicianUserResponseDto.setStateResponseDto(stateResponseDto);
 
                         CountryResponseDto countryResponseDto = CountryResponseDto.builder()
                                 .id(user.getCountry().getId())
                                 .label(user.getCountry().getLabel())
                                 .name(user.getCountry().getName())
                                 .build();
-                        if (null != user.getCountry()) userResponseDto.setCountryResponseDto(countryResponseDto);
-                        return userResponseDto;
+                        if (null != user.getCountry()) technicianUserResponseDto.setCountryResponseDto(countryResponseDto);
+
+                        List<WorkOrder> openWorkOrderList = workOrderRepository.findAll()
+                                .stream()
+                                .filter(
+                                        workOrder ->
+                                                null != workOrder.getWorkOrderStatus()
+                                                && null != workOrder.getWorkOrderStatus().getStatus()
+                                                && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                )
+                                .toList();
+
+                        List<WorkOrder> closeWorkOrderList = workOrderRepository.findAll()
+                                .stream()
+                                .filter(
+                                        workOrder ->
+                                                null != workOrder.getWorkOrderStatus()
+                                                        && null != workOrder.getWorkOrderStatus().getStatus()
+                                                        && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                )
+                                .toList();
+
+                        if(openWorkOrderList.isEmpty()) technicianUserResponseDto.setOpenWorkOrder(0);
+                        else technicianUserResponseDto.setOpenWorkOrder(openWorkOrderList.size());
+
+                        if(closeWorkOrderList.isEmpty()) technicianUserResponseDto.setCloseWorkOrder(0);
+                        else technicianUserResponseDto.setCloseWorkOrder(closeWorkOrderList.size());
+
+                        return technicianUserResponseDto;
                     }).toList();
 
-
-            response.setContent(filteredUserResponseDtoList);
+            response.setContent(filteredTechnicianUserResponseDtoList);
             response.setMessage("Users of technician role fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(filteredUserResponseDtoList.size());
+            if(filteredTechnicianUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(filteredTechnicianUserResponseDtoList.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());

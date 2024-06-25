@@ -3,6 +3,7 @@ package com.marinamooringmanagement.mapper;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.model.response.TechnicianUserResponseDto;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -63,4 +64,11 @@ public interface UserMapper {
     @Mapping(target = "stateResponseDto", ignore = true)
     @Mapping(target = "countryResponseDto", ignore = true)
     UserResponseDto mapToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
+
+    @Mapping(target = "roleResponseDto", ignore = true)
+    @Mapping(target = "stateResponseDto", ignore = true)
+    @Mapping(target = "countryResponseDto", ignore = true)
+    @Mapping(target = "openWorkOrder", ignore = true)
+    @Mapping(target = "closeWorkOrder", ignore = true)
+    TechnicianUserResponseDto mapToTechnicianUserResponseDto(@MappingTarget TechnicianUserResponseDto dto, User user);
 }
