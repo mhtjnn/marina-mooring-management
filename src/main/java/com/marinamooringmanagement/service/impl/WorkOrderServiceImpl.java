@@ -251,10 +251,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         try {
             final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
 
-            final Date filterFromDate = dateUtil.stringToDate(filterDateFrom);
-            final Date filterToDate = dateUtil.stringToDate(filterDateTo);
+            Date filterFromDate;
+            Date filterToDate;
 
-            if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
+            if(null != filterDateFrom && null != filterDateTo) {
+                filterFromDate = dateUtil.stringToDate(filterDateFrom);
+                filterToDate = dateUtil.stringToDate(filterDateTo);
+                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
+            } else {
+                filterToDate = null;
+                filterFromDate = null;
+            }
 
             List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
                     .stream()
@@ -268,6 +275,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                                     && null != workOrder.getScheduledDate()
                                     && null != workOrder.getDueDate()
+                                    && null != filterFromDate
+                                    && null != filterToDate
                                     && !workOrder.getScheduledDate().before(filterFromDate)
                                     && !workOrder.getDueDate().after(filterToDate)
                     )
@@ -321,8 +330,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         try {
             final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
 
-            final Date filterFromDate = dateUtil.stringToDate(filterDateFrom);
-            final Date filterToDate = dateUtil.stringToDate(filterDateTo);
+            Date filterFromDate;
+            Date filterToDate;
+
+            if(null != filterDateFrom && null != filterDateTo) {
+                filterFromDate = dateUtil.stringToDate(filterDateFrom);
+                filterToDate = dateUtil.stringToDate(filterDateTo);
+                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
+            } else {
+                filterToDate = null;
+                filterFromDate = null;
+            }
 
             List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderRepository.findAll()
                     .stream()
@@ -336,6 +354,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                                     && null != workOrder.getScheduledDate()
                                     && null != workOrder.getDueDate()
+                                    && null != filterFromDate
+                                    && null != filterToDate
                                     && !workOrder.getScheduledDate().before(filterFromDate)
                                     && !workOrder.getDueDate().after(filterToDate)
                     )
