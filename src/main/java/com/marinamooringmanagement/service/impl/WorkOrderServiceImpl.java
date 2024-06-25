@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -359,6 +360,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return  response;
     }
 
+    @Transactional
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if(null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));

@@ -113,7 +113,7 @@ public class AuthorizationUtil {
         List<Predicate> predicates = new ArrayList<>();
         if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
             if(customerOwnerId == -1) {
-                predicates.add(criteriaBuilder.equal(root.join("role").get("name"), AppConstants.Role.TECHNICIAN));
+                throw new RuntimeException(String.format("Please select a customer owner"));
             } else {
                 predicates.add(criteriaBuilder.equal(root.join("role").get("name"), AppConstants.Role.TECHNICIAN));
                 predicates.add(criteriaBuilder.equal(root.get("customerOwnerId"), customerOwnerId));
