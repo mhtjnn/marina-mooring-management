@@ -66,5 +66,7 @@ public interface VendorMapper {
     @Mapping(target = "remitState", ignore = true)
     @Mapping(target = "remitCountry", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "companyPhoneNumber", ignore = true)
+    @Mapping(target = "salesRepPhoneNumber", ignore = true)
     Vendor mapToVendor(@MappingTarget Vendor vendor, VendorRequestDto dto);
 }

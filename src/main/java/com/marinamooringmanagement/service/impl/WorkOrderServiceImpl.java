@@ -90,6 +90,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private ImageMapper imageMapper;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -272,31 +275,58 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
 
+                LocalDate localGivenScheduleDate = filterFromDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localGivenDueDate = filterToDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
                 workOrderResponseDtoList = workOrderRepository.findAll()
                         .stream()
                         .filter(
-                                workOrder -> null != workOrder.getTechnicianUser()
-                                        && null != workOrder.getCustomerOwnerUser()
-                                        && null != workOrder.getWorkOrderStatus()
-                                        && null != workOrder.getWorkOrderStatus().getStatus()
-                                        && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
-                                        && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
-                                        && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
-                                        && null != workOrder.getScheduledDate()
-                                        && null != workOrder.getDueDate()
-                                        && !workOrder.getScheduledDate().before(filterFromDate)
-                                        && !workOrder.getDueDate().after(filterToDate)
+                                workOrder -> {
+                                    if(null != workOrder.getTechnicianUser()
+                                            && null != workOrder.getCustomerOwnerUser()
+                                            && null != workOrder.getWorkOrderStatus()
+                                            && null != workOrder.getWorkOrderStatus().getStatus()
+                                            && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                            && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
+                                            && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                                            && null != workOrder.getScheduledDate()
+                                            && null != workOrder.getDueDate()) {
+
+                                        LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDate();
+                                        LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDate();
+
+                                        if(!localSavedScheduleDate.isBefore(localGivenScheduleDate) && !localSavedDueDate.isAfter(localGivenDueDate)) return true;
+                                    }
+                                    return false;
+                                }
                         )
                         .map(workOrder -> {
+
                             WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
-                            if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                            if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                            if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
-                            if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
-                            if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
-                            if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                            if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
-                            if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+                            if (null != workOrder.getMooring())
+                                workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                            if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                                workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                            if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                                workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                            if (null != workOrder.getCustomerOwnerUser())
+                                workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                            if (null != workOrder.getTechnicianUser())
+                                workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                            if (null != workOrder.getWorkOrderStatus())
+                                workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                            if (null != workOrder.getDueDate())
+                                workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                            if (null != workOrder.getScheduledDate())
+                                workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
                             return workOrderResponseDto;
                         })
@@ -379,33 +409,60 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
 
+                LocalDate localGivenScheduleDate = filterFromDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localGivenDueDate = filterToDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
                 workOrderResponseDtoList = workOrderRepository.findAll()
                         .stream()
                         .filter(
-                                workOrder -> null != workOrder.getTechnicianUser()
-                                        && null != workOrder.getCustomerOwnerUser()
-                                        && null != workOrder.getWorkOrderStatus()
-                                        && null != workOrder.getWorkOrderStatus().getStatus()
-                                        && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(),AppConstants.WorkOrderStatusConstants.CLOSE)
-                                        && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
-                                        && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
-                                        && null != workOrder.getScheduledDate()
-                                        && null != workOrder.getDueDate()
-                                        && !workOrder.getScheduledDate().before(filterFromDate)
-                                        && !workOrder.getDueDate().after(filterToDate)
+                                workOrder -> {
+                                    if(null != workOrder.getTechnicianUser()
+                                            && null != workOrder.getCustomerOwnerUser()
+                                            && null != workOrder.getWorkOrderStatus()
+                                            && null != workOrder.getWorkOrderStatus().getStatus()
+                                            && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                            && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
+                                            && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
+                                            && null != workOrder.getScheduledDate()
+                                            && null != workOrder.getDueDate()) {
+
+                                        LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDate();
+                                        LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDate();
+
+                                        if(!localSavedScheduleDate.isBefore(localGivenScheduleDate) && !localSavedDueDate.isAfter(localGivenDueDate)) return true;
+                                    }
+                                    return false;
+                                }
                         )
                         .map(workOrder -> {
-                            WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
-                            if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                            if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                            if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
-                            if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
-                            if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
-                            if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                            if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
-                            if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
-                            return workOrderResponseDto;
+                                WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                                if (null != workOrder.getMooring())
+                                    workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                                    workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                                if (null != workOrder.getCustomerOwnerUser())
+                                    workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                                if (null != workOrder.getTechnicianUser())
+                                    workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                                if (null != workOrder.getWorkOrderStatus())
+                                    workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                                if (null != workOrder.getDueDate())
+                                    workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                                if (null != workOrder.getScheduledDate())
+                                    workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+
+                                return workOrderResponseDto;
                         })
                         .toList();
 

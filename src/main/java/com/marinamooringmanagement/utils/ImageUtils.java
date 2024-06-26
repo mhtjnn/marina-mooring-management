@@ -1,4 +1,7 @@
 package com.marinamooringmanagement.utils;
+import com.marinamooringmanagement.model.entity.Image;
+import com.marinamooringmanagement.repositories.ImageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -7,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ImageUtils {

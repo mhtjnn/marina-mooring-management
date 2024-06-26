@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
+import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Vendor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for managing Vendor entities.
@@ -19,4 +21,13 @@ public interface VendorRepository extends JpaRepository<Vendor, Integer> {
 
     List<Vendor> findAll(final Specification<Vendor> spec);
 
+    Optional<Vendor> findByCompanyPhoneNumber(final String givenPhoneNumber);
+
+    Optional<Vendor> findBySalesRepPhoneNumber(final String givenPhoneNumber);
+
+    Optional<Vendor> findByCompanyEmail(final String companyEmail);
+
+    Optional<Vendor> findByRemitEmailAddress(final String remitEmailAddress);
+
+    Optional<Vendor> findBySalesRepEmail(final String salesRepEmail);
 }
