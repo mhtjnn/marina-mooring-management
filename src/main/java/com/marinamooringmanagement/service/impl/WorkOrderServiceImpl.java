@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -488,28 +490,78 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
 
-            if(null != workOrderRequestDto.getDueDate()) {
-                workOrder.setDueDate(dateUtil.stringToDate(workOrderRequestDto.getDueDate()));
-            } else {
-                if(workOrderId == null) throw new RuntimeException(String.format("Due date cannot be null"));
-            }
+            final LocalDate currentDate = LocalDate.now();
 
-            if(null != workOrderRequestDto.getScheduledDate()) {
-                workOrder.setScheduledDate(dateUtil.stringToDate(workOrderRequestDto.getScheduledDate()));
-            } else {
-                if(workOrderId == null) throw new RuntimeException(String.format("Schedule date cannot be null"));
-            }
+            if(null == workOrderRequestDto.getScheduledDate() && null == workOrderRequestDto.getDueDate()) {
+                if(null == workOrderId) throw new RuntimeException(String.format("Due date and Schedule date cannot be null during save"));
+            } else if(null == workOrderRequestDto.getDueDate()) {
+                if(null == workOrderId) throw new RuntimeException(String.format("Due date cannot be null during saved"));
+                final Date savedScheduleDate = workOrder.getScheduledDate();
+                final Date givenScheduleDate = dateUtil.stringToDate(workOrderRequestDto.getScheduledDate());
 
-            Date dueDate = workOrder.getDueDate();
-            Date scheduleDate = workOrder.getScheduledDate();
+                LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
 
-            if(null != dueDate && null != scheduleDate) {
-                if(dueDate.before(scheduleDate)) throw new RuntimeException(String.format("Due date: %1$s is before schedule date: %2$s", dueDate, scheduleDate));
-                if(null == workOrderId && dueDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Due date: %1$s is before current date: %2$s", dueDate, new Date(System.currentTimeMillis())));
-                if(null == workOrderId && scheduleDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Schedule date: %1$s is before current date: %2$s", dueDate, new Date(System.currentTimeMillis())));
+                if(localGivenScheduleDate.isBefore(localSavedScheduleDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                if(localGivenScheduleDate.isAfter(localSavedDueDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is after saved due date: %2$s", localGivenScheduleDate, localSavedDueDate));
+
+                workOrder.setScheduledDate(givenScheduleDate);
+            } else if(null == workOrderRequestDto.getScheduledDate()) {
+                if(null == workOrderId) throw new RuntimeException(String.format("Schedule date cannot be null during save"));
+                final Date givenDueDate = dateUtil.stringToDate(workOrderRequestDto.getDueDate());
+
+                LocalDate localGivenDueDate = givenDueDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                if(localGivenDueDate.isBefore(localSavedScheduleDate)) throw new RuntimeException(String.format("Given due date: %1$s is before saved schedule date: %2$s", localGivenDueDate, localSavedScheduleDate));
+                workOrder.setDueDate(givenDueDate);
             } else {
-                if(null == dueDate) throw new RuntimeException(String.format("Due date is null"));
-                if(null == scheduleDate) throw new RuntimeException(String.format("Schedule date is null"));
+
+                final Date givenScheduleDate = dateUtil.stringToDate(workOrderRequestDto.getScheduledDate());
+                final Date givenDueDate = dateUtil.stringToDate(workOrderRequestDto.getDueDate());
+
+                if(null == workOrderId) {
+                    LocalDate localScheduleDate = givenScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localDueDate = givenDueDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    if(localDueDate.isBefore(currentDate)) throw new RuntimeException(String.format("Given due date: %1$s is before current date: %2$s", localDueDate, new Date(System.currentTimeMillis())));
+                    if(localScheduleDate.isBefore(currentDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is before current date: %2$s", localScheduleDate, new Date(System.currentTimeMillis())));
+                    if(localScheduleDate.isAfter(localDueDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localScheduleDate, localDueDate));
+                } else {
+
+                    final Date savedScheduleDate = workOrder.getScheduledDate();
+
+                    LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localGivenDueDate = givenDueDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                    if(localGivenScheduleDate.isBefore(localSavedScheduleDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                    if(localGivenScheduleDate.isAfter(localGivenDueDate)) throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+                }
+
+                workOrder.setScheduledDate(givenScheduleDate);
+                workOrder.setDueDate(givenDueDate);
             }
 
             if(null != workOrderRequestDto.getWorkOrderStatusId()) {

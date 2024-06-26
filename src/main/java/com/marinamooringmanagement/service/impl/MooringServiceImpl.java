@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -332,7 +334,11 @@ public class MooringServiceImpl implements MooringService {
 
             if(null != mooringRequestDto.getInstallBottomChainDate()) {
                 Date installBottomChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
-                if(installBottomChainDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", installBottomChainDate, new Date(System.currentTimeMillis())));
+                LocalDate localDate = installBottomChainDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate currentDate = LocalDate.now();
+                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallBottomChainDate(installBottomChainDate);
             } else {
                 if(null == id) throw new RuntimeException("Install bottom chain date cannot be null during mooring save");
@@ -340,7 +346,11 @@ public class MooringServiceImpl implements MooringService {
 
             if(null != mooringRequestDto.getInstallTopChainDate()) {
                 Date installTopChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
-                if(installTopChainDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", installTopChainDate, new Date(System.currentTimeMillis())));
+                LocalDate localDate = installTopChainDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate currentDate = LocalDate.now();
+                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallBottomChainDate(installTopChainDate);
             } else {
                 if(null == id) throw new RuntimeException("Install top chain date cannot be null during mooring save");
@@ -348,7 +358,11 @@ public class MooringServiceImpl implements MooringService {
 
             if(null != mooringRequestDto.getInstallConditionOfEyeDate()) {
                 Date conditionOfEyeDate = dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
-                if(conditionOfEyeDate.before(new Date(System.currentTimeMillis()))) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", conditionOfEyeDate, new Date(System.currentTimeMillis())));
+                LocalDate localDate = conditionOfEyeDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate currentDate = LocalDate.now();
+                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallBottomChainDate(conditionOfEyeDate);
             } else {
                 if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
