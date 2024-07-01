@@ -17,6 +17,7 @@ import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.ImageUtils;
+import com.marinamooringmanagement.utils.PhoneNumberUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -102,6 +103,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private ImageMapper imageMapper;
+
+    @Autowired
+    private PhoneNumberUtil phoneNumberUtil;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -473,33 +477,12 @@ public class CustomerServiceImpl implements CustomerService {
             }
 
             if(null != customerRequestDto.getPhone()) {
-                String givenPhoneNumber = customerRequestDto.getPhone();
-                int hyphenCount = 0;
-                for(char ch: givenPhoneNumber.toCharArray()) {
-                    if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                    if(ch == '-') {
-                        hyphenCount++;
-                    }
-                }
+                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(customerRequestDto.getPhone());
 
-                if(hyphenCount == 0) {
-                    if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
+                Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNumber);
+                if(optionalCustomer.isPresent() && null != customer.getId() && null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId())) throw new RuntimeException(String.format("Customer already present with the given phone number: %1$s", phoneNumber));
 
-                    givenPhoneNumber = givenPhoneNumber.substring(0, 3)
-                            + "-" +
-                            givenPhoneNumber.substring(3, 6)
-                            + "-" +
-                            givenPhoneNumber.substring(6, 10);
-                } else if (hyphenCount == 2) {
-                    if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                } else {
-                    throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                }
-
-                Optional<Customer> optionalCustomer = customerRepository.findByPhone(givenPhoneNumber);
-                if(optionalCustomer.isPresent() && null != customer.getId() && null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId())) throw new RuntimeException(String.format("Customer already present with the given phone number: %1$s", givenPhoneNumber));
-
-                customer.setPhone(givenPhoneNumber);
+                customer.setPhone(phoneNumber);
 
             } else {
                 if(null == id) throw new RuntimeException(String.format("Phone cannot be blank during save"));

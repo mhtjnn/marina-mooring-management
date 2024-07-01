@@ -104,7 +104,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+//            final User user = authorizationUtil.checkAuthority(customerOwnerId);
             Specification<WorkOrder> spec = new Specification<WorkOrder>() {
                 @Override
                 public Predicate toPredicate(Root<WorkOrder> workOrder, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
@@ -273,7 +273,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if(null == filterFromDate) throw new RuntimeException(String.format("From Date is null"));
                 if(null == filterToDate) throw new RuntimeException(String.format("To Date is null"));
 
-                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
+                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("Invalid date range: %1$s cannot be earlier than %2$s.", filterDateTo, filterDateFrom));
 
                 LocalDate localGivenScheduleDate = filterFromDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -303,7 +303,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .atZone(ZoneId.systemDefault())
                                                 .toLocalDate();
 
-                                        if(!localSavedScheduleDate.isBefore(localGivenScheduleDate) && !localSavedDueDate.isAfter(localGivenDueDate)) return true;
+                                        return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
+                                                && !localGivenDueDate.isBefore(localSavedDueDate)
+                                                && !localGivenScheduleDate.isAfter(localSavedDueDate);
                                     }
                                     return false;
                                 }
@@ -407,7 +409,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if(null == filterFromDate) throw new RuntimeException(String.format("From Date is null"));
                 if(null == filterToDate) throw new RuntimeException(String.format("To Date is null"));
 
-                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("To date: %1$s is before from date: %2$s", filterDateTo, filterDateFrom));
+                if(filterToDate.before(filterFromDate)) throw new RuntimeException(String.format("Invalid date range: %1$s cannot be earlier than %2$s.", filterDateTo, filterDateFrom));
 
                 LocalDate localGivenScheduleDate = filterFromDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -437,7 +439,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .atZone(ZoneId.systemDefault())
                                                 .toLocalDate();
 
-                                        if(!localSavedScheduleDate.isBefore(localGivenScheduleDate) && !localSavedDueDate.isAfter(localGivenDueDate)) return true;
+                                        return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
+                                                && !localGivenDueDate.isBefore(localSavedDueDate)
+                                                && !localGivenScheduleDate.isAfter(localSavedDueDate);
                                     }
                                     return false;
                                 }

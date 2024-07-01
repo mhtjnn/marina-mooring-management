@@ -16,6 +16,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.VendorService;
 import com.marinamooringmanagement.utils.ConversionUtils;
+import com.marinamooringmanagement.utils.PhoneNumberUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -83,6 +84,9 @@ public class VendorServiceImpl implements VendorService {
 
     @Autowired
     private ConversionUtils conversionUtils;
+
+    @Autowired
+    private PhoneNumberUtil phoneNumberUtil;
 
     /**
      * Fetches a list of vendors based on the provided search request parameters and search text.
@@ -357,66 +361,24 @@ public class VendorServiceImpl implements VendorService {
             }
 
             if(null != vendorRequestDto.getCompanyPhoneNumber()) {
-                String givenPhoneNumber = vendorRequestDto.getCompanyPhoneNumber();
-                int hyphenCount = 0;
-                for(char ch: givenPhoneNumber.toCharArray()) {
-                    if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                    if(ch == '-') {
-                        hyphenCount++;
-                    }
-                }
+                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getCompanyPhoneNumber());
 
-                if(hyphenCount == 0) {
-                    if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
+                Optional<Vendor> optionalVendor = vendorRepository.findByCompanyPhoneNumber(phoneNumber);
+                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("Company already present with the given phone number: %1$s", phoneNumber));
 
-                    givenPhoneNumber = givenPhoneNumber.substring(0, 3)
-                            + "-" +
-                            givenPhoneNumber.substring(3, 6)
-                            + "-" +
-                            givenPhoneNumber.substring(6, 10);
-                } else if (hyphenCount == 2) {
-                    if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                } else {
-                    throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                }
-
-                Optional<Vendor> optionalVendor = vendorRepository.findByCompanyPhoneNumber(givenPhoneNumber);
-                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("Company already present with the given phone number: %1$s", givenPhoneNumber));
-
-                vendor.setCompanyPhoneNumber(givenPhoneNumber);
+                vendor.setCompanyPhoneNumber(phoneNumber);
 
             } else {
                 if(null == id) throw new RuntimeException(String.format("Company Phone cannot be blank during save"));
             }
 
             if(null != vendorRequestDto.getSalesRepPhoneNumber()) {
-                String givenPhoneNumber = vendorRequestDto.getSalesRepPhoneNumber();
-                int hyphenCount = 0;
-                for(char ch: givenPhoneNumber.toCharArray()) {
-                    if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                    if(ch == '-') {
-                        hyphenCount++;
-                    }
-                }
+                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getSalesRepPhoneNumber());
 
-                if(hyphenCount == 0) {
-                    if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
+                Optional<Vendor> optionalVendor = vendorRepository.findBySalesRepPhoneNumber(phoneNumber);
+                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("Sales representative already present with the given phone number: %1$s", phoneNumber));
 
-                    givenPhoneNumber = givenPhoneNumber.substring(0, 3)
-                            + "-" +
-                            givenPhoneNumber.substring(3, 6)
-                            + "-" +
-                            givenPhoneNumber.substring(6, 10);
-                } else if (hyphenCount == 2) {
-                    if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                } else {
-                    throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                }
-
-                Optional<Vendor> optionalVendor = vendorRepository.findBySalesRepPhoneNumber(givenPhoneNumber);
-                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("Sales representative already present with the given phone number: %1$s", givenPhoneNumber));
-
-                vendor.setSalesRepPhoneNumber(givenPhoneNumber);
+                vendor.setSalesRepPhoneNumber(phoneNumber);
 
             } else {
                 if(null == id) throw new RuntimeException(String.format("Sales representation Phone cannot be blank during save"));

@@ -13,6 +13,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +129,7 @@ public class AuthorizationUtil {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
+    @Transactional
     public <T> Predicate fetchPredicateForWorkOrder(final Integer customerOwnerId, Root<T> root, CriteriaBuilder criteriaBuilder) {
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
