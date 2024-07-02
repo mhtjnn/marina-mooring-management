@@ -42,4 +42,6 @@ public interface MooringService {
      * @return a message indicating the deletion status
      */
     BasicRestResponse deleteMooring(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse fetchMooringsDueForService(final HttpServletRequest request);
 }

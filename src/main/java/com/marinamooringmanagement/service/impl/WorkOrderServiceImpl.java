@@ -104,13 +104,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-//            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
             Specification<WorkOrder> spec = new Specification<WorkOrder>() {
                 @Override
                 public Predicate toPredicate(Root<WorkOrder> workOrder, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
 
-                    if (null != searchText) {
+                    if (null != searchText && !searchText.isEmpty()) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
@@ -304,8 +304,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && !localGivenDueDate.isBefore(localSavedDueDate)
-                                                && !localGivenScheduleDate.isAfter(localSavedDueDate);
+                                                && localGivenDueDate.isBefore(localSavedDueDate);
                                     }
                                     return false;
                                 }
@@ -440,8 +439,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && !localGivenDueDate.isBefore(localSavedDueDate)
-                                                && !localGivenScheduleDate.isAfter(localSavedDueDate);
+                                                && localGivenDueDate.isBefore(localSavedDueDate);
                                     }
                                     return false;
                                 }

@@ -105,5 +105,4 @@
         <appender-ref ref="MOORING-SERVICE-FILE"/>
     </logger>
 
-
 </configuration>

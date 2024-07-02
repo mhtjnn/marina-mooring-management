@@ -100,4 +100,9 @@ public class AppConstants {
         public static final String DOCK = "Dock";
     }
 
+    public static class MooringDueServiceStatusConstants {
+        public static final String COMPLETE = "Complete";
+
+        public static final String PENDING = "Pending";
+    }
 }

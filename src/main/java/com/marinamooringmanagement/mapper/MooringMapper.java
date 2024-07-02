@@ -3,6 +3,7 @@ package com.marinamooringmanagement.mapper;
 import com.marinamooringmanagement.model.dto.MooringDto;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
+import com.marinamooringmanagement.model.response.MooringDueServiceResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -77,4 +78,13 @@ public interface MooringMapper {
     @Mapping(target = "installTopChainDate", ignore = true)
     @Mapping(target = "installConditionOfEyeDate", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringRequestDto dto);
+
+    @Mapping(target = "customerResponseDto", ignore = true)
+    @Mapping(target = "boatyardResponseDto", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "installBottomChainDate", ignore = true)
+    @Mapping(target = "installTopChainDate", ignore = true)
+    @Mapping(target = "installConditionOfEyeDate", ignore = true)
+    @Mapping(target = "mooringDueServiceStatusDto", ignore = true)
+    MooringDueServiceResponseDto mapToMooringDueServiceResponseDto(@MappingTarget MooringDueServiceResponseDto dto, MooringResponseDto mooringResponseDto);
 }

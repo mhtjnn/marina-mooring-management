@@ -70,6 +70,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
     @Autowired
     private CustomerTypeRepository customerTypeRepository;
 
+    @Autowired
+    private MooringDueServiceStatusRepository mooringDueServiceStatusRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
     }
@@ -797,6 +800,24 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             );
 
             customerTypeRepository.saveAll(customerTypes);
+        }
+
+        final String mooringDueServiceStatusSql = "SELECT * from mooring_due_service_status";
+        final List<MooringDueServiceStatus> mooringDueServiceStatusList = jdbcTemplate.query(mooringDueServiceStatusSql, (resultSet, resultNum) -> null);
+
+        if(mooringDueServiceStatusList.isEmpty()) {
+            List<MooringDueServiceStatus> mooringDueServiceStatuses = List.of(
+                    MooringDueServiceStatus.builder()
+                            .status(AppConstants.MooringDueServiceStatusConstants.COMPLETE)
+                            .description("All work orders for this mooring is complete.")
+                            .build(),
+                    MooringDueServiceStatus.builder()
+                            .status(AppConstants.MooringDueServiceStatusConstants.PENDING)
+                            .description("Some or all work orders for this mooring is pending.")
+                            .build()
+            );
+
+            mooringDueServiceStatusRepository.saveAll(mooringDueServiceStatuses);
         }
     }
 }
