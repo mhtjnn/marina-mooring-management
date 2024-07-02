@@ -207,7 +207,7 @@ public class MooringServiceImpl implements MooringService {
     }
 
     @Override
-    public BasicRestResponse fetchMooringsDueForService(HttpServletRequest request) {
+    public BasicRestResponse fetchMooringsDueForService(final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {

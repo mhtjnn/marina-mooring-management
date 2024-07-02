@@ -304,7 +304,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localGivenDueDate.isBefore(localSavedDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate);
                                     }
                                     return false;
                                 }
@@ -439,7 +439,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localGivenDueDate.isBefore(localSavedDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate);
                                     }
                                     return false;
                                 }
@@ -573,7 +573,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localGivenDueDate.isBefore(localSavedDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate);
                                     }
                                     return false;
                                 }
