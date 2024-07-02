@@ -17,4 +17,6 @@ public interface WorkOrderService {
     BasicRestResponse fetchOpenWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo);
 
     BasicRestResponse fetchCloseWorkOrders(final BaseSearchRequest baseSearchRequest, final Integer technicianId, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo);
+
+    BasicRestResponse fetchAllOpenWorkOrders(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo);
 }

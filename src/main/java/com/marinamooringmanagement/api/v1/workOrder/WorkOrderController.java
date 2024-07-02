@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -115,6 +116,47 @@ public class WorkOrderController extends GlobalExceptionHandler {
                 .sortDir(sortDir)
                 .build();
         return workOrderService.fetchOpenWorkOrders(baseSearchRequest, technicianId, request, filterDateFrom, filterDateTo);
+    }
+
+    @Operation(
+            tags = "Fetch all open work orders from the database",
+            description = "API to fetch all open work orders from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(
+            value = "/fetchAllOpenWorkOrders",
+            method = RequestMethod.GET,
+            produces = {"application/json"}
+    )
+    @Transactional
+    public BasicRestResponse fetchAllOpenWorkOrders(
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @Parameter(description = "Filter date from", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateFrom", required = false) String filterDateFrom,
+            @Parameter(description = "Filter date to", schema = @Schema(implementation = String.class)) final @RequestParam(value = "filterDateTo", required = false) String filterDateTo,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return workOrderService.fetchAllOpenWorkOrders(baseSearchRequest, request, filterDateFrom, filterDateTo);
     }
 
     @Operation(
