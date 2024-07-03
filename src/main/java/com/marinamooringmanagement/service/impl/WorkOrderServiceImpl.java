@@ -304,7 +304,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localSavedDueDate.isBefore(localGivenDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate)
+                                                && !localGivenScheduleDate.isAfter(localSavedDueDate)
+                                                && !localGivenDueDate.isBefore(localSavedScheduleDate);
                                     }
                                     return false;
                                 }
@@ -439,7 +441,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localSavedDueDate.isBefore(localGivenDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate)
+                                                && !localGivenScheduleDate.isAfter(localSavedDueDate)
+                                                && !localGivenDueDate.isBefore(localSavedScheduleDate);
                                     }
                                     return false;
                                 }
@@ -573,7 +577,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                                 .toLocalDate();
 
                                         return !localGivenScheduleDate.isBefore(localSavedScheduleDate)
-                                                && localSavedDueDate.isBefore(localGivenDueDate);
+                                                && localSavedDueDate.isBefore(localGivenDueDate)
+                                                && !localGivenScheduleDate.isAfter(localSavedDueDate)
+                                                && !localGivenDueDate.isBefore(localSavedScheduleDate);
                                     }
                                     return false;
                                 }
