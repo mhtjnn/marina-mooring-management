@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.user;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,6 +69,7 @@ public class UserController extends GlobalExceptionHandler {
     )
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "auth")
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchUsers(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -106,6 +109,7 @@ public class UserController extends GlobalExceptionHandler {
     )
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "auth")
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchTechnicians(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -155,6 +159,7 @@ public class UserController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveUser(
             @Parameter(description = "User to save", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto user,
             final HttpServletRequest request
@@ -195,6 +200,7 @@ public class UserController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse updateUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer userId,
             @Parameter(description = "Fields to update in the user", schema = @Schema(implementation = UserRequestDto.class)) final @Valid @RequestBody UserRequestDto userRequestDto,
@@ -235,6 +241,7 @@ public class UserController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteUser(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("userId") Integer userId,
             @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,

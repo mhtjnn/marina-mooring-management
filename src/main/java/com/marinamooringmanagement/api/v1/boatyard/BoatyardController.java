@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.boatyard;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.BoatyardDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +59,7 @@ public class BoatyardController extends GlobalExceptionHandler {
                     )
             }
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveBoatyard(
             @Valid @RequestBody BoatyardRequestDto boatYardRequestDto,
             final HttpServletRequest request
@@ -91,6 +94,7 @@ public class BoatyardController extends GlobalExceptionHandler {
                     )
             }
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchBoatyards(
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -133,6 +137,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     @GetMapping(value = "/fetchMooringsWithBoatyard/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchMooringsWithBoatyard(
             @PathVariable("id") final Integer id,
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
@@ -158,6 +163,7 @@ public class BoatyardController extends GlobalExceptionHandler {
      */
     @GetMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BoatyardDto getBoatyard(@PathVariable(value = "id") Integer id) {
         return this.boatyardService.getbyId(id);
     }
@@ -187,6 +193,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Transactional
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteBoatyard(
             @PathVariable(value = "id") Integer id,
             final HttpServletRequest request
@@ -219,8 +226,9 @@ public class BoatyardController extends GlobalExceptionHandler {
                     )
             }
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse updateBoatyard(
-            @PathVariable(value = "id", required = true) Integer id,
+            @PathVariable(value = "id") Integer id,
             @Valid @RequestBody BoatyardRequestDto boatYardRequestDto,
             final HttpServletRequest request
     ) {

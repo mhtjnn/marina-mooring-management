@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.customer;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.CustomerDto;
 import com.marinamooringmanagement.model.entity.Base;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,6 +69,7 @@ public class CustomerController extends GlobalExceptionHandler {
     )
     @PostMapping(value = "/",
             produces = {"application/json"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveCustomer(
             final @Valid @RequestBody CustomerRequestDto customerRequestDto,
             final HttpServletRequest request
@@ -104,6 +107,7 @@ public class CustomerController extends GlobalExceptionHandler {
     @GetMapping(value = "/",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchCustomers(
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -148,6 +152,7 @@ public class CustomerController extends GlobalExceptionHandler {
     @GetMapping(value = "/fetchCustomerWithMoorings/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchCustomerWithMoorings(
             @PathVariable("id") final Integer customerId,
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
@@ -174,6 +179,7 @@ public class CustomerController extends GlobalExceptionHandler {
     @GetMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public CustomerDto getCustomer(@PathVariable(value = "id") Integer id) {
         return this.customerService.getById(id);
     }
@@ -203,6 +209,7 @@ public class CustomerController extends GlobalExceptionHandler {
     @PutMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse updateCustomer(
             @PathVariable(value = "id", required = true) Integer id,
             @Valid @RequestBody CustomerRequestDto customerRequestDto,
@@ -238,6 +245,7 @@ public class CustomerController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteCustomer(
             @PathVariable(value = "id") Integer id,
             final HttpServletRequest request

@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.mooring;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,6 +64,7 @@ public class MooringController extends GlobalExceptionHandler {
             method = RequestMethod.GET,
             produces = {"application/json"}
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchMoorings(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -105,6 +108,7 @@ public class MooringController extends GlobalExceptionHandler {
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveMooring(
             @Parameter(description = "Properties of a mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto,
             final HttpServletRequest request
@@ -139,6 +143,7 @@ public class MooringController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse updateMooring(
             @Parameter(description = "Fields to update in the mooring", schema = @Schema(implementation = MooringRequestDto.class)) final @Valid @RequestBody MooringRequestDto dto,
             @Parameter(description = "ID of the mooring to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer mooringId,
@@ -173,6 +178,7 @@ public class MooringController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteMooring(
             @Parameter(description = "Id of the mooring to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request

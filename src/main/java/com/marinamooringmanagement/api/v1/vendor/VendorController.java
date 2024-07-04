@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.vendor;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +62,7 @@ public class VendorController extends GlobalExceptionHandler {
     @RequestMapping(value = "/",
             method = RequestMethod.GET,
             produces = {"application/json", "application/xml"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchVendors(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer page,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer size,
@@ -103,6 +106,7 @@ public class VendorController extends GlobalExceptionHandler {
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json", "application/xml"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveVendor(
             @Parameter(description = "Vendor to save in the database", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto,
             final HttpServletRequest request
@@ -137,6 +141,7 @@ public class VendorController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json", "application/xml"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteVendor(
             @Parameter(description = "Vendor ID to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId,
             final HttpServletRequest request
@@ -171,6 +176,7 @@ public class VendorController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json", "application/xml"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse updateVendor(
             @Parameter(description = "Fields to update", schema = @Schema(implementation = VendorRequestDto.class)) final @Valid @RequestBody VendorRequestDto requestDto,
             @Parameter(description = "Vendor ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer vendorId,
@@ -199,6 +205,7 @@ public class VendorController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.GET,
             produces = {"application/json", "application/xml"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse fetchVendorById(
             final @PathVariable("id") Integer vendorId,
             final HttpServletRequest request

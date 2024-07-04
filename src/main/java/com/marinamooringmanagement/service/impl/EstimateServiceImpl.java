@@ -96,7 +96,7 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            authorizationUtil.checkAuthority(customerOwnerId);
+            authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
 
             Specification<Estimate> spec = new Specification<Estimate>() {
                 @Override
@@ -152,7 +152,7 @@ public class EstimateServiceImpl implements EstimateService {
                     .collect(Collectors.toList());
 
             response.setMessage("All estimates fetched successfully.");
-            response.setTotalSize(estimateRepository.count());
+            response.setTotalSize(estimateRepository.findAll(spec).size());
             response.setCurrentSize(estimateResponseDtoList.size());
             response.setStatus(HttpStatus.OK.value());
             response.setContent(estimateResponseDtoList);

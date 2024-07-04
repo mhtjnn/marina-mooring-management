@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.workOrder;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +57,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -94,6 +97,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(
             value = "/fetchOpenWorkOrders/{technicianId}",
             method = RequestMethod.GET,
@@ -135,6 +139,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(
             value = "/fetchAllOpenWorkOrdersAndMooringDueForService",
             method = RequestMethod.GET,
@@ -174,8 +179,8 @@ public class WorkOrderController extends GlobalExceptionHandler {
                             responseCode = "400"
                     )
             }
-
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(
             value = "/fetchCloseWorkOrders/{technicianId}",
             method = RequestMethod.GET,
@@ -223,6 +228,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
@@ -257,10 +263,11 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})
-    public BasicRestResponse updateMooring(
+    public BasicRestResponse updateWorkOrder(
             @Parameter(description = "Fields to update in the work order", schema = @Schema(implementation = WorkOrderRequestDto.class)) final @Valid @RequestBody WorkOrderRequestDto workOrderRequestDto,
             @Parameter(description = "ID of the work order to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer workOrderId,
             final HttpServletRequest request
@@ -291,10 +298,11 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json"})
-    public BasicRestResponse deleteMooring(
+    public BasicRestResponse deleteWorkOrder(
             @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request
     ) {

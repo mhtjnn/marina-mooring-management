@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.estimate;
 
+import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.EstimateRequestDto;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +56,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -99,6 +102,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
@@ -133,6 +137,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})
@@ -167,6 +172,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json"})
@@ -194,6 +200,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     @RequestMapping(value = "/convertEstimateToWorkOrder/{id}",
             method = RequestMethod.GET,
             produces = {"application/json"})
