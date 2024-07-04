@@ -5,17 +5,11 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
-import com.marinamooringmanagement.model.entity.Mooring;
-import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.model.entity.Estimate;
-import com.marinamooringmanagement.model.entity.WorkOrderStatus;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.EstimateRequestDto;
 import com.marinamooringmanagement.model.response.*;
-import com.marinamooringmanagement.repositories.MooringRepository;
-import com.marinamooringmanagement.repositories.UserRepository;
-import com.marinamooringmanagement.repositories.EstimateRepository;
-import com.marinamooringmanagement.repositories.WorkOrderStatusRepository;
+import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.EstimateService;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -33,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -57,7 +52,7 @@ public class EstimateServiceImpl implements EstimateService {
     private EstimateRepository estimateRepository;
 
     @Autowired
-    private EstimateMapper workOrderMapper;
+    private EstimateMapper estimateMapper;
 
     @Autowired
     private MooringMapper mooringMapper;
@@ -82,6 +77,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Autowired
     private WorkOrderStatusMapper workOrderStatusMapper;
+
+    @Autowired
+    private WorkOrderRepository workOrderRepository;
 
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
@@ -128,7 +126,7 @@ public class EstimateServiceImpl implements EstimateService {
                     .getContent()
                     .stream()
                     .map(workOrder -> {
-                        EstimateResponseDto workOrderResponseDto = workOrderMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), workOrder);
+                        EstimateResponseDto workOrderResponseDto = estimateMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), workOrder);
                         if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
                         if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
                         if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
@@ -253,6 +251,60 @@ public class EstimateServiceImpl implements EstimateService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse convertEstimateToWorkOrder(final Integer id, final HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final Estimate estimate = estimateRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No estimate found with the given id: %1$s", id)));
+
+            final WorkOrder workOrder = estimateMapper.mapToWorkOrder(WorkOrder.builder().build(), estimate);
+            workOrder.setCreationDate(new Date(System.currentTimeMillis()));
+            workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+            if(null != estimate.getTechnicianUser()) {
+                workOrder.setTechnicianUser(estimate.getTechnicianUser());
+            } else {
+                throw new RuntimeException(String.format("No technician found for this estimate"));
+            }
+
+            if(null != estimate.getMooring()) {
+                workOrder.setMooring(estimate.getMooring());
+            } else {
+                throw new RuntimeException(String.format("No mooring found for this estimate"));
+            }
+
+            if(null != estimate.getCustomerOwnerUser()) {
+                if(!user.getId().equals(estimate.getCustomerOwnerUser().getId())) throw new RuntimeException(String.format("Estimate with the id: %1$s is associated with other customer owner", estimate.getId()));
+                workOrder.setCustomerOwnerUser(estimate.getCustomerOwnerUser());
+            } else {
+                throw new RuntimeException(String.format("No customer owner found for this estimate"));
+            }
+
+            if(null != estimate.getWorkOrderStatus()) {
+                workOrder.setWorkOrderStatus(estimate.getWorkOrderStatus());
+            } else {
+                throw new RuntimeException(String.format("No status found for this estimate"));
+            }
+
+            Integer estimateId = estimate.getId();
+            estimateRepository.delete(estimate);
+            WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+            response.setMessage(String.format("Estimate with the id: %1$s is successfully converted to work order with id: %2$s", estimateId, savedWorkOrder.getId()));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return response;
+    }
+
     private void performSave(final EstimateRequestDto estimateRequestDto, final Estimate estimate, final Integer estimateId, final HttpServletRequest request) {
         try {
             if(null == estimateId) estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -262,7 +314,7 @@ public class EstimateServiceImpl implements EstimateService {
 
             estimate.setCustomerOwnerUser(user);
 
-            workOrderMapper.mapToEstimate(estimate, estimateRequestDto);
+            estimateMapper.mapToEstimate(estimate, estimateRequestDto);
 
             if(null != estimateRequestDto.getDueDate()) {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");

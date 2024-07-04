@@ -2,6 +2,7 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.EstimateDto;
 import com.marinamooringmanagement.model.entity.Estimate;
+import com.marinamooringmanagement.model.entity.WorkOrder;
 import com.marinamooringmanagement.model.request.EstimateRequestDto;
 import com.marinamooringmanagement.model.response.EstimateResponseDto;
 import org.mapstruct.Mapper;
@@ -42,5 +43,9 @@ public interface EstimateMapper {
     @Mapping(target = "scheduledDate", ignore = true)
     EstimateResponseDto mapToEstimateResponseDto(@MappingTarget EstimateResponseDto estimateResponseDto, Estimate estimate);
 
-
+    @Mapping(target = "mooring", ignore = true)
+    @Mapping(target = "technicianUser", ignore = true)
+    @Mapping(target = "workOrderStatus", ignore = true)
+    @Mapping(target = "customerOwnerUser", ignore = true)
+    WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, Estimate estimate);
 }

@@ -136,7 +136,7 @@ public class EstimateController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})
-    public BasicRestResponse updateMooring(
+    public BasicRestResponse updateEstimate(
             @Parameter(description = "Fields to update in the work order", schema = @Schema(implementation = EstimateRequestDto.class)) final @Valid @RequestBody EstimateRequestDto estimateRequestDto,
             @Parameter(description = "ID of the work order to be updated", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer estimateId,
             final HttpServletRequest request
@@ -151,8 +151,8 @@ public class EstimateController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete estimates from the database",
-            description = "API to delete estimates from the database",
+            tags = "Delete estimate from the database",
+            description = "API to delete estimate from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -170,11 +170,38 @@ public class EstimateController extends GlobalExceptionHandler {
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json"})
-    public BasicRestResponse deleteMooring(
+    public BasicRestResponse deleteEstimate(
             @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request
     ) {
         return estimateService.deleteEstimate(id, request);
+    }
+
+    @Operation(
+            tags = "Convert estimate to work order from the database",
+            description = "API to convert estimate to work order from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(value = "/convertEstimateToWorkOrder/{id}",
+            method = RequestMethod.GET,
+            produces = {"application/json"})
+    public BasicRestResponse convertEstimateToWorkOrder(
+            @Parameter(description = "Id of the work order to be converted to work order", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return estimateService.convertEstimateToWorkOrder(id, request);
     }
 
 

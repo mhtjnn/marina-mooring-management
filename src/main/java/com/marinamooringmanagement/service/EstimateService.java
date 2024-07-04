@@ -14,4 +14,6 @@ public interface EstimateService {
     BasicRestResponse updateEstimate(final EstimateRequestDto workOrderRequestDto, final Integer workOrderId, final HttpServletRequest request);
 
     BasicRestResponse deleteEstimate(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse convertEstimateToWorkOrder(final Integer id, final HttpServletRequest request);
 }
