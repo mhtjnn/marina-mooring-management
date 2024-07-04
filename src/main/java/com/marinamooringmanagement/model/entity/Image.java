@@ -19,10 +19,10 @@ public class Image extends Base{
     private Integer id;
 
     @Column(name = "image_name")
-    private String name;
+    private String imageName;
 
     @Lob
-    @Column(name = "image_data", length = 10000)
+    @Column(name = "image_data")
     private byte[] imageData;
 
 }

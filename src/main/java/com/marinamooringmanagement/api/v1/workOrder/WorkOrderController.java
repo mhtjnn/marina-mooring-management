@@ -119,8 +119,8 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch all open work orders from the database",
-            description = "API to fetch all open work orders from the database",
+            tags = "Fetch fetch all open work orders and mooring due for service from the database",
+            description = "API to fetch all open work orders and mooring due for service from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

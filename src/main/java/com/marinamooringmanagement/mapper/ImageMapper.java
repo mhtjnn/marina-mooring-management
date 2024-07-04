@@ -2,7 +2,9 @@ package com.marinamooringmanagement.mapper;
 
 import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.entity.Image;
+import com.marinamooringmanagement.model.request.ImageRequestDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -13,4 +15,6 @@ public interface ImageMapper {
 
     void toEntity(@MappingTarget Image image, ImageDto imageDto);
 
+    @Mapping(target = "imageData", ignore = true)
+    Image toEntity(@MappingTarget Image image, ImageRequestDto imageDto);
 }

@@ -9,6 +9,7 @@ import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
+import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
@@ -462,15 +463,22 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
 
-            if(null != customerRequestDto.getEncodedImages() && !customerRequestDto.getEncodedImages().isEmpty()) {
+            if(null != customerRequestDto.getImageRequestDtoList() && !customerRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
                 if(null != customer.getImageList() && !customer.getImageList().isEmpty()) imageList = customer.getImageList();
-                for(String endcodedImageString: customerRequestDto.getEncodedImages()) {
-                    Image image = Image.builder().build();
-                    image.setImageData(imageUtils.validateEncodedString(endcodedImageString));
+                Integer imageNumber = 1;
+                for(ImageRequestDto imageRequestDto: customerRequestDto.getImageRequestDtoList()) {
+                    Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
+
+                    if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
+                    if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
+
+                    image.setImageData(imageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
+
+                    imageNumber++;
                 }
 
                 customer.setImageList(imageList);
