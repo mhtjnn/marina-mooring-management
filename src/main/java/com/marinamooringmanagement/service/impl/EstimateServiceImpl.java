@@ -88,6 +88,7 @@ public class EstimateServiceImpl implements EstimateService {
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
     @Override
+    @Transactional
     public BasicRestResponse fetchEstimates(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -95,6 +96,7 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            authorizationUtil.checkAuthority(customerOwnerId);
 
             Specification<Estimate> spec = new Specification<Estimate>() {
                 @Override

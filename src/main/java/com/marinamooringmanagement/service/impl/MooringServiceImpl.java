@@ -350,7 +350,7 @@ public class MooringServiceImpl implements MooringService {
                         .toLocalDate();
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", localDate, currentDate));
-                mooring.setInstallBottomChainDate(installTopChainDate);
+                mooring.setInstallTopChainDate(installTopChainDate);
             } else {
                 if(null == id) throw new RuntimeException("Install top chain date cannot be null during mooring save");
             }
@@ -362,7 +362,7 @@ public class MooringServiceImpl implements MooringService {
                         .toLocalDate();
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
-                mooring.setInstallBottomChainDate(conditionOfEyeDate);
+                mooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
             } else {
                 if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
             }
