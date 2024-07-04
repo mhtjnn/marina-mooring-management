@@ -86,5 +86,6 @@ public interface MooringMapper {
     @Mapping(target = "installTopChainDate", ignore = true)
     @Mapping(target = "installConditionOfEyeDate", ignore = true)
     @Mapping(target = "mooringDueServiceStatusDto", ignore = true)
+    @Mapping(target = "mooringServiceDate", ignore = true)
     MooringDueServiceResponseDto mapToMooringDueServiceResponseDto(@MappingTarget MooringDueServiceResponseDto dto, MooringResponseDto mooringResponseDto);
 }

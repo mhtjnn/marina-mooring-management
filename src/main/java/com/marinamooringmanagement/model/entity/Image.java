@@ -18,6 +18,9 @@ public class Image extends Base{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "image_name")
+    private String name;
+
     @Lob
     @Column(name = "image_data", length = 10000)
     private byte[] imageData;

@@ -411,7 +411,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-    @Transactional
+//    @Transactional
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id, final HttpServletRequest request) {
 
         Customer savedCustomer = null;

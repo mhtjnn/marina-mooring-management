@@ -4,7 +4,6 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
-import com.marinamooringmanagement.model.dto.MooringDueServiceStatusDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
@@ -121,18 +120,6 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private WorkOrderRepository workOrderRepository;
-
-    @Autowired
-    private MooringDueServiceStatusRepository mooringDueServiceStatusRepository;
-
-    @Autowired
-    private MooringDueServiceStatusMapper mooringDueServiceStatusMapper;
-
-    @Autowired
-    private WorkOrderServiceImpl workOrderService;
-
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -202,77 +189,6 @@ public class MooringServiceImpl implements MooringService {
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             throw e;
-        }
-        return response;
-    }
-
-    @Override
-    public BasicRestResponse fetchMooringsDueForService(final HttpServletRequest request) {
-        BasicRestResponse response = BasicRestResponse.builder().build();
-        response.setTime(new Timestamp(System.currentTimeMillis()));
-        try {
-
-            List<WorkOrderResponseDto> workOrderResponseDtoList = (List<WorkOrderResponseDto>) workOrderService.fetchWorkOrders(BaseSearchRequest.builder().pageNumber(0).sortBy("id").sortDir("asc").pageSize(99999).build(), "", request).getContent();
-            HashMap<String, MooringDueServiceResponseDto> mooringDueServiceResponseDtoHashMap = new HashMap<>();
-
-            for(WorkOrderResponseDto workOrderResponseDto: workOrderResponseDtoList) {
-                if(null == workOrderResponseDto.getMooringResponseDto()) throw new RuntimeException(String.format("No mooring found for the work order with the id: %1$s", workOrderResponseDto.getId()));
-                MooringDueServiceResponseDto mooringDueServiceResponseDto = MooringDueServiceResponseDto.builder().build();
-
-                if(null == workOrderResponseDto.getCustomerResponseDto()) throw new RuntimeException(String.format("No customer found for the work order with the id: %1$s", workOrderResponseDto.getId()));
-
-                final MooringResponseDto mooringResponseDto = workOrderResponseDto.getMooringResponseDto();
-                final CustomerResponseDto customerResponseDto = workOrderResponseDto.getCustomerResponseDto();
-
-                mooringMapper.mapToMooringDueServiceResponseDto(mooringDueServiceResponseDto, mooringResponseDto);
-
-                mooringDueServiceResponseDto.setCustomerResponseDto(customerResponseDto);
-
-                Optional<MooringDueServiceStatus> optionalMooringDueServiceStatus;
-                final MooringDueServiceStatus mooringDueServiceStatus;
-                final MooringDueServiceStatusDto mooringDueServiceStatusDto;
-                if(workOrderResponseDto.getWorkOrderStatusDto().getStatus().equals(AppConstants.WorkOrderStatusConstants.CLOSE)) {
-                    optionalMooringDueServiceStatus = mooringDueServiceStatusRepository.findByStatus(AppConstants.MooringDueServiceStatusConstants.COMPLETE);
-                    if(optionalMooringDueServiceStatus.isEmpty()) throw new RuntimeException(String.format("No mooring due for service status found with the status as complete"));
-
-                    mooringDueServiceStatus = optionalMooringDueServiceStatus.get();
-                    mooringDueServiceStatusDto = MooringDueServiceStatusDto.builder().build();
-                    mooringDueServiceStatusMapper.toDto(mooringDueServiceStatusDto, mooringDueServiceStatus);
-
-                    mooringDueServiceResponseDto.setMooringDueServiceStatusDto(mooringDueServiceStatusDto);
-                } else {
-                    optionalMooringDueServiceStatus = mooringDueServiceStatusRepository.findByStatus(AppConstants.MooringDueServiceStatusConstants.PENDING);
-                    if(optionalMooringDueServiceStatus.isEmpty()) throw new RuntimeException(String.format("No mooring due for service status found with the status as pending"));
-
-                    mooringDueServiceStatus = optionalMooringDueServiceStatus.get();
-                    mooringDueServiceStatusDto = MooringDueServiceStatusDto.builder().build();
-                    mooringDueServiceStatusMapper.toDto(mooringDueServiceStatusDto, mooringDueServiceStatus);
-
-                    mooringDueServiceResponseDto.setMooringDueServiceStatusDto(mooringDueServiceStatusDto);
-                }
-
-                if(mooringDueServiceResponseDtoHashMap.containsKey(mooringDueServiceResponseDto.getMooringNumber())) {
-                    MooringDueServiceResponseDto mooringDueServiceResponseDtoFromMap = mooringDueServiceResponseDtoHashMap.get(mooringDueServiceResponseDto.getMooringNumber());
-
-                    if(!mooringDueServiceStatusDto.getStatus().equals(mooringDueServiceResponseDtoFromMap.getMooringDueServiceStatusDto().getStatus())) {
-                        mooringDueServiceResponseDtoFromMap.setMooringDueServiceStatusDto(mooringDueServiceStatusDto);
-                    }
-                } else {
-                    mooringDueServiceResponseDtoHashMap.put(mooringDueServiceResponseDto.getMooringNumber(), mooringDueServiceResponseDto);
-                }
-
-                Collection<MooringDueServiceResponseDto> mooringDueServiceResponseDtoCollection = mooringDueServiceResponseDtoHashMap.values();
-                List<MooringDueServiceResponseDto> mooringDueServiceResponseDtoList = new ArrayList<>(mooringDueServiceResponseDtoCollection);
-
-                response.setContent(mooringDueServiceResponseDtoList);
-                response.setMessage("Moorings due for service fetched successfully!!!");
-                response.setCurrentSize(mooringDueServiceResponseDtoList.size());
-                response.setTotalSize(mooringDueServiceResponseDtoList.size());
-                response.setStatus(HttpStatus.OK.value());
-            }
-        } catch (Exception e) {
-            response.setMessage(e.getLocalizedMessage());
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
     }

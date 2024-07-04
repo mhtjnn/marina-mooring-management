@@ -114,4 +114,6 @@ public class MooringDueServiceResponseDto {
     private BoatyardResponseDto boatyardResponseDto;
 
     private MooringDueServiceStatusDto mooringDueServiceStatusDto;
+
+    private String mooringServiceDate;
 }

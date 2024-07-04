@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.model.dto;
+package com.marinamooringmanagement.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,14 +7,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class ImageDto {
-
-    private Integer id;
+@NoArgsConstructor
+public class ImageRequestDto {
 
     private String name;
 
-    private byte[] imageData;
+    private String imageData;
 
 }
