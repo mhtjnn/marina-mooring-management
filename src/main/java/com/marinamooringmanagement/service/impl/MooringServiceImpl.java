@@ -304,7 +304,6 @@ public class MooringServiceImpl implements MooringService {
      * @param mooring           the mooring object to be saved or updated
      * @param id                the mooring ID (null for new moorings)
      */
-    @Transactional
     public Mooring performSave(final MooringRequestDto mooringRequestDto, final Mooring mooring, final Integer id, final HttpServletRequest request) {
         try {
             log.info("performSave() function called");

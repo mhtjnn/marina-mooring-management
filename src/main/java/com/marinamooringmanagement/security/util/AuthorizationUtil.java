@@ -11,6 +11,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,27 @@ public class AuthorizationUtil {
 
     @Autowired
     private VendorRepository vendorRepository;
+
+
+    public User checkAuthorityForTechnician(Integer customerOwnerId) {
+        final String loggedInRole = loggedInUserUtil.getLoggedInUserRole();
+        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+        User user = null;
+
+        if(loggedInRole.equals(AppConstants.Role.ADMINISTRATOR)) {
+            user = checksForAdministrator(customerOwnerId);
+        } else if(loggedInRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
+            user = checksForCustomerOwner(customerOwnerId);
+        } else if(loggedInRole.equals(AppConstants.Role.TECHNICIAN)) {
+            user = userRepository.findById(loggedInUserId)
+                    .orElseThrow(() -> new RuntimeException(String.format("No user found with the given id: %1$s", loggedInUserId)));
+            if(!StringUtils.equals(user.getRole().getName(), AppConstants.Role.TECHNICIAN))
+                throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", loggedInUserId));
+        } else {
+            throw new RuntimeException(String.format("Not authorized"));
+        }
+        return user;
+    }
 
     public User checkAuthority(final Integer customerOwnerId) {
         final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
@@ -233,9 +255,8 @@ public class AuthorizationUtil {
             throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
     }
 
-    public User checkForTechnician(final Integer technicianId, final HttpServletRequest request) {
+    public User checkForTechnician(final Integer technicianId, final Integer customerOwnerId) {
 
-        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
         final User user = checkAuthority(customerOwnerId);
 
         Optional<User> optionalTechnicianUser = userRepository.findById(technicianId);

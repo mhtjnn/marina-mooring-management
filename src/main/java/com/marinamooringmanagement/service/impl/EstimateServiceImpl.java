@@ -12,6 +12,7 @@ import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.EstimateService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -81,6 +82,9 @@ public class EstimateServiceImpl implements EstimateService {
     @Autowired
     private WorkOrderRepository workOrderRepository;
 
+    @Autowired
+    private DateUtil dateUtil;
+
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
     @Override
@@ -134,25 +138,11 @@ public class EstimateServiceImpl implements EstimateService {
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
                         if(null != workOrder.getDueDate()) {
-                            LocalDate dueDate = workOrder.getDueDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String dueDateStr = dueDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setDueDate(dueDateStr);
+                            workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
                         }
 
                         if(null != workOrder.getScheduledDate()) {
-                            LocalDate scheduledDate = workOrder.getScheduledDate()
-                                    .toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate();
-
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            String scheduleDateStr = scheduledDate.format(dateTimeFormatter);
-                            workOrderResponseDto.setScheduledDate(scheduleDateStr);
+                            workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
                         }
 
                         return workOrderResponseDto;

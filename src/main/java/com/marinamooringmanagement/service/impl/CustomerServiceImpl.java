@@ -412,7 +412,6 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
-//    @Transactional
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id, final HttpServletRequest request) {
 
         Customer savedCustomer = null;
@@ -488,7 +487,7 @@ public class CustomerServiceImpl implements CustomerService {
                 String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(customerRequestDto.getPhone());
 
                 Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNumber);
-                if(optionalCustomer.isPresent() && null != customer.getId() && null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId())) throw new RuntimeException(String.format("Customer already present with the given phone number: %1$s", phoneNumber));
+                if(optionalCustomer.isPresent() && null != customer.getId() && null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId())) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
 
                 customer.setPhone(phoneNumber);
 

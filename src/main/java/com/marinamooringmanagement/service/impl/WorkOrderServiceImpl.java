@@ -275,7 +275,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, customerOwnerId);
 
             Date filterFromDate;
             Date filterToDate;
@@ -421,7 +422,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, request);
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User technicianUser = authorizationUtil.checkForTechnician(technicianId, customerOwnerId);
 
             Date filterFromDate;
             Date filterToDate;

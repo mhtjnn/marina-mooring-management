@@ -198,7 +198,7 @@ public class EstimateController extends GlobalExceptionHandler {
             method = RequestMethod.GET,
             produces = {"application/json"})
     public BasicRestResponse convertEstimateToWorkOrder(
-            @Parameter(description = "Id of the work order to be converted to work order", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
+            @Parameter(description = "Id of the estimate to be converted to work order", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
             final HttpServletRequest request
     ) {
         return estimateService.convertEstimateToWorkOrder(id, request);
