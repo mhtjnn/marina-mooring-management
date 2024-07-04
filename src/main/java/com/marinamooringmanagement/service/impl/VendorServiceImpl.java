@@ -364,7 +364,9 @@ public class VendorServiceImpl implements VendorService {
                 String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getCompanyPhoneNumber());
 
                 Optional<Vendor> optionalVendor = vendorRepository.findByCompanyPhoneNumber(phoneNumber);
-                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                if(optionalVendor.isPresent()) {
+                    if(null == vendor.getId() || (null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                }
 
                 vendor.setCompanyPhoneNumber(phoneNumber);
 
@@ -376,7 +378,9 @@ public class VendorServiceImpl implements VendorService {
                 String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getSalesRepPhoneNumber());
 
                 Optional<Vendor> optionalVendor = vendorRepository.findBySalesRepPhoneNumber(phoneNumber);
-                if(optionalVendor.isPresent() && null != vendor.getId() && null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId())) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                if(optionalVendor.isPresent()) {
+                    if(null == vendor.getId() || (null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                }
 
                 vendor.setSalesRepPhoneNumber(phoneNumber);
 

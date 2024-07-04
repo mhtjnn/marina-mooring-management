@@ -487,7 +487,9 @@ public class CustomerServiceImpl implements CustomerService {
                 String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(customerRequestDto.getPhone());
 
                 Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNumber);
-                if(optionalCustomer.isPresent() && null != customer.getId() && null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId())) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                if(optionalCustomer.isPresent()) {
+                    if(null == customer.getId() || (null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
+                }
 
                 customer.setPhone(phoneNumber);
 
