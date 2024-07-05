@@ -164,17 +164,17 @@ public class EstimateServiceImpl implements EstimateService {
     }
 
     @Override
-    public BasicRestResponse saveEstimate(EstimateRequestDto workOrderRequestDto, HttpServletRequest request) {
+    public BasicRestResponse saveEstimate(EstimateRequestDto estimateRequestDto, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("API called to save the estimate in the database");
             final Estimate workOrder = Estimate.builder().build();
 
-            if(null == workOrderRequestDto.getTechnicianId()) throw new RuntimeException("Technician Id cannot be null");
-            if(null == workOrderRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
+            if(null == estimateRequestDto.getTechnicianId()) throw new RuntimeException("Technician Id cannot be null");
+            if(null == estimateRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
 
-            performSave(workOrderRequestDto, workOrder, null, request);
+            performSave(estimateRequestDto, workOrder, null, request);
 
             response.setMessage("Estimate saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
@@ -187,7 +187,7 @@ public class EstimateServiceImpl implements EstimateService {
     }
 
     @Override
-    public BasicRestResponse updateEstimate(EstimateRequestDto workOrderRequestDto, Integer estimateId, HttpServletRequest request) {
+    public BasicRestResponse updateEstimate(EstimateRequestDto estimateRequestDto, Integer estimateId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -197,7 +197,7 @@ public class EstimateServiceImpl implements EstimateService {
             }
             Optional<Estimate> optionalEstimate = estimateRepository.findById(estimateId);
             final Estimate workOrder = optionalEstimate.orElseThrow(() -> new ResourceNotFoundException(String.format("Estimate not found with id: %1$s", estimateId)));
-            performSave(workOrderRequestDto, workOrder, estimateId, request);
+            performSave(estimateRequestDto, workOrder, estimateId, request);
             response.setMessage("Estimate updated successfully");
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -308,24 +308,89 @@ public class EstimateServiceImpl implements EstimateService {
 
             estimateMapper.mapToEstimate(estimate, estimateRequestDto);
 
-            if(null != estimateRequestDto.getDueDate()) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                LocalDate localDate = LocalDate.parse(estimateRequestDto.getDueDate(), dateTimeFormatter);
-                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            final LocalDate currentDate = LocalDate.now();
 
-                estimate.setDueDate(date);
+            if (null == estimateRequestDto.getScheduledDate() && null == estimateRequestDto.getDueDate()) {
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("Due date and Schedule date cannot be null during save"));
+            } else if (null == estimateRequestDto.getDueDate()) {
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("Due date cannot be null during saved"));
+                final Date savedScheduleDate = estimate.getScheduledDate();
+                final Date givenScheduleDate = dateUtil.stringToDate(estimateRequestDto.getScheduledDate());
+
+                LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate localSavedDueDate = estimate.getDueDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                    throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                if (localGivenScheduleDate.isAfter(localSavedDueDate))
+                    throw new RuntimeException(String.format("Given schedule date: %1$s is after saved due date: %2$s", localGivenScheduleDate, localSavedDueDate));
+
+                estimate.setScheduledDate(givenScheduleDate);
+            } else if (null == estimateRequestDto.getScheduledDate()) {
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("Schedule date cannot be null during save"));
+                final Date givenDueDate = dateUtil.stringToDate(estimateRequestDto.getDueDate());
+
+                LocalDate localGivenDueDate = givenDueDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                LocalDate localSavedScheduleDate = estimate.getScheduledDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+
+                if (localGivenDueDate.isBefore(localSavedScheduleDate))
+                    throw new RuntimeException(String.format("Given due date: %1$s is before saved schedule date: %2$s", localGivenDueDate, localSavedScheduleDate));
+                estimate.setDueDate(givenDueDate);
             } else {
-                if(estimateId == null) throw new RuntimeException(String.format("Due date cannot be null"));
-            }
 
-            if(null != estimateRequestDto.getScheduledDate()) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                LocalDate localDate = LocalDate.parse(estimateRequestDto.getScheduledDate(), dateTimeFormatter);
-                Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                final Date givenScheduleDate = dateUtil.stringToDate(estimateRequestDto.getScheduledDate());
+                final Date givenDueDate = dateUtil.stringToDate(estimateRequestDto.getDueDate());
 
-                estimate.setScheduledDate(date);
-            } else {
-                if(estimateId == null) throw new RuntimeException(String.format("Due date cannot be null"));
+                if (null == estimateId) {
+                    LocalDate localScheduleDate = givenScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localDueDate = givenDueDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    if (localDueDate.isBefore(currentDate))
+                        throw new RuntimeException(String.format("Given due date: %1$s is before current date: %2$s", localDueDate, new Date(System.currentTimeMillis())));
+                    if (localScheduleDate.isBefore(currentDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is before current date: %2$s", localScheduleDate, new Date(System.currentTimeMillis())));
+                    if (localScheduleDate.isAfter(localDueDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localScheduleDate, localDueDate));
+                } else {
+
+                    final Date savedScheduleDate = estimate.getScheduledDate();
+
+                    LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localGivenDueDate = givenDueDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                    if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                    if (localGivenScheduleDate.isAfter(localGivenDueDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+                }
+
+                estimate.setScheduledDate(givenScheduleDate);
+                estimate.setDueDate(givenDueDate);
             }
 
             if(null != estimateRequestDto.getWorkOrderStatusId()) {

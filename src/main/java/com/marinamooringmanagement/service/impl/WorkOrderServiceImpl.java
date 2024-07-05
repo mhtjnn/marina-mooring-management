@@ -697,7 +697,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setImageList(imageList);
             }
 
-
             final LocalDate currentDate = LocalDate.now();
 
             if (null == workOrderRequestDto.getScheduledDate() && null == workOrderRequestDto.getDueDate()) {
