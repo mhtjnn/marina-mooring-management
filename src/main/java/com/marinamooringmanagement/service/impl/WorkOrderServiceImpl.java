@@ -619,10 +619,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     .map(workOrder -> {
 
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
-                        if (null != workOrder.getMooring())
-                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                        MooringResponseDto mooringResponseDto = MooringResponseDto.builder().build();
+                        if (null != workOrder.getMooring()) {
+                            mooringMapper.mapToMooringResponseDto(mooringResponseDto, workOrder.getMooring());
+                            if(null != workOrder.getMooring().getInstallConditionOfEyeDate()) {
+                                mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(workOrder.getMooring().getInstallConditionOfEyeDate()));
+                            }
+                            if(null != workOrder.getMooring().getInstallTopChainDate()) {
+                                mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallTopChainDate()));
+                            }
+                            if(null != workOrder.getMooring().getInstallBottomChainDate()) {
+                                mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallBottomChainDate()));
+                            }
+                            workOrderResponseDto.setMooringResponseDto(mooringResponseDto);
+                        }
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                            if(null != workOrder.getMooring().getCustomer().getFirstName()
+                            && null != workOrder.getMooring().getCustomer().getLastName()) mooringResponseDto.setCustomerName(
+                                    workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
+                            );
+                        }
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
                         if (null != workOrder.getCustomerOwnerUser())
@@ -923,6 +940,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             } else {
                 if(null == workOrderResponseDto.getDueDate()) throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrderResponseDto.getId()));
                 mooringDueServiceResponseDto.setMooringServiceDate(workOrderResponseDto.getDueDate());
+                mooringDueServiceResponseDto.setInstallBottomChainDate(workOrderResponseDto.getMooringResponseDto().getInstallBottomChainDate());
+                mooringDueServiceResponseDto.setInstallTopChainDate(workOrderResponseDto.getMooringResponseDto().getInstallTopChainDate());
+                mooringDueServiceResponseDto.setInstallConditionOfEyeDate(workOrderResponseDto.getMooringResponseDto().getInstallConditionOfEyeDate());
                 mooringDueServiceResponseDtoHashMap.put(mooringDueServiceResponseDto.getMooringNumber(), mooringDueServiceResponseDto);
             }
 

@@ -109,6 +109,8 @@ public class MooringDueServiceResponseDto {
 
     private CustomerResponseDto customerResponseDto;
 
+    private String customerName;
+
     private Integer userId;
 
     private BoatyardResponseDto boatyardResponseDto;

@@ -83,9 +83,6 @@ public interface MooringMapper {
     @Mapping(target = "customerResponseDto", ignore = true)
     @Mapping(target = "boatyardResponseDto", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "installBottomChainDate", ignore = true)
-    @Mapping(target = "installTopChainDate", ignore = true)
-    @Mapping(target = "installConditionOfEyeDate", ignore = true)
     @Mapping(target = "mooringDueServiceStatusDto", ignore = true)
     @Mapping(target = "mooringServiceDate", ignore = true)
     MooringDueServiceResponseDto mapToMooringDueServiceResponseDto(@MappingTarget MooringDueServiceResponseDto dto, MooringResponseDto mooringResponseDto);
