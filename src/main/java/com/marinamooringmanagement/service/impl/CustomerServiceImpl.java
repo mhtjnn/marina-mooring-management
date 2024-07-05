@@ -311,6 +311,9 @@ public class CustomerServiceImpl implements CustomerService {
                                     boatyardNames.add(mooring.getBoatyard().getBoatyardName());
                                 }
                             }
+                            if(null != customerResponseDto.getFirstName() && null != customerResponseDto.getLastName()) mooringResponseDto.setCustomerName(
+                                    customerResponseDto.getFirstName() + " " + customerResponseDto.getLastName()
+                            );
                             if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
                             if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                             if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
