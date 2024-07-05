@@ -49,6 +49,7 @@ public interface MooringMapper {
      * @return The mapped MooringResponseDto object.
      */
     @Mapping(target = "customerId", ignore = true)
+    @Mapping(target = "customerName", ignore = true)
     @Mapping(target = "boatyardResponseDto", ignore = true)
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "installBottomChainDate", ignore = true)

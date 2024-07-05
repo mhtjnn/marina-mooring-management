@@ -100,7 +100,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
-    @Transactional
     public BasicRestResponse fetchWorkOrders(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -184,7 +183,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional
     public BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -209,7 +207,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional
     public BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer workOrderId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));

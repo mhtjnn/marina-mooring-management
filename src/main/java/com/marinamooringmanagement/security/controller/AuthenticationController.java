@@ -10,6 +10,7 @@ import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
+import com.marinamooringmanagement.security.config.LogoutService;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.model.AuthenticationRequest;
 import com.marinamooringmanagement.security.model.AuthenticationResponse;
@@ -24,6 +25,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +84,9 @@ public class AuthenticationController extends GlobalExceptionHandler {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private LogoutService logoutService;
 
     /**
      * Endpoint to create an authentication token based on the provided credentials.
@@ -230,6 +235,40 @@ public class AuthenticationController extends GlobalExceptionHandler {
         return userService.checkEmailAndTokenValid(token);
     }
 
+
+    @Operation(
+            tags = "User Logout",
+            description = "API to logout the user",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = AuthenticationResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Forbidden",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "403"
+                    )
+            }
+    )
+    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    public BasicRestResponse sessionLogout(
+            final HttpServletRequest request
+    ) throws Exception {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            logoutService.logout(request);
+            response.setMessage("User logout successfully");
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     /**
      * Endpoint to refresh the user token.
      *
@@ -285,9 +324,9 @@ public class AuthenticationController extends GlobalExceptionHandler {
 
             Date refreshTokenExpirationTime = jwtUtil.getExpireTimeFromToken(refreshToken);
 
-            final Optional<Token> optionalRefreshTokenEntity = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
+            final List<Token> refreshTokenEntityList = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
 
-            if(optionalRefreshTokenEntity.isEmpty()) throw new ResourceNotFoundException("No token entity found with the given token");
+            if(refreshTokenEntityList.isEmpty()) throw new ResourceNotFoundException(String.format("No tokens found with the given token: %1$s", refreshToken));
 
             String newRefreshToken = refreshToken;
 

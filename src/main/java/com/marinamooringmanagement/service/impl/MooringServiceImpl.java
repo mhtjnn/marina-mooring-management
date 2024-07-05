@@ -171,6 +171,7 @@ public class MooringServiceImpl implements MooringService {
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
                         if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
                         if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));

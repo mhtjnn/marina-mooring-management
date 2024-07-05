@@ -31,8 +31,6 @@ public class SpringSecurityConfiguration{
 
     private final CustomJwtAuthenticationFilter jwtAuthFilter;
 
-    private final LogoutHandler logoutHandler;
-
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
             "/swagger/resources/**",
@@ -61,10 +59,6 @@ public class SpringSecurityConfiguration{
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .logout()
-                .logoutUrl("/api/v1/auth/logout")
-                .addLogoutHandler(logoutHandler)
-                .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
         ;
 
         return http.build();

@@ -14,17 +14,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LogoutService implements LogoutHandler {
+public class LogoutService{
 
     private final TokenRepository tokenRepository;
 
     private final JwtUtil jwtUtil;
 
-    @Override
     public void logout(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication
+            HttpServletRequest request
+
     ) {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;

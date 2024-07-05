@@ -26,7 +26,7 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
      * @param refreshToken the refresh token value to search for
      * @return an optional containing the token entity corresponding to the given refresh token value, or empty if not found
      */
-    Optional<Token> findTokenEntityByRefreshToken(String refreshToken);
+    List<Token> findTokenEntityByRefreshToken(String refreshToken);
 
     /**
      * Find a list of Token entities of a user using the ID of the user.
