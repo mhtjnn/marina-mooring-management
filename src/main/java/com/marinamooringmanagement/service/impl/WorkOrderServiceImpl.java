@@ -882,12 +882,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             if (null == workOrderResponseDto.getCustomerResponseDto())
                 throw new RuntimeException(String.format("No customer found for the work order with the id: %1$s", workOrderResponseDto.getId()));
 
+            if (null == workOrderResponseDto.getBoatyardResponseDto())
+                throw new RuntimeException(String.format("No boatyard found for the work order with the id: %1$s", workOrderResponseDto.getId()));
+
             final MooringResponseDto mooringResponseDto = workOrderResponseDto.getMooringResponseDto();
             final CustomerResponseDto customerResponseDto = workOrderResponseDto.getCustomerResponseDto();
+            final BoatyardResponseDto boatyardResponseDto = workOrderResponseDto.getBoatyardResponseDto();
 
             mooringMapper.mapToMooringDueServiceResponseDto(mooringDueServiceResponseDto, mooringResponseDto);
 
             mooringDueServiceResponseDto.setCustomerResponseDto(customerResponseDto);
+            mooringDueServiceResponseDto.setBoatyardResponseDto(boatyardResponseDto);
 
             Optional<MooringDueServiceStatus> optionalMooringDueServiceStatus;
             final MooringDueServiceStatus mooringDueServiceStatus;
