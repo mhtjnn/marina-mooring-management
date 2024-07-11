@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.api.v1.workOrder;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import static com.marinamooringmanagement.constants.AppConstants.BooleanStringConst.NO;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
 
@@ -57,7 +59,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN + " or " + Authority.FINANCE)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -69,6 +71,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Show completed work orders or not", schema = @Schema(implementation = String.class)) final @RequestParam(value = "showCompletedWorkOrders", defaultValue = NO) String showCompletedWorkOrders,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
@@ -77,7 +80,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return workOrderService.fetchWorkOrders(baseSearchRequest, searchText, request);
+        return workOrderService.fetchWorkOrders(baseSearchRequest, searchText, showCompletedWorkOrders, request);
     }
 
     @Operation(

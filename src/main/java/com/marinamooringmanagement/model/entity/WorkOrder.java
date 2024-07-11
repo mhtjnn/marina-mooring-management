@@ -29,27 +29,38 @@ public class WorkOrder extends Base{
     @Column(name = "schedule_date")
     private Date scheduledDate;
 
+    @Column(name = "completed_date")
+    private Date completedDate;
+
     @Column(name = "time")
     private Time time;
 
     @Column(name = "problem")
     private String problem;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "mooring_id")
     private Mooring mooring;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "technician_user_id")
     private User technicianUser;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @JoinColumn(name = "finance_user_id")
+    private User financeUser;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_owner_user_id")
     private User customerOwnerUser;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_status_id")
     private WorkOrderStatus workOrderStatus;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @JoinColumn(name = "work_order_pay_status_id")
+    private WorkOrderPayStatus workOrderPayStatus;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_image_id")

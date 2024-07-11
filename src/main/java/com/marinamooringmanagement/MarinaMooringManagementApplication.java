@@ -9,12 +9,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
+@EnableTransactionManagement
 public class MarinaMooringManagementApplication implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;

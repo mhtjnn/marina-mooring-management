@@ -86,6 +86,8 @@ public class AppConstants {
 
         public static final String CLOSE = "Close";
 
+        public static final String COMPLETED = "Completed";
+
     }
 
     public static class CustomerTypeConstants {
@@ -101,8 +103,23 @@ public class AppConstants {
     }
 
     public static class MooringDueServiceStatusConstants {
+
         public static final String COMPLETE = "Complete";
 
         public static final String PENDING = "Pending";
+    }
+
+    public static class BooleanStringConst {
+
+        public static final String YES = "Yes";
+
+        public static final String NO = "No";
+    }
+
+    public static class WorkOrderPayStatusConstants {
+
+        public static final String APPROVED = "Approved";
+
+        public static final String DENIED = "Denied";
     }
 }

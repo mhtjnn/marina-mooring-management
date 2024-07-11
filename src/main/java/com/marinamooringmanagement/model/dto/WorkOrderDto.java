@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.model.entity.WorkOrderPayStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,17 +23,23 @@ public class WorkOrderDto extends BaseDto{
 
     private Date scheduledDate;
 
+    private Date completedDate;
+
     private Time time;
 
     private String problem;
 
     private WorkOrderStatusDto workOrderStatusDto;
 
+    private WorkOrderPayStatusDto workOrderPayStatusDto;
+
     private MooringDto mooringDto;
 
     private UserDto customerOwnerUserDto;
 
     private UserDto technicianUserDto;
+
+    private UserDto financeUserDto;
 
     private List<ImageDto> imageDtoList;
 }

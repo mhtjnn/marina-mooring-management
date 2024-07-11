@@ -6,7 +6,7 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface WorkOrderService {
-    BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
+    BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request);
 
     BasicRestResponse saveWorkOrder(final WorkOrderRequestDto workOrderRequestDto, final HttpServletRequest request);
 

@@ -6,6 +6,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.MooringDueServiceStatusDto;
+import com.marinamooringmanagement.model.dto.WorkOrderPayStatusDto;
 import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -97,11 +98,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private MooringDueServiceStatusRepository mooringDueServiceStatusRepository;
 
+    @Autowired
+    private WorkOrderPayStatusRepository workOrderPayStatusRepository;
+
+    @Autowired
+    private WorkOrderPayStatusMapper workOrderPayStatusMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
     @Transactional
-    public BasicRestResponse fetchWorkOrders(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
+    public BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -126,6 +133,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("name")), lowerCaseSearchText)
                         ));
                     }
+
+                    if(StringUtils.equals(showCompletedWorkOrders, AppConstants.BooleanStringConst.NO))
+                        predicates.add(criteriaBuilder.notEqual(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
 
                     predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
 
@@ -157,6 +167,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if (null != workOrder.getWorkOrderStatus())
                             workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
                         if (null != workOrder.getDueDate())
                             workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
@@ -574,7 +586,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Date filterFromDate = dateUtil.stringToDate(filterDateFrom);
             final Date filterToDate = dateUtil.stringToDate(filterDateTo);
 
-            List<WorkOrderResponseDto> workOrderResponseDtoList = null;
+            List<WorkOrderResponseDto> workOrderResponseDtoList = new ArrayList<>();
+            List<WorkOrderResponseDto> openWorkOrderResponseDtoList = new ArrayList<>();
 
             if (null == filterFromDate) throw new RuntimeException(String.format("From Date cannot be null"));
             if (null == filterToDate) throw new RuntimeException(String.format("To Date cannot be null"));
@@ -589,74 +602,77 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();
 
-            workOrderResponseDtoList = workOrderRepository.findAll()
-                    .stream()
-                    .filter(
-                            workOrder -> {
-                                if (null != workOrder.getTechnicianUser()
-                                        && null != workOrder.getCustomerOwnerUser()
-                                        && null != workOrder.getWorkOrderStatus()
-                                        && null != workOrder.getWorkOrderStatus().getStatus()
-                                        && workOrder.getCustomerOwnerUser().getId().equals(user.getId())
-                                        && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
-                                        && null != workOrder.getScheduledDate()
-                                        && null != workOrder.getDueDate()) {
+            openWorkOrderResponseDtoList =
+                    workOrderRepository.findAll()
+                            .stream()
+                            .filter(
+                                    workOrder -> {
+                                        if (null != workOrder.getTechnicianUser()
+                                                && null != workOrder.getCustomerOwnerUser()
+                                                && null != workOrder.getWorkOrderStatus()
+                                                && null != workOrder.getWorkOrderStatus().getStatus()
+                                                && workOrder.getCustomerOwnerUser().getId().equals(user.getId())
+                                                && null != workOrder.getScheduledDate()
+                                                && null != workOrder.getDueDate()) {
 
-                                    LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
-                                            .atZone(ZoneId.systemDefault())
-                                            .toLocalDate();
-                                    LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
-                                            .atZone(ZoneId.systemDefault())
-                                            .toLocalDate();
+                                            LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
+                                                    .atZone(ZoneId.systemDefault())
+                                                    .toLocalDate();
+                                            LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
+                                                    .atZone(ZoneId.systemDefault())
+                                                    .toLocalDate();
 
-                                    return localSavedScheduleDate.isAfter(localGivenScheduleDate)
-                                            && localSavedDueDate.isBefore(localGivenDueDate)
-                                            && !localGivenScheduleDate.isAfter(localSavedDueDate)
-                                            && !localGivenDueDate.isBefore(localSavedScheduleDate);
+                                            return localSavedScheduleDate.isAfter(localGivenScheduleDate)
+                                                    && localSavedDueDate.isBefore(localGivenDueDate)
+                                                    && !localGivenScheduleDate.isAfter(localSavedDueDate)
+                                                    && !localGivenDueDate.isBefore(localSavedScheduleDate);
+                                        }
+                                        return false;
+                                    }
+                            )
+                            .map(workOrder -> {
+                                WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                                workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                                MooringResponseDto mooringResponseDto = MooringResponseDto.builder().build();
+                                if (null != workOrder.getMooring()) {
+                                    mooringMapper.mapToMooringResponseDto(mooringResponseDto, workOrder.getMooring());
+                                    if (null != workOrder.getMooring().getInstallConditionOfEyeDate()) {
+                                        mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(workOrder.getMooring().getInstallConditionOfEyeDate()));
+                                    }
+                                    if (null != workOrder.getMooring().getInstallTopChainDate()) {
+                                        mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallTopChainDate()));
+                                    }
+                                    if (null != workOrder.getMooring().getInstallBottomChainDate()) {
+                                        mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallBottomChainDate()));
+                                    }
+                                    workOrderResponseDto.setMooringResponseDto(mooringResponseDto);
                                 }
-                                return false;
-                            }
-                    )
-                    .map(workOrder -> {
+                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
+                                    workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                                    if (null != workOrder.getMooring().getCustomer().getFirstName()
+                                            && null != workOrder.getMooring().getCustomer().getLastName())
+                                        mooringResponseDto.setCustomerName(
+                                                workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
+                                        );
+                                }
+                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                                if (null != workOrder.getCustomerOwnerUser())
+                                    workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                                if (null != workOrder.getTechnicianUser())
+                                    workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                                if (null != workOrder.getWorkOrderStatus())
+                                    workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                                if (null != workOrder.getDueDate())
+                                    workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                                if (null != workOrder.getScheduledDate())
+                                    workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
-                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
-                        MooringResponseDto mooringResponseDto = MooringResponseDto.builder().build();
-                        if (null != workOrder.getMooring()) {
-                            mooringMapper.mapToMooringResponseDto(mooringResponseDto, workOrder.getMooring());
-                            if(null != workOrder.getMooring().getInstallConditionOfEyeDate()) {
-                                mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(workOrder.getMooring().getInstallConditionOfEyeDate()));
-                            }
-                            if(null != workOrder.getMooring().getInstallTopChainDate()) {
-                                mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallTopChainDate()));
-                            }
-                            if(null != workOrder.getMooring().getInstallBottomChainDate()) {
-                                mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallBottomChainDate()));
-                            }
-                            workOrderResponseDto.setMooringResponseDto(mooringResponseDto);
-                        }
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
-                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                            if(null != workOrder.getMooring().getCustomer().getFirstName()
-                            && null != workOrder.getMooring().getCustomer().getLastName()) mooringResponseDto.setCustomerName(
-                                    workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
-                            );
-                        }
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
-                        if (null != workOrder.getCustomerOwnerUser())
-                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
-                        if (null != workOrder.getTechnicianUser())
-                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
-                        if (null != workOrder.getWorkOrderStatus())
-                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if (null != workOrder.getDueDate())
-                            workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
-                        if (null != workOrder.getScheduledDate())
-                            workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
-
-                        return workOrderResponseDto;
-                    })
-                    .toList();
+                                workOrderResponseDtoList.add(workOrderResponseDto);
+                                return workOrderResponseDto;
+                            })
+                            .filter(workOrderResponseDto -> !StringUtils.equals(workOrderResponseDto.getWorkOrderStatusDto().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE))
+                            .collect(Collectors.toList());
 
 
             final Pageable pageable = PageRequest.of(
@@ -665,16 +681,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
             int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), workOrderResponseDtoList.size());
+            int end = Math.min((start + pageable.getPageSize()), openWorkOrderResponseDtoList.size());
 
             List<WorkOrderResponseDto> paginatedWorkOrder;
-            if (start > workOrderResponseDtoList.size()) {
+            if (start > openWorkOrderResponseDtoList.size()) {
                 paginatedWorkOrder = new ArrayList<>();
             } else {
-                paginatedWorkOrder = workOrderResponseDtoList.subList(start, end);
+                paginatedWorkOrder = openWorkOrderResponseDtoList.subList(start, end);
             }
 
-            allWorkOrdersAndMooringDueForServiceResponse.setWorkOrderResponseDtoList(paginatedWorkOrder);
+            allWorkOrdersAndMooringDueForServiceResponse.setWorkOrderResponseDtoList(openWorkOrderResponseDtoList);
             allWorkOrdersAndMooringDueForServiceResponse.setMooringDueServiceResponseDtoList(getMooringDueServiceResponseDtoList(workOrderResponseDtoList));
 
             response.setCurrentSize(paginatedWorkOrder.size());
@@ -806,6 +822,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("No work order status found with the given id: %1$s", workOrderRequestDto.getWorkOrderStatusId()));
 
                 final WorkOrderStatus workOrderStatus = optionalWorkOrderStatus.get();
+
+                if (null == workOrderId && (StringUtils.equals(workOrderStatus.getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                        || StringUtils.equals(workOrderStatus.getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)))
+                    throw new RuntimeException(String.format("New work orders cannot be saved with status as %1$s", workOrderStatus.getStatus()));
+
+                if (StringUtils.equals(workOrderStatus.getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)) {
+                    if (null != workOrder.getCompletedDate()) {
+                        if (workOrder.getCompletedDate().after(new Date()))
+                            throw new RuntimeException(String.format("Completed date was before today date: %1$s", new Date()));
+                    }
+                    workOrder.setCompletedDate(new Date());
+
+                    if(null == workOrder.getWorkOrderPayStatus()) {
+                        WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.DENIED)
+                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found for the given status", AppConstants.WorkOrderPayStatusConstants.DENIED)));
+
+                        workOrder.setWorkOrderPayStatus(workOrderPayStatus);
+                    }
+                } else {
+                    if(null != workOrder.getCompletedDate()) workOrder.setCompletedDate(null);
+                }
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {
                 if (null == workOrderId)
@@ -865,16 +902,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             workOrderRepository.save(workOrder);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());
             throw new DBOperationException(e.getMessage(), e);
         }
+
     }
 
     private List<MooringDueServiceResponseDto> getMooringDueServiceResponseDtoList(final List<WorkOrderResponseDto> workOrderResponseDtoList) {
 
         HashMap<String, MooringDueServiceResponseDto> mooringDueServiceResponseDtoHashMap = new HashMap<>();
-        for(WorkOrderResponseDto workOrderResponseDto: workOrderResponseDtoList) {
+        for (WorkOrderResponseDto workOrderResponseDto : workOrderResponseDtoList) {
             if (null == workOrderResponseDto.getMooringResponseDto())
                 throw new RuntimeException(String.format("No mooring found for the work order with the id: %1$s", workOrderResponseDto.getId()));
             MooringDueServiceResponseDto mooringDueServiceResponseDto = MooringDueServiceResponseDto.builder().build();
@@ -924,17 +963,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 MooringDueServiceResponseDto mooringDueServiceResponseDtoFromMap = mooringDueServiceResponseDtoHashMap.get(mooringDueServiceResponseDto.getMooringNumber());
                 if (
                         null != mooringDueServiceStatusDto
-                        && mooringDueServiceResponseDtoFromMap.getMooringDueServiceStatusDto().getStatus().equals(AppConstants.MooringDueServiceStatusConstants.COMPLETE)
+                                && mooringDueServiceResponseDtoFromMap.getMooringDueServiceStatusDto().getStatus().equals(AppConstants.MooringDueServiceStatusConstants.COMPLETE)
                                 && !mooringDueServiceResponseDtoFromMap.getMooringDueServiceStatusDto().getStatus().equals(mooringDueServiceStatusDto.getStatus())
                 ) {
                     mooringDueServiceResponseDtoFromMap.setMooringDueServiceStatusDto(mooringDueServiceStatusDto);
                 }
 
-                if(null != mooringDueServiceResponseDtoFromMap.getMooringServiceDate()) {
-                    if(null != workOrderResponseDto.getDueDate()) {
+                if (null != mooringDueServiceResponseDtoFromMap.getMooringServiceDate()) {
+                    if (null != workOrderResponseDto.getDueDate()) {
                         Date savedDueDate = dateUtil.stringToDate(workOrderResponseDto.getDueDate());
                         Date mooringServiceDate = dateUtil.stringToDate(mooringDueServiceResponseDtoFromMap.getMooringServiceDate());
-                        if(savedDueDate.after(mooringServiceDate)) {
+                        if (savedDueDate.after(mooringServiceDate)) {
                             mooringDueServiceResponseDtoFromMap.setMooringServiceDate(workOrderResponseDto.getDueDate());
                         }
                     } else {
@@ -944,7 +983,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("Mooring service date is null for mooring of id: %1$s", mooringDueServiceResponseDtoFromMap.getId()));
                 }
             } else {
-                if(null == workOrderResponseDto.getDueDate()) throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrderResponseDto.getId()));
+                if (null == workOrderResponseDto.getDueDate())
+                    throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrderResponseDto.getId()));
                 mooringDueServiceResponseDto.setMooringServiceDate(workOrderResponseDto.getDueDate());
                 mooringDueServiceResponseDto.setInstallBottomChainDate(workOrderResponseDto.getMooringResponseDto().getInstallBottomChainDate());
                 mooringDueServiceResponseDto.setInstallTopChainDate(workOrderResponseDto.getMooringResponseDto().getInstallTopChainDate());

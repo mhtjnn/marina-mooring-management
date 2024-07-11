@@ -702,15 +702,28 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = workOrderStatusRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
-            List<WorkOrderStatusDto> workOrderStatusDtoList = content
+            String requestPath = request.getRequestURI();
+
+            List<WorkOrderStatusDto> workOrderStatusDtoList = new ArrayList<>();
+            workOrderStatusDtoList = content
                     .getContent()
                     .stream()
                     .map(workOrderStatus -> workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrderStatus))
                     .toList();
 
+            if(StringUtils.equals(requestPath, "/api/v1/metadata/editWorkOrderStatus")) {
+                response.setContent(workOrderStatusDtoList);
+            } else if(StringUtils.equals(requestPath, "/api/v1/metadata/saveWorkOrderStatus")) {
+                List<WorkOrderStatusDto> filteredWorkOrderStatusDtoList =  workOrderStatusDtoList.stream().filter(
+                        workOrderStatusDto -> !StringUtils.equals(workOrderStatusDto.getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                && !StringUtils.equals(workOrderStatusDto.getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
+                ).toList();
+                response.setContent(filteredWorkOrderStatusDtoList);
+            }
+
             response.setMessage("Work order status fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(workOrderStatusDtoList);
+
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

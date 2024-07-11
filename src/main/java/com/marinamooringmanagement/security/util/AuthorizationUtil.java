@@ -46,7 +46,12 @@ public class AuthorizationUtil {
                     .orElseThrow(() -> new RuntimeException(String.format("No user found with the given id: %1$s", loggedInUserId)));
             if(!StringUtils.equals(user.getRole().getName(), AppConstants.Role.TECHNICIAN))
                 throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", loggedInUserId));
-        } else {
+        } else if(StringUtils.equals(loggedInRole, AppConstants.Role.FINANCE)) {
+            user = userRepository.findById(loggedInUserId)
+                    .orElseThrow(() -> new RuntimeException(String.format("No user found with the given id: %1$s", loggedInUserId)));
+            if(!StringUtils.equals(user.getRole().getName(), AppConstants.Role.FINANCE))
+                throw new RuntimeException(String.format("User with the given id: %1$s is not of finance role", loggedInUserId));
+        }else {
             throw new RuntimeException(String.format("Not authorized"));
         }
         return user;
@@ -155,6 +160,8 @@ public class AuthorizationUtil {
         try {
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+            final User loggedInUser = userRepository.findById(loggedInUserId)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No User found with the given id: %1$s", loggedInUserId)));
 
             List<Predicate> predicates = new ArrayList<>();
             if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
@@ -165,6 +172,9 @@ public class AuthorizationUtil {
                 predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUserId));
             } else if (loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
                 predicates.add(criteriaBuilder.equal(root.join("technicianUser").get("id"), loggedInUserId));
+            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE)) {
+                if(null == loggedInUser.getCustomerOwnerId()) throw new RuntimeException(String.format("No customer owner found of logged-in user with id: %1$s", loggedInUserId));
+                predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUser.getCustomerOwnerId()));
             } else {
                 throw new RuntimeException("Not Authorized");
             }

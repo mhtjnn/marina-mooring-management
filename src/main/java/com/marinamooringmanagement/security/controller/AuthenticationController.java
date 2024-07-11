@@ -34,6 +34,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -318,6 +320,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      */
     private ResponseEntity<?> generateNormalTokenFromRefreshToken(String refreshToken, final AuthenticationResponse response) {
         try {
+            SecurityContextHolder.clearContext();
             final String username = jwtUtil.getUsernameFromToken(refreshToken);
             final UserDto emp = userService.findByEmailAddress(username);
             final String token = jwtUtil.generateToken(emp, normalTokenStr);
@@ -337,6 +340,11 @@ public class AuthenticationController extends GlobalExceptionHandler {
             response.setRefreshToken(newRefreshToken);
             response.setUser(emp);
             response.setStatus(HttpStatus.OK.value());
+            final UserDetails userDetails = new org.springframework.security.core.userdetails.User(jwtUtil.getUsernameFromToken(token),
+                    org.apache.commons.lang3.StringUtils.EMPTY, jwtUtil.getRolesFromToken(token));
+            final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
