@@ -134,8 +134,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         ));
                     }
 
-                    if(StringUtils.equals(showCompletedWorkOrders, AppConstants.BooleanStringConst.NO))
-                        predicates.add(criteriaBuilder.notEqual(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
+                    if (StringUtils.equals(showCompletedWorkOrders, AppConstants.BooleanStringConst.YES))
+                        predicates.add(criteriaBuilder.equal(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
 
                     predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
 
@@ -706,7 +706,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
+    public BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request, final String payStatus) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -734,7 +734,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     predicates.add(criteriaBuilder.equal(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
 
-                    predicates.add(criteriaBuilder.isNull(workOrder.get("workOrderPayStatus")));
+                    predicates.add(criteriaBuilder.equal(workOrder.join("workOrderPayStatus").get("status"), payStatus));
 
                     predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
 
@@ -805,9 +805,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
 
-            if(null == workOrderId) {
-                final StringBuilder workOrderNumber = createWorkOrderNumber();
-                workOrder.setWorkOrderNumber(workOrderNumber.toString());
+            if (null == workOrderId) {
+                final String workOrderNumber = createWorkOrderNumber();
+                workOrder.setWorkOrderNumber(workOrderNumber);
             }
 
             if (null != workOrderRequestDto.getEncodedImages() && !workOrderRequestDto.getEncodedImages().isEmpty()) {
@@ -924,11 +924,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if (StringUtils.equals(workOrderStatus.getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)) {
                     if (null != workOrder.getCompletedDate()) {
                         if (workOrder.getCompletedDate().after(new Date()))
-                            throw new RuntimeException(String.format("Completed date was before today date: %1$s", new Date()));
+                            throw new RuntimeException(String.format("Completed date was after today date: %1$s", new Date()));
                     }
+
+                    final WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.NOACTION)
+                            .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with the status as: %1$s", AppConstants.WorkOrderPayStatusConstants.NOACTION)));
+                    workOrder.setWorkOrderPayStatus(workOrderPayStatus);
+
                     workOrder.setCompletedDate(new Date());
                 } else {
-                    if(null != workOrder.getCompletedDate()) workOrder.setCompletedDate(null);
+                    if (null != workOrder.getCompletedDate()) workOrder.setCompletedDate(null);
                 }
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {
@@ -1084,18 +1089,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return new ArrayList<>(mooringDueServiceResponseDtoCollection);
     }
 
-    private StringBuilder createWorkOrderNumber() {
+    private String createWorkOrderNumber() {
         final StringBuilder workOrderNumber = new StringBuilder();
         workOrderNumber.append("WOR");
 
-        for(int i = 0; i < 3; i++) {
-            int randomThreeDigitNumber = 100 + (int) (Math.random() * 900);
-            String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
-            workOrderNumber.append(randomThreeDigitNumberStr);
-        }
 
-        Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findByWorkOrderNumber(workOrderNumber);
-        if(optionalWorkOrder.isPresent()) createWorkOrderNumber();
-        return workOrderNumber;
+        int randomThreeDigitNumber = 100 + (int) (Math.random() * 900);
+        String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
+        workOrderNumber.append(randomThreeDigitNumberStr);
+
+        final String workOrderNumberStr = workOrderNumber.toString();
+
+        Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findByWorkOrderNumber(workOrderNumberStr);
+        if (optionalWorkOrder.isPresent()) createWorkOrderNumber();
+        return workOrderNumberStr;
     }
 }

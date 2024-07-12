@@ -59,7 +59,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN + " or " + Authority.FINANCE)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(
             value = "/",
             method = RequestMethod.GET,
@@ -102,16 +102,17 @@ public class WorkOrderController extends GlobalExceptionHandler {
     )
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.FINANCE)
     @RequestMapping(
-            value = "/fetchCompletedWorkOrdersWithPendingPayApproval",
+            value = "/fetchCompletedWorkOrdersWithPayStatus",
             method = RequestMethod.GET,
             produces = {"application/json"}
     )
-    public BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(
+    public BasicRestResponse fetchCompletedWorkOrdersWithPayStatus(
             @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
             @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Pay status", schema = @Schema(implementation = String.class)) final @RequestParam(value = "payStatus", defaultValue = AppConstants.WorkOrderPayStatusConstants.NOACTION) String payStatus,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
@@ -120,7 +121,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return workOrderService.fetchCompletedWorkOrdersWithPendingPayApproval(baseSearchRequest, searchText, request);
+        return workOrderService.fetchCompletedWorkOrdersWithPendingPayApproval(baseSearchRequest, searchText, request, payStatus);
     }
 
     @Operation(

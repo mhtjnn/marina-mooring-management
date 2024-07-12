@@ -121,5 +121,7 @@ public class AppConstants {
         public static final String APPROVED = "Approved";
 
         public static final String DENIED = "Denied";
+
+        public static final String NOACTION = "No action";
     }
 }
