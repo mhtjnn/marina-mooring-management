@@ -705,6 +705,95 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            log.info("API called to fetch all the moorings in the database");
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+
+            Specification<WorkOrder> spec = new Specification<WorkOrder>() {
+                @Override
+                public Predicate toPredicate(Root<WorkOrder> workOrder, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (null != searchText && !searchText.isEmpty()) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringNumber")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("name")), lowerCaseSearchText)
+                        ));
+                    }
+
+                    predicates.add(criteriaBuilder.equal(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
+
+                    predicates.add(criteriaBuilder.isNull(workOrder.get("workOrderPayStatus")));
+
+                    predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
+
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+
+            final Page<WorkOrder> workOrderList = workOrderRepository.findAll(spec, pageable);
+
+            final List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderList
+                    .getContent()
+                    .stream()
+                    .map(workOrder -> {
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if (null != workOrder.getMooring())
+                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getCustomerOwnerUser())
+                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if (null != workOrder.getTechnicianUser())
+                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if (null != workOrder.getWorkOrderStatus())
+                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getDueDate())
+                            workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                        if (null != workOrder.getScheduledDate())
+                            workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
+                        return workOrderResponseDto;
+                    })
+                    .collect(Collectors.toList());
+
+            response.setTotalSize(workOrderRepository.findAll(spec).size());
+            response.setCurrentSize(workOrderResponseDtoList.size());
+            response.setMessage("All work orders fetched successfully.");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -715,6 +804,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrder.setCustomerOwnerUser(user);
 
             workOrderMapper.mapToWorkOrder(workOrder, workOrderRequestDto);
+
+            if(null == workOrderId) {
+                final StringBuilder workOrderNumber = createWorkOrderNumber();
+                workOrder.setWorkOrderNumber(workOrderNumber.toString());
+            }
 
             if (null != workOrderRequestDto.getEncodedImages() && !workOrderRequestDto.getEncodedImages().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
@@ -833,13 +927,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             throw new RuntimeException(String.format("Completed date was before today date: %1$s", new Date()));
                     }
                     workOrder.setCompletedDate(new Date());
-
-                    if(null == workOrder.getWorkOrderPayStatus()) {
-                        WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.DENIED)
-                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found for the given status", AppConstants.WorkOrderPayStatusConstants.DENIED)));
-
-                        workOrder.setWorkOrderPayStatus(workOrderPayStatus);
-                    }
                 } else {
                     if(null != workOrder.getCompletedDate()) workOrder.setCompletedDate(null);
                 }
@@ -995,5 +1082,20 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         }
         Collection<MooringDueServiceResponseDto> mooringDueServiceResponseDtoCollection = mooringDueServiceResponseDtoHashMap.values();
         return new ArrayList<>(mooringDueServiceResponseDtoCollection);
+    }
+
+    private StringBuilder createWorkOrderNumber() {
+        final StringBuilder workOrderNumber = new StringBuilder();
+        workOrderNumber.append("WOR");
+
+        for(int i = 0; i < 3; i++) {
+            int randomThreeDigitNumber = 100 + (int) (Math.random() * 900);
+            String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
+            workOrderNumber.append(randomThreeDigitNumberStr);
+        }
+
+        Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findByWorkOrderNumber(workOrderNumber);
+        if(optionalWorkOrder.isPresent()) createWorkOrderNumber();
+        return workOrderNumber;
     }
 }

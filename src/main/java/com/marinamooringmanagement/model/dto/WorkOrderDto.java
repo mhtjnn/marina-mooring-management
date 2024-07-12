@@ -19,6 +19,8 @@ public class WorkOrderDto extends BaseDto{
 
     private Integer id;
 
+    private String workOrderNumber;
+
     private Date dueDate;
 
     private Date scheduledDate;

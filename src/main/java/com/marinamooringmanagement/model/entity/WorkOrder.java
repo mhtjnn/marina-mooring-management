@@ -23,6 +23,9 @@ public class WorkOrder extends Base{
     @Column(name = "id")
     private Integer id;
 
+    @Column(name = "work_order_number")
+    private String workOrderNumber;
+
     @Column(name = "due_date")
     private Date dueDate;
 

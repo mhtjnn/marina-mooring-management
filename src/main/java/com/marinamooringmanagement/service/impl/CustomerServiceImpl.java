@@ -658,7 +658,6 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
-    @Transactional
     public StringBuilder createCustomerId(final String lastName) {
 
         if (null == lastName) throw new RuntimeException("Last name cannot be null");

@@ -349,7 +349,7 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchTechnicians(baseSearchRequest, request);
     }
 
-    @RequestMapping(value = {"/saveWorkOrderStatus", "/editWorkOrderStatus"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/workOrderStatus"}, method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchSaveAndEditWorkOrderStatus(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,

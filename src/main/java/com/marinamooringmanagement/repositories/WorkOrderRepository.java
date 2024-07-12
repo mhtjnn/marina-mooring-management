@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
@@ -16,4 +17,5 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     List<WorkOrder> findAll(final Specification<WorkOrder> specs);
 
+    Optional<WorkOrder> findByWorkOrderNumber(final StringBuilder workOrderNumber);
 }

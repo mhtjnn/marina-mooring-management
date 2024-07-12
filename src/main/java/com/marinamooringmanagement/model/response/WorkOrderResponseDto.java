@@ -20,6 +20,8 @@ public class WorkOrderResponseDto {
 
     private Integer id;
 
+    private String workOrderNumber;
+
     private String dueDate;
 
     private String scheduledDate;
