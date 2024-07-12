@@ -136,6 +136,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     if (StringUtils.equals(showCompletedWorkOrders, AppConstants.BooleanStringConst.YES))
                         predicates.add(criteriaBuilder.equal(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
+                    else predicates.add(criteriaBuilder.notEqual(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
 
                     predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
 

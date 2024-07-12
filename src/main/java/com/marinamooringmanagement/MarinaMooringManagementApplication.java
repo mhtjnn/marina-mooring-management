@@ -1,6 +1,7 @@
 package com.marinamooringmanagement;
 
 import com.marinamooringmanagement.constants.AppConstants;
+import com.marinamooringmanagement.mapper.WorkOrderPayStatusMapper;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,12 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
     @Autowired
     private MooringDueServiceStatusRepository mooringDueServiceStatusRepository;
+
+    @Autowired
+    private WorkOrderPayStatusRepository workOrderPayStatusRepository;
+
+    @Autowired
+    private WorkOrderPayStatusMapper workOrderPayStatusMapper;
 
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
@@ -820,6 +827,28 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             );
 
             mooringDueServiceStatusRepository.saveAll(mooringDueServiceStatuses);
+        }
+
+        final String workOrderPayStatusSql = "SELECT * from work_order_pay_status";
+        final List<WorkOrderPayStatus> workOrderPayStatusList = jdbcTemplate.query(workOrderPayStatusSql, (resultSet, resultNum) -> null);
+
+        if(workOrderPayStatusList.isEmpty()) {
+            List<WorkOrderPayStatus> workOrderPayStatuses = List.of(
+                    WorkOrderPayStatus.builder()
+                            .status(AppConstants.WorkOrderPayStatusConstants.NOACTION)
+                            .description("No action has been taken to this work orders.")
+                            .build(),
+                    WorkOrderPayStatus.builder()
+                            .status(AppConstants.WorkOrderPayStatusConstants.APPROVED)
+                            .description("This work order has been approved.")
+                            .build(),
+                    WorkOrderPayStatus.builder()
+                            .status(AppConstants.WorkOrderPayStatusConstants.DENIED)
+                            .description("This work order has been denied.")
+                            .build()
+            );
+
+            workOrderPayStatusRepository.saveAll(workOrderPayStatuses);
         }
     }
 }

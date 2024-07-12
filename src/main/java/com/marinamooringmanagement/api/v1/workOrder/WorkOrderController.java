@@ -84,8 +84,8 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch completed work orders with pending pay approval from the database",
-            description = "API to fetch completed work orders with pending pay approval from the database",
+            tags = "Fetch completed work orders with pay status from the database",
+            description = "API to fetch completed work orders with pay status from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
