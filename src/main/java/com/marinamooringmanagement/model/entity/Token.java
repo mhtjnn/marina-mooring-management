@@ -47,7 +47,7 @@ public class Token extends Base {
     /**
      * The user associated with the token.
      */
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 }

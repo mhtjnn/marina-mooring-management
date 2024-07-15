@@ -21,4 +21,10 @@ public interface WorkOrderService {
     BasicRestResponse fetchAllOpenWorkOrdersAndMooringDueForService(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request, final String filterDateFrom, final String filterDateTo);
 
     BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request, final String payStatus);
+
+    BasicRestResponse approveWorkOrder(final Integer id, final HttpServletRequest request, final Double invoiceAmount);
+
+    BasicRestResponse denyWorkOrder(final Integer id, final HttpServletRequest request, final String reportProblem);
+
+    BasicRestResponse fetchWorkOrderInvoice(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request);
 }

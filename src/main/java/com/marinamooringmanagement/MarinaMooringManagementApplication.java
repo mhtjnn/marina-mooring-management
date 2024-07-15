@@ -82,6 +82,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
     @Autowired
     private WorkOrderPayStatusMapper workOrderPayStatusMapper;
 
+    @Autowired
+    private WorkOrderInvoiceStatusRepository workOrderInvoiceStatusRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
     }
@@ -849,6 +852,28 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             );
 
             workOrderPayStatusRepository.saveAll(workOrderPayStatuses);
+        }
+
+        final String workOrderInvoiceStatusSql = "SELECT * from work_order_invoice_status";
+        final List<WorkOrderPayStatus> workOrderInvoiceStatusList = jdbcTemplate.query(workOrderInvoiceStatusSql, (resultSet, resultNum) -> null);
+
+        if(workOrderInvoiceStatusList.isEmpty()) {
+            List<WorkOrderInvoiceStatus> workOrderInvoiceStatuses = List.of(
+                    WorkOrderInvoiceStatus.builder()
+                            .status(AppConstants.WorkOrderInvoiceStatusConstants.PENDING)
+                            .description("No action has been taken to this work orders.")
+                            .build(),
+                    WorkOrderInvoiceStatus.builder()
+                            .status(AppConstants.WorkOrderInvoiceStatusConstants.PAID)
+                            .description("This work order has been approved.")
+                            .build(),
+                    WorkOrderInvoiceStatus.builder()
+                            .status(AppConstants.WorkOrderInvoiceStatusConstants.EXCEEDED)
+                            .description("This work order has been denied.")
+                            .build()
+            );
+
+            workOrderInvoiceStatusRepository.saveAll(workOrderInvoiceStatuses);
         }
     }
 }

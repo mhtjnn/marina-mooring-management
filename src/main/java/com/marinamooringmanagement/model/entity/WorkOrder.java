@@ -68,4 +68,8 @@ public class WorkOrder extends Base{
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_image_id")
     private List<Image> imageList;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)
+    private WorkOrderInvoice workOrderInvoice;
+
 }

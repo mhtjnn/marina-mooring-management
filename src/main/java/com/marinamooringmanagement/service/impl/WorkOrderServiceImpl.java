@@ -4,10 +4,7 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
-import com.marinamooringmanagement.model.dto.ImageDto;
-import com.marinamooringmanagement.model.dto.MooringDueServiceStatusDto;
-import com.marinamooringmanagement.model.dto.WorkOrderPayStatusDto;
-import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
@@ -23,6 +20,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +102,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private WorkOrderPayStatusMapper workOrderPayStatusMapper;
 
+    @Autowired
+    private WorkOrderInvoiceRepository workOrderInvoiceRepository;
+
+    @Autowired
+    private WorkOrderInvoiceStatusRepository workOrderInvoiceStatusRepository;
+
+    @Autowired
+    private WorkOrderInvoiceMapper workOrderInvoiceMapper;
+
+    @Autowired
+    private WorkOrderInvoiceStatusMapper workOrderInvoiceStatusMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -112,7 +122,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            log.info("API called to fetch all the moorings in the database");
+            log.info("API called to fetch all the work orders in the database");
 
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
             authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
@@ -795,6 +805,170 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse approveWorkOrder(Integer id, HttpServletRequest request, Double invoiceAmount) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            WorkOrder workOrder = workOrderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+
+            if(null == workOrder.getCustomerOwnerUser()) throw new RuntimeException(String.format("Work order with the id: %1$s is not associated with any customer owner", id));
+            if(ObjectUtils.notEqual(workOrder.getCustomerOwnerUser().getId(), user.getId())) throw new RuntimeException(String.format("Work order with the id: %1$s is associated with other customer owner", id));
+
+            if(null == workOrder.getWorkOrderStatus() || null == workOrder.getWorkOrderStatus().getStatus()) throw new RuntimeException(String.format("Work order  with the given id: %1$s doesn't contain any status", id));
+            if(null == workOrder.getWorkOrderPayStatus()|| null == workOrder.getWorkOrderPayStatus().getStatus()) throw new RuntimeException(String.format("Work order  with the given id: %1$s doesn't contain any pay status", id));
+
+            if(!StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)) throw new RuntimeException(String.format("Work order with the given id: %1$s is in %2$s status", id, workOrder.getWorkOrderStatus().getStatus()));
+            if(null == workOrder.getWorkOrderPayStatus() || null == workOrder.getWorkOrderPayStatus().getStatus()) throw new RuntimeException(String.format("Work order with the given id: %1$s doesn't consist of pay status", id));
+            if(!StringUtils.equals(workOrder.getWorkOrderPayStatus().getStatus(), AppConstants.WorkOrderPayStatusConstants.NOACTION)) throw new RuntimeException(String.format("Work order with the given id: %1$s has already gone through an action", id));
+
+            WorkOrderInvoiceStatus workOrderInvoiceStatus = workOrderInvoiceStatusRepository.findByStatus(AppConstants.WorkOrderInvoiceStatusConstants.PENDING)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order invoice status found with the status as: %1$s", AppConstants.WorkOrderInvoiceStatusConstants.PENDING)));
+
+            WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.APPROVED)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with the status as %1$s", AppConstants.WorkOrderPayStatusConstants.APPROVED)));
+
+            workOrder.setWorkOrderPayStatus(workOrderPayStatus);
+            workOrderRepository.save(workOrder);
+
+            WorkOrderInvoice workOrderInvoice = WorkOrderInvoice.builder().build();
+            workOrderInvoice.setCreationDate(new Date(System.currentTimeMillis()));
+            workOrderInvoice.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            workOrderInvoice.setInvoiceAmount(invoiceAmount);
+            workOrderInvoice.setWorkOrder(workOrder);
+            workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
+            workOrderInvoice.setCustomerOwnerUser(user);
+
+            WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
+
+            response.setMessage("Work order approved and it's invoice saved successfully!");
+            response.setStatus(HttpStatus.CREATED.value());
+            response.setContent(savedWorkOrderInvoice);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse denyWorkOrder(final Integer id, final  HttpServletRequest request, final String reportProblem) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            WorkOrder workOrder = workOrderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+
+            if(null == workOrder.getCustomerOwnerUser()) throw new RuntimeException(String.format("Work order with the id: %1$s is not associated with any customer owner", id));
+            if(ObjectUtils.notEqual(workOrder.getCustomerOwnerUser().getId(), user.getId())) throw new RuntimeException(String.format("Work order with the id: %1$s is associated with other customer owner", id));
+
+            if(null == workOrder.getWorkOrderStatus() || null == workOrder.getWorkOrderStatus().getStatus()) throw new RuntimeException(String.format("Work order  with the given id: %1$s doesn't contain any status", id));
+            if(null == workOrder.getWorkOrderPayStatus()|| null == workOrder.getWorkOrderPayStatus().getStatus()) throw new RuntimeException(String.format("Work order  with the given id: %1$s doesn't contain any pay status", id));
+
+            if(!StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)) throw new RuntimeException(String.format("Work order with the given id: %1$s is in %2$s status", id, workOrder.getWorkOrderStatus().getStatus()));
+            if(null == workOrder.getWorkOrderPayStatus() || null == workOrder.getWorkOrderPayStatus().getStatus()) throw new RuntimeException(String.format("Work order with the given id: %1$s doesn't consist of pay status", id));
+            if(!StringUtils.equals(workOrder.getWorkOrderPayStatus().getStatus(), AppConstants.WorkOrderPayStatusConstants.NOACTION)) throw new RuntimeException(String.format("Work order with the given id: %1$s has already gone through an action", id));
+
+            if(null != workOrder.getWorkOrderInvoice()) throw new RuntimeException(String.format("Work order with the given id: %1$s already contains an invoice with the id: %2$s", workOrder.getId(), workOrder.getWorkOrderInvoice().getId()));
+
+            WorkOrderStatus workOrderStatus = workOrderStatusRepository.findByStatus(AppConstants.WorkOrderStatusConstants.PENDING_APPROVAL)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order status found with the given status as %1$s", AppConstants.WorkOrderStatusConstants.PENDING_APPROVAL)));
+            workOrder.setWorkOrderStatus(workOrderStatus);
+
+            WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.DENIED)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with the status as %1$s", AppConstants.WorkOrderPayStatusConstants.DENIED)));
+            workOrder.setWorkOrderPayStatus(workOrderPayStatus);
+
+            workOrder.setProblem(reportProblem);
+
+            workOrderRepository.save(workOrder);
+
+            response.setMessage("Work order denied successfully!");
+            response.setContent(workOrderMapper.mapToWorkOrderDto(WorkOrderDto.builder().build(), workOrder));
+            response.setStatus(HttpStatus.OK.value());
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchWorkOrderInvoice(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            log.info("API called to fetch all the work order invoices in the database");
+
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+
+            Specification<WorkOrderInvoice> spec = new Specification<WorkOrderInvoice>() {
+                @Override
+                public Predicate toPredicate(Root<WorkOrderInvoice> workOrderInvoice, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (null != searchText && !searchText.isEmpty()) {
+                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        predicates.add(criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrderInvoice.join("workOrder").get("workOrderNumber")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrderInvoice.join("workOrder").join("mooring").join("customer").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrderInvoice.join("workOrder").join("mooring").join("customer").get("lastName")), lowerCaseSearchText)
+                        ));
+                    }
+
+                    predicates.add(criteriaBuilder.equal(workOrderInvoice.join("customerOwnerUser").get("id"), user.getId()));
+
+                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+                }
+            };
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+
+            final Page<WorkOrderInvoice> workOrderInvoiceList = workOrderInvoiceRepository.findAll(spec, pageable);
+
+            final List<WorkOrderInvoiceResponseDto> workOrderInvoiceResponseDtoList = workOrderInvoiceList
+                    .getContent()
+                    .stream()
+                    .map(workOrderInvoice -> {
+                        WorkOrderInvoiceResponseDto workOrderInvoiceResponseDto = workOrderInvoiceMapper.mapToWorkOrderInvoiceResponseDto(WorkOrderInvoiceResponseDto.builder().build(), workOrderInvoice);
+
+                        if(null != workOrderInvoice.getCreationDate()) workOrderInvoiceResponseDto.setInvoiceDate(dateUtil.dateToString(workOrderInvoice.getCreationDate()));
+                        if(null != workOrderInvoice.getLastModifiedDate()) workOrderInvoiceResponseDto.setLastContactTime(dateUtil.dateToString(workOrderInvoice.getLastModifiedDate()));
+
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrderInvoice.getWorkOrder());
+
+                        if (null != workOrderInvoice.getWorkOrder().getMooring() && null != workOrderInvoice.getWorkOrder().getMooring().getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getMooring().getCustomer()));
+
+                        workOrderInvoiceResponseDto.setWorkOrderResponseDto(workOrderResponseDto);
+                        workOrderInvoiceResponseDto.setWorkOrderInvoiceStatusDto(workOrderInvoiceStatusMapper.toDto(WorkOrderInvoiceStatusDto.builder().build(), workOrderInvoice.getWorkOrderInvoiceStatus()));
+
+                        return workOrderInvoiceResponseDto;
+                    })
+                    .toList();
+
+            response.setTotalSize(workOrderInvoiceRepository.findAll(spec).size());
+            response.setCurrentSize(workOrderInvoiceResponseDtoList.size());
+            response.setMessage("All work orders invoices fetched successfully.");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderInvoiceResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -809,6 +983,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             if (null == workOrderId) {
                 final String workOrderNumber = createWorkOrderNumber();
                 workOrder.setWorkOrderNumber(workOrderNumber);
+                workOrder.setCreationDate(new Date(System.currentTimeMillis()));
             }
 
             if (null != workOrderRequestDto.getEncodedImages() && !workOrderRequestDto.getEncodedImages().isEmpty()) {

@@ -124,4 +124,13 @@ public class AppConstants {
 
         public static final String NOACTION = "No action";
     }
+
+    public static class WorkOrderInvoiceStatusConstants {
+
+        public static final String PAID = "Paid";
+
+        public static final String PENDING = "Pending";
+
+        public static final String EXCEEDED = "Exceeding";
+    }
 }
