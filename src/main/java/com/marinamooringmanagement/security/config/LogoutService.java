@@ -33,9 +33,9 @@ public class LogoutService{
 
         jwt = authHeader.substring(7);
         Integer userId = jwtUtil.getUserIdFromToken(jwt);
-        List<Token> tokenList = tokenRepository.findByUserId(userId);
-        if(null != tokenList) {
-            tokenRepository.deleteAll(tokenList);
+        final Token token = tokenRepository.findByToken(jwt);
+        if(null != token) {
+            tokenRepository.delete(token);
         }
     }
 }

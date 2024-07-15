@@ -2,6 +2,7 @@ package com.marinamooringmanagement.model.response;
 
 import com.marinamooringmanagement.model.dto.metadata.CustomerTypeDto;
 import com.marinamooringmanagement.model.dto.ImageDto;
+import com.marinamooringmanagement.model.request.ImageRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -69,4 +70,6 @@ public class CustomerResponseDto {
     private Integer userId;
 
     private List<MooringResponseDto> mooringResponseDtoList;
+
+    private List<ImageDto> imageDtoList;
 }

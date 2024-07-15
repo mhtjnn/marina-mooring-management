@@ -801,6 +801,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
                                     .toList());
                         }
+                        if(null != workOrder.getCompletedDate()) {
+                            workOrderResponseDto.setCompletedDate(dateUtil.dateToString(workOrder.getCompletedDate()));
+                        }
                         return workOrderResponseDto;
                     })
                     .collect(Collectors.toList());

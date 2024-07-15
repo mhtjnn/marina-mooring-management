@@ -35,5 +35,7 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
      * @return a list of Tokens associated with the given user ID
      */
     List<Token> findByUserId(Integer userId);
+
+    Token findByToken(final String token);
 }
 

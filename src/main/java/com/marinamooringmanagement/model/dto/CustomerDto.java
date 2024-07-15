@@ -68,4 +68,6 @@ public class CustomerDto extends BaseDto {
     private List<MooringDto> mooringDtoList;
 
     private UserDto userDto;
+
+    private List<ImageDto> imageDtoList;
 }

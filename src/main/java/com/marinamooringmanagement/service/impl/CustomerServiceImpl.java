@@ -154,6 +154,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @return a BasicRestResponse containing the results of the customer search.
      */
     @Override
+    @Transactional
     public BasicRestResponse fetchCustomers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
 
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -205,12 +206,12 @@ public class CustomerServiceImpl implements CustomerService {
                             customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
                         if(null != customer.getCustomerType())
                             customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
-//                        if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
-//                            customerResponseDto.setImageDtoList(customer.getImageList()
-//                                    .stream()
-//                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-//                                    .toList());
-//                        }
+                        if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
+                            customerResponseDto.setImageDtoList(customer.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
                         return customerResponseDto;
                     })
                     .toList();
@@ -234,6 +235,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse fetchCustomerAndMoorings(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -268,12 +270,12 @@ public class CustomerServiceImpl implements CustomerService {
             if(null != customer.getCustomerType())
                 customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
 
-//            if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
-//                customerResponseDto.setImageDtoList(customer.getImageList()
-//                        .stream()
-//                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-//                        .toList());
-//            }
+            if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
+                customerResponseDto.setImageDtoList(customer.getImageList()
+                        .stream()
+                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                        .toList());
+            }
 
             List<Mooring> mooringList = new ArrayList<>();
             if (null != optionalCustomer.get().getMooringList())
@@ -422,6 +424,7 @@ public class CustomerServiceImpl implements CustomerService {
      * @param id                 The ID of the Customer to update.
      * @throws DBOperationException if an error occurs during the save operation.
      */
+    @Transactional
     public void performSave(final CustomerRequestDto customerRequestDto, final Customer customer, final Integer id, final HttpServletRequest request) {
 
         Customer savedCustomer = null;
