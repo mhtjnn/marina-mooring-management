@@ -1,7 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.marinamooringmanagement.model.entity.metadata.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -145,6 +145,10 @@ public class Mooring extends Base {
     @JoinColumn(name = "boatyard_id")
     @JsonBackReference
     private Boatyard boatyard;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "mooring_image_id")
+    private List<Image> imageList;
 
     @Override
     public boolean equals(Object o) {

@@ -1,7 +1,8 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.marinamooringmanagement.model.entity.metadata.Country;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

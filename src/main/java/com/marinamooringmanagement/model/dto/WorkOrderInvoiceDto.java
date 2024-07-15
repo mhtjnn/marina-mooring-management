@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderInvoiceStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

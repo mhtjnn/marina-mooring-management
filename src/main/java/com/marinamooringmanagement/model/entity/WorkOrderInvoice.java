@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

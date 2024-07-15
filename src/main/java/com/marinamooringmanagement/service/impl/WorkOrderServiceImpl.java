@@ -4,8 +4,20 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
+import com.marinamooringmanagement.mapper.metadata.MooringDueServiceStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.WorkOrderInvoiceStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.WorkOrderPayStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.WorkOrderStatusMapper;
 import com.marinamooringmanagement.model.dto.*;
+import com.marinamooringmanagement.model.dto.metadata.MooringDueServiceStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderInvoiceStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.*;
@@ -842,11 +854,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
             workOrderInvoice.setCustomerOwnerUser(user);
 
-            WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
+            final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
 
             response.setMessage("Work order approved and it's invoice saved successfully!");
             response.setStatus(HttpStatus.CREATED.value());
-            response.setContent(savedWorkOrderInvoice);
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

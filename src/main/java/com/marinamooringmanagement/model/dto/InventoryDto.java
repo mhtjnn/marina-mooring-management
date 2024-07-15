@@ -1,11 +1,6 @@
 package com.marinamooringmanagement.model.dto;
 
-import com.marinamooringmanagement.model.entity.InventoryType;
-import com.marinamooringmanagement.model.entity.Vendor;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.marinamooringmanagement.model.dto.metadata.InventoryTypeDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

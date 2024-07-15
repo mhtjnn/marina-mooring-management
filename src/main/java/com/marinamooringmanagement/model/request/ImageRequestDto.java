@@ -13,6 +13,8 @@ public class ImageRequestDto {
 
     private String imageName;
 
+    private String note;
+
     private String imageData;
 
 }

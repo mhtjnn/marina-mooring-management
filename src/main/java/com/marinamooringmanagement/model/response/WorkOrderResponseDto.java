@@ -1,15 +1,14 @@
 package com.marinamooringmanagement.model.response;
 
 import com.marinamooringmanagement.model.dto.ImageDto;
-import com.marinamooringmanagement.model.dto.WorkOrderPayStatusDto;
-import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Time;
-import java.util.Date;
 import java.util.List;
 
 @Data

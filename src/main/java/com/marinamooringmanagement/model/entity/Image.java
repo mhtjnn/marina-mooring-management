@@ -21,6 +21,9 @@ public class Image extends Base{
     @Column(name = "image_name")
     private String imageName;
 
+    @Column(name = "note")
+    private String note;
+
     @Lob
     @Column(name = "image_data")
     private byte[] imageData;

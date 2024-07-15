@@ -1,8 +1,8 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.mapper.CountryMapper;
-import com.marinamooringmanagement.model.dto.CountryDto;
-import com.marinamooringmanagement.model.entity.Country;
+import com.marinamooringmanagement.mapper.metadata.CountryMapper;
+import com.marinamooringmanagement.model.dto.metadata.CountryDto;
+import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.CountryResponseDto;

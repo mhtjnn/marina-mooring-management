@@ -1,9 +1,6 @@
 package com.marinamooringmanagement.model.dto;
 
-import com.marinamooringmanagement.model.entity.Boatyard;
-import com.marinamooringmanagement.model.entity.Customer;
-import com.marinamooringmanagement.model.entity.TypeOfWeight;
-import jakarta.persistence.*;
+import com.marinamooringmanagement.model.dto.metadata.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Represents a mooring data transfer object (DTO) used for transferring mooring-related information.

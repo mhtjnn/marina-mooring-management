@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.*;
+import com.marinamooringmanagement.model.dto.metadata.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

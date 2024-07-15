@@ -1,9 +1,7 @@
 package com.marinamooringmanagement.model.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.marinamooringmanagement.model.dto.metadata.CountryDto;
+import com.marinamooringmanagement.model.dto.metadata.StateDto;
 import lombok.*;
 
 import java.io.Serializable;

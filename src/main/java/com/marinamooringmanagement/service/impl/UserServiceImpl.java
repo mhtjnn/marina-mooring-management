@@ -5,6 +5,8 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.metadata.Country;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;

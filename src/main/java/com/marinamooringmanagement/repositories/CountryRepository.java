@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
-import com.marinamooringmanagement.model.entity.Country;
+import com.marinamooringmanagement.model.entity.metadata.Country;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

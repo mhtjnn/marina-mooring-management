@@ -5,7 +5,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.InventoryMapper;
 import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.Inventory;
-import com.marinamooringmanagement.model.entity.InventoryType;
+import com.marinamooringmanagement.model.entity.metadata.InventoryType;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.InventoryRequestDto;

@@ -1,10 +1,12 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
-import com.marinamooringmanagement.mapper.CountryMapper;
-import com.marinamooringmanagement.mapper.StateMapper;
+import com.marinamooringmanagement.mapper.metadata.CountryMapper;
+import com.marinamooringmanagement.mapper.metadata.StateMapper;
 import com.marinamooringmanagement.mapper.VendorMapper;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.metadata.Country;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;

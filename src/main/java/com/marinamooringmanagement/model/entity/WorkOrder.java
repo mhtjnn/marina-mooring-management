@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,7 +71,7 @@ public class WorkOrder extends Base{
     @JoinColumn(name = "work_order_image_id")
     private List<Image> imageList;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.EAGER)
     private WorkOrderInvoice workOrderInvoice;
 
 }

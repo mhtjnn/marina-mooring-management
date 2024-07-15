@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.service;
 
-import com.marinamooringmanagement.model.dto.CountryDto;
+import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;

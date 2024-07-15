@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

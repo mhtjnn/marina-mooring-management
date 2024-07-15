@@ -1,8 +1,9 @@
 package com.marinamooringmanagement;
 
 import com.marinamooringmanagement.constants.AppConstants;
-import com.marinamooringmanagement.mapper.WorkOrderPayStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.WorkOrderPayStatusMapper;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

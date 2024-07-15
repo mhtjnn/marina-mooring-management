@@ -3,10 +3,17 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
+import com.marinamooringmanagement.mapper.metadata.CountryMapper;
+import com.marinamooringmanagement.mapper.metadata.CustomerTypeMapper;
+import com.marinamooringmanagement.mapper.metadata.MooringStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.StateMapper;
 import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.dto.CustomerTypeDto;
+import com.marinamooringmanagement.model.dto.metadata.CustomerTypeDto;
 import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.metadata.Country;
+import com.marinamooringmanagement.model.entity.metadata.CustomerType;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
@@ -198,12 +205,12 @@ public class CustomerServiceImpl implements CustomerService {
                             customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
                         if(null != customer.getCustomerType())
                             customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
-                        if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
-                            customerResponseDto.setImageDtoList(customer.getImageList()
-                                    .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-                                    .toList());
-                        }
+//                        if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
+//                            customerResponseDto.setImageDtoList(customer.getImageList()
+//                                    .stream()
+//                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+//                                    .toList());
+//                        }
                         return customerResponseDto;
                     })
                     .toList();
@@ -261,12 +268,12 @@ public class CustomerServiceImpl implements CustomerService {
             if(null != customer.getCustomerType())
                 customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
 
-            if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
-                customerResponseDto.setImageDtoList(customer.getImageList()
-                        .stream()
-                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-                        .toList());
-            }
+//            if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
+//                customerResponseDto.setImageDtoList(customer.getImageList()
+//                        .stream()
+//                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+//                        .toList());
+//            }
 
             List<Mooring> mooringList = new ArrayList<>();
             if (null != optionalCustomer.get().getMooringList())

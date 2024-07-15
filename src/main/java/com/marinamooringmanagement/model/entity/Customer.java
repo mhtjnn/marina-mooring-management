@@ -1,6 +1,9 @@
 package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.marinamooringmanagement.model.entity.metadata.Country;
+import com.marinamooringmanagement.model.entity.metadata.CustomerType;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -98,7 +101,7 @@ public class Customer extends Base {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_image_id")
     private List<Image> imageList;
 }

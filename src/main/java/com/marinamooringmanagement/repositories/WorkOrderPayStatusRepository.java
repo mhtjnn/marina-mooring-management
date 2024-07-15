@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
-import com.marinamooringmanagement.model.entity.WorkOrderPayStatus;
+import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

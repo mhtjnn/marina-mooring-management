@@ -1,6 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
-import com.marinamooringmanagement.model.entity.CustomerType;
+import com.marinamooringmanagement.model.entity.metadata.CustomerType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

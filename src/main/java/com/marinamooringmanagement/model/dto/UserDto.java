@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.dto.metadata.CountryDto;
+import com.marinamooringmanagement.model.dto.metadata.StateDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

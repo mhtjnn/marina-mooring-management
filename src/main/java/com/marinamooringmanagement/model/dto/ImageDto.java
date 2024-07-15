@@ -15,6 +15,8 @@ public class ImageDto {
 
     private String imageName;
 
+    private String note;
+
     private byte[] imageData;
 
 }

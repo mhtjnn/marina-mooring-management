@@ -1,7 +1,7 @@
 package com.marinamooringmanagement.model.dto;
 
-import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.model.entity.WorkOrderPayStatus;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

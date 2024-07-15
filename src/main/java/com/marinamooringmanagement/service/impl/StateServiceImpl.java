@@ -1,8 +1,8 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.marinamooringmanagement.mapper.StateMapper;
-import com.marinamooringmanagement.model.dto.StateDto;
-import com.marinamooringmanagement.model.entity.State;
+import com.marinamooringmanagement.mapper.metadata.StateMapper;
+import com.marinamooringmanagement.model.dto.metadata.StateDto;
+import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.StateResponseDto;
