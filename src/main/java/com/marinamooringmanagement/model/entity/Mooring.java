@@ -49,6 +49,9 @@ public class Mooring extends Base {
     @Column(name = "install_condition_of_eye_date")
     private Date installConditionOfEyeDate;
 
+    @Column(name = "inspection_date")
+    private Date inspectionDate;
+
     /**
      * Name of the boat associated with the mooring.
      */

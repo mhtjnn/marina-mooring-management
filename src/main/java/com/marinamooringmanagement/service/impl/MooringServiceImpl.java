@@ -218,7 +218,8 @@ public class MooringServiceImpl implements MooringService {
         query.select(criteriaBuilder.construct(MooringWithGPSCoordinateResponse.class,
                 root.get("id"),
                 root.get("mooringNumber"),
-                root.get("gpsCoordinates")
+                root.get("gpsCoordinates"),
+                root.join("mooringStatus").get("status")
         ));
 
         // Applying the provided specification
@@ -404,6 +405,16 @@ public class MooringServiceImpl implements MooringService {
                 mooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
             } else {
                 if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
+            }
+
+            if(null != mooringRequestDto.getInspectionDate()) {
+                Date inspectionDate = dateUtil.stringToDate(mooringRequestDto.getInspectionDate());
+                LocalDate localDate = inspectionDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                LocalDate currentDate = LocalDate.now();
+                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Inspection Date of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
+                mooring.setInspectionDate(inspectionDate);
             }
 
             if (null != mooringRequestDto.getGpsCoordinates()) {

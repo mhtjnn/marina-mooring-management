@@ -48,6 +48,8 @@ public class MooringDto extends BaseDto implements Serializable {
 
     private Date installConditionOfEyeDate;
 
+    private Date inspectionDate;
+
     /**
      * Name of the boat associated with the mooring.
      */

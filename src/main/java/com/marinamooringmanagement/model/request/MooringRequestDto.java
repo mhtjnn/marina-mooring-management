@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Represents a mooring request data transfer object (DTO) used for creating or updating mooring entities.
@@ -41,6 +42,8 @@ public class MooringRequestDto implements Serializable {
     private String installTopChainDate;
 
     private String installConditionOfEyeDate;
+
+    private String inspectionDate;
 
     private Boolean addDock;
 

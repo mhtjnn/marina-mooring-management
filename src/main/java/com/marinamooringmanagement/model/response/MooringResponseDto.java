@@ -47,6 +47,8 @@ public class MooringResponseDto implements Serializable {
 
     private String installConditionOfEyeDate;
 
+    private String inspectionDate;
+
     /**
      * The name of the boat associated with the mooring.
      */
