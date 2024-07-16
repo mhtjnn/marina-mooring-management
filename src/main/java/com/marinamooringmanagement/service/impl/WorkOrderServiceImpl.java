@@ -890,8 +890,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             if(null != workOrder.getWorkOrderInvoice()) throw new RuntimeException(String.format("Work order with the given id: %1$s already contains an invoice with the id: %2$s", workOrder.getId(), workOrder.getWorkOrderInvoice().getId()));
 
-            WorkOrderStatus workOrderStatus = workOrderStatusRepository.findByStatus(AppConstants.WorkOrderStatusConstants.PENDING_APPROVAL)
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order status found with the given status as %1$s", AppConstants.WorkOrderStatusConstants.PENDING_APPROVAL)));
+            WorkOrderStatus workOrderStatus = workOrderStatusRepository.findByStatus(AppConstants.WorkOrderStatusConstants.DENIED)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order status found with the given status as %1$s", AppConstants.WorkOrderStatusConstants.DENIED)));
             workOrder.setWorkOrderStatus(workOrderStatus);
 
             WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(AppConstants.WorkOrderPayStatusConstants.DENIED)

@@ -17,6 +17,9 @@ import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -122,6 +125,9 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private UserMapper userMapper;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -136,7 +142,7 @@ public class MooringServiceImpl implements MooringService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("API called to fetch all the moorings in the database");
-
+            MooringsWithGPSCoordinatesResponse mooringsWithGPSCoordinatesResponse = MooringsWithGPSCoordinatesResponse.builder().build();
             final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
 
             Specification<Mooring> spec = new Specification<Mooring>() {
@@ -149,8 +155,9 @@ public class MooringServiceImpl implements MooringService {
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("boatName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringNumber")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText)
-
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("lastName")), lowerCaseSearchText)
                         ));
                     }
 
@@ -183,10 +190,16 @@ public class MooringServiceImpl implements MooringService {
                     })
                     .collect(Collectors.toList());
 
+            mooringsWithGPSCoordinatesResponse.setMooringResponseDtoList(mooringResponseDtoList);
+
+            List<MooringWithGPSCoordinateResponse> mooringWithSpec = fetchMooringWithGpsCoordinates(spec);
+
+            mooringsWithGPSCoordinatesResponse.setMooringWithGPSCoordinateResponseList(mooringWithSpec);
+
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(mooringResponseDtoList);
-            response.setTotalSize(mooringRepository.findAll(spec).size());
+            response.setContent(mooringsWithGPSCoordinatesResponse);
+            response.setTotalSize(mooringWithSpec.size());
             if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(mooringResponseDtoList.size());
         } catch (Exception e) {
@@ -194,6 +207,29 @@ public class MooringServiceImpl implements MooringService {
             throw e;
         }
         return response;
+    }
+
+    private List<MooringWithGPSCoordinateResponse> fetchMooringWithGpsCoordinates(final Specification<Mooring> spec) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<MooringWithGPSCoordinateResponse> query = criteriaBuilder.createQuery(MooringWithGPSCoordinateResponse.class);
+        Root<Mooring> root = query.from(Mooring.class);
+
+        // Selecting id, mooring_id, gps_coordinates
+        query.select(criteriaBuilder.construct(MooringWithGPSCoordinateResponse.class,
+                root.get("id"),
+                root.get("mooringNumber"),
+                root.get("gpsCoordinates")
+        ));
+
+        // Applying the provided specification
+        Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
+        if (predicate != null) {
+            query.where(predicate);
+        }
+
+        // Executing the query
+        TypedQuery<MooringWithGPSCoordinateResponse> typedQuery = entityManager.createQuery(query);
+        return typedQuery.getResultList();
     }
 
     /**

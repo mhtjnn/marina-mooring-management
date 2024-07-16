@@ -88,6 +88,8 @@ public class AppConstants {
 
         public static final String COMPLETED = "Completed";
 
+        public static final String DENIED = "Denied";
+
     }
 
     public static class CustomerTypeConstants {
