@@ -219,7 +219,7 @@ public class MooringServiceImpl implements MooringService {
                 root.get("id"),
                 root.get("mooringNumber"),
                 root.get("gpsCoordinates"),
-                root.join("mooringStatus").get("status")
+                root.join("mooringStatus").get("id")
         ));
 
         // Applying the provided specification

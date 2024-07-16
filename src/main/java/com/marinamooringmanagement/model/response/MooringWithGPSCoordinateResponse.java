@@ -15,6 +15,6 @@ public class MooringWithGPSCoordinateResponse {
     private Integer id;
     private String mooringId;
     private String gpsCoordinates;
-    private String status;
+    private Integer statusId;
 
 }
