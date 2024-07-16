@@ -153,6 +153,10 @@ public class Mooring extends Base {
     @JoinColumn(name = "mooring_image_id")
     private List<Image> imageList;
 
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_area_id")
+    private ServiceArea serviceArea;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

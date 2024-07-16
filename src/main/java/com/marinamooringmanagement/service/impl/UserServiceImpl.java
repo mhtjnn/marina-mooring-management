@@ -13,6 +13,8 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
+import com.marinamooringmanagement.repositories.metadata.CountryRepository;
+import com.marinamooringmanagement.repositories.metadata.StateRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;

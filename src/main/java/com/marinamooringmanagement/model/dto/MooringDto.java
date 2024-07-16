@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.dto;
 
 import com.marinamooringmanagement.model.dto.metadata.*;
+import com.marinamooringmanagement.model.entity.ServiceArea;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -120,4 +121,6 @@ public class MooringDto extends BaseDto implements Serializable {
     private UserDto userDto;
 
     private BoatyardDto boatyardDto;
+
+    private ServiceAreaDto serviceAreaDto;
 }

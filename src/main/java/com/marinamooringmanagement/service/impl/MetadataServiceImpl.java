@@ -9,6 +9,7 @@ import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.metadata.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
@@ -132,6 +133,12 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private CustomerTypeMapper customerTypeMapper;
+
+    @Autowired
+    private ServiceAreaTypeRepository serviceAreaTypeRepository;
+
+    @Autowired
+    private ServiceAreaTypeMapper serviceAreaTypeMapper;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -743,6 +750,33 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Types of customer fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(customerTypeDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchServiceAreaTypes(BaseSearchRequest baseSearchRequest) {
+        Page<ServiceAreaType> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            content = serviceAreaTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<ServiceAreaTypeDto> serviceAreaTypeDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(serviceAreaType -> serviceAreaTypeMapper.toDto(ServiceAreaTypeDto.builder().build(), serviceAreaType))
+                    .toList()
+                    ;
+
+            response.setMessage("Types of service areas fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(serviceAreaTypeDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

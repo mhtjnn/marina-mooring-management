@@ -144,4 +144,26 @@ public class AppConstants {
 
         public static final String MOORING = "Mooring";
     }
+
+    public static class ServiceAreaTypeConstants {
+
+        public static final String DOCKS = "Docks";
+
+        public static final String MARINA = "Marinas";
+
+        public static final String HARBORS = "Harbors";
+
+        public static final String MOORING_FIELDS = "Mooring Fields";
+
+        public static final String PIERS = "Piers";
+
+        public static final String ANCHORAGES = "Anchorages";
+
+        public static final String BOAT_CLUBS = "Boat Clubs";
+
+        public static final String PORTS = "Ports";
+
+        public static final String PRIVATE_MOORINGS = "Private Moorings";
+
+    }
 }

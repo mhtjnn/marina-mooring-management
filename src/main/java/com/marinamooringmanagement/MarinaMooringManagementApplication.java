@@ -5,6 +5,7 @@ import com.marinamooringmanagement.mapper.metadata.WorkOrderPayStatusMapper;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.metadata.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -85,6 +87,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
 
     @Autowired
     private WorkOrderInvoiceStatusRepository workOrderInvoiceStatusRepository;
+
+    @Autowired
+    private ServiceAreaTypeRepository serviceAreaTypeRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
@@ -875,6 +880,52 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             );
 
             workOrderInvoiceStatusRepository.saveAll(workOrderInvoiceStatuses);
+        }
+
+        final String serviceAreaTypeSql = "SELECT * from service_area_type";
+        final List<ServiceAreaType> serviceAreaTypeList = jdbcTemplate.query(serviceAreaTypeSql, (resultSet, resultNum) -> null);
+
+        if(serviceAreaTypeList.isEmpty()) {
+            List<ServiceAreaType> serviceAreaTypes = new ArrayList<>();
+
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.DOCKS)
+                    .description("Fixed or floating platforms attached to the shore where boats can be moored.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.MARINA)
+                    .description("Full-service facilities providing mooring, maintenance, and amenities for recreational boats and yachts.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.HARBORS)
+                    .description("Larger bodies of water providing shelter and mooring for ships, boats, and yachts.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.MOORING_FIELDS)
+                    .description("Designated areas within a harbor or marina for multiple boats to moor using buoys.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.PIERS)
+                    .description("Long structures extending from the shore into the water for docking vessels.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.ANCHORAGES)
+                    .description("Designated areas where boats can anchor, usually in open water away from docks and piers.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.BOAT_CLUBS)
+                    .description("Member-based organizations providing mooring and other services to their members.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.PORTS)
+                    .description("Large-scale facilities handling commercial shipping and transportation.")
+                    .build());
+            serviceAreaTypes.add(ServiceAreaType.builder()
+                    .type(AppConstants.ServiceAreaTypeConstants.PRIVATE_MOORINGS)
+                    .description("Individual mooring spots owned by private individuals or entities.")
+                    .build());
+
+            serviceAreaTypeRepository.saveAll(serviceAreaTypes);
         }
     }
 }

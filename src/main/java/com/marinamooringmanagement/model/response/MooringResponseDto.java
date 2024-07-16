@@ -123,4 +123,6 @@ public class MooringResponseDto implements Serializable {
     private Integer userId;
 
     private BoatyardResponseDto boatyardResponseDto;
+
+    private ServiceAreaResponseDto serviceAreaResponseDto;
 }

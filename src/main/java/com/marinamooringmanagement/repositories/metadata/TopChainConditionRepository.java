@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.repositories;
+package com.marinamooringmanagement.repositories.metadata;
 
 import com.marinamooringmanagement.model.entity.metadata.TopChainCondition;
 import org.springframework.data.jpa.repository.JpaRepository;

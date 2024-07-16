@@ -12,6 +12,8 @@ import com.marinamooringmanagement.model.request.NewPasswordRequest;
 import com.marinamooringmanagement.model.request.UserRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.metadata.CountryRepository;
+import com.marinamooringmanagement.repositories.metadata.StateRepository;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.JwtUtil;

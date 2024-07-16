@@ -13,7 +13,7 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.InventoryResponseDto;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.InventoryRepository;
-import com.marinamooringmanagement.repositories.InventoryTypeRepository;
+import com.marinamooringmanagement.repositories.metadata.InventoryTypeRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.VendorRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;

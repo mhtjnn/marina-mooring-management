@@ -14,6 +14,8 @@ import com.marinamooringmanagement.model.response.CountryResponseDto;
 import com.marinamooringmanagement.model.response.StateResponseDto;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.metadata.CountryRepository;
+import com.marinamooringmanagement.repositories.metadata.StateRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.VendorService;

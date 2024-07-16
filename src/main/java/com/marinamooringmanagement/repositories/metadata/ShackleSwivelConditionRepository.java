@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.repositories;
+package com.marinamooringmanagement.repositories.metadata;
 
 import com.marinamooringmanagement.model.entity.metadata.ShackleSwivelCondition;
 import org.springframework.data.jpa.repository.JpaRepository;

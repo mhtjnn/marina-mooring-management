@@ -46,4 +46,6 @@ public interface MetadataService {
     BasicRestResponse fetchWorkOrderStatus(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
     BasicRestResponse fetchCustomerTypes(final BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchServiceAreaTypes(final BaseSearchRequest baseSearchRequest);
 }
