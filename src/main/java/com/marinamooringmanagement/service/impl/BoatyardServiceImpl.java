@@ -108,16 +108,15 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Boatyard boatyard = new Boatyard();
+            final Boatyard boatyard = Boatyard.builder().build();
             performSave(boatYardRequestDto, boatyard, null, request);
+            log.info(String.format("Saving data in the database for Boatyard ID %d", boatYardRequestDto.getId()));
             response.setMessage("Boatyard Saved Successfully");
             response.setStatus(HttpStatus.CREATED.value());
-            log.info(String.format("Saving data in the database for Boatyard ID %d", boatYardRequestDto.getId()));
-
         } catch (Exception e) {
             log.error(String.format("Exception occurred while performing save operation: %s", e.getMessage()), e);
-
-            throw new DBOperationException(e.getMessage(), e);
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
     }

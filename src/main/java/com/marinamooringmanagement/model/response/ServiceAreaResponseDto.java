@@ -23,9 +23,15 @@ public class ServiceAreaResponseDto {
 
     private String aptSuite;
 
-    private StateDto stateDto;
+    private StateResponseDto stateResponseDto;
 
-    private CountryDto countryDto;
+    private CountryResponseDto countryResponseDto;
+
+    private String gpsCoordinates;
 
     private String notes;
+
+    private Integer userId;
+
+    private Integer mooringInventoried;
 }

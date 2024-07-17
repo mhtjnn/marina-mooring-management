@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @Builder
@@ -24,10 +26,6 @@ public class ServiceArea extends Base{
 
     @Column(name = "service_area_name")
     private String serviceAreaName;
-
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_area_type_id")
-    private ServiceAreaType serviceAreaType;
 
     @Column(name = "street_house")
     private String streetHouse;
@@ -51,6 +49,20 @@ public class ServiceArea extends Base{
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Country country;
+
+    @Column(name = "gps_coordinates")
+    private String gpsCoordinates;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_area_type_id")
+    private ServiceAreaType serviceAreaType;
+
+    @OneToMany(mappedBy = "", cascade = {}, fetch = FetchType.LAZY)
+    private List<Mooring> mooringList;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "notes")
     private String notes;

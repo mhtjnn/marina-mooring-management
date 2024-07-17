@@ -55,6 +55,7 @@ public interface MooringMapper {
     @Mapping(target = "installBottomChainDate", ignore = true)
     @Mapping(target = "installTopChainDate", ignore = true)
     @Mapping(target = "installConditionOfEyeDate", ignore = true)
+    @Mapping(target = "inspectionDate", ignore = true)
     MooringResponseDto mapToMooringResponseDto(@MappingTarget MooringResponseDto dto, Mooring mooring);
 
     /**
@@ -78,6 +79,7 @@ public interface MooringMapper {
     @Mapping(target = "installBottomChainDate", ignore = true)
     @Mapping(target = "installTopChainDate", ignore = true)
     @Mapping(target = "installConditionOfEyeDate", ignore = true)
+    @Mapping(target = "inspectionDate", ignore = true)
     Mooring mapToMooring(@MappingTarget Mooring mooring, MooringRequestDto dto);
 
     @Mapping(target = "customerResponseDto", ignore = true)

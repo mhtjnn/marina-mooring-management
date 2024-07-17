@@ -140,7 +140,7 @@ public class AppConstants {
 
         public static final String CUSTOMER = "Customer";
 
-        public static final String WORK_ORDER = "Work order";
+        public static final String WORK_ORDER = "WorkOrder";
 
         public static final String MOORING = "Mooring";
     }

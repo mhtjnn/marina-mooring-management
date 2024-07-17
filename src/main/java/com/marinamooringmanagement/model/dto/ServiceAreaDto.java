@@ -3,6 +3,7 @@ package com.marinamooringmanagement.model.dto;
 import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 import com.marinamooringmanagement.model.dto.metadata.ServiceAreaTypeDto;
 import com.marinamooringmanagement.model.dto.metadata.StateDto;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.ServiceAreaType;
 import com.marinamooringmanagement.model.entity.metadata.State;
@@ -34,6 +35,10 @@ public class ServiceAreaDto extends BaseDto{
     private StateDto stateDto;
 
     private CountryDto countryDto;
+
+    private String gpsCoordinates;
+
+    private UserDto userDto;
 
     private String notes;
 }

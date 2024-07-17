@@ -1,8 +1,5 @@
 package com.marinamooringmanagement.model.request;
 
-import com.marinamooringmanagement.model.dto.metadata.CountryDto;
-import com.marinamooringmanagement.model.dto.metadata.ServiceAreaTypeDto;
-import com.marinamooringmanagement.model.dto.metadata.StateDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceAreaTypeRequest {
+public class ServiceAreaRequestDto {
 
     private Integer id;
 
@@ -29,5 +26,7 @@ public class ServiceAreaTypeRequest {
     private Integer countryId;
 
     private String notes;
+
+    private String gpsCoordinates;
 
 }
