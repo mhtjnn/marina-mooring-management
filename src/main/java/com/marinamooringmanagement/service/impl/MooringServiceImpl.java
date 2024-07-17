@@ -5,9 +5,11 @@ import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.MooringStatusMapper;
+import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
+import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
@@ -17,6 +19,7 @@ import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MooringService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.GPSUtil;
+import com.marinamooringmanagement.utils.ImageUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -135,6 +138,12 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private ServiceAreaMapper serviceAreaMapper;
 
+    @Autowired
+    private ImageMapper imageMapper;
+
+    @Autowired
+    private ImageUtils imageUtils;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -194,6 +203,12 @@ public class MooringServiceImpl implements MooringService {
                         if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
                         if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                         if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
+                            mooringResponseDto.setImageDtoList(mooring.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -377,6 +392,27 @@ public class MooringServiceImpl implements MooringService {
                         if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring number: %1$s is associated with other mooring", mooringRequestDto.getMooringNumber()));
                     }
                 }
+            }
+
+            if(null != mooringRequestDto.getImageRequestDtoList() && !mooringRequestDto.getImageRequestDtoList().isEmpty()) {
+                List<Image> imageList = new ArrayList<>();
+                if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) imageList = mooring.getImageList();
+                Integer imageNumber = 1;
+                for(ImageRequestDto imageRequestDto: mooringRequestDto.getImageRequestDtoList()) {
+                    Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
+
+                    if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
+                    if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
+
+                    image.setImageData(imageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                    image.setCreationDate(new Date(System.currentTimeMillis()));
+                    image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                    imageList.add(image);
+
+                    imageNumber++;
+                }
+
+                mooring.setImageList(imageList);
             }
 
             if(null != mooringRequestDto.getInstallBottomChainDate()) {

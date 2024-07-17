@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents a mooring data transfer object (DTO) used for transferring mooring-related information.
@@ -121,6 +122,8 @@ public class MooringDto extends BaseDto implements Serializable {
     private UserDto userDto;
 
     private BoatyardDto boatyardDto;
+
+    private List<ImageDto> imageDtoList;
 
     private ServiceAreaDto serviceAreaDto;
 }

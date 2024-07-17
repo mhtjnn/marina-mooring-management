@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.metadata.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The {@code MooringResponseDto} class represents a Data Transfer Object (DTO) for mooring response.
@@ -125,4 +127,6 @@ public class MooringResponseDto implements Serializable {
     private BoatyardResponseDto boatyardResponseDto;
 
     private ServiceAreaResponseDto serviceAreaResponseDto;
+
+    private List<ImageDto> imageDtoList;
 }

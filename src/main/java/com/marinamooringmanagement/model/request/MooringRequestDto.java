@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents a mooring request data transfer object (DTO) used for creating or updating mooring entities.
@@ -117,6 +118,8 @@ public class MooringRequestDto implements Serializable {
      * The status of the mooring.
      */
     private Integer statusId;
+
+    private List<ImageRequestDto> imageRequestDtoList;
 
     private Integer serviceAreaId;
 }
