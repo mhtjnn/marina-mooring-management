@@ -140,6 +140,9 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private ServiceAreaTypeMapper serviceAreaTypeMapper;
 
+    @Autowired
+    private ServiceAreaRepository serviceAreaRepository;
+
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -777,6 +780,36 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Types of service areas fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(serviceAreaTypeDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchServiceAreas(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            List<ServiceAreaMetadataResponse> serviceAreaMetadataResponseList = serviceAreaRepository.findAll()
+                    .stream()
+                    .filter(serviceArea -> serviceArea.getUser().getId().equals(user.getId()))
+                    .map(serviceArea -> ServiceAreaMetadataResponse.builder()
+                            .id(serviceArea.getId())
+                            .serviceAreaName(serviceArea.getServiceAreaName())
+                            .build()
+                    )
+                    .toList();
+
+            response.setMessage("Service areas fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(serviceAreaMetadataResponseList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

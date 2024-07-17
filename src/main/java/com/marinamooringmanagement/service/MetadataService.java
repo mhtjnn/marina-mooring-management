@@ -48,4 +48,6 @@ public interface MetadataService {
     BasicRestResponse fetchCustomerTypes(final BaseSearchRequest baseSearchRequest);
 
     BasicRestResponse fetchServiceAreaTypes(final BaseSearchRequest baseSearchRequest);
+
+    BasicRestResponse fetchServiceAreas(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 }
