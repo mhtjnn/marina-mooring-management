@@ -207,8 +207,8 @@ public class QuickbookCustomerController {
     }
 
     @Operation(
-            tags = "Map customer to quickbook customer from the database",
-            description = "API to Map customer to quickbook customer from the database",
+            tags = "Save mapping customer to quickbook customer from the database",
+            description = "API to save mapping customer to quickbook customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -225,18 +225,51 @@ public class QuickbookCustomerController {
     )
     @SecurityRequirement(name = "auth")
     @RequestMapping(
-            value = "/mapCustomerToQuickbook/{quickbookCustomerId}/{customerId}",
+            value = "/saveMappingCustomerToQuickbook/{quickbookCustomerId}/{customerId}",
             method = RequestMethod.POST,
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
-    public BasicRestResponse mapCustomerToQuickbook(
+    public BasicRestResponse saveMappingCustomerToQuickbook(
             @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
             @Parameter(description = "Customer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("customerId") Integer customerId,
             final HttpServletRequest request
     ) {
-        return quickbookCustomerService.mapCustomerToQuickbook(quickbookCustomerId, customerId, request);
+        return quickbookCustomerService.saveMappingCustomerToQuickbook(quickbookCustomerId, customerId, request);
+    }
+
+    @Operation(
+            tags = "Edit mapping customer to quickbook customer from the database",
+            description = "API to edit mapping customer to quickbook customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @SecurityRequirement(name = "auth")
+    @RequestMapping(
+            value = "/editMappingCustomerToQuickbook/{quickbookCustomerId}/{customerId}",
+            method = RequestMethod.PUT,
+            produces = {"application/json"}
+    )
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse editMappingCustomerToQuickbook(
+            @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
+            @Parameter(description = "Customer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("customerId") Integer customerId,
+            final HttpServletRequest request
+    ) {
+        return quickbookCustomerService.editMappingCustomerToQuickbook(quickbookCustomerId, customerId, request);
     }
 
 }

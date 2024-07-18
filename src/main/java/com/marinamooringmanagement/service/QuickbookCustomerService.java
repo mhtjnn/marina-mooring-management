@@ -14,5 +14,7 @@ public interface QuickbookCustomerService {
 
     BasicRestResponse deleteQuickbookCustomer(final Integer quickbookCustomerId, final HttpServletRequest request);
 
-    BasicRestResponse mapCustomerToQuickbook(final Integer quickbookCustomerId, final Integer customerId, final HttpServletRequest request);
+    BasicRestResponse saveMappingCustomerToQuickbook(final Integer quickbookCustomerId, final Integer customerId, final HttpServletRequest request);
+
+    BasicRestResponse editMappingCustomerToQuickbook(final Integer quickbookCustomerId, final Integer customerId, final HttpServletRequest request);
 }
