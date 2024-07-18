@@ -9,6 +9,8 @@ import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.mapper.UserMapper;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;

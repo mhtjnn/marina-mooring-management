@@ -50,4 +50,6 @@ public interface MetadataService {
     BasicRestResponse fetchServiceAreaTypes(final BaseSearchRequest baseSearchRequest);
 
     BasicRestResponse fetchServiceAreas(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchQuickbookCustomers(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 }

@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.RoleDto;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import lombok.*;
 
 import java.io.Serializable;

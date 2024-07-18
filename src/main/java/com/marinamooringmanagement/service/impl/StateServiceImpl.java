@@ -5,7 +5,7 @@ import com.marinamooringmanagement.model.dto.metadata.StateDto;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.StateResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.metadata.StateRepository;
 import com.marinamooringmanagement.service.StateService;
 import com.marinamooringmanagement.utils.SortUtils;

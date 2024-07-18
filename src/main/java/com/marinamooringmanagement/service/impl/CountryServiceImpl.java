@@ -5,7 +5,7 @@ import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
 import com.marinamooringmanagement.repositories.metadata.CountryRepository;
 import com.marinamooringmanagement.service.CountryService;
 import com.marinamooringmanagement.utils.SortUtils;

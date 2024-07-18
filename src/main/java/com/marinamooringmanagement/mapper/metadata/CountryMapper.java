@@ -3,7 +3,7 @@ package com.marinamooringmanagement.mapper.metadata;
 import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.request.CountryRequestDto;
-import com.marinamooringmanagement.model.response.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;

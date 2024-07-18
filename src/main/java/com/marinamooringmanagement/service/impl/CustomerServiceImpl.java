@@ -19,6 +19,8 @@ import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.CountryRepository;
 import com.marinamooringmanagement.repositories.metadata.CustomerTypeRepository;
@@ -117,6 +119,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private PhoneNumberUtil phoneNumberUtil;
+
+    @Autowired
+    private ServiceAreaMapper serviceAreaMapper;
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
@@ -326,9 +331,11 @@ public class CustomerServiceImpl implements CustomerService {
                             if(null != customerResponseDto.getFirstName() && null != customerResponseDto.getLastName()) mooringResponseDto.setCustomerName(
                                     customerResponseDto.getFirstName() + " " + customerResponseDto.getLastName()
                             );
+                            if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
                             if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
                             if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                             if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                            if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
                             return mooringResponseDto;
                         }).toList();
             }

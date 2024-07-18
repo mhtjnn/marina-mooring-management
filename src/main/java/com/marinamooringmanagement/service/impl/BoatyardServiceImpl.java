@@ -13,6 +13,8 @@ import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.CountryRepository;
 import com.marinamooringmanagement.repositories.metadata.StateRepository;

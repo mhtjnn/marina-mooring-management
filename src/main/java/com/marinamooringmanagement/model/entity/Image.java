@@ -25,7 +25,7 @@ public class Image extends Base{
     private String note;
 
     @Lob
-    @Column(name = "image_data")
+    @Column(name = "image_data", columnDefinition="LONGTEXT")
     private byte[] imageData;
 
 }

@@ -1,11 +1,11 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * The {@code VendorResponseDto} class represents a Data Transfer Object (DTO) for vendor response.

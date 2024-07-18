@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoatyardMetadataResponse {
+public class QuickbookCustomerResponseDto {
 
     private Integer id;
 
-    private String boatyardName;
+    private String quickbookCustomerName;
 
+    private String quickbookCustomerId;
+
+    private Integer userId;
 }

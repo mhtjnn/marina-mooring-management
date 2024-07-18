@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.model.response;
+package com.marinamooringmanagement.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MooringMetadataResponse {
+public class QuickbookCustomerDto extends BaseDto{
 
     private Integer id;
 
-    private String mooringNumber;
+    private String customerName;
 
+    private String customerId;
+
+    private UserDto userDto;
 }

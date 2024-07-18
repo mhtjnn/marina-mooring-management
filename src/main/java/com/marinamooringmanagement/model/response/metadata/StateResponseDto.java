@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.model.response;
+package com.marinamooringmanagement.model.response.metadata;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

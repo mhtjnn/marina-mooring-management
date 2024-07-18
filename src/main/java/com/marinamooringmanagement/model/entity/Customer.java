@@ -104,4 +104,7 @@ public class Customer extends Base {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_image_id")
     private List<Image> imageList;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
+    private QuickbookCustomer quickBookCustomer;
 }

@@ -1,4 +1,4 @@
-package com.marinamooringmanagement.model.response;
+package com.marinamooringmanagement.model.response.metadata;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserMetadataResponse {
+public class ServiceAreaMetadataResponse {
 
     private Integer id;
 
-    private String name;
+    private String serviceAreaName;
 
 }

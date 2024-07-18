@@ -203,6 +203,7 @@ public class MooringServiceImpl implements MooringService {
                         if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
                         if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                         if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
                         if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
                             mooringResponseDto.setImageDtoList(mooring.getImageList()
                                     .stream()

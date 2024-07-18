@@ -8,6 +8,7 @@ import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
@@ -142,6 +143,9 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private ServiceAreaRepository serviceAreaRepository;
+
+    @Autowired
+    private QuickbookCustomerRepository quickbookCustomerRepository;
 
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
@@ -810,6 +814,41 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Service areas fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(serviceAreaMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchQuickbookCustomers(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            List<QuickBookCustomerMetadataResponse> quickBookCustomerMetadataResponseList = quickbookCustomerRepository.findAll()
+                    .stream()
+                    .filter(quickbookCustomer -> {
+                        if(null != quickbookCustomer.getUser() && null != quickbookCustomer.getUser().getId())
+                            return quickbookCustomer.getUser().getId().equals(user.getId());
+                        return false;
+                    })
+                    .map(quickbookCustomer -> QuickBookCustomerMetadataResponse.builder()
+                            .id(quickbookCustomer.getId())
+                            .quickbookCustomerName(quickbookCustomer.getQuickbookCustomerName())
+                            .quickbookCustomerId(quickbookCustomer.getQuickbookCustomerId())
+                            .build()
+                    )
+                    .toList();
+
+            response.setMessage("Quickbook customer fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(quickBookCustomerMetadataResponseList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
