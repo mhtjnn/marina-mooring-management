@@ -87,6 +87,9 @@ public class EstimateServiceImpl implements EstimateService {
     @Autowired
     private DateUtil dateUtil;
 
+    @Autowired
+    private WorkOrderServiceImpl workOrderServiceImpl;
+
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
     @Override
@@ -141,13 +144,8 @@ public class EstimateServiceImpl implements EstimateService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) {
-                            workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
-                        }
-
-                        if(null != workOrder.getScheduledDate()) {
-                            workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
-                        }
+                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
+                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
 
                         return workOrderResponseDto;
                     })
@@ -259,6 +257,8 @@ public class EstimateServiceImpl implements EstimateService {
             final WorkOrder workOrder = estimateMapper.mapToWorkOrder(WorkOrder.builder().build(), estimate);
             workOrder.setCreationDate(new Date(System.currentTimeMillis()));
             workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+            workOrder.setWorkOrderNumber(workOrderServiceImpl.createWorkOrderNumber());
 
             if(null != estimate.getTechnicianUser()) {
                 workOrder.setTechnicianUser(estimate.getTechnicianUser());

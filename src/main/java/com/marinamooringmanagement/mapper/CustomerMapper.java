@@ -44,6 +44,7 @@ public interface CustomerMapper {
     @Mapping(target = "countryResponseDto", ignore = true)
     @Mapping(target = "customerTypeDto", ignore = true)
     @Mapping(target = "imageDtoList", ignore = true)
+    @Mapping(target = "quickbookCustomerResponseDto", ignore = true)
     CustomerResponseDto mapToCustomerResponseDto(@MappingTarget CustomerResponseDto dto, Customer customer);
 
     @Mapping(target = "mooringList", ignore = true)

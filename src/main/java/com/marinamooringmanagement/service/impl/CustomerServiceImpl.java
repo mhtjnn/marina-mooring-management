@@ -123,6 +123,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private ServiceAreaMapper serviceAreaMapper;
 
+    @Autowired
+    private QuickbookCustomerMapper quickbookCustomerMapper;
+
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     /**
@@ -220,6 +223,9 @@ public class CustomerServiceImpl implements CustomerService {
                                     .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
                                     .toList());
                         }
+                        if(null != customer.getQuickBookCustomer())
+                            customerResponseDto.setQuickbookCustomerResponseDto(quickbookCustomerMapper.mapToResponseDto(QuickbookCustomerResponseDto.builder().build(), customer.getQuickBookCustomer()));
+
                         return customerResponseDto;
                     })
                     .toList();

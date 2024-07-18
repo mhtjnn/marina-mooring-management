@@ -73,4 +73,6 @@ public class CustomerResponseDto {
     private List<MooringResponseDto> mooringResponseDtoList;
 
     private List<ImageDto> imageDtoList;
+
+    private QuickbookCustomerResponseDto quickbookCustomerResponseDto;
 }

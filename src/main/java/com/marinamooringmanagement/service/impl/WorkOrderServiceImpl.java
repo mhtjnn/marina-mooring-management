@@ -1282,7 +1282,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return new ArrayList<>(mooringDueServiceResponseDtoCollection);
     }
 
-    private String createWorkOrderNumber() {
+    public String createWorkOrderNumber() {
         final StringBuilder workOrderNumber = new StringBuilder();
         workOrderNumber.append("WOR");
 
