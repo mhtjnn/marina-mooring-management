@@ -10,7 +10,9 @@ public interface QuickbookCustomerService {
 
     BasicRestResponse saveQuickbookCustomer(final QuickbookCustomerRequestDto quickbookCustomer, final HttpServletRequest request);
 
-    BasicRestResponse updateQuickbookCustomer(final QuickbookCustomerRequestDto quickbookCustomerRquestDto, final Integer quickbookCustomerId, final HttpServletRequest request);
+    BasicRestResponse updateQuickbookCustomer(final QuickbookCustomerRequestDto quickbookCustomerRequestDto, final Integer quickbookCustomerId, final HttpServletRequest request);
 
     BasicRestResponse deleteQuickbookCustomer(final Integer quickbookCustomerId, final HttpServletRequest request);
+
+    BasicRestResponse mapCustomerToQuickbook(final Integer quickbookCustomerId, final Integer customerId, final HttpServletRequest request);
 }

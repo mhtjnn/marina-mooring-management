@@ -863,7 +863,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
 
             response.setMessage("Work order approved and it's invoice saved successfully!");
-            response.setStatus(HttpStatus.CREATED.value());
+            response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

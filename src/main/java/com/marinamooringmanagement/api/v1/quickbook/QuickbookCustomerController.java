@@ -118,10 +118,10 @@ public class QuickbookCustomerController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse saveQuickbookCustomer(
-            @Parameter(description = "QuickbookCustomer to save", schema = @Schema(implementation = QuickbookCustomerRequestDto.class)) final @Valid @RequestBody QuickbookCustomerRequestDto quickbookCustomer,
+            @Parameter(description = "QuickbookCustomer to save", schema = @Schema(implementation = QuickbookCustomerRequestDto.class)) final @Valid @RequestBody QuickbookCustomerRequestDto quickbookCustomerRequestDto,
             final HttpServletRequest request
     ) {
-        return quickbookCustomerService.saveQuickbookCustomer(quickbookCustomer, request);
+        return quickbookCustomerService.saveQuickbookCustomer(quickbookCustomerRequestDto, request);
     }
 
     /**
@@ -201,10 +201,42 @@ public class QuickbookCustomerController {
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
     public BasicRestResponse deleteQuickbookCustomer(
             @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
-            @RequestParam(value = "customerAdminId", required = false) final Integer customerAdminId,
             final HttpServletRequest request
     ) {
         return quickbookCustomerService.deleteQuickbookCustomer(quickbookCustomerId, request);
+    }
+
+    @Operation(
+            tags = "Map customer to quickbook customer from the database",
+            description = "API to Map customer to quickbook customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @SecurityRequirement(name = "auth")
+    @RequestMapping(
+            value = "/mapCustomerToQuickbook/{quickbookCustomerId}/{customerId}",
+            method = RequestMethod.POST,
+            produces = {"application/json"}
+    )
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse mapCustomerToQuickbook(
+            @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
+            @Parameter(description = "Customer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("customerId") Integer customerId,
+            final HttpServletRequest request
+    ) {
+        return quickbookCustomerService.mapCustomerToQuickbook(quickbookCustomerId, customerId, request);
     }
 
 }
