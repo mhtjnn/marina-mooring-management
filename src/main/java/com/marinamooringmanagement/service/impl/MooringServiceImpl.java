@@ -24,10 +24,7 @@ import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -168,13 +165,16 @@ public class MooringServiceImpl implements MooringService {
 
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        Join<Mooring, Customer> customerJoin = mooring.join("customer", JoinType.LEFT);
+                        Join<Mooring, ServiceArea> serviceAreaJoin = mooring.join("serviceArea", JoinType.LEFT);
+
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("boatName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("serviceArea").get("serviceAreaName")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(serviceAreaJoin.get("serviceAreaName")), lowerCaseSearchText)
                         ));
                     }
 

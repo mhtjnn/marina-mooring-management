@@ -135,7 +135,7 @@ public class Mooring extends Base {
     @JoinColumn(name = "status_id")
     private MooringStatus mooringStatus;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     @JsonBackReference
     private Customer customer;
@@ -155,6 +155,7 @@ public class Mooring extends Base {
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "service_area_id")
+    @JsonBackReference
     private ServiceArea serviceArea;
 
     @Override

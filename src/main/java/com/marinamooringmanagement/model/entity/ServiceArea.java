@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.ServiceAreaType;
 import com.marinamooringmanagement.model.entity.metadata.State;
@@ -58,6 +59,7 @@ public class ServiceArea extends Base{
     private ServiceAreaType serviceAreaType;
 
     @OneToMany(mappedBy = "", cascade = {}, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
