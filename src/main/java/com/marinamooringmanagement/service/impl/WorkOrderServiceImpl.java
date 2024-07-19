@@ -716,7 +716,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 paginatedWorkOrder = openWorkOrderResponseDtoList.subList(start, end);
             }
 
-            allWorkOrdersAndMooringDueForServiceResponse.setWorkOrderResponseDtoList(openWorkOrderResponseDtoList);
+            allWorkOrdersAndMooringDueForServiceResponse.setWorkOrderResponseDtoList(paginatedWorkOrder);
             allWorkOrdersAndMooringDueForServiceResponse.setMooringDueServiceResponseDtoList(getMooringDueServiceResponseDtoList(workOrderResponseDtoList));
 
             response.setCurrentSize(paginatedWorkOrder.size());
@@ -1297,4 +1297,5 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         if (optionalWorkOrder.isPresent()) createWorkOrderNumber();
         return workOrderNumberStr;
     }
+
 }
