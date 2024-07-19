@@ -404,16 +404,10 @@ public class BoatyardServiceImpl implements BoatyardService {
 
             Optional<Boatyard> optionalBoatyard = null;
 
-            if (null != boatyardRequestDto.getBoatyardId()) {
-                optionalBoatyard = boatyardRepository.findByBoatyardId(boatyardRequestDto.getBoatyardId());
-                if (optionalBoatyard.isPresent()) {
-                    if (null == id) {
-                        throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
-                    } else {
-                        if (!optionalBoatyard.get().getId().equals(id))
-                            throw new RuntimeException(String.format("Given Boatyard Id: %1$s is already present", boatyardRequestDto.getBoatyardId()));
-                    }
-                }
+            if (null == id) {
+                final String boatyardId = createBoatyardId();
+                boatyard.setBoatyardId(boatyardId);
+                boatyard.setCreationDate(new Date(System.currentTimeMillis()));
             }
 
             if (null != boatyardRequestDto.getBoatyardName()) {
@@ -500,5 +494,21 @@ public class BoatyardServiceImpl implements BoatyardService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    public String createBoatyardId() {
+        final StringBuilder boatyardId = new StringBuilder();
+        boatyardId.append("BY");
+
+
+        int randomThreeDigitNumber = 100 + (int) (Math.random() * 900);
+        String randomThreeDigitNumberStr = Integer.toString(randomThreeDigitNumber);
+        boatyardId.append(randomThreeDigitNumberStr);
+
+        final String boatyardIdString = boatyardId.toString();
+
+        Optional<Boatyard> optionalBoatyard = boatyardRepository.findByBoatyardId(boatyardIdString);
+        if (optionalBoatyard.isPresent()) createBoatyardId();
+        return boatyardIdString;
     }
 }

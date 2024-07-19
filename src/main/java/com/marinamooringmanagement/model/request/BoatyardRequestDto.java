@@ -23,11 +23,6 @@ public class BoatyardRequestDto {
     private Integer id;
 
     /**
-     * The boatyard ID of the BoatYard.
-     */
-    private String boatyardId;
-
-    /**
      * The name of the BoatYard.
      */
     @NotNull(message = "Boatyard name cannot be null")

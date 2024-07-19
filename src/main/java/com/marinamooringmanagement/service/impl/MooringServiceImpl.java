@@ -173,7 +173,8 @@ public class MooringServiceImpl implements MooringService {
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("lastName")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("customer").get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooring.join("serviceArea").get("serviceAreaName")), lowerCaseSearchText)
                         ));
                     }
 
@@ -416,7 +417,7 @@ public class MooringServiceImpl implements MooringService {
                 mooring.setImageList(imageList);
             }
 
-            if(null != mooringRequestDto.getInstallBottomChainDate()) {
+            if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
                 Date installBottomChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
                 LocalDate localDate = installBottomChainDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -424,11 +425,9 @@ public class MooringServiceImpl implements MooringService {
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallBottomChainDate(installBottomChainDate);
-            } else {
-                if(null == id) throw new RuntimeException("Install bottom chain date cannot be null during mooring save");
             }
 
-            if(null != mooringRequestDto.getInstallTopChainDate()) {
+            if(null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
                 Date installTopChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
                 LocalDate localDate = installTopChainDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -436,11 +435,9 @@ public class MooringServiceImpl implements MooringService {
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallTopChainDate(installTopChainDate);
-            } else {
-                if(null == id) throw new RuntimeException("Install top chain date cannot be null during mooring save");
             }
 
-            if(null != mooringRequestDto.getInstallConditionOfEyeDate()) {
+            if(null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
                 Date conditionOfEyeDate = dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
                 LocalDate localDate = conditionOfEyeDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -448,11 +445,9 @@ public class MooringServiceImpl implements MooringService {
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
                 mooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
-            } else {
-                if(null == id) throw new RuntimeException("Install condition of eye chain date cannot be null during mooring save");
             }
 
-            if(null != mooringRequestDto.getInspectionDate()) {
+            if(null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
                 Date inspectionDate = dateUtil.stringToDate(mooringRequestDto.getInspectionDate());
                 LocalDate localDate = inspectionDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -462,36 +457,52 @@ public class MooringServiceImpl implements MooringService {
                 mooring.setInspectionDate(inspectionDate);
             }
 
-            if (null != mooringRequestDto.getGpsCoordinates()) {
+            if (null != mooringRequestDto.getGpsCoordinates() && !mooringRequestDto.getGpsCoordinates().isEmpty()) {
                 final String gpsCoordinates = gpsUtil.getGpsCoordinates(mooringRequestDto.getGpsCoordinates());
                 mooring.setGpsCoordinates(gpsCoordinates);
-            } else {
-                if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
             }
 
-            if(null == mooringRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");
-            Optional<Customer> optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
-            if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
-            mooring.setCustomer(optionalCustomer.get());
-            final Customer customer = optionalCustomer.get();
-            if(!customer.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
+            Optional<Customer> optionalCustomer;
+            if(null != mooringRequestDto.getCustomerId()) {
+                optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
+                if (optionalCustomer.isEmpty())
+                    throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
+                mooring.setCustomer(optionalCustomer.get());
+                final Customer customer = optionalCustomer.get();
+                if (!customer.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
+                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
 
-            final CustomerType customerType = customerTypeRepository.findByType(AppConstants.CustomerTypeConstants.DOCK);
-            if(null != mooringRequestDto.getAddDock() && mooringRequestDto.getAddDock()) customer.setCustomerType(customerType);
+                final CustomerType customerType = customerTypeRepository.findByType(AppConstants.CustomerTypeConstants.DOCK);
+                if(null != mooringRequestDto.getAddDock() && mooringRequestDto.getAddDock()) customer.setCustomerType(customerType);
+            } else {
+                optionalCustomer = Optional.empty();
+            }
 
-            if (null == mooringRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Id cannot be null");
-            Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
-            if (optionalBoatyard.isEmpty()) throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
-            final Boatyard boatyard = optionalBoatyard.get();
-            if(!boatyard.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other customer owner", mooringRequestDto.getBoatyardId()));
-            mooring.setBoatyard(optionalBoatyard.get());
+            Optional<Boatyard> optionalBoatyard;
+            if (null != mooringRequestDto.getBoatyardId()) {
+                optionalBoatyard = boatyardRepository.findById(mooringRequestDto.getBoatyardId());
+                if (optionalBoatyard.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No boatyard found with the given boatyard id: %1$s", mooringRequestDto.getBoatyardId()));
+                final Boatyard boatyard = optionalBoatyard.get();
+                if (!boatyard.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
+                    throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other customer owner", mooringRequestDto.getBoatyardId()));
+                mooring.setBoatyard(optionalBoatyard.get());
+            } else {
+                optionalBoatyard = Optional.empty();
+            }
 
-            if (null == mooringRequestDto.getServiceAreaId()) throw new RuntimeException("service area Id cannot be null");
-            Optional<ServiceArea> optionalServiceArea = serviceAreaRepository.findById(mooringRequestDto.getServiceAreaId());
-            if (optionalServiceArea.isEmpty()) throw new ResourceNotFoundException(String.format("No service area found with the given service area id: %1$s", mooringRequestDto.getServiceAreaId()));
-            final ServiceArea serviceArea = optionalServiceArea.get();
-            if(!serviceArea.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId)) throw new RuntimeException(String.format("Service area with the id: %1$s is associated with some other customer owner", mooringRequestDto.getServiceAreaId()));
-            mooring.setServiceArea(serviceArea);
+            Optional<ServiceArea> optionalServiceArea;
+            if (null != mooringRequestDto.getServiceAreaId()) {
+                optionalServiceArea = serviceAreaRepository.findById(mooringRequestDto.getServiceAreaId());
+                if (optionalServiceArea.isEmpty())
+                    throw new ResourceNotFoundException(String.format("No service area found with the given service area id: %1$s", mooringRequestDto.getServiceAreaId()));
+                final ServiceArea serviceArea = optionalServiceArea.get();
+                if (!serviceArea.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
+                    throw new RuntimeException(String.format("Service area with the id: %1$s is associated with some other customer owner", mooringRequestDto.getServiceAreaId()));
+                mooring.setServiceArea(serviceArea);
+            } else {
+                optionalServiceArea = Optional.empty();
+            }
 
             Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);
             if (optionalMooringStatus.isEmpty())
@@ -511,8 +522,6 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalTypeOfWeight.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Type of weight found with the given id: %1$s", mooringRequestDto.getTypeOfWeightId()));
                 mooring.setTypeOfWeight(optionalTypeOfWeight.get());
-            } else {
-                throw new RuntimeException("Type of weight cannot be null");
             }
 
             if (null != mooringRequestDto.getEyeConditionId()) {
@@ -520,8 +529,6 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalEyeCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Eye condition found with the given id: %1$s", mooringRequestDto.getEyeConditionId()));
                 mooring.setEyeCondition(optionalEyeCondition.get());
-            } else {
-                throw new RuntimeException("Eye condition cannot be null");
             }
 
             if (null != mooringRequestDto.getTopChainConditionId()) {
@@ -529,8 +536,6 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalTopChainCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Top chain condition found with the given id: %1$s", mooringRequestDto.getTopChainConditionId()));
                 mooring.setTopChainCondition(optionalTopChainCondition.get());
-            } else {
-                throw new RuntimeException("Top chain condition cannot be null");
             }
 
             if (null != mooringRequestDto.getBottomChainConditionId()) {
@@ -538,10 +543,7 @@ public class MooringServiceImpl implements MooringService {
                 if (optionalBottomChainCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Bottom chain condition found with the given id: %1$s", mooringRequestDto.getBottomChainConditionId()));
                 mooring.setBottomChainCondition(optionalBottomChainCondition.get());
-            } else {
-                throw new RuntimeException("Bottom chain condition cannot be null");
             }
-
             if (null != mooringRequestDto.getShackleSwivelConditionId()) {
                 Optional<ShackleSwivelCondition> optionalShackleSwivelCondition = shackleSwivelConditionRepository.findById(mooringRequestDto.getShackleSwivelConditionId());
                 if (optionalShackleSwivelCondition.isEmpty())
@@ -554,24 +556,30 @@ public class MooringServiceImpl implements MooringService {
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 
-            if(null != optionalBoatyard.get().getMooringList()) optionalBoatyard.get().getMooringList()
-                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-            else  optionalBoatyard.get().setMooringList(new ArrayList<>());
-
-            if(null != optionalServiceArea.get().getMooringList()) optionalServiceArea.get().getMooringList()
-                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-            else  optionalServiceArea.get().setMooringList(new ArrayList<>());
-
-            if(null != optionalCustomer.get().getMooringList()) optionalCustomer.get().getMooringList()
-                            .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-            else optionalCustomer.get().setMooringList(new ArrayList<>());
-
-            optionalBoatyard.get().getMooringList().add(finalSavedMooring);
-            optionalCustomer.get().getMooringList().add(finalSavedMooring);
-            serviceArea.getMooringList().add(finalSavedMooring);
-            boatyardRepository.save(optionalBoatyard.get());
-            customerRepository.save(optionalCustomer.get());
-            serviceAreaRepository.save(serviceArea);
+//            if(null != optionalBoatyard.get().getMooringList()) optionalBoatyard.get().getMooringList()
+//                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
+//            else  optionalBoatyard.get().setMooringList(new ArrayList<>());
+//
+//            if(null != optionalServiceArea.get().getMooringList()) optionalServiceArea.get().getMooringList()
+//                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
+//            else  optionalServiceArea.get().setMooringList(new ArrayList<>());
+//
+//            if(null != optionalCustomer.get().getMooringList()) optionalCustomer.get().getMooringList()
+//                            .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
+//            else optionalCustomer.get().setMooringList(new ArrayList<>());
+//
+            optionalBoatyard.ifPresent(boatyard -> {
+                boatyard.getMooringList().add(finalSavedMooring);
+                boatyardRepository.save(optionalBoatyard.get());
+            });
+            optionalCustomer.ifPresent(customer -> {
+                customer.getMooringList().add(finalSavedMooring);
+                customerRepository.save(optionalCustomer.get());
+            });
+            optionalServiceArea.ifPresent(serviceArea -> {
+                serviceArea.getMooringList().add(finalSavedMooring);
+                serviceAreaRepository.save(optionalServiceArea.get());
+            });
 
             mooringChangedLogs(initialMooring, savedMooring, user);
 
