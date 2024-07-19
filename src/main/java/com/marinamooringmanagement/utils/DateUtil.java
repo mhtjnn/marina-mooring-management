@@ -2,6 +2,7 @@ package com.marinamooringmanagement.utils;
 
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +29,13 @@ public class DateUtil {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    public LocalDate stringToLocalDate(String dateStr) {
+        final Date filterFromDate = stringToDate(dateStr);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = dateFormat.format(filterFromDate);
+        return LocalDate.parse(formattedDate);
     }
 
 }

@@ -58,7 +58,7 @@ public class ServiceArea extends Base{
     @JoinColumn(name = "service_area_type_id")
     private ServiceAreaType serviceAreaType;
 
-    @OneToMany(mappedBy = "", cascade = {}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "serviceArea", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Mooring> mooringList;
 
