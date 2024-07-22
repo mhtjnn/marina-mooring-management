@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ public class WorkOrderInvoice extends Base{
     private WorkOrderInvoiceStatus workOrderInvoiceStatus;
 
     @OneToOne
+    @JsonBackReference
     @JoinColumn(name = "work_order_id")
     private WorkOrder workOrder;
 

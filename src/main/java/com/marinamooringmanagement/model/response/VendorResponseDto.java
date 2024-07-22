@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * The {@code VendorResponseDto} class represents a Data Transfer Object (DTO) for vendor response.
  * This class is used to transfer vendor data, including information about the company, contact details,
@@ -16,11 +18,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VendorResponseDto {
+public class VendorResponseDto implements Serializable {
 
     private static final long serialVersionUID = 55268635079L;
 
     private Integer id;
+
+    private String vendorName;
 
     /**
      * Name of the company associated with the vendor.

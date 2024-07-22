@@ -5,11 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceAreaMetadataResponse {
+public class ServiceAreaMetadataResponse implements Serializable {
+
+    private static final long serialVersionUID = 55268695235079L;
 
     private Integer id;
 

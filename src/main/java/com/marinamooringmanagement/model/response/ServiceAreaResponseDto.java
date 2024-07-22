@@ -8,11 +8,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceAreaResponseDto {
+public class ServiceAreaResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 5526863745079L;
+
     private Integer id;
 
     private String serviceAreaName;

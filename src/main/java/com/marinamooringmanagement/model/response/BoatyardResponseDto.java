@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -17,7 +18,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoatyardResponseDto {
+public class BoatyardResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 55268635079123L;
+
     /**
      * The unique identifier of the BoatYard.
      */

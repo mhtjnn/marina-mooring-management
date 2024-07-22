@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.sql.Time;
 import java.util.List;
 
@@ -15,7 +16,9 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkOrderResponseDto {
+public class WorkOrderResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 5526863501379L;
 
     private Integer id;
 

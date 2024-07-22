@@ -68,7 +68,7 @@ public class CustomerRequestDto {
     /**
      * The zip code or postal code of the customer's address.
      */
-    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid zipcode format.")
+    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid zipcode format.")
     private String zipCode;
 
     private Integer customerTypeId;

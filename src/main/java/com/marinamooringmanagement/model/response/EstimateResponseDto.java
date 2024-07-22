@@ -6,13 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.sql.Time;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EstimateResponseDto {
+public class EstimateResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 5526863507109L;
 
     private Integer id;
 

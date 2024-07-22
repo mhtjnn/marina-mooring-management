@@ -14,7 +14,6 @@ import java.io.Serializable;
 @Builder
 public class TechnicianUserResponseDto implements Serializable {
 
-
     private static final long serialVersionUID = 1234534567890L;
 
     /**

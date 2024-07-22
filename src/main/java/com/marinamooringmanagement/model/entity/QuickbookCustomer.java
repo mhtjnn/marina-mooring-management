@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class QuickbookCustomer extends Base{
     private String quickbookCustomerId;
 
     @OneToOne
+    @JsonBackReference
     @JoinColumn(name = "customer_id")
     private Customer customer;
 

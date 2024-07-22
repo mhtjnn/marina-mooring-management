@@ -6,11 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkOrderInvoiceResponseDto {
+public class WorkOrderInvoiceResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 5526863215079L;
 
     private Integer id;
 

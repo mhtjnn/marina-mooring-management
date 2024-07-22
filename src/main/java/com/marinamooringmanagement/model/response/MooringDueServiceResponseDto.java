@@ -6,13 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MooringDueServiceResponseDto {
+public class MooringDueServiceResponseDto implements Serializable {
 
-    private static final long serialVersionUID = 5567268063035079L;
+    private static final long serialVersionUID = 556726806305079L;
 
     /**
      * The unique identifier for the mooring.

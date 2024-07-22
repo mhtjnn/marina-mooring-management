@@ -19,6 +19,8 @@ import java.util.List;
 @Builder
 public class BasicRestResponse implements Serializable {
 
+    private static final long serialVersionUID = 55268635079098L;
+
     /**
      * The message associated with the response.
      */

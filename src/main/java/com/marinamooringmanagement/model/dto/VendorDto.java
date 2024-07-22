@@ -20,6 +20,8 @@ public class VendorDto extends BaseDto implements Serializable {
 
     private Integer id;
 
+    private String vendorName;
+
     /**
      * Name of the company associated with the vendor.
      */

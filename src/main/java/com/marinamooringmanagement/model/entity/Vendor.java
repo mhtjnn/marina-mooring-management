@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
@@ -25,6 +26,9 @@ public class Vendor extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+
+    @Column(name = "vendor_name")
+    private String vendorName;
 
     /**
      * Name of the company associated with the vendor.
@@ -144,5 +148,6 @@ public class Vendor extends Base {
     private User user;
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Inventory> inventoryList;
 }

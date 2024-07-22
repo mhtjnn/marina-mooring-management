@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import jakarta.persistence.*;
@@ -72,6 +73,7 @@ public class WorkOrder extends Base{
     private List<Image> imageList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.EAGER)
+    @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;
 
 }

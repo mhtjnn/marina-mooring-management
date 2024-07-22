@@ -106,5 +106,6 @@ public class Customer extends Base {
     private List<Image> imageList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private QuickbookCustomer quickBookCustomer;
 }

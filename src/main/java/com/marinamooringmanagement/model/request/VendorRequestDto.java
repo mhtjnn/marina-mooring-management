@@ -22,16 +22,17 @@ public class VendorRequestDto implements Serializable {
 
     private Integer id;
 
+    @NotNull(message = "Vendor name cannot be blank")
+    private String vendorName;
+
     /**
      * Name of the company associated with the vendor.
      */
-    @NotNull(message = "Company name cannot be blank")
     private String companyName;
 
     /**
      * Phone number of the company associated with the vendor.
      */
-    @NotNull(message = "Phone number cannot be blank")
     @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String companyPhoneNumber;
 
@@ -54,19 +55,17 @@ public class VendorRequestDto implements Serializable {
     /**
      * State where the vendor is located.
      */
-    @NotNull(message = "State cannot be blank")
     private Integer stateId;
 
     /**
      * Country where the vendor is located.
      */
-    @NotNull(message = "Country cannot be blank")
     private Integer countryId;
 
     /**
      * ZIP code of the vendor's location.
      */
-    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid Zipcode format.")
+    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid Zipcode format.")
     private String zipCode;
 
     /**
@@ -110,14 +109,12 @@ public class VendorRequestDto implements Serializable {
     /**
      * Phone number of the sales representative associated with the vendor.
      */
-    @NotNull(message = "Phone number cannot be blank")
     @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String salesRepPhoneNumber;
 
     /**
      * Email address of the sales representative associated with the vendor.
      */
-    @NotNull(message = "Sales Representation email cannot be blank")
     private String salesRepEmail;
 
     /**

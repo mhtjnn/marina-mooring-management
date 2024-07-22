@@ -6,13 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InventoryResponseDto {
+public class InventoryResponseDto implements Serializable {
+
+    private static final long serialVersionUID = 5526863503479L;
 
     private Integer id;
 

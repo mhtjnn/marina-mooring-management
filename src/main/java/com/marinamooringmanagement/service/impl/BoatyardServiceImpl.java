@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
+import com.marinamooringmanagement.mapper.ServiceAreaMapper;
 import com.marinamooringmanagement.mapper.metadata.CountryMapper;
 import com.marinamooringmanagement.mapper.MooringMapper;
 import com.marinamooringmanagement.mapper.metadata.StateMapper;
@@ -22,12 +23,10 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.BoatyardService;
 import com.marinamooringmanagement.service.MooringService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -98,6 +97,12 @@ public class BoatyardServiceImpl implements BoatyardService {
     @Autowired
     private GPSUtil gpsUtil;
 
+    @Autowired
+    private DateUtil dateUtil;
+
+    @Autowired
+    private ServiceAreaMapper serviceAreaMapper;
+
     private static final Logger log = LoggerFactory.getLogger(BoatyardServiceImpl.class);
 
     /**
@@ -144,12 +149,16 @@ public class BoatyardServiceImpl implements BoatyardService {
 
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+
+                        Join<Boatyard, State> stateJoin = boatyard.join("state", JoinType.LEFT);
+                        Join<Boatyard, Country> countryJoin = boatyard.join("country", JoinType.LEFT);
+
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("street")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("apt")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.join("state").get("name")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.join("country").get("name")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardId")), lowerCaseSearchText)
                         ));
                     }
@@ -364,6 +373,12 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if (boatyard.getMainContact() != null) {
                             mooringResponseDto.setMainContact(boatyard.getMainContact());
                         }
+
+                        if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
+                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
+                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
