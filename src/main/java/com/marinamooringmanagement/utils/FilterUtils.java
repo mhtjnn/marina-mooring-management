@@ -13,7 +13,7 @@ import java.util.Date;
 @Component
 public class FilterUtils {
 
-    public Boolean filterWorkOrderDatesNoBasic(final WorkOrder workOrder, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
+    public Boolean filterWorkOrderDates(final WorkOrder workOrder, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
         LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
@@ -39,7 +39,7 @@ public class FilterUtils {
         return filterWorkOrderBasic(workOrder, user)
                 && null != workOrder.getScheduledDate()
                 && null != workOrder.getDueDate()
-                && filterWorkOrderDatesNoBasic(workOrder, localGivenScheduleDate, localGivenDueDate);
+                && filterWorkOrderDates(workOrder, localGivenScheduleDate, localGivenDueDate);
     }
 
     public Boolean filterWorkOrderTechnicianProvidedDateProvided(final WorkOrder workOrder, final User technicianUser, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
@@ -52,7 +52,7 @@ public class FilterUtils {
                 && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                 && null != workOrder.getScheduledDate()
                 && null != workOrder.getDueDate()
-                && filterWorkOrderDatesNoBasic(workOrder, localGivenScheduleDate, localGivenDueDate);
+                && filterWorkOrderDates(workOrder, localGivenScheduleDate, localGivenDueDate);
     }
 
     public Boolean filterWorkOrderTechnicianProvided(final WorkOrder workOrder, final User technicianUser) {

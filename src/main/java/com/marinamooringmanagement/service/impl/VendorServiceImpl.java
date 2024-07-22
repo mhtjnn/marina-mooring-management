@@ -374,8 +374,6 @@ public class VendorServiceImpl implements VendorService {
 
                 vendor.setCompanyPhoneNumber(phoneNumber);
 
-            } else {
-                if(null == id) throw new RuntimeException(String.format("Company Phone cannot be blank during save"));
             }
 
             if(null != vendorRequestDto.getSalesRepPhoneNumber()) {
@@ -388,8 +386,6 @@ public class VendorServiceImpl implements VendorService {
 
                 vendor.setSalesRepPhoneNumber(phoneNumber);
 
-            } else {
-                if(null == id) throw new RuntimeException(String.format("Sales representation Phone cannot be blank during save"));
             }
 
             if (null != vendorRequestDto.getStateId()) {
@@ -397,8 +393,6 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", vendorRequestDto.getStateId()));
                 vendor.setState(optionalState.get());
-            } else {
-                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != vendorRequestDto.getCountryId()) {
@@ -406,8 +400,6 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", vendorRequestDto.getCountryId()));
                 vendor.setCountry(optionalCountry.get());
-            } else {
-                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             if (null != vendorRequestDto.getRemitStateId()) {
@@ -415,8 +407,6 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", vendorRequestDto.getRemitStateId()));
                 vendor.setRemitState(optionalState.get());
-            } else {
-                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != vendorRequestDto.getRemitCountryId()) {
@@ -424,8 +414,6 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", vendorRequestDto.getRemitCountryId()));
                 vendor.setRemitCountry(optionalCountry.get());
-            } else {
-                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             savedVendor = vendorRepository.save(vendor);
