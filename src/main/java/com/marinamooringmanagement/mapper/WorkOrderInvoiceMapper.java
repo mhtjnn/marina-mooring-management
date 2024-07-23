@@ -13,14 +13,17 @@ public interface WorkOrderInvoiceMapper {
 
     @Mapping(target = "workOrder", ignore = true)
     @Mapping(target = "workOrderInvoiceStatus", ignore = true)
+    @Mapping(target = "paymentList", ignore = true)
     WorkOrderInvoice mapToWorkOrderInvoice(@MappingTarget WorkOrderInvoice workOrderInvoice, WorkOrderInvoiceDto workOrderInvoiceDto);
 
     @Mapping(target = "workOrderDto", ignore = true)
     @Mapping(target = "workOrderInvoiceStatusDto", ignore = true)
+    @Mapping(target = "paymentDtoList", ignore = true)
     WorkOrderInvoiceDto mapToWorkOrderInvoiceDto(@MappingTarget WorkOrderInvoiceDto workOrderInvoiceDto, WorkOrderInvoice workOrder);
 
     @Mapping(target = "workOrderResponseDto", ignore = true)
     @Mapping(target = "workOrderInvoiceStatusDto", ignore = true)
+    @Mapping(target = "paymentResponseDtoList", ignore = true)
     WorkOrderInvoiceResponseDto mapToWorkOrderInvoiceResponseDto(@MappingTarget WorkOrderInvoiceResponseDto workOrderResponseDto, WorkOrderInvoice workOrder);
 
 }

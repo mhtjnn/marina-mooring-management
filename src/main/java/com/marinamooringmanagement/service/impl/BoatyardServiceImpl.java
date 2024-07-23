@@ -117,7 +117,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         try {
             final Boatyard boatyard = Boatyard.builder().build();
             performSave(boatYardRequestDto, boatyard, null, request);
-            log.info(String.format("Saving data in the database for Boatyard ID %d", boatYardRequestDto.getId()));
+            log.info(String.format("Saving data in the database for Boatyard ID %d", boatyard.getId()));
             response.setMessage("Boatyard Saved Successfully");
             response.setStatus(HttpStatus.CREATED.value());
         } catch (Exception e) {

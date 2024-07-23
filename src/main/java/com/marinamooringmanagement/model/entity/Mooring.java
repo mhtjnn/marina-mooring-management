@@ -138,6 +138,7 @@ public class Mooring extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     @JsonBackReference
+    @ToString.Exclude
     private Customer customer;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
@@ -147,6 +148,7 @@ public class Mooring extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "boatyard_id")
     @JsonBackReference
+    @ToString.Exclude
     private Boatyard boatyard;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -156,6 +158,7 @@ public class Mooring extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "service_area_id")
     @JsonBackReference
+    @ToString.Exclude
     private ServiceArea serviceArea;
 
     @Override

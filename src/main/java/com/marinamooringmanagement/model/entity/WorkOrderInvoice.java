@@ -1,12 +1,12 @@
 package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -29,11 +29,16 @@ public class WorkOrderInvoice extends Base{
     private WorkOrderInvoiceStatus workOrderInvoiceStatus;
 
     @OneToOne
-    @JsonBackReference
     @JoinColumn(name = "work_order_id")
+    @JsonBackReference
+    @ToString.Exclude
     private WorkOrder workOrder;
 
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_owner_user_id")
     private User customerOwnerUser;
+
+    @OneToMany(mappedBy = "workOrderInvoice", cascade = {}, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Payment> paymentList;
 }

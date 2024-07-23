@@ -4,15 +4,9 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
-import com.marinamooringmanagement.mapper.metadata.MooringDueServiceStatusMapper;
-import com.marinamooringmanagement.mapper.metadata.WorkOrderInvoiceStatusMapper;
-import com.marinamooringmanagement.mapper.metadata.WorkOrderPayStatusMapper;
-import com.marinamooringmanagement.mapper.metadata.WorkOrderStatusMapper;
+import com.marinamooringmanagement.mapper.metadata.*;
 import com.marinamooringmanagement.model.dto.*;
-import com.marinamooringmanagement.model.dto.metadata.MooringDueServiceStatusDto;
-import com.marinamooringmanagement.model.dto.metadata.WorkOrderInvoiceStatusDto;
-import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
-import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.dto.metadata.*;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
@@ -129,6 +123,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private MappingUtils mappingUtils;
+
+    @Autowired
+    private PaymentMapper paymentMapper;
+
+    @Autowired
+    private PaymentTypeMapper paymentTypeMapper;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
@@ -806,6 +806,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderInvoice.setWorkOrder(workOrder);
             workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
             workOrderInvoice.setCustomerOwnerUser(user);
+            workOrderInvoice.setPaymentList(new ArrayList<>());
 
             final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
 
@@ -887,7 +888,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         ));
                     }
 
-                    predicates.add(criteriaBuilder.equal(workOrderInvoice.join("customerOwnerUser").get("id"), user.getId()));
+                    predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrderInvoice, criteriaBuilder));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }
@@ -916,6 +917,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                         workOrderInvoiceResponseDto.setWorkOrderResponseDto(workOrderResponseDto);
                         workOrderInvoiceResponseDto.setWorkOrderInvoiceStatusDto(workOrderInvoiceStatusMapper.toDto(WorkOrderInvoiceStatusDto.builder().build(), workOrderInvoice.getWorkOrderInvoiceStatus()));
+
+                        if(!workOrderInvoice.getPaymentList().isEmpty()) {
+                            List<PaymentResponseDto> paymentResponseDtoList = workOrderInvoice.getPaymentList().stream()
+                                    .map(payment -> {
+                                        PaymentResponseDto paymentResponseDto = paymentMapper.mapToResponseDto(PaymentResponseDto.builder().build(), payment);
+                                        paymentResponseDto.setPaymentTypeDto(paymentTypeMapper.mapToDto(PaymentTypeDto.builder().build(), payment.getPaymentType()));
+                                        return paymentResponseDto;
+                                    })
+                                    .toList();
+                            workOrderInvoiceResponseDto.setPaymentResponseDtoList(paymentResponseDtoList);
+                        }
 
                         return workOrderInvoiceResponseDto;
                     })

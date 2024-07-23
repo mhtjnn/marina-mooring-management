@@ -36,6 +36,8 @@ public class ServiceAreaDto extends BaseDto{
 
     private CountryDto countryDto;
 
+    private String zipCode;
+
     private String gpsCoordinates;
 
     private UserDto userDto;

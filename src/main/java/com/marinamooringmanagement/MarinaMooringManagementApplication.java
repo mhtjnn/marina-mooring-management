@@ -91,6 +91,9 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
     @Autowired
     private ServiceAreaTypeRepository serviceAreaTypeRepository;
 
+    @Autowired
+    private PaymentTypeRepository paymentTypeRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(MarinaMooringManagementApplication.class, args);
     }
@@ -926,6 +929,30 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
                     .build());
 
             serviceAreaTypeRepository.saveAll(serviceAreaTypes);
+        }
+
+        final String paymentTypeSql = "SELECT * FROM payment_type";
+        final List<PaymentType> paymentTypeList = jdbcTemplate.query(paymentTypeSql, (resultSet, resultNum) -> null);
+
+        if(paymentTypeList.isEmpty()) {
+            List<PaymentType> paymentTypes = new ArrayList<>(
+                    Arrays.asList(
+                        PaymentType.builder()
+                                .type("card")
+                                .description("Payment via card")
+                            .   build(),
+                        PaymentType.builder()
+                                .type("cheque")
+                                .description("Payment via cheque")
+                                .build(),
+                        PaymentType.builder()
+                                .type("cash")
+                                .description("Payment via cash")
+                                .build()
+                    )
+            );
+
+            paymentTypeRepository.saveAll(paymentTypes);
         }
     }
 }

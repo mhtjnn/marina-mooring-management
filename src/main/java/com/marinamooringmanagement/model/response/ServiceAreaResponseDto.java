@@ -34,6 +34,8 @@ public class ServiceAreaResponseDto implements Serializable {
 
     private String gpsCoordinates;
 
+    private String zipCode;
+
     private String notes;
 
     private Integer userId;

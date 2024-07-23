@@ -51,6 +51,9 @@ public class ServiceArea extends Base{
     @JoinColumn(name = "country_id")
     private Country country;
 
+    @Column(name = "zipcode")
+    private String zipCode;
+
     @Column(name = "gps_coordinates")
     private String gpsCoordinates;
 

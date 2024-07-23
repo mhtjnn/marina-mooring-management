@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Builder
@@ -27,5 +28,7 @@ public class WorkOrderInvoiceResponseDto implements Serializable {
     private WorkOrderInvoiceStatusDto workOrderInvoiceStatusDto;
 
     private WorkOrderResponseDto workOrderResponseDto;
+
+    private List<PaymentResponseDto> paymentResponseDtoList;
 
 }

@@ -147,6 +147,12 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private QuickbookCustomerRepository quickbookCustomerRepository;
 
+    @Autowired
+    private PaymentTypeRepository paymentTypeRepository;
+
+    @Autowired
+    private PaymentTypeMapper paymentTypeMapper;
+
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -849,6 +855,31 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Quickbook customer fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(quickBookCustomerMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchPaymentTypes(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        Page<PaymentType> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            content = paymentTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<PaymentTypeDto> paymentTypeDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(paymentType -> paymentTypeMapper.mapToDto(PaymentTypeDto.builder().build(), paymentType))
+                    .toList();
+
+            response.setMessage("Types of payment fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(paymentTypeDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());

@@ -538,5 +538,20 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchQuickbookCustomers(baseSearchRequest, request);
     }
+
+    @GetMapping("/paymentTypes")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchPaymentTypes(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchPaymentTypes(baseSearchRequest, request);
+    }
 }
 

@@ -3,10 +3,7 @@ package com.marinamooringmanagement.model.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.marinamooringmanagement.model.entity.metadata.InventoryType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -42,6 +39,7 @@ public class Inventory extends Base{
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_id")
     @JsonBackReference
+    @ToString.Exclude
     private Vendor vendor;
 
 }

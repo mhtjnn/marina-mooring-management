@@ -141,6 +141,9 @@ public class MooringServiceImpl implements MooringService {
     @Autowired
     private ImageUtils imageUtils;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     /**
      * Fetches a list of moorings based on the provided search request parameters and search text.
      *
@@ -410,10 +413,9 @@ public class MooringServiceImpl implements MooringService {
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
-
                     imageNumber++;
                 }
-
+                imageRepository.saveAll(imageList);
                 mooring.setImageList(imageList);
             }
 

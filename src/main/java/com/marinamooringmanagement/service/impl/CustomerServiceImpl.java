@@ -126,6 +126,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private QuickbookCustomerMapper quickbookCustomerMapper;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
 
     /**
@@ -342,6 +345,12 @@ public class CustomerServiceImpl implements CustomerService {
                             if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                             if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                             if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
+                            if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
+                                mooringResponseDto.setImageDtoList(mooring.getImageList()
+                                        .stream()
+                                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                        .toList());
+                            }
                             return mooringResponseDto;
                         }).toList();
             }
@@ -508,7 +517,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                     imageNumber++;
                 }
-
+                imageRepository.saveAll(imageList);
                 customer.setImageList(imageList);
             }
 

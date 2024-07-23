@@ -2,10 +2,7 @@ package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Data
@@ -29,6 +26,7 @@ public class QuickbookCustomer extends Base{
     @OneToOne
     @JsonBackReference
     @JoinColumn(name = "customer_id")
+    @ToString.Exclude
     private Customer customer;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
