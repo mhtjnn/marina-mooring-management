@@ -35,10 +35,7 @@ import com.marinamooringmanagement.service.ServiceAreaService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.GPSUtil;
 import com.marinamooringmanagement.utils.SortUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,12 +150,14 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
 
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        Join<ServiceArea, State> stateJoin = serviceArea.join("state", JoinType.LEFT);
+                        Join<ServiceArea, Country> countryJoin = serviceArea.join("country", JoinType.LEFT);
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("serviceAreaName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("street")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("apt")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.join("state").get("name")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.join("country").get("name")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("streetHouse")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("aptSuite")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText)
                         ));
                     }
 

@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.mapper.ServiceAreaMapper;
 import com.marinamooringmanagement.model.dto.metadata.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,6 +42,10 @@ public class MooringDueServiceResponseDto implements Serializable {
     private String installTopChainDate;
 
     private String installConditionOfEyeDate;
+
+    private String inspectionDate;
+
+    private ServiceAreaResponseDto serviceAreaResponseDto;
 
     /**
      * The name of the boat associated with the mooring.

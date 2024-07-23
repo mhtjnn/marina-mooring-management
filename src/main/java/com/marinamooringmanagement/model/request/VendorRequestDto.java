@@ -26,11 +26,6 @@ public class VendorRequestDto implements Serializable {
     private String vendorName;
 
     /**
-     * Name of the company associated with the vendor.
-     */
-    private String companyName;
-
-    /**
      * Phone number of the company associated with the vendor.
      */
     @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")

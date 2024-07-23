@@ -31,12 +31,6 @@ public class Vendor extends Base {
     private String vendorName;
 
     /**
-     * Name of the company associated with the vendor.
-     */
-    @Column(name = "company_name")
-    private String companyName;
-
-    /**
      * Phone number of the company associated with the vendor.
      */
     @Column(name = "phone_number")

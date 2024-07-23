@@ -379,6 +379,12 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
                         if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                         if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
+                        if (null != mooring.getCustomer()) {
+                            if(null == mooring.getCustomer().getFirstName()) throw new RuntimeException(String.format("First name is null for customer with id: %1$s", mooring.getCustomer().getId()));
+                            if(null == mooring.getCustomer().getLastName()) throw new RuntimeException(String.format("Last name is null for customer with id: %1$s", mooring.getCustomer().getId()));
+                            mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
+                        }
+                        if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());

@@ -21,6 +21,9 @@ public class MappingUtils {
     private MooringMapper mooringMapper;
 
     @Autowired
+    private ServiceAreaMapper serviceAreaMapper;
+
+    @Autowired
     private DateUtil dateUtil;
 
     @Autowired
@@ -47,15 +50,19 @@ public class MappingUtils {
             if (null != workOrder.getMooring().getInstallBottomChainDate()) {
                 mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(workOrder.getMooring().getInstallBottomChainDate()));
             }
+            if (null != workOrder.getMooring().getInspectionDate()) {
+                mooringResponseDto.setInspectionDate(dateUtil.dateToString(workOrder.getMooring().getInspectionDate()));
+            }
             workOrderResponseDto.setMooringResponseDto(mooringResponseDto);
-        }
-        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
-            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-            if (null != workOrder.getMooring().getCustomer().getFirstName()
-                    && null != workOrder.getMooring().getCustomer().getLastName())
-                mooringResponseDto.setCustomerName(
-                        workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
-                );
+            if(null != workOrder.getMooring().getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
+            if (null != workOrder.getMooring().getCustomer()) {
+                workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                if (null != workOrder.getMooring().getCustomer().getFirstName()
+                        && null != workOrder.getMooring().getCustomer().getLastName())
+                    mooringResponseDto.setCustomerName(
+                            workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
+                    );
+            }
         }
         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));

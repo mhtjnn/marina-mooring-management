@@ -1218,10 +1218,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if (null == workOrderResponseDto.getDueDate())
                     throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrderResponseDto.getId()));
                 mooringDueServiceResponseDto.setMooringServiceDate(workOrderResponseDto.getDueDate());
-                mooringDueServiceResponseDto.setInstallBottomChainDate(workOrderResponseDto.getMooringResponseDto().getInstallBottomChainDate());
-                mooringDueServiceResponseDto.setInstallTopChainDate(workOrderResponseDto.getMooringResponseDto().getInstallTopChainDate());
-                mooringDueServiceResponseDto.setInstallConditionOfEyeDate(workOrderResponseDto.getMooringResponseDto().getInstallConditionOfEyeDate());
-                mooringDueServiceResponseDtoHashMap.put(mooringDueServiceResponseDto.getMooringNumber(), mooringDueServiceResponseDto);
+                if(null != workOrderResponseDto.getMooringResponseDto()) {
+                    if(null != workOrderResponseDto.getMooringResponseDto().getInstallBottomChainDate()) mooringDueServiceResponseDto.setInstallBottomChainDate(workOrderResponseDto.getMooringResponseDto().getInstallBottomChainDate());
+                    if(null != workOrderResponseDto.getMooringResponseDto().getInstallTopChainDate()) mooringDueServiceResponseDto.setInstallTopChainDate(workOrderResponseDto.getMooringResponseDto().getInstallTopChainDate());
+                    if(null != workOrderResponseDto.getMooringResponseDto().getInstallConditionOfEyeDate()) mooringDueServiceResponseDto.setInstallConditionOfEyeDate(workOrderResponseDto.getMooringResponseDto().getInstallConditionOfEyeDate());
+                    if(null != workOrderResponseDto.getMooringResponseDto().getInspectionDate()) mooringDueServiceResponseDto.setInspectionDate(workOrderResponseDto.getMooringResponseDto().getInspectionDate());
+                    if (null != workOrderResponseDto.getMooringResponseDto().getServiceAreaResponseDto())
+                        mooringDueServiceResponseDto.setServiceAreaResponseDto(workOrderResponseDto.getMooringResponseDto().getServiceAreaResponseDto());
+                    mooringDueServiceResponseDtoHashMap.put(mooringDueServiceResponseDto.getMooringNumber(), mooringDueServiceResponseDto);
+                }
             }
 
         }
