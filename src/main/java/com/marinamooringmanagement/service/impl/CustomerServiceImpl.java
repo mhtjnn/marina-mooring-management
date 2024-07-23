@@ -517,22 +517,7 @@ public class CustomerServiceImpl implements CustomerService {
 
                     imageNumber++;
                 }
-                imageRepository.saveAll(imageList);
                 customer.setImageList(imageList);
-            }
-
-            if(null != customerRequestDto.getPhone()) {
-                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(customerRequestDto.getPhone());
-
-                Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNumber);
-                if(optionalCustomer.isPresent()) {
-                    if(null == customer.getId() || (null != optionalCustomer.get().getId() && !optionalCustomer.get().getId().equals(customer.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
-                }
-
-                customer.setPhone(phoneNumber);
-
-            } else {
-                if(null == id) throw new RuntimeException(String.format("Phone cannot be blank during save"));
             }
 
             if (null != customerRequestDto.getStateId()) {

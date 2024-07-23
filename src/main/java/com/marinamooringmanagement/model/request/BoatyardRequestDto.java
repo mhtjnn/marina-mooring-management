@@ -52,7 +52,6 @@ public class BoatyardRequestDto {
     /**
      * The zip code of the BoatYard.
      */
-    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid zipcode format.")
     private String zipCode;
 
     /**

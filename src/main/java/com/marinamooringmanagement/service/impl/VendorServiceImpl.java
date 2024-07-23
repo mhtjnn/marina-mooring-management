@@ -364,30 +364,6 @@ public class VendorServiceImpl implements VendorService {
                 }
             }
 
-            if(null != vendorRequestDto.getCompanyPhoneNumber()) {
-                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getCompanyPhoneNumber());
-
-                Optional<Vendor> optionalVendor = vendorRepository.findByCompanyPhoneNumber(phoneNumber);
-                if(optionalVendor.isPresent()) {
-                    if(null == vendor.getId() || (null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
-                }
-
-                vendor.setCompanyPhoneNumber(phoneNumber);
-
-            }
-
-            if(null != vendorRequestDto.getSalesRepPhoneNumber()) {
-                String phoneNumber = phoneNumberUtil.validateAndConvertToStandardFormatPhoneNumber(vendorRequestDto.getSalesRepPhoneNumber());
-
-                Optional<Vendor> optionalVendor = vendorRepository.findBySalesRepPhoneNumber(phoneNumber);
-                if(optionalVendor.isPresent()) {
-                    if(null == vendor.getId() || (null != optionalVendor.get().getId() && !optionalVendor.get().getId().equals(vendor.getId()))) throw new RuntimeException(String.format("This phone number is already in use. Please enter a different phone number."));
-                }
-
-                vendor.setSalesRepPhoneNumber(phoneNumber);
-
-            }
-
             if (null != vendorRequestDto.getStateId()) {
                 final Optional<State> optionalState = stateRepository.findById(vendorRequestDto.getStateId());
                 if (optionalState.isEmpty())

@@ -37,8 +37,6 @@ public class CustomerRequestDto {
     /**
      * The phone number of the customer.
      */
-    @NotNull(message = "Phone number cannot be blank")
-    @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String phone;
 
     private String note;
@@ -68,7 +66,6 @@ public class CustomerRequestDto {
     /**
      * The zip code or postal code of the customer's address.
      */
-    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid zipcode format.")
     private String zipCode;
 
     private Integer customerTypeId;

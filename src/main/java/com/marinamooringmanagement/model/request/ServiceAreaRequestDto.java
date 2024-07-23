@@ -29,7 +29,6 @@ public class ServiceAreaRequestDto {
 
     private Integer countryId;
 
-    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid zipcode format.")
     private String zipCode;
 
     private String notes;

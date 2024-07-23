@@ -415,7 +415,6 @@ public class MooringServiceImpl implements MooringService {
                     imageList.add(image);
                     imageNumber++;
                 }
-                imageRepository.saveAll(imageList);
                 mooring.setImageList(imageList);
             }
 

@@ -48,7 +48,6 @@ public class Customer extends Base {
      * The phone number of the customer.
      */
     @Column(name = "phone")
-    @Pattern(regexp = "^(\\d[-. ]?){10}$", message = "Invalid phone number format")
     private String phone;
 
     /**

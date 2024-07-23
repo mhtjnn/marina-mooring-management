@@ -28,7 +28,6 @@ public class VendorRequestDto implements Serializable {
     /**
      * Phone number of the company associated with the vendor.
      */
-    @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String companyPhoneNumber;
 
     /**
@@ -60,7 +59,6 @@ public class VendorRequestDto implements Serializable {
     /**
      * ZIP code of the vendor's location.
      */
-    @Pattern(regexp = "^\\d{5}(-\\d{4})?$", message = "Invalid Zipcode format.")
     private String zipCode;
 
     /**
@@ -83,7 +81,6 @@ public class VendorRequestDto implements Serializable {
 
     private Integer remitCountryId;
 
-    @Pattern(regexp = "^\\d{3,10}(-\\d{3,10})?$|^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$|^[A-Z]{1,2}\\d[A-Z\\d]? \\d[A-Z]{2}$", message = "Invalid Zipcode format.")
     private String remitZipCode;
 
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email address format.")
@@ -104,7 +101,6 @@ public class VendorRequestDto implements Serializable {
     /**
      * Phone number of the sales representative associated with the vendor.
      */
-    @Pattern(regexp = "^.{10}$|^.{12}$", message = "Invalid phone number format.")
     private String salesRepPhoneNumber;
 
     /**

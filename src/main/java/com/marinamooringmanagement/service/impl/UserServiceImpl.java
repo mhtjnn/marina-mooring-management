@@ -768,39 +768,6 @@ public class UserServiceImpl implements UserService {
                 if (null == userId) throw new RuntimeException("Password or confirm password cannot be null");
             }
 
-            if(null != userRequestDto.getPhoneNumber()) {
-                String givenPhoneNumber = userRequestDto.getPhoneNumber();
-                int hyphenCount = 0;
-                for(char ch: givenPhoneNumber.toCharArray()) {
-                    if(ch != '-' && !Character.isDigit(ch)) throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                    if(ch == '-') {
-                        hyphenCount++;
-                    }
-                }
-
-                if(hyphenCount == 0) {
-                    if(givenPhoneNumber.length() == 12) throw new RuntimeException(String.format("Given phone number: %1$s contains 12 digits (should be 10 digits)", givenPhoneNumber));
-                    givenPhoneNumber = givenPhoneNumber.substring(0, 3)
-                            + "-" +
-                            givenPhoneNumber.substring(3, 6)
-                            + "-" +
-                            givenPhoneNumber.substring(6, 10);
-                } else if (hyphenCount == 2) {
-                    if(givenPhoneNumber.length() != 12 || givenPhoneNumber.charAt(3) != '-' || givenPhoneNumber.charAt(7) != '-') throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                } else {
-                    throw new RuntimeException(String.format("Given phone number: %1$s is in wrong format", givenPhoneNumber));
-                }
-
-                Optional<User> optionalUser = userRepository.findByPhoneNumber(givenPhoneNumber);
-                if(optionalUser.isPresent() && null != user.getId() && null != optionalUser.get().getId() && !optionalUser.get().getId().equals(user.getId())) throw new RuntimeException(String.format("User already present with the given phone number: %1$s", givenPhoneNumber));
-
-                user.setPhoneNumber(givenPhoneNumber);
-
-            } else {
-                if(null == userId) throw new RuntimeException(String.format("Phone cannot be blank during save"));
-            }
-
-
             //Setting the state if not null
             if (null != userRequestDto.getStateId()) {
                 final Optional<State> optionalState = stateRepository.findById(userRequestDto.getStateId());
