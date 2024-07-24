@@ -16,7 +16,6 @@ import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.QuickbookCustomerRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.QuickbookCustomerService;
-import com.marinamooringmanagement.utils.ConversionUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -45,13 +44,7 @@ import java.util.Optional;
 public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
     @Autowired
-    private ConversionUtils conversionUtils;
-
-    @Autowired
     private AuthorizationUtil authorizationUtil;
-
-    @Autowired
-    private SortUtils sortUtils;
 
     @Autowired
     private QuickbookCustomerRepository quickbookCustomerRepository;
@@ -112,7 +105,7 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             // Fetching the roles based on the specifications.

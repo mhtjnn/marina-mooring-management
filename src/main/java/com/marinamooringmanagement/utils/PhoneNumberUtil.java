@@ -1,11 +1,9 @@
 package com.marinamooringmanagement.utils;
 
-import org.springframework.stereotype.Component;
 
-@Component
 public class PhoneNumberUtil {
 
-    public String validateAndConvertToStandardFormatPhoneNumber(final String phoneNumber) {
+    public static String validateAndConvertToStandardFormatPhoneNumber(final String phoneNumber) {
         String givenPhoneNumber = phoneNumber;
         int hyphenCount = 0;
         for(char ch: givenPhoneNumber.toCharArray()) {

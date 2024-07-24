@@ -10,10 +10,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
-@Component
 public class FilterUtils {
 
-    public Boolean filterWorkOrderDates(final WorkOrder workOrder, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
+    public static Boolean filterWorkOrderDates(final WorkOrder workOrder, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
         LocalDate localSavedScheduleDate = workOrder.getScheduledDate().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
@@ -27,7 +26,7 @@ public class FilterUtils {
                 && !localGivenDueDate.isBefore(localSavedScheduleDate);
     }
 
-    public Boolean filterWorkOrderBasic(final WorkOrder workOrder, final User user) {
+    public static Boolean filterWorkOrderBasic(final WorkOrder workOrder, final User user) {
         return null != workOrder.getTechnicianUser()
                 && null != workOrder.getCustomerOwnerUser()
                 && null != workOrder.getWorkOrderStatus()
@@ -35,14 +34,14 @@ public class FilterUtils {
                 && workOrder.getCustomerOwnerUser().getId().equals(user.getId());
     }
 
-    public Boolean filterWorkOrderDatesProvided(final WorkOrder workOrder, final User user, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
+    public static Boolean filterWorkOrderDatesProvided(final WorkOrder workOrder, final User user, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
         return filterWorkOrderBasic(workOrder, user)
                 && null != workOrder.getScheduledDate()
                 && null != workOrder.getDueDate()
                 && filterWorkOrderDates(workOrder, localGivenScheduleDate, localGivenDueDate);
     }
 
-    public Boolean filterWorkOrderTechnicianProvidedDateProvided(final WorkOrder workOrder, final User technicianUser, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
+    public static Boolean filterWorkOrderTechnicianProvidedDateProvided(final WorkOrder workOrder, final User technicianUser, final LocalDate localGivenScheduleDate, final LocalDate localGivenDueDate) {
         return null != workOrder.getTechnicianUser()
                 && null != workOrder.getCustomerOwnerUser()
                 && null != workOrder.getWorkOrderStatus()
@@ -55,7 +54,7 @@ public class FilterUtils {
                 && filterWorkOrderDates(workOrder, localGivenScheduleDate, localGivenDueDate);
     }
 
-    public Boolean filterWorkOrderTechnicianProvided(final WorkOrder workOrder, final User technicianUser) {
+    public static Boolean filterWorkOrderTechnicianProvided(final WorkOrder workOrder, final User technicianUser) {
         return null != workOrder.getTechnicianUser()
                 && null != workOrder.getCustomerOwnerUser()
                 && null != workOrder.getWorkOrderStatus()

@@ -1,12 +1,10 @@
 package com.marinamooringmanagement.utils;
 
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
-import org.springframework.stereotype.Component;
 
-@Component
 public class GPSUtil extends GlobalExceptionHandler {
 
-    public String getGpsCoordinates(String gpsCoordinates) {
+    public static String getGpsCoordinates(String gpsCoordinates) {
         try {
             boolean westernHemisphere = false;
             boolean southernHemisphere = false;
@@ -78,7 +76,7 @@ public class GPSUtil extends GlobalExceptionHandler {
         }
     }
 
-    public double convertToDecimalDegrees(String dmm) throws NumberFormatException {
+    public static double convertToDecimalDegrees(String dmm) throws NumberFormatException {
         String[] parts = dmm.split("\\.");
         if (parts.length != 3) {
             throw new NumberFormatException("Invalid DMM format");
@@ -95,11 +93,11 @@ public class GPSUtil extends GlobalExceptionHandler {
         }
     }
 
-    public boolean isValidLatitude(double latitude) {
+    public static boolean isValidLatitude(double latitude) {
         return latitude >= -90 && latitude <= 90;
     }
 
-    public boolean isValidLongitude(double longitude) {
+    public static boolean isValidLongitude(double longitude) {
         return longitude >= -180 && longitude <= 180;
     }
 

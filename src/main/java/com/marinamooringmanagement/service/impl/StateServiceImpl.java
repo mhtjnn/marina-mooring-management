@@ -38,9 +38,6 @@ public class StateServiceImpl implements StateService {
     @Autowired
     private StateMapper stateMapper;
 
-    @Autowired
-    private SortUtils sortUtils;
-
     /**
      * Fetches a list of states based on the provided search request parameters.
      *
@@ -56,7 +53,7 @@ public class StateServiceImpl implements StateService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
                     );
             final Page<State> stateList = stateRepository.findAll(p);
 

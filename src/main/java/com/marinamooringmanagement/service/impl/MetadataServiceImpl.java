@@ -369,7 +369,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -403,7 +403,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -478,7 +478,7 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user =  authorizationUtil.checkAuthority(customerOwnerId);
 
             final Customer customer = customerServiceImpl.fetchCustomerById(customerId, request);
@@ -510,7 +510,7 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user =  authorizationUtil.checkAuthority(customerOwnerId);
 
             final Boatyard boatyard = boatyardServiceImpl.fetchBoatyardById(boatyardId, request);
@@ -543,7 +543,7 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -579,7 +579,7 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -655,7 +655,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             List<MooringMetadataResponse> mooringMetadataResponseList = mooringRepository.findAll()
@@ -684,7 +684,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             List<UserMetadataResponse> UserMetadataResponseList = userRepository.findAll()
@@ -803,7 +803,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -833,7 +833,7 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 

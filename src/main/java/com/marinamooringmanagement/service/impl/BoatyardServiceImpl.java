@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
@@ -80,9 +81,6 @@ public class BoatyardServiceImpl implements BoatyardService {
     private CountryMapper countryMapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private MooringService mooringService;
 
     @Autowired
@@ -93,12 +91,6 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
-
-    @Autowired
-    private GPSUtil gpsUtil;
-
-    @Autowired
-    private DateUtil dateUtil;
 
     @Autowired
     private ServiceAreaMapper serviceAreaMapper;
@@ -140,7 +132,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Specification<Boatyard> spec = new Specification<Boatyard>() {
                 @Override
@@ -169,7 +161,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                 }
             };
 
-            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
             Page<Boatyard> boatyardList = boatyardRepository.findAll(spec, p);
@@ -240,9 +232,9 @@ public class BoatyardServiceImpl implements BoatyardService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if (-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID"))
-                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if (-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID))
+                customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
 
@@ -325,7 +317,7 @@ public class BoatyardServiceImpl implements BoatyardService {
         BasicRestResponse response = BasicRestResponse.builder().build();
 
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
             if (optionalBoatyard.isEmpty())
@@ -348,7 +340,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                     .filter(mooring -> mooring.getUser().getId().equals(boatyard.getUser().getId()))
                     .collect(Collectors.toList());
 
-            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
             int start = (int) p.getOffset();
@@ -375,10 +367,10 @@ public class BoatyardServiceImpl implements BoatyardService {
                         }
 
                         if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
-                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
-                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
-                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
-                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
+                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
                         if (null != mooring.getCustomer()) {
                             if(null == mooring.getCustomer().getFirstName()) throw new RuntimeException(String.format("First name is null for customer with id: %1$s", mooring.getCustomer().getId()));
                             if(null == mooring.getCustomer().getLastName()) throw new RuntimeException(String.format("Last name is null for customer with id: %1$s", mooring.getCustomer().getId()));
@@ -417,7 +409,7 @@ public class BoatyardServiceImpl implements BoatyardService {
      */
     public void performSave(final BoatyardRequestDto boatyardRequestDto, final Boatyard boatyard, Integer id, final HttpServletRequest request) {
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -451,7 +443,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             boatyard.setLastModifiedDate(new Date());
 
             if (null != boatyardRequestDto.getGpsCoordinates()) {
-                final String gpsCoordinates = gpsUtil.getGpsCoordinates(boatyardRequestDto.getGpsCoordinates());
+                final String gpsCoordinates = GPSUtil.getGpsCoordinates(boatyardRequestDto.getGpsCoordinates());
                 boatyard.setGpsCoordinates(gpsCoordinates);
             } else {
                 if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
@@ -498,7 +490,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
     public Boatyard fetchBoatyardById(final Integer boatyardId, final HttpServletRequest request) {
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(boatyardId);

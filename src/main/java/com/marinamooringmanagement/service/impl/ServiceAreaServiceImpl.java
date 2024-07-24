@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.BoatyardMapper;
@@ -86,9 +87,6 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
     private CountryMapper countryMapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private MooringService mooringService;
 
     @Autowired
@@ -101,9 +99,6 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
     private AuthorizationUtil authorizationUtil;
 
     @Autowired
-    private GPSUtil gpsUtil;
-
-    @Autowired
     private ServiceAreaTypeRepository serviceAreaTypeRepository;
 
     @Autowired
@@ -111,9 +106,6 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
 
     @Autowired
     private BoatyardMapper boatyardMapper;
-
-    @Autowired
-    private DateUtil dateUtil;
 
     private static final Logger log = LoggerFactory.getLogger(ServiceAreaServiceImpl.class);
 
@@ -141,7 +133,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Specification<ServiceArea> spec = new Specification<ServiceArea>() {
                 @Override
@@ -168,7 +160,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                 }
             };
 
-            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
             Page<ServiceArea> serviceAreaList = serviceAreaRepository.findAll(spec, p);
@@ -211,7 +203,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
         BasicRestResponse response = BasicRestResponse.builder().build();
 
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<ServiceArea> optionalServiceArea = serviceAreaRepository.findById(id);
             if (optionalServiceArea.isEmpty())
@@ -234,7 +226,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                     .filter(mooring -> mooring.getUser().getId().equals(serviceArea.getUser().getId()))
                     .collect(Collectors.toList());
 
-            final Sort sort = sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
+            final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
             int start = (int) p.getOffset();
@@ -255,9 +247,9 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
                         if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
-                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
-                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
-                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                         return mooringResponseDto;
                     })
                     .collect(Collectors.toList());
@@ -303,9 +295,9 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if (-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID"))
-                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if (-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID))
+                customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<ServiceArea> optionalServiceArea = serviceAreaRepository.findById(id);
 
@@ -373,7 +365,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
 
     private void performSave(ServiceAreaRequestDto serviceAreaRequestDto, ServiceArea serviceArea, Integer id, HttpServletRequest request) {
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -401,10 +393,8 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
             serviceArea.setLastModifiedDate(new Date());
 
             if (null != serviceAreaRequestDto.getGpsCoordinates()) {
-                final String gpsCoordinates = gpsUtil.getGpsCoordinates(serviceAreaRequestDto.getGpsCoordinates());
+                final String gpsCoordinates = GPSUtil.getGpsCoordinates(serviceAreaRequestDto.getGpsCoordinates());
                 serviceArea.setGpsCoordinates(gpsCoordinates);
-            } else {
-                if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
             }
 
             if(null != serviceAreaRequestDto.getServiceAreaTypeId()) {
@@ -418,8 +408,6 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", serviceAreaRequestDto.getStateId()));
                 serviceArea.setState(optionalState.get());
-            } else {
-                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != serviceAreaRequestDto.getCountryId()) {
@@ -427,8 +415,6 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", serviceAreaRequestDto.getCountryId()));
                 serviceArea.setCountry(optionalCountry.get());
-            } else {
-                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             final ServiceArea savedServiceArea = serviceAreaRepository.save(serviceArea);

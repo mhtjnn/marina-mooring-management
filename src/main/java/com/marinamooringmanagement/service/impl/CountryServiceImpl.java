@@ -38,9 +38,6 @@ public class CountryServiceImpl implements CountryService {
     @Autowired
     private CountryMapper countryMapper;
 
-    @Autowired
-    private SortUtils sortUtils;
-
     /**
      * Fetches a list of countries based on the provided search request parameters.
      *
@@ -56,7 +53,7 @@ public class CountryServiceImpl implements CountryService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
             final Page<Country> countryList = countryRepository.findAll(p);
 
             final List<CountryResponseDto> countryResponseDtoList = countryList.stream()

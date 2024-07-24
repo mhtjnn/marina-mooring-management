@@ -101,7 +101,7 @@ public class AuthorizationUtil {
     }
 
     public Vendor checkAuthorityForInventory(final Integer vendorId, final HttpServletRequest request) {
-        Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+        Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
         final User user =  checkAuthority(customerOwnerId);
 

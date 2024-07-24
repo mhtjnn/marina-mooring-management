@@ -45,9 +45,6 @@ public class RoleServiceImpl implements RoleService {
     private RoleMapper roleMapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private LoggedInUserUtil loggedInUserUtil;
 
     /**
@@ -65,7 +62,7 @@ public class RoleServiceImpl implements RoleService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             final Specification<Role> spec = new Specification<Role>() {

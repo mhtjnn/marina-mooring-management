@@ -1,13 +1,10 @@
 package com.marinamooringmanagement.utils;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 
-@Component
 public class ConversionUtils {
 
-    public boolean canConvertToInt(String str) {
+    public static boolean canConvertToInt(String str) {
         if (str == null || str.isEmpty()) {
             return false;
         }
@@ -19,7 +16,7 @@ public class ConversionUtils {
         }
     }
 
-    public boolean canConvertToBigDecimal(String str) {
+    public static boolean canConvertToBigDecimal(String str) {
         if (str == null || str.isEmpty()) {
             return false;
         }

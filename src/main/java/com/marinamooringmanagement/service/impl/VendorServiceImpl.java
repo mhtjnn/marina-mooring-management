@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.metadata.CountryMapper;
 import com.marinamooringmanagement.mapper.metadata.StateMapper;
@@ -60,9 +61,6 @@ public class VendorServiceImpl implements VendorService {
     private VendorRepository vendorRepository;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private StateRepository stateRepository;
 
     @Autowired
@@ -86,12 +84,6 @@ public class VendorServiceImpl implements VendorService {
     @Autowired
     private InventoryRepository inventoryRepository;
 
-    @Autowired
-    private ConversionUtils conversionUtils;
-
-    @Autowired
-    private PhoneNumberUtil phoneNumberUtil;
-
     /**
      * Fetches a list of vendors based on the provided search request parameters and search text.
      *
@@ -106,7 +98,7 @@ public class VendorServiceImpl implements VendorService {
         try {
             logger.info("API called to fetch all the vendors from the database");
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Specification<Vendor> spec = new Specification<Vendor>() {
                 @Override
@@ -116,7 +108,7 @@ public class VendorServiceImpl implements VendorService {
                     if(null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if(conversionUtils.canConvertToInt(lowerCaseSearchText)) {
+                        if(ConversionUtils.canConvertToInt(lowerCaseSearchText)) {
                             predicates.add(criteriaBuilder.like(vendor.get("id"), searchText));
                         }
 
@@ -137,7 +129,7 @@ public class VendorServiceImpl implements VendorService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             final Page<Vendor> vendorList = vendorRepository.findAll(spec, p);
@@ -208,8 +200,8 @@ public class VendorServiceImpl implements VendorService {
         try {
             logger.info("API called to delete the vendor from the database");
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if(-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID)) customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             final Optional<Vendor> optionalVendor = vendorRepository.findById(vendorId);
 
@@ -277,7 +269,7 @@ public class VendorServiceImpl implements VendorService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Vendor> optionalVendor = vendorRepository.findById(vendorId);
             if(optionalVendor.isEmpty()) throw new RuntimeException(String.format("No vendor exist with the given id: %1$s", vendorId));
@@ -328,7 +320,7 @@ public class VendorServiceImpl implements VendorService {
                 vendor.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if(null != vendor.getUser() && !vendor.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner", id));

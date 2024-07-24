@@ -70,9 +70,6 @@ public class MooringServiceImpl implements MooringService {
     private CustomerMapper customerMapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private MooringStatusMapper mooringStatusMapper;
 
     @Autowired
@@ -115,13 +112,7 @@ public class MooringServiceImpl implements MooringService {
     private AuthorizationUtil authorizationUtil;
 
     @Autowired
-    private GPSUtil gpsUtil;
-
-    @Autowired
     private CustomerTypeRepository customerTypeRepository;
-
-    @Autowired
-    private DateUtil dateUtil;
 
     @Autowired
     private UserMapper userMapper;
@@ -137,9 +128,6 @@ public class MooringServiceImpl implements MooringService {
 
     @Autowired
     private ImageMapper imageMapper;
-
-    @Autowired
-    private ImageUtils imageUtils;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -159,7 +147,7 @@ public class MooringServiceImpl implements MooringService {
         try {
             log.info("API called to fetch all the moorings in the database");
             MooringsWithGPSCoordinatesResponse mooringsWithGPSCoordinatesResponse = MooringsWithGPSCoordinatesResponse.builder().build();
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Specification<Mooring> spec = new Specification<Mooring>() {
                 @Override
@@ -190,7 +178,7 @@ public class MooringServiceImpl implements MooringService {
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
             final Page<Mooring> mooringList = mooringRepository.findAll(spec, pageable);
 
@@ -204,10 +192,10 @@ public class MooringServiceImpl implements MooringService {
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
                         if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
-                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
-                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
-                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
-                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
+                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
                         if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
                             mooringResponseDto.setImageDtoList(mooring.getImageList()
                                     .stream()
@@ -330,8 +318,8 @@ public class MooringServiceImpl implements MooringService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if(-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID)) customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
             if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
@@ -376,7 +364,7 @@ public class MooringServiceImpl implements MooringService {
         try {
             log.info("performSave() function called");
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if(id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
@@ -409,7 +397,7 @@ public class MooringServiceImpl implements MooringService {
                     if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
                     if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
 
-                    image.setImageData(imageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                    image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
@@ -419,7 +407,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
-                Date installBottomChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
+                Date installBottomChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
                 LocalDate localDate = installBottomChainDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
@@ -429,7 +417,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
-                Date installTopChainDate = dateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
+                Date installTopChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
                 LocalDate localDate = installTopChainDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
@@ -439,7 +427,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
-                Date conditionOfEyeDate = dateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
+                Date conditionOfEyeDate = DateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
                 LocalDate localDate = conditionOfEyeDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
@@ -449,7 +437,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if(null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
-                Date inspectionDate = dateUtil.stringToDate(mooringRequestDto.getInspectionDate());
+                Date inspectionDate = DateUtil.stringToDate(mooringRequestDto.getInspectionDate());
                 LocalDate localDate = inspectionDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
@@ -459,7 +447,7 @@ public class MooringServiceImpl implements MooringService {
             }
 
             if (null != mooringRequestDto.getGpsCoordinates() && !mooringRequestDto.getGpsCoordinates().isEmpty()) {
-                final String gpsCoordinates = gpsUtil.getGpsCoordinates(mooringRequestDto.getGpsCoordinates());
+                final String gpsCoordinates = GPSUtil.getGpsCoordinates(mooringRequestDto.getGpsCoordinates());
                 mooring.setGpsCoordinates(gpsCoordinates);
             }
 
@@ -557,18 +545,6 @@ public class MooringServiceImpl implements MooringService {
             savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 
-//            if(null != optionalBoatyard.get().getMooringList()) optionalBoatyard.get().getMooringList()
-//                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-//            else  optionalBoatyard.get().setMooringList(new ArrayList<>());
-//
-//            if(null != optionalServiceArea.get().getMooringList()) optionalServiceArea.get().getMooringList()
-//                    .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-//            else  optionalServiceArea.get().setMooringList(new ArrayList<>());
-//
-//            if(null != optionalCustomer.get().getMooringList()) optionalCustomer.get().getMooringList()
-//                            .removeIf(mooring1 -> mooring1.getId().equals(finalSavedMooring.getId()));
-//            else optionalCustomer.get().setMooringList(new ArrayList<>());
-//
             optionalBoatyard.ifPresent(boatyard -> {
                 boatyard.getMooringList().add(finalSavedMooring);
                 boatyardRepository.save(optionalBoatyard.get());
@@ -594,7 +570,7 @@ public class MooringServiceImpl implements MooringService {
     @Transactional
     public Mooring fetchMooringById(final Integer mooringId, final HttpServletRequest request) {
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(mooringId);

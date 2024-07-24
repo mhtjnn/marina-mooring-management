@@ -166,4 +166,10 @@ public class AppConstants {
         public static final String PRIVATE_MOORINGS = "Private Moorings";
 
     }
+
+    public static class HeaderConstants {
+
+        public static final String CUSTOMER_OWNER_ID = "CUSTOMER_OWNER_ID";
+
+    }
 }

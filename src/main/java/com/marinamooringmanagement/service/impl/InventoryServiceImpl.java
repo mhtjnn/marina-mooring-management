@@ -65,16 +65,10 @@ public class InventoryServiceImpl implements InventoryService {
     private InventoryTypeRepository inventoryTypeRepository;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private VendorMapper vendorMapper;
 
     @Autowired
     private AuthorizationUtil authorizationUtil;
-
-    @Autowired
-    private ConversionUtils conversionUtils;
 
     private static final Logger log = LoggerFactory.getLogger(InventoryServiceImpl.class);
 
@@ -116,7 +110,7 @@ public class InventoryServiceImpl implements InventoryService {
                     if (searchText != null && !searchText.isEmpty()) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if (conversionUtils.canConvertToBigDecimal(searchText)) {
+                        if (ConversionUtils.canConvertToBigDecimal(searchText)) {
                             BigDecimal cost = new BigDecimal(searchText);
                             BigDecimal salePrice = new BigDecimal(searchText);
 
@@ -148,7 +142,7 @@ public class InventoryServiceImpl implements InventoryService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             Page<Inventory> inventoryList = inventoryRepository.findAll(specs, p);

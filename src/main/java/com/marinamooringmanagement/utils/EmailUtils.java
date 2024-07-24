@@ -4,7 +4,6 @@ import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.List;
 /**
  * Utility class for generating SendEmailRequest objects.
  */
-@Component
 public class EmailUtils {
 
     /**
@@ -21,7 +19,7 @@ public class EmailUtils {
      * @param template The ResetPasswordEmailTemplate containing email details.
      * @return SendEmailRequest The generated SendEmailRequest object.
      */
-    public SendEmailRequest generateEmailRequest(final ResetPasswordEmailTemplate template) {
+    public static SendEmailRequest generateEmailRequest(final ResetPasswordEmailTemplate template) {
         final SendEmailRequest sendEmailRequest = SendEmailRequest.builder().build();
 
         // Extract and set the 'to' email address

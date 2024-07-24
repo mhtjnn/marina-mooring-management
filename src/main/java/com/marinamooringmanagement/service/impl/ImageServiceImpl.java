@@ -48,9 +48,6 @@ public class ImageServiceImpl implements ImageService {
     private ImageMapper imageMapper;
 
     @Autowired
-    private ImageUtils imageUtils;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     @Override
@@ -192,7 +189,7 @@ public class ImageServiceImpl implements ImageService {
                 if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
                 if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
 
-                image.setImageData(imageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                 image.setCreationDate(new Date(System.currentTimeMillis()));
                 image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                 imageList.add(image);

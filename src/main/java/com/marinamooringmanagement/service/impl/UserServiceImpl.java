@@ -77,9 +77,6 @@ public class UserServiceImpl implements UserService {
     private UserMapper mapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private LoggedInUserUtil loggedInUserUtil;
 
     @Autowired
@@ -104,9 +101,6 @@ public class UserServiceImpl implements UserService {
     private VendorService vendorService;
 
     @Autowired
-    private ConversionUtils conversionUtils;
-
-    @Autowired
     private WorkOrderRepository workOrderRepository;
 
     /**
@@ -118,7 +112,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
-        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+        final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
@@ -136,7 +130,7 @@ public class UserServiceImpl implements UserService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if(conversionUtils.canConvertToInt(searchText)) {
+                        if(ConversionUtils.canConvertToInt(searchText)) {
                             predicates.add(criteriaBuilder.or(
                                     criteriaBuilder.equal(user.get("id"), searchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
@@ -173,7 +167,7 @@ public class UserServiceImpl implements UserService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             // Fetching the roles based on the specifications.
@@ -273,7 +267,7 @@ public class UserServiceImpl implements UserService {
         try {
             log.info(String.format("delete user with given userId"));
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             // Fetching the optional of user from the database.
             Optional<User> optionalUser = userRepository.findById(userId);
@@ -310,7 +304,7 @@ public class UserServiceImpl implements UserService {
              * user are also deleted.
              */
             if (userToBeDeleted.getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                request.setAttribute("CUSTOMER_OWNER_ID", userToBeDeleted.getId());
+                request.setAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID, userToBeDeleted.getId());
 
                 List<Vendor> vendorList = vendorRepository.findAll()
                         .stream()
@@ -486,7 +480,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BasicRestResponse fetchUsersOfTechnicianRole(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request) {
-        final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+        final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
@@ -504,7 +498,7 @@ public class UserServiceImpl implements UserService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if(conversionUtils.canConvertToInt(searchText)) {
+                        if(ConversionUtils.canConvertToInt(searchText)) {
                             predicates.add(criteriaBuilder.or(
                                     criteriaBuilder.equal(user.get("id"), searchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
@@ -541,7 +535,7 @@ public class UserServiceImpl implements UserService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             // Fetching the roles based on the specifications.
@@ -678,7 +672,7 @@ public class UserServiceImpl implements UserService {
 
             Role savedRole = null;
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             if (null != userRequestDto.getRoleId()) {
                 optionalRole = roleRepository.findById(userRequestDto.getRoleId());

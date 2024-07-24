@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.*;
@@ -30,7 +31,6 @@ import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.CustomerService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.ImageUtils;
-import com.marinamooringmanagement.utils.PhoneNumberUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -76,9 +76,6 @@ public class CustomerServiceImpl implements CustomerService {
     private MooringStatusMapper mooringStatusMapper;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private LoggedInUserUtil loggedInUserUtil;
 
     @Autowired
@@ -109,16 +106,7 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerTypeMapper customerTypeMapper;
 
     @Autowired
-    private DateUtil dateUtil;
-
-    @Autowired
-    private ImageUtils imageUtils;
-
-    @Autowired
     private ImageMapper imageMapper;
-
-    @Autowired
-    private PhoneNumberUtil phoneNumberUtil;
 
     @Autowired
     private ServiceAreaMapper serviceAreaMapper;
@@ -174,7 +162,7 @@ public class CustomerServiceImpl implements CustomerService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Specification<Customer> spec = new Specification<Customer>() {
                 @Override
@@ -201,7 +189,7 @@ public class CustomerServiceImpl implements CustomerService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
             final Page<Customer> customerList = customerRepository.findAll(spec, p);
 
@@ -258,7 +246,7 @@ public class CustomerServiceImpl implements CustomerService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
             Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
@@ -308,7 +296,7 @@ public class CustomerServiceImpl implements CustomerService {
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
             int start = (int) p.getOffset();
@@ -341,10 +329,10 @@ public class CustomerServiceImpl implements CustomerService {
                                     customerResponseDto.getFirstName() + " " + customerResponseDto.getLastName()
                             );
                             if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
-                            if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(dateUtil.dateToString(mooring.getInstallBottomChainDate()));
-                            if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(dateUtil.dateToString(mooring.getInstallTopChainDate()));
-                            if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(dateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
-                            if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(dateUtil.dateToString(mooring.getInspectionDate()));
+                            if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                            if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                            if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                            if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
                             if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
                                 mooringResponseDto.setImageDtoList(mooring.getImageList()
                                         .stream()
@@ -456,7 +444,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         try {
 
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             User user = authorizationUtil.checkAuthority(customerOwnerId);
 
@@ -510,7 +498,7 @@ public class CustomerServiceImpl implements CustomerService {
                     if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
                     if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
 
-                    image.setImageData(imageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                    image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
@@ -615,9 +603,9 @@ public class CustomerServiceImpl implements CustomerService {
     public BasicRestResponse deleteCustomerById(final Integer id, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if (-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID"))
-                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if (-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID))
+                customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Customer> optionalCustomer = customerRepository.findById(id);
             if (optionalCustomer.isEmpty())
@@ -659,7 +647,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public Customer fetchCustomerById(final Integer customerId, final HttpServletRequest request) {
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Customer> optionalCustomer = customerRepository.findById(customerId);

@@ -49,9 +49,6 @@ public class EstimateServiceImpl implements EstimateService {
     private AuthorizationUtil authorizationUtil;
 
     @Autowired
-    private SortUtils sortUtils;
-
-    @Autowired
     private EstimateRepository estimateRepository;
 
     @Autowired
@@ -85,9 +82,6 @@ public class EstimateServiceImpl implements EstimateService {
     private WorkOrderRepository workOrderRepository;
 
     @Autowired
-    private DateUtil dateUtil;
-
-    @Autowired
     private WorkOrderServiceImpl workOrderServiceImpl;
 
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
@@ -100,7 +94,7 @@ public class EstimateServiceImpl implements EstimateService {
         try {
             log.info("API called to fetch all the moorings in the database");
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
 
             Specification<Estimate> spec = new Specification<Estimate>() {
@@ -129,7 +123,7 @@ public class EstimateServiceImpl implements EstimateService {
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
-                    sortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
             final Page<Estimate> estimateList = estimateRepository.findAll(spec, pageable);
 
@@ -144,8 +138,8 @@ public class EstimateServiceImpl implements EstimateService {
                         if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
-                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
+                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
 
                         return workOrderResponseDto;
                     })
@@ -213,8 +207,8 @@ public class EstimateServiceImpl implements EstimateService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            if(-1 == customerOwnerId && null != request.getAttribute("CUSTOMER_OWNER_ID")) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if(-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID)) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Estimate> optionalEstimate = estimateRepository.findById(estimateId);
             if (optionalEstimate.isEmpty()) throw new RuntimeException(String.format("No estimate exists with %1$s", estimateId));
@@ -248,7 +242,7 @@ public class EstimateServiceImpl implements EstimateService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             final Estimate estimate = estimateRepository.findById(id)
@@ -303,7 +297,7 @@ public class EstimateServiceImpl implements EstimateService {
         try {
             if(null == estimateId) estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             estimate.setCustomerOwnerUser(user);
@@ -319,7 +313,7 @@ public class EstimateServiceImpl implements EstimateService {
                 if (null == estimateId)
                     throw new RuntimeException(String.format("Due date cannot be null during saved"));
                 final Date savedScheduleDate = estimate.getScheduledDate();
-                final Date givenScheduleDate = dateUtil.stringToDate(estimateRequestDto.getScheduledDate());
+                final Date givenScheduleDate = DateUtil.stringToDate(estimateRequestDto.getScheduledDate());
 
                 LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -340,7 +334,7 @@ public class EstimateServiceImpl implements EstimateService {
             } else if (null == estimateRequestDto.getScheduledDate()) {
                 if (null == estimateId)
                     throw new RuntimeException(String.format("Schedule date cannot be null during save"));
-                final Date givenDueDate = dateUtil.stringToDate(estimateRequestDto.getDueDate());
+                final Date givenDueDate = DateUtil.stringToDate(estimateRequestDto.getDueDate());
 
                 LocalDate localGivenDueDate = givenDueDate.toInstant()
                         .atZone(ZoneId.systemDefault())
@@ -355,8 +349,8 @@ public class EstimateServiceImpl implements EstimateService {
                 estimate.setDueDate(givenDueDate);
             } else {
 
-                final Date givenScheduleDate = dateUtil.stringToDate(estimateRequestDto.getScheduledDate());
-                final Date givenDueDate = dateUtil.stringToDate(estimateRequestDto.getDueDate());
+                final Date givenScheduleDate = DateUtil.stringToDate(estimateRequestDto.getScheduledDate());
+                final Date givenDueDate = DateUtil.stringToDate(estimateRequestDto.getDueDate());
 
                 if (null == estimateId) {
                     LocalDate localScheduleDate = givenScheduleDate.toInstant()

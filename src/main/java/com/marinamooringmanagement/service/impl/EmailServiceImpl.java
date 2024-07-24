@@ -30,9 +30,6 @@ public class EmailServiceImpl implements EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
-    private EmailUtils emailUtils;
-
-    @Autowired
     private JavaMailSender javaMailSender;
 
     @Autowired
@@ -78,7 +75,7 @@ public class EmailServiceImpl implements EmailService {
             template.setSubject("Reset Password");
             template.setBody(message);
 
-            return sendEmail(emailUtils.generateEmailRequest(template));
+            return sendEmail(EmailUtils.generateEmailRequest(template));
         } catch (Exception e) {
             response.setResponse(e.getMessage());
             response.setSuccess(false);

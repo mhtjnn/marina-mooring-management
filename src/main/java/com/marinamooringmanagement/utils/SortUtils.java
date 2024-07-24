@@ -1,9 +1,7 @@
 package com.marinamooringmanagement.utils;
 
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
 
-@Component
 public class SortUtils {
 
     /**
@@ -13,7 +11,7 @@ public class SortUtils {
      * @param sortDir  The direction of sorting (either "asc" for ascending or "desc" for descending).
      * @return A {@code Sort} object representing the sorting criteria.
      */
-    public Sort getSort(final String sortBy, final String sortDir) {
+    public static Sort getSort(final String sortBy, final String sortDir) {
         return sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
     }
 }
