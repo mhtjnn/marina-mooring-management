@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "api/v1/payment")
 @Validated
+@CrossOrigin
+@Tag(name = "Payment Controller", description = "These are API's for payment.")
 public class PaymentController {
 
     @Autowired
@@ -28,8 +31,7 @@ public class PaymentController {
     @PostMapping(value = "/{workOrderInvoiceId}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Save payment in the database",
-            description = "API to save payment in the database",
+            summary = "API to save payment in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

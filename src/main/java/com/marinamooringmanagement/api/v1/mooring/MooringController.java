@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/mooring")
 @Validated
 @CrossOrigin
+@Tag(name = "Mooring Controller", description = "These are API's for mooring.")
 public class MooringController extends GlobalExceptionHandler {
 
     @Autowired
@@ -43,8 +45,7 @@ public class MooringController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the fetched moorings
      */
     @Operation(
-            tags = "Fetch moorings from the database",
-            description = "API to fetch moorings from the database",
+            summary = "API to fetch moorings from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -89,8 +90,7 @@ public class MooringController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Save Mooring in the database",
-            description = "API to save mooring in the database",
+            summary = "API to save mooring in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -124,8 +124,7 @@ public class MooringController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Update moorings in the database",
-            description = "API to delete moorings in the database",
+            summary = "API to delete moorings in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -159,8 +158,7 @@ public class MooringController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete mooring from the database",
-            description = "API to delete mooring from the database",
+            summary = "API to delete mooring from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

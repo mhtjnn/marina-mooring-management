@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/metadata")
 @Validated
 @CrossOrigin
+@Tag(name = "Metadata Controller", description = "These are API's for metadata")
 public class MetadataController extends GlobalExceptionHandler {
 
     @Autowired
@@ -52,8 +54,7 @@ public class MetadataController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the list of countries
      */
     @Operation(
-            tags = "Fetch countries from the database",
-            description = "API to fetch countries from the database",
+            summary = "API to fetch countries from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -97,8 +98,7 @@ public class MetadataController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the list of states
      */
     @Operation(
-            tags = "Fetch states from the database",
-            description = "API to fetch states from the database",
+            summary = "API to fetch states from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -142,8 +142,7 @@ public class MetadataController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the list of roles
      */
     @Operation(
-            tags = "Fetch roles from the database",
-            description = "API to fetch roles from the database",
+            summary = "API to fetch roles from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -177,6 +176,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return roleService.fetchRoles(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch status of MOORING from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/status")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchStatus(
@@ -191,6 +205,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchStatus(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch types of boat from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/boatType")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchBoatType(
@@ -205,6 +234,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchBoatType(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch size of weights from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/sizeOfWeight")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchSizeOfWeight(
@@ -219,6 +263,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchSizeOfWeight(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch type of weights from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/typeOfWeight")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchTypeOfWeight(
@@ -233,6 +292,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchTypeOfWeight(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch top chain conditions from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/topChainCondition")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchTopChainConditions(
@@ -247,6 +321,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchTopChainCondition(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch eye conditions from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/eyeCondition")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchEyeConditions(
@@ -261,6 +350,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchEyeConditions(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch bottom chain conditions from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/bottomChainConditions")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchBottomChainConditions(
@@ -275,6 +379,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchBottomChainConditions(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch shackle swivel conditions from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/shackleSwivelConditions")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchShackleSwivelConditions(
@@ -289,6 +408,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchShackleSwivelConditions(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch customers from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/customers")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomers(
@@ -304,6 +438,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchCustomers(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch boatyards from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/boatyards")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchBoatyards(
@@ -319,6 +468,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchBoatyards(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch mooring ids from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/mooringIds")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringIds(
@@ -334,6 +498,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchMooringIds(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch users with technician role from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/technicians")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchTechnicians(
@@ -349,6 +528,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchTechnicians(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch status of WORK ORDER from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @RequestMapping(value = {"/workOrderStatus"}, method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchSaveAndEditWorkOrderStatus(
@@ -364,6 +558,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchWorkOrderStatus(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch types of inventory from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/inventoryType")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchInventoryTypes(
@@ -379,6 +588,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchInventoryType(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch customer owner from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/customerOwners")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerOwners(
@@ -398,6 +622,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchCustomerOwners(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch mooring based on customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/mooringsBasedOnCustomerId/{customerId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringsBasedOnCustomerId(
@@ -414,6 +653,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchMooringsBasedOnCustomerId(baseSearchRequest, customerId, request);
     }
 
+    @Operation(
+            summary = "API to fetch mooring based on boatyard from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/mooringsBasedOnBoatyardId/{boatyardId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringsBasedOnBoatyardId(
@@ -430,6 +684,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchMooringsBasedOnBoatyardId(baseSearchRequest, boatyardId, request);
     }
 
+    @Operation(
+            summary = "API to fetch customer based on mooring from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/customerBasedOnMooringId/{mooringId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerBasedOnMooringId(
@@ -446,6 +715,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchCustomerBasedOnMooringId(baseSearchRequest, mooringId, request);
     }
 
+    @Operation(
+            summary = "API to fetch boatyard based on mooring from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/boatyardBasedOnMooringId/{mooringId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchBoatyardBasedOnMooringId(
@@ -462,6 +746,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchBoatyardBasedOnMooringId(baseSearchRequest, mooringId, request);
     }
 
+    @Operation(
+            summary = "API to fetch mooring based on customer nad boatyard from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/mooringBasedOnCustomerIdAndBoatyardId/{customerId}/{boatyardId}")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchMooringBasedOnCustomerIdAndBoatyardId(
@@ -479,6 +778,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchMooringBasedOnCustomerIdAndMooringId(baseSearchRequest, customerId, boatyardId, request);
     }
 
+    @Operation(
+            summary = "API to fetch types of customer from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/customerTypes")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchCustomerTypes(
@@ -494,6 +808,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchCustomerTypes(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch types of service area from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/serviceAreaTypes")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchServiceAreaTypes(
@@ -509,6 +838,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchServiceAreaTypes(baseSearchRequest);
     }
 
+    @Operation(
+            summary = "API to fetch service areas from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/serviceAreas")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchServiceAreas(
@@ -524,6 +868,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchServiceAreas(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch quickbook customers from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/quickbookCustomers")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchQuickbookCustomers(
@@ -539,6 +898,21 @@ public class MetadataController extends GlobalExceptionHandler {
         return metadataService.fetchQuickbookCustomers(baseSearchRequest, request);
     }
 
+    @Operation(
+            summary = "API to fetch types of payment from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @GetMapping("/paymentTypes")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchPaymentTypes(

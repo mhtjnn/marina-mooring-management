@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "/api/v1/user")
 @Validated
 @CrossOrigin
+@Tag(name = "User Controller", description = "These are API's for user.")
 public class UserController extends GlobalExceptionHandler {
     @Autowired
     private UserService userService;
@@ -48,8 +50,7 @@ public class UserController extends GlobalExceptionHandler {
      * @return A {@link BasicRestResponse} containing a list of {@link UserResponseDto} representing the users.
      */
     @Operation(
-            tags = "Fetch users from the database",
-            description = "API to fetch users from the database",
+            summary = "API to fetch users from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -88,8 +89,7 @@ public class UserController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch users of technician role from the database",
-            description = "API to fetch users of technician role from the database",
+            summary = "API to fetch users of technician role from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -136,8 +136,7 @@ public class UserController extends GlobalExceptionHandler {
      * @return A {@link BasicRestResponse} indicating the outcome of the save operation.
      */
     @Operation(
-            tags = "Save user in the database",
-            description = "API to save user in the database",
+            summary = "API to save user in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -177,8 +176,7 @@ public class UserController extends GlobalExceptionHandler {
      * @return A {@link BasicRestResponse} indicating the outcome of the update operation.
      */
     @Operation(
-            tags = "Update user in the database",
-            description = "API to update user in the database",
+            summary = "API to update user in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -218,8 +216,7 @@ public class UserController extends GlobalExceptionHandler {
      * @return A {@link BasicRestResponse} indicating the outcome of the delete operation.
      */
     @Operation(
-            tags = "Delete user from the database",
-            description = "API to delete user from the database",
+            summary = "API to delete user from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

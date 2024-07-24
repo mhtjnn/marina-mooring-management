@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "/api/v1/serviceArea")
 @Validated
 @CrossOrigin
+@Tag(name = "Service area Controller", description = "These are API's for service area.")
 public class ServiceAreaController {
 
     @Autowired
@@ -40,8 +42,7 @@ public class ServiceAreaController {
     @PostMapping(value = "/", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Save service area in the database",
-            description = "API to save service area in the database",
+            summary = "API to save service area in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -75,8 +76,7 @@ public class ServiceAreaController {
     @GetMapping(value = "/", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Fetch service area from the database",
-            description = "API to fetch service area from the database",
+            summary = "API to fetch service area from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -115,8 +115,7 @@ public class ServiceAreaController {
      * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
      */
     @Operation(
-            tags = "Fetch Moorings related to service area from the database",
-            description = "API to fetch Moorings related to service area from the database",
+            summary = "API to fetch Moorings related to service area from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -171,8 +170,7 @@ public class ServiceAreaController {
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @Operation(
-            tags = "Delete service area from the database",
-            description = "API to delete service area from the database",
+            summary = "API to delete service area from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -207,8 +205,7 @@ public class ServiceAreaController {
     @PutMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Update service area in the database",
-            description = "API to update service area in the database",
+            summary = "API to update service area in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

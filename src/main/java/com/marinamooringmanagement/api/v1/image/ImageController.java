@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,14 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "api/v1/image")
 @CrossOrigin
+@Tag(name = "Image Controller", description = "These are API's for image.")
 public class ImageController {
 
     @Autowired
     private ImageService imageService;
 
     @Operation(
-            tags = "Image upload",
-            description = "API to upload image",
+            summary = "API to upload image",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -55,8 +56,7 @@ public class ImageController {
     }
 
     @Operation(
-            tags = "Fetch Images",
-            description = "API to fetch images",
+            summary = "API to fetch images",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -84,8 +84,7 @@ public class ImageController {
     }
 
     @Operation(
-            tags = "Edit image",
-            description = "API to edit image",
+            summary = "API to edit image",
             responses = {
                     @ApiResponse(
                             description = "Success",

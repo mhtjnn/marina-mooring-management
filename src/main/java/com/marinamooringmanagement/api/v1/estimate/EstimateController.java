@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/estimate")
 @Validated
 @CrossOrigin
+@Tag(name = "Estimate Controller", description = "These are API's for estimate.")
 public class EstimateController extends GlobalExceptionHandler {
 
     @Autowired
@@ -40,8 +42,7 @@ public class EstimateController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the fetched moorings
      */
     @Operation(
-            tags = "Fetch estimates from the database",
-            description = "API to estimates from the database",
+            summary = "API to estimates from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -86,8 +87,7 @@ public class EstimateController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Save estimate in the database",
-            description = "API to save estimates in the database",
+            summary = "API to save estimates in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -121,8 +121,7 @@ public class EstimateController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Update estimates in the database",
-            description = "API to update estimates in the database",
+            summary = "API to update estimates in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -156,8 +155,7 @@ public class EstimateController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete estimate from the database",
-            description = "API to delete estimate from the database",
+            summary = "API to delete estimate from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -184,8 +182,7 @@ public class EstimateController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Convert estimate to work order from the database",
-            description = "API to convert estimate to work order from the database",
+            summary = "API to convert estimate to work order from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

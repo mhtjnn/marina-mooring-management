@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "/api/v1/boatyard")
 @Validated
 @CrossOrigin
+@Tag(name = "Boatyard Controller", description = "These are API's for boatyard.")
 public class BoatyardController extends GlobalExceptionHandler {
 
     @Autowired
@@ -44,8 +46,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     @PostMapping(value = "/", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Save BoatYard in the database",
-            description = "API to save BoatYard in the database",
+            summary = "API to save BoatYard in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -79,8 +80,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     @GetMapping(value = "/", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Fetch BoatYard from the database",
-            description = "API to fetch BoatYard from the database",
+            summary = "API to fetch BoatYard from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -119,8 +119,7 @@ public class BoatyardController extends GlobalExceptionHandler {
      * @return a {@link BasicRestResponse} containing the moorings related to the boatyard.
      */
     @Operation(
-            tags = "Fetch Moorings related to boatyard from the database",
-            description = "API to fetch Moorings related to boatyard from the database",
+            summary = "API to fetch Moorings related to boatyard from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -175,8 +174,7 @@ public class BoatyardController extends GlobalExceptionHandler {
      * @return A BasicRestResponse indicating the status of the operation.
      */
     @Operation(
-            tags = "Delete BoatYard from the database",
-            description = "API to delete BoatYard from the database",
+            summary = "API to delete BoatYard from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -211,8 +209,7 @@ public class BoatyardController extends GlobalExceptionHandler {
     @PutMapping(value = "/{id}", produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            tags = "Update BoatYard in the database",
-            description = "API to update BoatYard in the database",
+            summary = "API to update BoatYard in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

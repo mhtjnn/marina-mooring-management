@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +24,14 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "api/v1/inventory")
 @Validated
 @CrossOrigin
+@Tag(name = "Inventory Controller", description = "These are API's for inventory.")
 public class InventoryController extends GlobalExceptionHandler {
 
     @Autowired
     private InventoryService inventoryService;
 
     @Operation(
-            tags = "Save inventory in the database",
-            description = "API to save inventory in the database",
+            summary = "API to save inventory in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -66,8 +67,7 @@ public class InventoryController extends GlobalExceptionHandler {
      */
 
     @Operation(
-            tags = "Fetch inventory from the database",
-            description = "API to fetch inventory from the database",
+            summary = "API to fetch inventory from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -109,8 +109,7 @@ public class InventoryController extends GlobalExceptionHandler {
      * @param inventoryRequestDto The DTO containing updated customer information.
      */
     @Operation(
-            tags = "Update inventory in the database",
-            description = "API to update inventory in the database",
+            summary = "API to update inventory in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -145,8 +144,7 @@ public class InventoryController extends GlobalExceptionHandler {
      */
 
     @Operation(
-            tags = "Delete inventory from the database",
-            description = "API to delete inventory from the database",
+            summary = "API to delete inventory from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

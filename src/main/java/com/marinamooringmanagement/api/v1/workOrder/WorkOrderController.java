@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/workOrder")
 @Validated
 @CrossOrigin
+@Tag(name = "Work order Controller", description = "These are API's for work order.")
 public class WorkOrderController extends GlobalExceptionHandler {
 
     @Autowired
@@ -43,8 +45,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the fetched moorings
      */
     @Operation(
-            tags = "Fetch work orders from the database",
-            description = "API to fetch work orders from the database",
+            summary = "API to fetch work orders from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -84,8 +85,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch completed work orders with pay status from the database",
-            description = "API to fetch completed work orders with pay status from the database",
+            summary =  "API to fetch completed work orders with pay status from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -125,8 +125,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch all work order invoices from the database",
-            description = "API to fetch all work order invoices from the database",
+            summary = "API to fetch all work order invoices from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -165,8 +164,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch open work orders from the database",
-            description = "API to fetch open work orders from the database",
+            summary = "API to fetch open work orders from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -207,8 +205,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch fetch all open work orders and mooring due for service from the database",
-            description = "API to fetch all open work orders and mooring due for service from the database",
+            summary = "API to fetch all open work orders and mooring due for service from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -249,8 +246,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch closed work orders from the database",
-            description = "API to fetch closed work orders from the database",
+            summary = "API to fetch closed work orders from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -296,8 +292,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Save work orders in the database",
-            description = "API to save work orders in the database",
+            summary = "API to save work orders in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -331,8 +326,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Update work order in the database",
-            description = "API to update work order in the database",
+            summary = "API to update work order in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -366,8 +360,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete work order from the database",
-            description = "API to delete work order from the database",
+            summary = "API to delete work order from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -394,8 +387,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Approve work order pay status from the database",
-            description = "API to approve work order pay status from the database",
+            summary = "API to approve work order pay status from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -423,8 +415,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Deny work order pay status from the database",
-            description = "API to deny work order pay status from the database",
+            summary = "API to deny work order pay status from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

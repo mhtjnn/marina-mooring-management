@@ -37,6 +37,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @Validated
 @RequestMapping(value = "/api/v1/customer")
 @CrossOrigin
+@Tag(name = "Customer Controller", description = "These are API's for customer.")
 public class CustomerController extends GlobalExceptionHandler {
 
 
@@ -51,8 +52,7 @@ public class CustomerController extends GlobalExceptionHandler {
      */
 
     @Operation(
-            tags = "Save Customer in the database",
-            description = "API to save customer in the database",
+            summary = "API to save customer in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -88,8 +88,7 @@ public class CustomerController extends GlobalExceptionHandler {
      */
 
     @Operation(
-            tags = "Fetch customer from the database",
-            description = "API to fetch customer from the database",
+            summary = "API to fetch customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -133,8 +132,7 @@ public class CustomerController extends GlobalExceptionHandler {
      * @throws IllegalArgumentException If the customer ID is null or negative.
      */
     @Operation(
-            tags = "Fetch customer and moorings associated with it from the database",
-            description = "Fetch customer and moorings associated with it from the database",
+            summary = "Fetch customer and moorings associated with it from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -190,8 +188,7 @@ public class CustomerController extends GlobalExceptionHandler {
      * @param customerRequestDto The DTO containing updated customer information.
      */
     @Operation(
-            tags = "Update customers in the database",
-            description = "API to update customers in the database",
+            summary = "API to update customers in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -226,8 +223,7 @@ public class CustomerController extends GlobalExceptionHandler {
      */
 
     @Operation(
-            tags = "Delete customer from the database",
-            description = "API to delete customer from the database",
+            summary = "API to delete customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

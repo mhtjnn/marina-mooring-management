@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping(value = "/api/v1/quickbook")
 @CrossOrigin
 @Validated
+@Tag(name = "Quickbook customer Controller", description = "These are API's for quickbook customer.")
 public class QuickbookCustomerController {
 
     @Autowired
@@ -45,8 +47,7 @@ public class QuickbookCustomerController {
      * @return A {@link BasicRestResponse} containing a list of {@link QuickbookCustomerResponseDto} representing the quickbook.
      */
     @Operation(
-            tags = "Fetch quickbooks from the database",
-            description = "API to fetch quickbooks from the database",
+            summary = "API to fetch quickbooks from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -89,12 +90,11 @@ public class QuickbookCustomerController {
      * <p>
      * This endpoint is used to create a new quickbook customer with the details provided in the request body.
      *
-     * @param quickbookCustomer {@link QuickbookCustomerRequestDto} containing the quickbook customer details to be saved.
+     * @param quickbookCustomerRequestDto {@link QuickbookCustomerRequestDto} containing the quickbook customer details to be saved.
      * @return A {@link BasicRestResponse} indicating the outcome of the save operation.
      */
     @Operation(
-            tags = "Save quickbook customer in the database",
-            description = "API to save quickbook customer in the database",
+            summary = "API to save quickbook customer in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -134,8 +134,7 @@ public class QuickbookCustomerController {
      * @return A {@link BasicRestResponse} indicating the outcome of the update operation.
      */
     @Operation(
-            tags = "Update quickbook customer in the database",
-            description = "API to update quickbook customer in the database",
+            summary = "API to update quickbook customer in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -175,8 +174,7 @@ public class QuickbookCustomerController {
      * @return A {@link BasicRestResponse} indicating the outcome of the delete operation.
      */
     @Operation(
-            tags = "Delete quickbook customer from the database",
-            description = "API to delete quickbook customer from the database",
+            summary = "API to delete quickbook customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -207,8 +205,7 @@ public class QuickbookCustomerController {
     }
 
     @Operation(
-            tags = "Save mapping customer to quickbook customer from the database",
-            description = "API to save mapping customer to quickbook customer from the database",
+            summary = "API to save mapping customer to quickbook customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -240,8 +237,7 @@ public class QuickbookCustomerController {
     }
 
     @Operation(
-            tags = "Edit mapping customer to quickbook customer from the database",
-            description = "API to edit mapping customer to quickbook customer from the database",
+            summary = "API to edit mapping customer to quickbook customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

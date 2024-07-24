@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RequestMapping("/api/v1/vendor")
 @Validated
 @CrossOrigin("*")
+@Tag(name = "Vendor Controller", description = "These are API's for vendor.")
 public class VendorController extends GlobalExceptionHandler {
 
     @Autowired
@@ -43,8 +45,7 @@ public class VendorController extends GlobalExceptionHandler {
      * @return BasicRestResponse containing the fetched vendors
      */
     @Operation(
-            tags = "Fetch vendors from the database",
-            description = "API to fetch vendors from the database",
+            summary = "API to fetch vendors from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -87,8 +88,7 @@ public class VendorController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Save vendor in the database",
-            description = "API to save vendor in the database",
+            summary = "API to save vendor in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -122,8 +122,7 @@ public class VendorController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the deletion operation
      */
     @Operation(
-            tags = "Delete vendor from the database",
-            description = "API to delete vendor from the database",
+            summary = "API to delete vendor from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -157,8 +156,7 @@ public class VendorController extends GlobalExceptionHandler {
      * @return BasicRestResponse indicating the status of the operation
      */
     @Operation(
-            tags = "Update vendor in the database",
-            description = "API to update vendor in the database",
+            summary = "API to update vendor in the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -186,8 +184,7 @@ public class VendorController extends GlobalExceptionHandler {
     }
 
     @Operation(
-            tags = "Fetch vendor based on Id from the database",
-            description = "API to fetch vendor based on Id from the database",
+            summary = "API to fetch vendor based on Id from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",

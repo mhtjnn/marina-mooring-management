@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -56,6 +57,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @CrossOrigin
+@Tag(name = "Authentication Controller", description = "These are API's for authentication related tasks.")
 public class AuthenticationController extends GlobalExceptionHandler {
 
     private static final String normalTokenStr = "NORMAL_TOKEN";
@@ -98,8 +100,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @throws Exception if an error occurs during authentication
      */
     @Operation(
-            tags = "User Login",
-            description = "API to login the user",
+            summary = "API to login the user",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -156,8 +157,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @throws Exception
      */
     @Operation(
-            tags = "Reset Password Email",
-            description = "API to send a link to reset password through email",
+            summary = "API to send a link to reset password through email",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -187,8 +187,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @throws Exception
      */
     @Operation(
-            tags = "Reset password with the New password",
-            description = "API to reset old password with the new password",
+            summary = "API to reset old password with the new password",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -216,8 +215,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @throws Exception
      */
     @Operation(
-            tags = "Validate email and reset password token",
-            description = "API to validate email and reset password token",
+            summary = "API to validate email and reset password token",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -239,8 +237,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
 
 
     @Operation(
-            tags = "User Logout",
-            description = "API to logout the user",
+            summary = "API to logout the user",
             responses = {
                     @ApiResponse(
                             description = "Success",
@@ -279,8 +276,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @throws Exception if an error occurs during token refresh
      */
     @Operation(
-            tags = "User Refresh",
-            description = "API to refresh the user",
+            summary = "API to refresh the user",
             responses = {
                     @ApiResponse(
                             description = "Success",
