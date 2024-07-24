@@ -206,6 +206,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
                             workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrder.getScheduledDate()));
+                        if(null != workOrder.getCompletedDate())
+                            workOrderResponseDto.setCompletedDate(dateUtil.dateToString(workOrder.getCompletedDate()));
                         if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
                             workOrderResponseDto.setImageDtoList(workOrder.getImageList()
                                     .stream()
@@ -911,9 +913,26 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if(null != workOrderInvoice.getLastModifiedDate()) workOrderInvoiceResponseDto.setLastContactTime(dateUtil.dateToString(workOrderInvoice.getLastModifiedDate()));
 
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrderInvoice.getWorkOrder());
-
+                        if (null != workOrderInvoice.getWorkOrder().getMooring())
+                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getMooring()));
                         if (null != workOrderInvoice.getWorkOrder().getMooring() && null != workOrderInvoice.getWorkOrder().getMooring().getCustomer())
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getMooring().getCustomer()));
+                        if (null != workOrderInvoice.getWorkOrder().getMooring() && null != workOrderInvoice.getWorkOrder().getMooring().getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getMooring().getBoatyard()));
+                        if (null != workOrderInvoice.getWorkOrder().getCustomerOwnerUser())
+                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getCustomerOwnerUser()));
+                        if (null != workOrderInvoice.getWorkOrder().getTechnicianUser())
+                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrderInvoice.getWorkOrder().getTechnicianUser()));
+                        if (null != workOrderInvoice.getWorkOrder().getWorkOrderStatus())
+                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrderInvoice.getWorkOrder().getWorkOrderStatus()));
+                        if (null != workOrderInvoice.getWorkOrder().getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrderInvoice.getWorkOrder().getWorkOrderPayStatus()));
+                        if (null != workOrderInvoice.getWorkOrder().getDueDate())
+                            workOrderResponseDto.setDueDate(dateUtil.dateToString(workOrderInvoice.getWorkOrder().getDueDate()));
+                        if (null != workOrderInvoice.getWorkOrder().getScheduledDate())
+                            workOrderResponseDto.setScheduledDate(dateUtil.dateToString(workOrderInvoice.getWorkOrder().getScheduledDate()));
+                        if(null != workOrderInvoice.getWorkOrder().getCompletedDate())
+                            workOrderResponseDto.setCompletedDate(dateUtil.dateToString(workOrderInvoice.getWorkOrder().getCompletedDate()));
 
                         workOrderInvoiceResponseDto.setWorkOrderResponseDto(workOrderResponseDto);
                         workOrderInvoiceResponseDto.setWorkOrderInvoiceStatusDto(workOrderInvoiceStatusMapper.toDto(WorkOrderInvoiceStatusDto.builder().build(), workOrderInvoice.getWorkOrderInvoiceStatus()));
