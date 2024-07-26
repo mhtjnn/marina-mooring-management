@@ -39,7 +39,7 @@ public class CustomerRequestDto {
      */
     private String phone;
 
-    private String note;
+    private String notes;
 
     /**
      * The street and house details of the customer's address.

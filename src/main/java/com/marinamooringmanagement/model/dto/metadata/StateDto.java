@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.dto.metadata;
 
 import com.marinamooringmanagement.model.dto.BaseDto;
+import com.marinamooringmanagement.model.entity.metadata.Country;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,4 +32,6 @@ public class StateDto extends BaseDto {
      * The label of the state.
      */
     private String label;
+
+    private CountryDto countryDto;
 }

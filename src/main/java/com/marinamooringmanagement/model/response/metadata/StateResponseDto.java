@@ -32,4 +32,6 @@ public class StateResponseDto implements Serializable {
      * The label of the state.
      */
     private String label;
+
+    private CountryResponseDto countryResponseDto;
 }

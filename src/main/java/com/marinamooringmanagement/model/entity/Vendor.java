@@ -45,14 +45,8 @@ public class Vendor extends Base {
     /**
      * Street address of the vendor.
      */
-    @Column(name = "street")
-    private String street;
-
-    /**
-     * Apartment or suite number of the vendor.
-     */
-    @Column(name = "apt_suite")
-    private String aptSuite;
+    @Column(name = "address")
+    private String address;
 
     /**
      * The state of the customer's address.

@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.entity.Mooring;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -28,9 +28,7 @@ public class ServiceAreaDto extends BaseDto{
 
     private ServiceAreaTypeDto serviceAreaTypeDto;
 
-    private String streetHouse;
-
-    private String aptSuite;
+    private String address;
 
     private StateDto stateDto;
 

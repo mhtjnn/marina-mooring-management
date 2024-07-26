@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Data Transfer Object (DTO) representing a country.
  */
@@ -31,4 +33,6 @@ public class CountryDto extends BaseDto {
      * The label of the country.
      */
     private String label;
+
+    private List<StateDto> stateDtoList;
 }

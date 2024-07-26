@@ -71,12 +71,7 @@ public class UserDto extends BaseDto implements Serializable {
     /**
      * The street address of the user.
      */
-    private String street;
-
-    /**
-     * The apartment number of the user.
-     */
-    private String apt;
+    private String address;
 
     /**
      * The zip code of the user's location.

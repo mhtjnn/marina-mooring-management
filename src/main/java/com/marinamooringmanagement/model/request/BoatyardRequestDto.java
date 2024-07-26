@@ -32,12 +32,7 @@ public class BoatyardRequestDto {
     /**
      * The address associated with an entity, such as a customer or location.
      */
-    private String street;
-
-    /**
-     * The apartment number of the BoatYard.
-     */
-    private String apt;
+    private String address;
 
     /**
      * The state associated with the BoatYard.

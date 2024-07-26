@@ -15,7 +15,7 @@ public interface StateService {
      * @param baseSearchRequest the base search request containing common search parameters such as filters, pagination, etc.
      * @return a BasicRestResponse containing the results of the state search.
      */
-    BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest);
+    BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest, final Integer countryId);
 
     /**
      * Saves a new state into the database.

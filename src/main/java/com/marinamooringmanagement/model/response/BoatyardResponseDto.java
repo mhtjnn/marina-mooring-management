@@ -40,12 +40,7 @@ public class BoatyardResponseDto implements Serializable {
     /**
      * The address associated with an entity, such as a customer or location.
      */
-    private String street;
-
-    /**
-     * The apartment number associated with the BoatYard.
-     */
-    private String apt;
+    private String address;
 
     /**
      * The state associated with the BoatYard.

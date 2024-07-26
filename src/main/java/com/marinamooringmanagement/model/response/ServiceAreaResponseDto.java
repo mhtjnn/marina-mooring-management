@@ -24,9 +24,7 @@ public class ServiceAreaResponseDto implements Serializable {
 
     private ServiceAreaTypeDto serviceAreaTypeDto;
 
-    private String streetHouse;
-
-    private String aptSuite;
+    private String address;
 
     private StateResponseDto stateResponseDto;
 

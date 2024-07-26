@@ -28,14 +28,8 @@ public class ServiceArea extends Base{
     @Column(name = "service_area_name")
     private String serviceAreaName;
 
-    @Column(name = "street_house")
-    private String streetHouse;
-
-    /**
-     * The Apt/Suite of the customer's address.
-     */
-    @Column(name = "apt_suite")
-    private String aptSuite;
+    @Column(name = "address")
+    private String address;
 
     /**
      * The state of the customer's address.

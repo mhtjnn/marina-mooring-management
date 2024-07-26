@@ -65,13 +65,7 @@ public class UserResponseDto implements Serializable {
     /**
      * The street address.
      */
-    private String street;
-
-    /**
-     * The apartment or unit number.
-     */
-    private String apt;
-
+    private String address;
     /**
      * The ZIP code.
      */

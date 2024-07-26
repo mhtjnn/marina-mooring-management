@@ -3,6 +3,9 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.mapper.RoleMapper;
+import com.marinamooringmanagement.mapper.metadata.CountryMapper;
+import com.marinamooringmanagement.mapper.metadata.StateMapper;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.Country;
@@ -103,6 +106,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private WorkOrderRepository workOrderRepository;
 
+    @Autowired
+    private StateMapper stateMapper;
+
+    @Autowired
+    private CountryMapper countryMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
+
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
      *
@@ -183,27 +195,10 @@ public class UserServiceImpl implements UserService {
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
                         mapper.mapToUserResponseDto(userResponseDto, user);
-                        RoleResponseDto roleResponseDto = RoleResponseDto.builder()
-                                .id(user.getRole().getId())
-                                .name(user.getRole().getName())
-                                .description(user.getRole().getDescription())
-                                .build();
-                        userResponseDto.setRoleResponseDto(roleResponseDto);
+                        if(null != user.getRole()) userResponseDto.setRoleResponseDto(roleMapper.mapToRoleResponseDto(RoleResponseDto.builder().build(), user.getRole()));
+                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), user.getState()));
+                        if(null != user.getCountry()) userResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), user.getCountry()));
 
-                        StateResponseDto stateResponseDto = null;
-                        if (null != user.getState()) stateResponseDto = StateResponseDto.builder()
-                                .id(user.getState().getId())
-                                .label(user.getState().getLabel())
-                                .name(user.getState().getName())
-                                .build();
-                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateResponseDto);
-
-                        CountryResponseDto countryResponseDto = CountryResponseDto.builder()
-                                .id(user.getCountry().getId())
-                                .label(user.getCountry().getLabel())
-                                .name(user.getCountry().getName())
-                                .build();
-                        if (null != user.getCountry()) userResponseDto.setCountryResponseDto(countryResponseDto);
                         return userResponseDto;
                     }).toList();
 

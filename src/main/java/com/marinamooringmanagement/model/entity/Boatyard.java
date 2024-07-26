@@ -44,14 +44,8 @@ public class Boatyard extends Base {
     /**
      * The address associated with an entity, such as a customer or location.
      */
-    @Column(name = "street")
-    private String street;
-
-    /**
-     * The apartment number of the BoatYard.
-     */
-    @Column(name = "apt")
-    private String apt;
+    @Column(name = "address")
+    private String address;
 
     /**
      * The state associated with the BoatYard.

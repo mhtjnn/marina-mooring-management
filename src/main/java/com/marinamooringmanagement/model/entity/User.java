@@ -66,14 +66,8 @@ public class User extends Base {
     /**
      * The street address of the user.
      */
-    @Column(name = "street")
-    private String street;
-
-    /**
-     * The apartment number of the user.
-     */
-    @Column(name = "apt")
-    private String apt;
+    @Column(name = "address")
+    private String address;
 
     /**
      * The zip code of the user's location.

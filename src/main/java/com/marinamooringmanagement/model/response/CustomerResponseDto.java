@@ -47,7 +47,7 @@ public class CustomerResponseDto implements Serializable {
      */
     private String emailAddress;
 
-    private String note;
+    private String notes;
 
     /**
      * The street and house details of the customer's address.

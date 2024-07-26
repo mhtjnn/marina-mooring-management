@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Data Transfer Object (DTO) representing a response for country data.
@@ -32,5 +33,7 @@ public class CountryResponseDto implements Serializable {
      * The label of the country.
      */
     private String label;
+
+    private List<StateResponseDto> stateResponseDtoList;
 }
 

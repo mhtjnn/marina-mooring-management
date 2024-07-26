@@ -39,12 +39,7 @@ public class VendorResponseDto implements Serializable {
     /**
      * Street address of the vendor.
      */
-    private String street;
-
-    /**
-     * Apartment or suite number of the vendor.
-     */
-    private String aptSuite;
+    private String address;
 
     /**
      * State where the vendor is located.

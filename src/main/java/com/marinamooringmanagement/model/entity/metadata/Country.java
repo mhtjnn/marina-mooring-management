@@ -1,11 +1,11 @@
 package com.marinamooringmanagement.model.entity.metadata;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.Base;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 /**
  * Entity class representing a country.
@@ -34,4 +34,9 @@ public class Country extends Base {
      */
     @Column(name = "label")
     private String label;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "country", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
+    private List<State> stateList;
 }

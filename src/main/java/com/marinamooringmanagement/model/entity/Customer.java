@@ -56,19 +56,13 @@ public class Customer extends Base {
     @Column(name = "email_address")
     private String emailAddress;
 
-    @Column(name = "note")
-    private String note;
+    @Column(name = "notes")
+    private String notes;
     /**
      * The street and house number of the customer's address.
      */
-    @Column(name = "street_house")
-    private String streetHouse;
-
-    /**
-     * The Apt/Suite of the customer's address.
-     */
-    @Column(name = "apt_suite")
-    private String aptSuite;
+    @Column(name = "address")
+    private String address;
 
     /**
      * The state of the customer's address.

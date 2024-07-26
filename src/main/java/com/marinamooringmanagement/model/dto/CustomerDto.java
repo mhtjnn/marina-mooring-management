@@ -39,17 +39,12 @@ public class CustomerDto extends BaseDto {
      */
     private String emailAddress;
 
-    private String note;
+    private String notes;
 
     /**
      * The street and house number of the customer's address.
      */
-    private String streetHouse;
-
-    /**
-     * The Apt/Suite of the customer's address.
-     */
-    private String aptSuite;
+    private String address;
     /**
      * The state of the customer's address.
      */

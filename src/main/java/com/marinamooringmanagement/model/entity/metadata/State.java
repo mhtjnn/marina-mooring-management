@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity.metadata;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.marinamooringmanagement.model.entity.Base;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,5 +35,10 @@ public class State extends Base {
      */
     @Column(name = "label")
     private String label;
+
+    @ManyToOne
+    @JoinColumn(name = "country_id")
+    @JsonBackReference
+    private Country country;
 }
 

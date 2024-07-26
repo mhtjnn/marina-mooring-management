@@ -702,14 +702,11 @@ public class CustomerServiceImpl implements CustomerService {
         if(initialCustomer.getImageList() != null && savedCustomer.getImageList() != null && initialCustomer.getImageList() != savedCustomer.getImageList())
             log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getImageList(), savedCustomer.getImageList(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialCustomer.getNote() != null && savedCustomer.getNote() != null && !initialCustomer.getNote().equals(savedCustomer.getNote()))
-            log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNote(), savedCustomer.getNote(), user.getId(), user.getFirstName() + " " + user.getLastName()));
+        if(initialCustomer.getNotes() != null && savedCustomer.getNotes() != null && !initialCustomer.getNotes().equals(savedCustomer.getNotes()))
+            log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNotes(), savedCustomer.getNotes(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialCustomer.getStreetHouse() != null && savedCustomer.getStreetHouse() != null && !initialCustomer.getStreetHouse().equals(savedCustomer.getStreetHouse()))
-            log.info(String.format("Customer street/house changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getStreetHouse(), savedCustomer.getStreetHouse(), user.getId(), user.getFirstName() + " " + user.getLastName()));
-
-        if(initialCustomer.getAptSuite() != null && savedCustomer.getAptSuite() != null && !initialCustomer.getAptSuite().equals(savedCustomer.getAptSuite()))
-            log.info(String.format("Customer apt/suite changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getAptSuite(), savedCustomer.getAptSuite(), user.getId(), user.getFirstName() + " " + user.getLastName()));
+        if(initialCustomer.getAddress() != null && savedCustomer.getAddress() != null && !initialCustomer.getAddress().equals(savedCustomer.getAddress()))
+            log.info(String.format("Customer street/house changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getAddress(), savedCustomer.getAddress(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getState() != null && savedCustomer.getState() != null && initialCustomer.getState().getName() != null && savedCustomer.getState().getName() != null && !initialCustomer.getState().getName().equals(savedCustomer.getState().getName()))
             log.info(String.format("Customer state changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getState().getName(), savedCustomer.getState().getName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
@@ -751,9 +748,8 @@ public class CustomerServiceImpl implements CustomerService {
         if(customer.getPhone() != null) copyCustomer.setPhone(customer.getPhone());
         if(customer.getEmailAddress() != null) copyCustomer.setEmailAddress(customer.getEmailAddress());
         if(customer.getImageList() != null) copyCustomer.setImageList(customer.getImageList());
-        if(customer.getNote() != null) copyCustomer.setNote(customer.getNote());
-        if(customer.getStreetHouse() != null) copyCustomer.setStreetHouse(customer.getStreetHouse());
-        if(customer.getAptSuite() != null) copyCustomer.setAptSuite(customer.getAptSuite());
+        if(customer.getNotes() != null) copyCustomer.setNotes(customer.getNotes());
+        if(customer.getAddress() != null) copyCustomer.setAddress(customer.getAddress());
         if(customer.getState() != null) copyCustomer.setState(customer.getState());
         if(customer.getCountry() != null) copyCustomer.setCountry(customer.getCountry());
         if(customer.getZipCode() != null) copyCustomer.setZipCode(customer.getZipCode());

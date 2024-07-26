@@ -35,9 +35,7 @@ public class BoatyardDto extends BaseDto {
     /**
      * The address associated with an entity, such as a customer or location.
      */
-    private String street;
-
-    private String apt;
+    private String address;
 
     /**
      * The state associated with the BoatYard.

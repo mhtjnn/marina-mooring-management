@@ -1,18 +1,20 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.metadata.StateMapper;
 import com.marinamooringmanagement.model.dto.metadata.StateDto;
+import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
+import com.marinamooringmanagement.repositories.metadata.CountryRepository;
 import com.marinamooringmanagement.repositories.metadata.StateRepository;
 import com.marinamooringmanagement.service.StateService;
 import com.marinamooringmanagement.utils.SortUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,9 @@ public class StateServiceImpl implements StateService {
     @Autowired
     private StateMapper stateMapper;
 
+    @Autowired
+    private CountryRepository countryRepository;
+
     /**
      * Fetches a list of states based on the provided search request parameters.
      *
@@ -45,7 +50,7 @@ public class StateServiceImpl implements StateService {
      * @return a BasicRestResponse containing the results of the state search.
      */
     @Override
-    public BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest) {
+    public BasicRestResponse fetchStates(final BaseSearchRequest baseSearchRequest, final Integer countryId) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -55,9 +60,13 @@ public class StateServiceImpl implements StateService {
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
                     );
-            final Page<State> stateList = stateRepository.findAll(p);
 
-            List<StateResponseDto> stateResponseDtoList = stateList
+            if(countryId != 190 && countryId != 13) throw new RuntimeException(String.format("Currently we are saving address for USA and Australia only"));
+
+            final Country country = countryRepository.findById(countryId)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No country found with the given id: %1$s", countryId)));
+
+            List<StateResponseDto> stateResponseDtoList = country.getStateList()
                     .stream()
                     .map(state -> stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), state))
                     .toList();
@@ -66,9 +75,8 @@ public class StateServiceImpl implements StateService {
             response.setStatus(HttpStatus.OK.value());
             response.setContent(stateResponseDtoList);
         } catch (Exception e) {
-            response.setMessage("Error Occurred while fetching state from the database");
+            response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.setErrorList(List.of(e.getMessage()));
         }
         return response;
     }
