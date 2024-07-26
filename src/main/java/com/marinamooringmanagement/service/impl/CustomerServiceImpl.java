@@ -682,43 +682,43 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     private void customerChangedLogs(final Customer initialCustomer, final Customer savedCustomer, final User user) {
         if(initialCustomer.getId() != null && savedCustomer.getId() != null && !initialCustomer.getId().equals(savedCustomer.getId()))
-            log.info(String.format("Customer (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getId(), savedCustomer.getId(), user.getId(), user.getName()));
+            log.info(String.format("Customer (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getId(), savedCustomer.getId(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getFirstName() != null && savedCustomer.getFirstName() != null && !initialCustomer.getFirstName().equals(savedCustomer.getFirstName()))
-            log.info(String.format("Customer first name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getFirstName(), savedCustomer.getFirstName(), user.getId(), user.getName()));
+            log.info(String.format("Customer first name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getFirstName(), savedCustomer.getFirstName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getLastName() != null && savedCustomer.getLastName() != null && !initialCustomer.getLastName().equals(savedCustomer.getLastName()))
-            log.info(String.format("Customer last name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getLastName(), savedCustomer.getLastName(), user.getId(), user.getName()));
+            log.info(String.format("Customer last name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getLastName(), savedCustomer.getLastName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getCustomerId() != null && savedCustomer.getCustomerId() != null && !initialCustomer.getCustomerId().equals(savedCustomer.getCustomerId()))
-            log.info(String.format("Customer (String) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerId(), savedCustomer.getCustomerId(), user.getId(), user.getName()));
+            log.info(String.format("Customer (String) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerId(), savedCustomer.getCustomerId(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getPhone() != null && savedCustomer.getPhone() != null && !initialCustomer.getPhone().equals(savedCustomer.getPhone()))
-            log.info(String.format("Customer phone number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getPhone(), savedCustomer.getPhone(), user.getId(), user.getName()));
+            log.info(String.format("Customer phone number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getPhone(), savedCustomer.getPhone(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getEmailAddress() != null && savedCustomer.getEmailAddress() != null && !initialCustomer.getEmailAddress().equals(savedCustomer.getEmailAddress()))
-            log.info(String.format("Customer email address changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getEmailAddress(), savedCustomer.getEmailAddress(), user.getId(), user.getName()));
+            log.info(String.format("Customer email address changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getEmailAddress(), savedCustomer.getEmailAddress(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getImageList() != null && savedCustomer.getImageList() != null && initialCustomer.getImageList() != savedCustomer.getImageList())
-            log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getImageList(), savedCustomer.getImageList(), user.getId(), user.getName()));
+            log.info(String.format("Customer image changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getImageList(), savedCustomer.getImageList(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getNote() != null && savedCustomer.getNote() != null && !initialCustomer.getNote().equals(savedCustomer.getNote()))
-            log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNote(), savedCustomer.getNote(), user.getId(), user.getName()));
+            log.info(String.format("Customer note changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getNote(), savedCustomer.getNote(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getStreetHouse() != null && savedCustomer.getStreetHouse() != null && !initialCustomer.getStreetHouse().equals(savedCustomer.getStreetHouse()))
-            log.info(String.format("Customer street/house changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getStreetHouse(), savedCustomer.getStreetHouse(), user.getId(), user.getName()));
+            log.info(String.format("Customer street/house changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getStreetHouse(), savedCustomer.getStreetHouse(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getAptSuite() != null && savedCustomer.getAptSuite() != null && !initialCustomer.getAptSuite().equals(savedCustomer.getAptSuite()))
-            log.info(String.format("Customer apt/suite changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getAptSuite(), savedCustomer.getAptSuite(), user.getId(), user.getName()));
+            log.info(String.format("Customer apt/suite changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getAptSuite(), savedCustomer.getAptSuite(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getState() != null && savedCustomer.getState() != null && initialCustomer.getState().getName() != null && savedCustomer.getState().getName() != null && !initialCustomer.getState().getName().equals(savedCustomer.getState().getName()))
-            log.info(String.format("Customer state changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getState().getName(), savedCustomer.getState().getName(), user.getId(), user.getName()));
+            log.info(String.format("Customer state changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getState().getName(), savedCustomer.getState().getName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getCountry() != null && savedCustomer.getCountry() != null && initialCustomer.getCountry().getName() != null && savedCustomer.getCountry().getName() != null && !initialCustomer.getCountry().getName().equals(savedCustomer.getCountry().getName()))
-            log.info(String.format("Customer country changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCountry().getName(), savedCustomer.getCountry().getName(), user.getId(), user.getName()));
+            log.info(String.format("Customer country changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCountry().getName(), savedCustomer.getCountry().getName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialCustomer.getZipCode() != null && savedCustomer.getZipCode() != null && !initialCustomer.getZipCode().equals(savedCustomer.getZipCode()))
-            log.info(String.format("Customer zipcode changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getZipCode(), savedCustomer.getZipCode(), user.getId(), user.getName()));
+            log.info(String.format("Customer zipcode changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getZipCode(), savedCustomer.getZipCode(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialCustomer.getCustomerType() != null
@@ -727,7 +727,7 @@ public class CustomerServiceImpl implements CustomerService {
                         && savedCustomer.getCustomerType().getType() != null
                         && !initialCustomer.getCustomerType().getType().equals(savedCustomer.getCustomerType().getType())
         )
-            log.info(String.format("Customer type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerType().getType(), savedCustomer.getCustomerType().getType(), user.getId(), user.getName()));
+            log.info(String.format("Customer type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getCustomerType().getType(), savedCustomer.getCustomerType().getType(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialCustomer.getUser() != null
@@ -736,7 +736,7 @@ public class CustomerServiceImpl implements CustomerService {
                         && savedCustomer.getUser().getId() != null
                         && !initialCustomer.getUser().getId().equals(savedCustomer.getUser().getId())
         )
-            log.info(String.format("Customer customer owner changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getUser().getId(), savedCustomer.getUser().getId(), user.getId(), user.getName()));
+            log.info(String.format("Customer customer owner changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialCustomer.getUser().getId(), savedCustomer.getUser().getId(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
     }
 

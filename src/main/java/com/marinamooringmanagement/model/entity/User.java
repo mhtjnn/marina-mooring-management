@@ -30,8 +30,11 @@ public class User extends Base {
     /**
      * The first name of the user.
      */
-    @Column(name = "name")
-    private String name;
+    @Column(name = "firstName")
+    private String firstName;
+
+    @Column(name = "lastName")
+    private String lastName;
 
     /**
      * The email address of the user.

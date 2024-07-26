@@ -29,7 +29,9 @@ public class UserDto extends BaseDto implements Serializable {
     /**
      * The first name of the user.
      */
-    private String name;
+    private String firstName;
+
+    private String lastName;
 
     /**
      * The email address of the user.

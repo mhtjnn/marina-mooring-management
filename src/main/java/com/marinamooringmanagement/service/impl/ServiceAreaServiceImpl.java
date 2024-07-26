@@ -417,7 +417,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                 serviceArea.setCountry(optionalCountry.get());
             }
 
-            final ServiceArea savedServiceArea = serviceAreaRepository.save(serviceArea);
+            serviceAreaRepository.save(serviceArea);
 
             log.info(String.format("Service area saved successfully with ID: %d", serviceArea.getId()));
         } catch (Exception e) {

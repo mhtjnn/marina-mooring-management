@@ -130,7 +130,7 @@ public class UserServiceImpl implements UserService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if(ConversionUtils.canConvertToInt(searchText)) {
+                        if (ConversionUtils.canConvertToInt(searchText)) {
                             predicates.add(criteriaBuilder.or(
                                     criteriaBuilder.equal(user.get("id"), searchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
@@ -209,7 +209,7 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            if(filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            if (filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(filteredUserResponseDtoList.size());
 
         } catch (Exception e) {
@@ -311,7 +311,7 @@ public class UserServiceImpl implements UserService {
                         .filter(vendor -> null != vendor.getUser() && null != vendor.getUser().getId() && vendor.getUser().getId().equals(userToBeDeleted.getId()))
                         .toList();
 
-                for(Vendor vendor: vendorList) {
+                for (Vendor vendor : vendorList) {
                     vendorService.deleteVendor(vendor.getId(), request);
                 }
 
@@ -319,7 +319,7 @@ public class UserServiceImpl implements UserService {
                         .filter(boatyard -> null != boatyard.getUser() && null != boatyard.getUser().getId() && boatyard.getUser().getId().equals(userToBeDeleted.getId()))
                         .toList();
 
-                for(Boatyard boatyard: boatyardList) {
+                for (Boatyard boatyard : boatyardList) {
                     boatyardService.deleteBoatyardById(boatyard.getId(), request);
                 }
 
@@ -327,7 +327,7 @@ public class UserServiceImpl implements UserService {
                         .filter(customer -> null != customer.getUser() && null != customer.getUser().getId() && customer.getUser().getId().equals(userToBeDeleted.getId()))
                         .toList();
 
-                for(Customer customer: customerList) {
+                for (Customer customer : customerList) {
                     customerService.deleteCustomerById(customer.getId(), request);
                 }
 
@@ -335,7 +335,7 @@ public class UserServiceImpl implements UserService {
                         .filter(user -> null != user.getCustomerOwnerId() && user.getCustomerOwnerId().equals(userToBeDeleted.getId()))
                         .toList();
 
-                for(User user: userAssociatedWithCurrCustomerOwner) {
+                for (User user : userAssociatedWithCurrCustomerOwner) {
                     List<Token> tokenList = tokenRepository.findByUserId(user.getId());
                     tokenRepository.deleteAll(tokenList);
                     userRepository.delete(user);
@@ -344,7 +344,7 @@ public class UserServiceImpl implements UserService {
 
             //  Tokens assigned with the user(to be deleted) are deleted.
             final List<Token> tokenList = tokenRepository.findByUserId(userId);
-            if(null != tokenList && !tokenList.isEmpty()) tokenRepository.deleteAll(tokenList);
+            if (null != tokenList && !tokenList.isEmpty()) tokenRepository.deleteAll(tokenList);
 
             // deleting the user
             userRepository.deleteById(userId);
@@ -498,7 +498,7 @@ public class UserServiceImpl implements UserService {
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
 
-                        if(ConversionUtils.canConvertToInt(searchText)) {
+                        if (ConversionUtils.canConvertToInt(searchText)) {
                             predicates.add(criteriaBuilder.or(
                                     criteriaBuilder.equal(user.get("id"), searchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("name")), lowerCaseSearchText),
@@ -569,7 +569,8 @@ public class UserServiceImpl implements UserService {
                                 .label(user.getCountry().getLabel())
                                 .name(user.getCountry().getName())
                                 .build();
-                        if (null != user.getCountry()) technicianUserResponseDto.setCountryResponseDto(countryResponseDto);
+                        if (null != user.getCountry())
+                            technicianUserResponseDto.setCountryResponseDto(countryResponseDto);
 
                         List<WorkOrder> openWorkOrderList = workOrderRepository.findAll()
                                 .stream()
@@ -596,10 +597,10 @@ public class UserServiceImpl implements UserService {
                                 )
                                 .toList();
 
-                        if(openWorkOrderList.isEmpty()) technicianUserResponseDto.setOpenWorkOrder(0);
+                        if (openWorkOrderList.isEmpty()) technicianUserResponseDto.setOpenWorkOrder(0);
                         else technicianUserResponseDto.setOpenWorkOrder(openWorkOrderList.size());
 
-                        if(closeWorkOrderList.isEmpty()) technicianUserResponseDto.setCloseWorkOrder(0);
+                        if (closeWorkOrderList.isEmpty()) technicianUserResponseDto.setCloseWorkOrder(0);
                         else technicianUserResponseDto.setCloseWorkOrder(closeWorkOrderList.size());
 
                         return technicianUserResponseDto;
@@ -608,7 +609,7 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredTechnicianUserResponseDtoList);
             response.setMessage("Users of technician role fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            if(filteredTechnicianUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            if (filteredTechnicianUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(filteredTechnicianUserResponseDtoList.size());
 
         } catch (Exception e) {
@@ -733,7 +734,7 @@ public class UserServiceImpl implements UserService {
                 String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
                 if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
 
-                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
+                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getConfirmPassword());
                 String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
                 if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
 
@@ -746,11 +747,9 @@ public class UserServiceImpl implements UserService {
                 if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
                     throw new RuntimeException("New Password and confirm password are not equal");
 
-                // If the user(to be updated) tries to update its password then we throw exception as Password cannot be updated.
-                if (null != userId) {
-                    if (!passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
-                        throw new RuntimeException("Password cannot be updated");
-                    }
+
+                if (null != userId && passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
+                    throw new RuntimeException("New password is same as old password.");
                 }
 
                 user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
@@ -759,7 +758,20 @@ public class UserServiceImpl implements UserService {
                  * saved for the first time. So we throw exception as for the first time of saving the user the
                  * password cannot be null.
                  */
-                if (null == userId) throw new RuntimeException("Password or confirm password cannot be null");
+
+                if (null == userId)
+                    throw new RuntimeException("Password and confirm password cannot be blank during save");
+                else if (null != userRequestDto.getPassword()) {
+                    if (!passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
+                        throw new RuntimeException(String.format("Confirm Password cannot be null during password update"));
+                    } else {
+                        throw new RuntimeException(String.format("Password is same as old password"));
+                    }
+                } else if (null != userRequestDto.getConfirmPassword()) {
+                    if (!passwordEncoder.matches(userRequestDto.getConfirmPassword(), user.getPassword())) {
+                        throw new RuntimeException(String.format("Confirm Password cannot be null during password update"));
+                    }
+                }
             }
 
             //Setting the state if not null
@@ -770,12 +782,6 @@ public class UserServiceImpl implements UserService {
                 } else {
                     throw new RuntimeException("No state found with the given state name");
                 }
-            } else {
-                /* if the state in userRequestDto is null and userId is also null that means the user is getting
-                 * saved for the first time. So we throw exception as for the first time of saving the user the
-                 * state cannot be null.
-                 */
-                if (null == userId) throw new RuntimeException("State cannot be null");
             }
 
             //Setting the country if not null
@@ -786,12 +792,6 @@ public class UserServiceImpl implements UserService {
                 } else {
                     throw new RuntimeException("No country found with the given country name");
                 }
-            } else {
-                /* if the country in userRequestDto is null and userId is also null that means the user is getting
-                 * saved for the first time. So we throw exception as for the first time of saving the user the
-                 * country cannot be null.
-                 */
-                if (null == userId) throw new RuntimeException("State cannot be null");
             }
 
             savedUser = userRepository.save(user);

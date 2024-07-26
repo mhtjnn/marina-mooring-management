@@ -699,7 +699,8 @@ public class MetadataServiceImpl implements MetadataService {
                     .map(user1 -> {
                         UserMetadataResponse userMetadataResponse = UserMetadataResponse.builder().build();
                         if(null != user1.getId()) userMetadataResponse.setId(user1.getId());
-                        if(null != user1.getName()) userMetadataResponse.setName(user1.getName());
+                        if(null != user1.getFirstName()) userMetadataResponse.setFirstName(user1.getFirstName());
+                        if(null != user1.getLastName()) userMetadataResponse.setLastName(user1.getLastName());
                         return userMetadataResponse;
                     })
                     .toList();

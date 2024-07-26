@@ -17,6 +17,8 @@ public class UserMetadataResponse implements Serializable {
 
     private Integer id;
 
-    private String name;
+    private String firstName;
+
+    private String lastName;
 
 }

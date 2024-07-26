@@ -623,31 +623,31 @@ public class MooringServiceImpl implements MooringService {
     private void mooringChangedLogs(final Mooring initialMooring, final Mooring savedMooring, final User user) {
 
         if(initialMooring.getId() != null && savedMooring.getId() != null && !initialMooring.getId().equals(savedMooring.getId()))
-            log.info(String.format("Mooring (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getId(), savedMooring.getId(), user.getId(), user.getName()));
+            log.info(String.format("Mooring (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getId(), savedMooring.getId(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getMooringNumber() != null && savedMooring.getMooringNumber() != null && !initialMooring.getMooringNumber().equals(savedMooring.getMooringNumber()))
-            log.info(String.format("Mooring number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringNumber(), savedMooring.getMooringNumber(), user.getId(), user.getName()));
+            log.info(String.format("Mooring number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringNumber(), savedMooring.getMooringNumber(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getHarborOrArea() != null && savedMooring.getHarborOrArea() != null && !initialMooring.getHarborOrArea().equals(savedMooring.getHarborOrArea()))
-            log.info(String.format("Mooring harbor or area changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getHarborOrArea(), savedMooring.getHarborOrArea(), user.getId(), user.getName()));
+            log.info(String.format("Mooring harbor or area changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getHarborOrArea(), savedMooring.getHarborOrArea(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getGpsCoordinates() != null && savedMooring.getGpsCoordinates() != null && !initialMooring.getGpsCoordinates().equals(savedMooring.getGpsCoordinates()))
-            log.info(String.format("Mooring gps coordinates changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getGpsCoordinates(), savedMooring.getGpsCoordinates(), user.getId(), user.getName()));
+            log.info(String.format("Mooring gps coordinates changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getGpsCoordinates(), savedMooring.getGpsCoordinates(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getInstallBottomChainDate() != null && savedMooring.getInstallBottomChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate()))
-            log.info(String.format("Mooring install bottom chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate(), user.getId(), user.getName()));
+            log.info(String.format("Mooring install bottom chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getInstallTopChainDate() != null && savedMooring.getInstallTopChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate()))
-            log.info(String.format("Mooring install top chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate(), user.getId(), user.getName()));
+            log.info(String.format("Mooring install top chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getInstallConditionOfEyeDate() != null && savedMooring.getInstallConditionOfEyeDate() != null && !DateUtils.isSameDay(initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate()))
-            log.info(String.format("Mooring install condition of eye date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate(), user.getId(), user.getName()));
+            log.info(String.format("Mooring install condition of eye date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getBoatName() != null && savedMooring.getBoatName() != null && !initialMooring.getBoatName().equals(savedMooring.getBoatName()))
-            log.info(String.format("Mooring boat name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatName(), savedMooring.getBoatName(), user.getId(), user.getName()));
+            log.info(String.format("Mooring boat name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatName(), savedMooring.getBoatName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getBoatSize() != null && savedMooring.getBoatSize() != null && !initialMooring.getBoatSize().equals(savedMooring.getBoatSize()))
-            log.info(String.format("Mooring boat size changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatSize(), savedMooring.getBoatSize(), user.getId(), user.getName()));
+            log.info(String.format("Mooring boat size changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatSize(), savedMooring.getBoatSize(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getBoatType() != null
@@ -656,13 +656,13 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getBoatType().getBoatType() != null
                         && !initialMooring.getBoatType().getBoatType().equals(savedMooring.getBoatType().getBoatType())
         )
-            log.info(String.format("Mooring boat type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatType(), savedMooring.getBoatType(), user.getId(), user.getName()));
+            log.info(String.format("Mooring boat type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatType(), savedMooring.getBoatType(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getBoatWeight() != null && savedMooring.getBoatWeight() != null && !initialMooring.getBoatWeight().equals(savedMooring.getBoatWeight()))
-            log.info(String.format("Mooring boat weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatWeight(), savedMooring.getBoatWeight(), user.getId(), user.getName()));
+            log.info(String.format("Mooring boat weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatWeight(), savedMooring.getBoatWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getSizeOfWeight() != null && savedMooring.getSizeOfWeight() != null && !initialMooring.getSizeOfWeight().equals(savedMooring.getSizeOfWeight()))
-            log.info(String.format("Mooring size of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getSizeOfWeight(), savedMooring.getSizeOfWeight(), user.getId(), user.getName()));
+            log.info(String.format("Mooring size of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getSizeOfWeight(), savedMooring.getSizeOfWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getTypeOfWeight() != null
@@ -671,7 +671,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getTypeOfWeight().getType() != null
                 && !initialMooring.getTypeOfWeight().getType().equals(savedMooring.getTypeOfWeight().getType())
         )
-            log.info(String.format("Mooring type of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTypeOfWeight(), savedMooring.getTypeOfWeight(), user.getId(), user.getName()));
+            log.info(String.format("Mooring type of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTypeOfWeight(), savedMooring.getTypeOfWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getEyeCondition() != null
@@ -680,7 +680,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getEyeCondition().getCondition() != null
                         && !initialMooring.getEyeCondition().getCondition().equals(savedMooring.getEyeCondition().getCondition())
         )
-            log.info(String.format("Mooring eye condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getEyeCondition(), savedMooring.getEyeCondition(), user.getId(), user.getName()));
+            log.info(String.format("Mooring eye condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getEyeCondition(), savedMooring.getEyeCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getTopChainCondition() != null
@@ -689,7 +689,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getTopChainCondition().getCondition() != null
                         && !initialMooring.getTopChainCondition().getCondition().equals(savedMooring.getTopChainCondition().getCondition())
         )
-            log.info(String.format("Mooring top chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTopChainCondition(), savedMooring.getTopChainCondition(), user.getId(), user.getName()));
+            log.info(String.format("Mooring top chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTopChainCondition(), savedMooring.getTopChainCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getBottomChainCondition() != null
@@ -698,7 +698,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getBottomChainCondition().getCondition() != null
                         && !initialMooring.getBottomChainCondition().getCondition().equals(savedMooring.getBottomChainCondition().getCondition())
         )
-            log.info(String.format("Mooring bottom chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBottomChainCondition(), savedMooring.getBottomChainCondition(), user.getId(), user.getName()));
+            log.info(String.format("Mooring bottom chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBottomChainCondition(), savedMooring.getBottomChainCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getShackleSwivelCondition() != null
@@ -707,13 +707,13 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getShackleSwivelCondition().getCondition() != null
                         && !initialMooring.getShackleSwivelCondition().getCondition().equals(savedMooring.getShackleSwivelCondition().getCondition())
         )
-            log.info(String.format("Mooring shackle swivel condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getShackleSwivelCondition(), savedMooring.getShackleSwivelCondition(), user.getId(), user.getName()));
+            log.info(String.format("Mooring shackle swivel condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getShackleSwivelCondition(), savedMooring.getShackleSwivelCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getPendantCondition() != null && savedMooring.getPendantCondition() != null && !initialMooring.getPendantCondition().equals(savedMooring.getPendantCondition()))
-            log.info(String.format("Mooring pendant condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getPendantCondition(), savedMooring.getPendantCondition(), user.getId(), user.getName()));
+            log.info(String.format("Mooring pendant condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getPendantCondition(), savedMooring.getPendantCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(initialMooring.getDepthAtMeanHighWater() != null && savedMooring.getDepthAtMeanHighWater() != null && !initialMooring.getDepthAtMeanHighWater().equals(savedMooring.getDepthAtMeanHighWater()))
-            log.info(String.format("Mooring depth at mean highWater changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getDepthAtMeanHighWater(), savedMooring.getDepthAtMeanHighWater(), user.getId(), user.getName()));
+            log.info(String.format("Mooring depth at mean highWater changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getDepthAtMeanHighWater(), savedMooring.getDepthAtMeanHighWater(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getMooringStatus() != null
@@ -722,7 +722,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getMooringStatus().getStatus() != null
                         && !initialMooring.getMooringStatus().getStatus().equals(savedMooring.getMooringStatus().getStatus())
         )
-            log.info(String.format("Mooring status changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringStatus(), savedMooring.getMooringStatus(), user.getId(), user.getName()));
+            log.info(String.format("Mooring status changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringStatus(), savedMooring.getMooringStatus(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getCustomer() != null
@@ -731,7 +731,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getCustomer().getId() != null
                         && !initialMooring.getCustomer().getId().equals(savedMooring.getCustomer().getId())
         )
-            log.info(String.format("Mooring assigned to customer changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), initialMooring.getCustomer()), customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedMooring.getCustomer()), user.getId(), user.getName()));
+            log.info(String.format("Mooring assigned to customer changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), initialMooring.getCustomer()), customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedMooring.getCustomer()), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getUser() != null
@@ -740,7 +740,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getUser().getId() != null
                         && !initialMooring.getUser().getId().equals(savedMooring.getUser().getId())
         )
-            log.info(String.format("Mooring associated with user changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), initialMooring.getUser()), userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedMooring.getUser()), user.getId(), user.getName()));
+            log.info(String.format("Mooring associated with user changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), initialMooring.getUser()), userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedMooring.getUser()), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
         if(
                 initialMooring.getBoatyard() != null
@@ -749,7 +749,7 @@ public class MooringServiceImpl implements MooringService {
                         && savedMooring.getBoatyard().getId() != null
                         && !initialMooring.getBoatyard().getId().equals(savedMooring.getBoatyard().getId())
         )
-            log.info(String.format("Mooring boatyard changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), initialMooring.getBoatyard()), boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedMooring.getBoatyard()), user.getId(), user.getName()));
+            log.info(String.format("Mooring boatyard changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), initialMooring.getBoatyard()), boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedMooring.getBoatyard()), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
     }
 }

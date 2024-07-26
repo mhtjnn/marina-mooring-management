@@ -428,7 +428,8 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             user.setId(1);
             user.setCreationDate(new Date(System.currentTimeMillis()));
             user.setLastModifiedDate(new Date(System.currentTimeMillis()));
-            user.setName("Matt Pusey");
+            user.setFirstName("Matt");
+            user.setLastName("Pusey");
             user.setEmail("matt.pusey@moorfind.com");
             user.setPassword(passwordEncoder.encode("1234"));
             user.setPhoneNumber("1234567890");
