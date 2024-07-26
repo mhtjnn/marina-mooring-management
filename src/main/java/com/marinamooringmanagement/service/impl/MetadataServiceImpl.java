@@ -459,7 +459,6 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
             if(!StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)) throw new RuntimeException("No Authorized to fetch Customer Owners");
