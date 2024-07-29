@@ -423,7 +423,6 @@ public class UserServiceImpl implements UserService {
         final BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
         passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
             byte[] keyBytesNewPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
             final String newPassword = new String(keyBytesNewPassword, StandardCharsets.UTF_8);
 
@@ -696,7 +695,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
+            final User authorziedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
@@ -727,29 +726,37 @@ public class UserServiceImpl implements UserService {
             // Setting the password if not null
             if (null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
 
-                byte[] keyBytesForPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
-                String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
-                if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
-
-                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getConfirmPassword());
-                String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
-                if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
-
-                userRequestDto.setPassword(password);
-                userRequestDto.setConfirmPassword(confirmPassword);
-
-                if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
-                if (userRequestDto.getConfirmPassword().isBlank())
-                    throw new RuntimeException("Confirm Password is blank");
-                if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
-                    throw new RuntimeException("New Password and confirm password are not equal");
-
-
-                if (null != userId && passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
-                    throw new RuntimeException("New password is same as old password.");
-                }
-
-                user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+//                byte[] keyBytesForPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
+//                String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
+//                if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
+//
+//                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getConfirmPassword());
+//                String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
+//                if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
+//
+//                userRequestDto.setPassword(password);
+//                userRequestDto.setConfirmPassword(confirmPassword);
+//
+//                if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
+//                if (userRequestDto.getConfirmPassword().isBlank())
+//                    throw new RuntimeException("Confirm Password is blank");
+//                if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
+//                    throw new RuntimeException("New Password and confirm password are not equal");
+//
+//
+//                if (null != userId && passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
+//                    throw new RuntimeException("New password is same as old password.");
+//                }
+//
+//                user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+                updatePassword(
+                        user,
+                        NewPasswordRequest.builder()
+                                .newPassword(userRequestDto.getPassword())
+                                .confirmPassword( userRequestDto.getConfirmPassword())
+                                .build(),
+                        request
+                );
             } else {
                 /* if the password in userRequestDto is null and userId is also null that means the user is getting
                  * saved for the first time. So we throw exception as for the first time of saving the user the
@@ -810,5 +817,39 @@ public class UserServiceImpl implements UserService {
 
         // Validate the password against the pattern
         return password.matches(passwordPattern);
+    }
+
+    public User updatePassword(final User user, final NewPasswordRequest newPasswordRequest, final HttpServletRequest request) {
+        try {
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, user.getRole().getName());
+            if(Objects.isNull(authorizedUser)) throw new RuntimeException("Please select a customer owner");
+
+            if(!authorizationUtil.checkAuthorityForPasswordUpdate(user, authorizedUser)) throw new RuntimeException("Not authorized!!!");
+            byte[] keyBytesForPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
+            String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
+            if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
+
+            byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(newPasswordRequest.getConfirmPassword());
+            String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
+            if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
+
+            newPasswordRequest.setNewPassword(password);
+            newPasswordRequest.setConfirmPassword(confirmPassword);
+
+            if (newPasswordRequest.getNewPassword().isBlank()) throw new RuntimeException("Password is blank");
+            if (newPasswordRequest.getConfirmPassword().isBlank())
+                throw new RuntimeException("Confirm Password is blank");
+            if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getConfirmPassword()))
+                throw new RuntimeException("New Password and confirm password are not equal");
+
+            if (null != user.getPassword() && passwordEncoder.matches(newPasswordRequest.getNewPassword(), user.getPassword())) {
+                throw new RuntimeException("New password is same as old password.");
+            }
+            user.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
+        } catch (Exception e) {
+            throw e;
+        }
+        return user;
     }
 }

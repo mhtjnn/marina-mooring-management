@@ -71,16 +71,17 @@ public class AuthorizationUtil {
         return user;
     }
 
-    public void checkAuthorityForUser(final Integer customerOwnerId, final String role) {
+    public User checkAuthorityForUser(final Integer customerOwnerId, final String role) {
         final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-
+        final User user;
         if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            checkForAdministratorUser(customerOwnerId, role);
+            user = checkForAdministratorUser(customerOwnerId, role);
         } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            checksForCustomerOwnerUser(customerOwnerId);
+            user = checksForCustomerOwnerUser(customerOwnerId);
         } else {
             throw new RuntimeException("Not Authorized");
         }
+        return user;
     }
 
     public void checkAuthorityForDeleteUser(final Integer customerOwnerId, final User userToBeDeleted) {
@@ -243,7 +244,7 @@ public class AuthorizationUtil {
         }
     }
 
-    private void checkForAdministratorUser(final Integer customerOwnerId, final String role) {
+    private User checkForAdministratorUser(final Integer customerOwnerId, final String role) {
         boolean roleTechnicianOrFinance = role.equals(AppConstants.Role.TECHNICIAN)
                 || role.equals(AppConstants.Role.FINANCE);
         if(customerOwnerId == -1 && roleTechnicianOrFinance) throw new RuntimeException("Please select a customer owner");
@@ -253,16 +254,22 @@ public class AuthorizationUtil {
                 throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
                 throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
+
+            return optionalUser.get();
+        } else {
+            final Integer id = loggedInUserUtil.getLoggedInUserID();
+            return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId)));
         }
     }
 
-    private void checksForCustomerOwnerUser(final Integer customerOwnerId) {
+    private User checksForCustomerOwnerUser(final Integer customerOwnerId) {
         final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
         if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
             throw new RuntimeException("Cannot do operations on user with different customer owner Id");
         Optional<User> optionalUser = userRepository.findById(loggedInUserId);
         if (optionalUser.isEmpty())
             throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
+        return optionalUser.get();
     }
 
     public User checkForTechnician(final Integer technicianId, final Integer customerOwnerId) {
@@ -306,5 +313,15 @@ public class AuthorizationUtil {
         }
 
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+    }
+
+    public Boolean checkAuthorityForPasswordUpdate(final User user, final User authorizedUser) {
+        if(user == authorizedUser) return true;
+        if(user.getRole().getId().equals(2)) {
+            if(authorizedUser.getRole().getId().equals(1)) return true;
+        }
+        return (user.getRole().getId().equals(3) || user.getRole().getId().equals(4))
+                && authorizedUser.getRole().getId().equals(2)
+                && user.getCustomerOwnerId().equals(authorizedUser.getId());
     }
 }

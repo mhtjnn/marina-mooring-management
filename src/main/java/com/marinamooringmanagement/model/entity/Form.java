@@ -23,7 +23,7 @@ public class Form extends Base{
     private String formName;
 
     @Lob
-    @Column(name = "form_data")
+    @Column(name = "form_data", length = 102400)
     private byte[] formData;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
