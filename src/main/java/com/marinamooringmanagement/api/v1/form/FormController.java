@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.form;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.model.entity.Form;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.FormRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -12,7 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -123,4 +128,64 @@ public class FormController {
         return formService.editForm(id, formRequestDto, request);
     }
 
+    @Operation(
+            summary = "API to delete form",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @DeleteMapping(value = "/deleteForm/{id}",
+            produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse deleteForm(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return formService.deleteForm(id, request);
+    }
+
+    @Operation(
+            summary = "API to download form",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/downloadForm/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public ResponseEntity<ByteArrayResource> downloadForm(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        Form form = null;
+        form = formService.downloadForm(id, request);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/pdf"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + form.getFormName()
+                + "\"")
+                .body(new ByteArrayResource(form.getFormData()));
+    }
 }

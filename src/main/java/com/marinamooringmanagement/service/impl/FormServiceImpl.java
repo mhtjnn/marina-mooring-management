@@ -14,12 +14,15 @@ import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.FormRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.FormService;
+import com.marinamooringmanagement.utils.PDFUtils;
 import com.marinamooringmanagement.utils.SortUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FormServiceImpl implements FormService {
@@ -74,6 +78,7 @@ public class FormServiceImpl implements FormService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            authorizationUtil.checkAuthority(customerOwnerId);
             Specification<Form> spec = new Specification<Form>() {
                 @Override
                 public Predicate toPredicate(Root<Form> form, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
@@ -105,8 +110,7 @@ public class FormServiceImpl implements FormService {
                     .getContent()
                     .stream()
                     .map(form -> {
-                        FormResponseDto formResponseDto = FormResponseDto.builder().build();
-                        formMapper.toResponseDto(FormResponseDto.builder().build(), form);
+                        FormResponseDto formResponseDto = formMapper.toResponseDto(FormResponseDto.builder().build(), form);
                         if(null != form.getUser()) formResponseDto.setUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), form.getUser()));
                         return formResponseDto;
                     })
@@ -145,15 +149,64 @@ public class FormServiceImpl implements FormService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse deleteForm(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
+            log.info(String.format("Deleting form with id: %1$s", id));
+            if(ObjectUtils.notEqual(user, form.getUser())) {
+                log.error(String.format("Form with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
+            }
+            formRepository.delete(form);
+            log.info(String.format("Form with id: %1$s is deleted successfully!!!", id));
+            response.setMessage(String.format("Form with id: %1$s is deleted successfully!!!", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public Form downloadForm(Integer id, HttpServletRequest request) {
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
+            log.info(String.format("Deleting form with id: %1$s", id));
+            if(ObjectUtils.notEqual(user, form.getUser())) {
+                log.error(String.format("Form with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
+            }
+            return form;
+        } catch (Exception e) {
+            throw  e;
+        }
+    }
+
     private void performSave(final FormRequestDto formRequestDto, final Form form, final Integer id, final HttpServletRequest request) {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(null == id) form.setCreationDate(new Date(System.currentTimeMillis()));
+            if(null == id) {
+                form.setCreationDate(new Date(System.currentTimeMillis()));
+                form.setCreatedBy(user.getFirstName() + " " + user.getLastName());
+            }
             form.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             formMapper.toEntity(form, formRequestDto);
+
+            if(null != formRequestDto.getEncodedFormData()) {
+                byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
+                form.setFormData(formData);
+            }
 
             if(null == id) form.setUser(user);
 

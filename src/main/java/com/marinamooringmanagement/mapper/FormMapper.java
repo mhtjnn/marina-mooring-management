@@ -24,6 +24,6 @@ public interface FormMapper {
     Form toEntity(@MappingTarget Form form, FormRequestDto imageDto);
 
     @Mapping(target = "userResponseDto", ignore = true)
-    FormResponseDto toResponseDto(@MappingTarget FormResponseDto imageResponseDto, Form form);
+    FormResponseDto toResponseDto(@MappingTarget FormResponseDto formResponseDto, Form form);
 
 }
