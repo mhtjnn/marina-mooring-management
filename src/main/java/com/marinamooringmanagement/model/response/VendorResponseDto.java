@@ -66,9 +66,7 @@ public class VendorResponseDto implements Serializable {
      */
     private String accountNumber;
 
-    private String remitStreet;
-
-    private String remitApt;
+    private String remitAddress;
 
     private StateResponseDto remitStateResponseDto;
 

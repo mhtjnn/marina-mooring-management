@@ -129,7 +129,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             boolean found = false;
             if(StringUtils.equals(entity, AppConstants.EntityConstants.CUSTOMER)) {
-                final Customer customer = customerRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", id)));
+                final Customer customer = customerRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", entity)));
                 for(Image image: customer.getImageList()) {
                     if(!ObjectUtils.notEqual(image.getId(), id)) {
                         found = true;
@@ -142,7 +142,7 @@ public class ImageServiceImpl implements ImageService {
                 customerRepository.save(customer);
 
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.WORK_ORDER)) {
-                final WorkOrder workOrder = workOrderRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+                final WorkOrder workOrder = workOrderRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", entityId)));
                 for(Image image: workOrder.getImageList()) {
                     if(!ObjectUtils.notEqual(image.getId(), id)) {
                         found = true;
@@ -154,7 +154,7 @@ public class ImageServiceImpl implements ImageService {
 
                 workOrderRepository.save(workOrder);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.MOORING)) {
-                final Mooring mooring = mooringRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", id)));
+                final Mooring mooring = mooringRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", entityId)));
 
                 for(Image image: mooring.getImageList()) {
                     if(!ObjectUtils.notEqual(image.getId(), id)) {

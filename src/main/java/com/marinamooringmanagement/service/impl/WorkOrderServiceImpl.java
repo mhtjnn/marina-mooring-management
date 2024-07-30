@@ -121,7 +121,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
-    @Transactional
     public BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -143,14 +142,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         Join<Mooring, Customer> customerJoin = mooringJoin.join("customer", JoinType.LEFT);
                         Join<Mooring, Boatyard> boatyardJoin = mooringJoin.join("boatyard", JoinType.LEFT);
                         Join<WorkOrder, User> technicianUserJoin = workOrder.join("technicianUser", JoinType.LEFT);
-
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("lastName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooringJoin.get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyardJoin.get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("name")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(customerJoin.get("firstName")),
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText)
                         ));
                     }
 

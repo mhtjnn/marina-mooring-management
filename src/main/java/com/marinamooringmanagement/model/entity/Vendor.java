@@ -80,9 +80,8 @@ public class Vendor extends Base {
     @Column(name = "account_number")
     private String accountNumber;
 
-    private String remitStreet;
-
-    private String remitApt;
+    @Column(name = "remit_address")
+    private String remitAddress;
 
     /**
      * The state of the customer's address.
