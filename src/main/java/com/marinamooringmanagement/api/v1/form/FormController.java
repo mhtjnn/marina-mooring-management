@@ -178,14 +178,12 @@ public class FormController {
             final @PathVariable(value = "id") Integer id,
             final HttpServletRequest request
     ) {
-        Form form = null;
-        form = formService.downloadForm(id, request);
+        Form form = formService.downloadForm(id, request);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/pdf"))
+                .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + form.getFormName()
-                + "\"")
+                        "attachment; filename=\"" + form.getFormName() + "\"")
                 .body(new ByteArrayResource(form.getFormData()));
     }
 }

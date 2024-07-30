@@ -14,6 +14,7 @@ import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.FormRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.FormService;
+import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.PDFUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -110,6 +111,8 @@ public class FormServiceImpl implements FormService {
                     .stream()
                     .map(form -> {
                         FormResponseDto formResponseDto = formMapper.toResponseDto(FormResponseDto.builder().build(), form);
+                        if(null != form.getCreationDate()) formResponseDto.setSubmittedDate(DateUtil.dateToString(form.getCreationDate()));
+                        if(null != form.getCreatedBy()) formResponseDto.setSubmittedBy(form.getCreatedBy());
                         if(null != form.getUser()) formResponseDto.setUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), form.getUser()));
                         return formResponseDto;
                     })
@@ -178,7 +181,7 @@ public class FormServiceImpl implements FormService {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
-            log.info(String.format("Deleting form with id: %1$s", id));
+            log.info(String.format("Downloading form with id: %1$s", id));
             if(ObjectUtils.notEqual(user, form.getUser())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
@@ -206,6 +209,8 @@ public class FormServiceImpl implements FormService {
                 byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
                 form.setFormData(formData);
             }
+
+            form.setFormName(formRequestDto.getFormName()+".pdf");
 
             if(null == id) form.setUser(user);
 

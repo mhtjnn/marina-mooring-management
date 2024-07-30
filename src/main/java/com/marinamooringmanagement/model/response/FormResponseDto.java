@@ -13,6 +13,10 @@ public class FormResponseDto {
 
     private Integer id;
 
+    private String submittedDate;
+
+    private String submittedBy;
+
     private String formName;
 
     private byte[] formData;
