@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.image;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "api/v1/image")
 @CrossOrigin
 @Tag(name = "Image Controller", description = "These are API's for image.")
-public class ImageController {
+public class ImageController extends GlobalExceptionHandler {
 
     @Autowired
     private ImageService imageService;

@@ -5,6 +5,7 @@ import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.FormRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
 
 public interface FormService {
     BasicRestResponse uploadForm(final FormRequestDto formRequestDto, final HttpServletRequest request);

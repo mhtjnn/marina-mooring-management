@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.serviceArea;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.ServiceAreaDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.ServiceAreaRequestDto;
@@ -28,7 +29,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @Validated
 @CrossOrigin
 @Tag(name = "Service area Controller", description = "These are API's for service area.")
-public class ServiceAreaController {
+public class ServiceAreaController extends GlobalExceptionHandler {
 
     @Autowired
     private ServiceAreaService serviceAreaService;

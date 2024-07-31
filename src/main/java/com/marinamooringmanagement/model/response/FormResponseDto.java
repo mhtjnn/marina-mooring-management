@@ -19,6 +19,8 @@ public class FormResponseDto {
 
     private String formName;
 
+    private String fileName;
+
     private byte[] formData;
 
     private UserResponseDto userResponseDto;

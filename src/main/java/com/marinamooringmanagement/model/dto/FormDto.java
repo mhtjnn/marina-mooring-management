@@ -16,6 +16,8 @@ public class FormDto extends BaseDto{
 
     private String formName;
 
+    private String fileName;
+
     private byte[] formData;
 
     private UserDto userDto;

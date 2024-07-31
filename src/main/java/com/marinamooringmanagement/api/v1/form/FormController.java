@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.form;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.entity.Form;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.FormRequestDto;
@@ -30,7 +31,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @CrossOrigin
 @Validated
 @Tag(name = "Form controller", description = "These are the API's for form upload, download and update.")
-public class FormController {
+public class FormController extends GlobalExceptionHandler {
 
     @Autowired
     private FormService formService;
@@ -183,7 +184,7 @@ public class FormController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + form.getFormName() + "\"")
+                        "attachment; filename=\"" + form.getFileName() + "\"")
                 .body(new ByteArrayResource(form.getFormData()));
     }
 }

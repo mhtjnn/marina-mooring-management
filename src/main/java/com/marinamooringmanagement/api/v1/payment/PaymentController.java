@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.payment;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BoatyardRequestDto;
 import com.marinamooringmanagement.model.request.PaymentRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @CrossOrigin
 @Tag(name = "Payment Controller", description = "These are API's for payment.")
-public class PaymentController {
+public class PaymentController extends GlobalExceptionHandler {
 
     @Autowired
     private PaymentService paymentService;

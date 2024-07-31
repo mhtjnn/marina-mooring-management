@@ -22,6 +22,9 @@ public class Form extends Base{
     @Column(name = "form_name")
     private String formName;
 
+    @Column(name = "file_name")
+    private String fileName;
+
     @Lob
     @Column(name = "form_data", length = 102400)
     private byte[] formData;

@@ -37,7 +37,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FormServiceImpl implements FormService {
@@ -198,6 +197,8 @@ public class FormServiceImpl implements FormService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if(null == id) {
+                if(null == formRequestDto.getFormName()) throw new RuntimeException(String.format("Form name cannot be blank during save"));
+                if(null == formRequestDto.getFileName()) throw new RuntimeException(String.format("File name cannot be blank during save"));
                 form.setCreationDate(new Date(System.currentTimeMillis()));
                 form.setCreatedBy(user.getFirstName() + " " + user.getLastName());
             }
@@ -208,9 +209,11 @@ public class FormServiceImpl implements FormService {
             if(null != formRequestDto.getEncodedFormData()) {
                 byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
                 form.setFormData(formData);
+            } else {
+                if(null == id) throw new RuntimeException(String.format("Form data cannot be null during save"));
             }
 
-            form.setFormName(formRequestDto.getFormName()+".pdf");
+            form.setFormName(formRequestDto.getFileName()+".pdf");
 
             if(null == id) form.setUser(user);
 

@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.security.util;
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.model.entity.Token;
@@ -20,7 +21,7 @@ import java.util.*;
  * Utility class for JWT token handling.
  */
 @Service
-public class JwtUtil {
+public class JwtUtil extends GlobalExceptionHandler {
 
     @Autowired
     TokenRepository tokenRepository;

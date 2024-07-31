@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.api.v1.quickbook;
 
 import com.marinamooringmanagement.constants.Authority;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.QuickbookCustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -29,7 +30,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @CrossOrigin
 @Validated
 @Tag(name = "Quickbook customer Controller", description = "These are API's for quickbook customer.")
-public class QuickbookCustomerController {
+public class QuickbookCustomerController extends GlobalExceptionHandler {
 
     @Autowired
     private QuickbookCustomerService quickbookCustomerService;
