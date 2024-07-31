@@ -213,8 +213,6 @@ public class FormServiceImpl implements FormService {
                 if(null == id) throw new RuntimeException(String.format("Form data cannot be null during save"));
             }
 
-            form.setFormName(formRequestDto.getFileName()+".pdf");
-
             if(null == id) form.setUser(user);
 
             formRepository.save(form);
