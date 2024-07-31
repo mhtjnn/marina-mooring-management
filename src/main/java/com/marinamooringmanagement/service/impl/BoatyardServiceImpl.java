@@ -147,8 +147,7 @@ public class BoatyardServiceImpl implements BoatyardService {
 
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("street")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("apt")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.toString(boatyard.get("id")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardId")), lowerCaseSearchText)

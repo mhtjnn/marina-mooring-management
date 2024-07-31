@@ -26,7 +26,6 @@ public class MooringRequestDto implements Serializable {
     /**
      * Name of the customer associated with the mooring.
      */
-    @NotNull(message = "Customer cannot be blankmat")
     private Integer customerId;
 
     /**

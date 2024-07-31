@@ -146,9 +146,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                         Join<ServiceArea, Country> countryJoin = serviceArea.join("country", JoinType.LEFT);
                         predicates.add(criteriaBuilder.or(
                                 criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("serviceAreaName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("id")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("streetHouse")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("aptSuite")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.toString(serviceArea.get("id")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText)
                         ));

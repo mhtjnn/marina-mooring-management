@@ -490,7 +490,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                             && null != workOrder.getCustomerOwnerUser()
                                             && null != workOrder.getWorkOrderStatus()
                                             && null != workOrder.getWorkOrderStatus().getStatus()
-                                            && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                            && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
                                             && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                             && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                                             && null != workOrder.getScheduledDate()
@@ -543,7 +543,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                         && null != workOrder.getCustomerOwnerUser()
                                         && null != workOrder.getWorkOrderStatus()
                                         && null != workOrder.getWorkOrderStatus().getStatus()
-                                        && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                        && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
                                         && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                         && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                         )
@@ -732,7 +732,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("name")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("lastName")), lowerCaseSearchText)
                         ));
                     }
 

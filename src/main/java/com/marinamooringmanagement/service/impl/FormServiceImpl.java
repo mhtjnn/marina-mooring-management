@@ -82,11 +82,15 @@ public class FormServiceImpl implements FormService {
                 @Override
                 public Predicate toPredicate(Root<Form> form, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
-
+                    String submittedDate = null;
+                    if(form.get("creationDate") != null) submittedDate = DateUtil.dateToString((Date) form.get("creationDate"));
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(form.get("id")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.toString(form.get("id")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(form.get("formName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(form.get("fileName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(form.get("createdBy")), lowerCaseSearchText)
                         ));
                     }
 

@@ -938,15 +938,15 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
             List<PaymentType> paymentTypes = new ArrayList<>(
                     Arrays.asList(
                         PaymentType.builder()
-                                .type("card")
+                                .type("Card")
                                 .description("Payment via card")
                             .   build(),
                         PaymentType.builder()
-                                .type("cheque")
+                                .type("Cheque")
                                 .description("Payment via cheque")
                                 .build(),
                         PaymentType.builder()
-                                .type("cash")
+                                .type("Cash")
                                 .description("Payment via cash")
                                 .build()
                     )

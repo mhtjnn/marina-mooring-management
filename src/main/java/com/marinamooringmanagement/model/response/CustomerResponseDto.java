@@ -49,14 +49,7 @@ public class CustomerResponseDto implements Serializable {
 
     private String notes;
 
-    /**
-     * The street and house details of the customer's address.
-     */
-    private String streetHouse;
-    /**
-     * The Apt/Suite of the customer's address.
-     */
-    private String aptSuite;
+    private String address;
     /**
      * The state or region of the customer's address.
      */

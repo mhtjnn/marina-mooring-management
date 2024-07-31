@@ -110,7 +110,8 @@ public class EstimateServiceImpl implements EstimateService {
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("name")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("lastName")), lowerCaseSearchText)
                         ));
                     }
 
