@@ -553,20 +553,23 @@ public class UserServiceImpl implements UserService {
                         technicianUserResponseDto.setRoleResponseDto(roleResponseDto);
 
                         StateResponseDto stateResponseDto = null;
-                        if (null != user.getState()) stateResponseDto = StateResponseDto.builder()
-                                .id(user.getState().getId())
-                                .label(user.getState().getLabel())
-                                .name(user.getState().getName())
-                                .build();
-                        if (null != user.getState()) technicianUserResponseDto.setStateResponseDto(stateResponseDto);
+                        if (null != user.getState()) {
+                            stateResponseDto = StateResponseDto.builder()
+                                    .id(user.getState().getId())
+                                    .label(user.getState().getLabel())
+                                    .name(user.getState().getName())
+                                    .build();
+                            technicianUserResponseDto.setStateResponseDto(stateResponseDto);
+                        }
 
-                        CountryResponseDto countryResponseDto = CountryResponseDto.builder()
-                                .id(user.getCountry().getId())
-                                .label(user.getCountry().getLabel())
-                                .name(user.getCountry().getName())
-                                .build();
-                        if (null != user.getCountry())
+                        if (null != user.getCountry()) {
+                            CountryResponseDto countryResponseDto = CountryResponseDto.builder()
+                                    .id(user.getCountry().getId())
+                                    .label(user.getCountry().getLabel())
+                                    .name(user.getCountry().getName())
+                                    .build();
                             technicianUserResponseDto.setCountryResponseDto(countryResponseDto);
+                        }
 
                         List<WorkOrder> openWorkOrderList = workOrderRepository.findAll()
                                 .stream()
