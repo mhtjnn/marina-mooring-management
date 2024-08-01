@@ -3,6 +3,7 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.MooringStatusMapper;
 import com.marinamooringmanagement.model.dto.ImageDto;
@@ -26,6 +27,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.OverridesAttribute;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
  * Service implementation for managing Mooring entities.
  */
 @Service
-public class MooringServiceImpl implements MooringService {
+public class MooringServiceImpl extends GlobalExceptionHandler implements MooringService{
 
     private static final Logger log = LoggerFactory.getLogger(MooringServiceImpl.class);
 
@@ -376,7 +378,7 @@ public class MooringServiceImpl implements MooringService {
             mooringMapper.mapToMooring(mooring, mooringRequestDto);
             mooring.setUser(user);
 
-            if(null != mooringRequestDto.getMooringNumber()) {
+            if(null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
                 optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                 if(optionalMooring.isPresent()) {
                     if(null == id) {
@@ -385,6 +387,8 @@ public class MooringServiceImpl implements MooringService {
                         if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring number: %1$s is associated with other mooring", mooringRequestDto.getMooringNumber()));
                     }
                 }
+            } else {
+                throw new RuntimeException(String.format("Mooring number cannot be blank"));
             }
 
             if(null != mooringRequestDto.getImageRequestDtoList() && !mooringRequestDto.getImageRequestDtoList().isEmpty()) {
@@ -546,15 +550,27 @@ public class MooringServiceImpl implements MooringService {
             Mooring finalSavedMooring = savedMooring;
 
             optionalBoatyard.ifPresent(boatyard -> {
-                boatyard.getMooringList().add(finalSavedMooring);
+                if(null != boatyard.getMooringList()) boatyard.getMooringList().add(finalSavedMooring);
+                else {
+                    boatyard.setMooringList(new ArrayList<>());
+                    boatyard.getMooringList().add(finalSavedMooring);
+                }
                 boatyardRepository.save(optionalBoatyard.get());
             });
             optionalCustomer.ifPresent(customer -> {
-                customer.getMooringList().add(finalSavedMooring);
-                customerRepository.save(optionalCustomer.get());
+                if(null != customer.getMooringList()) customer.getMooringList().add(finalSavedMooring);
+                else {
+                    customer.setMooringList(new ArrayList<>());
+                    customer.getMooringList().add(finalSavedMooring);
+                }
+                customerRepository.save(customer);
             });
             optionalServiceArea.ifPresent(serviceArea -> {
-                serviceArea.getMooringList().add(finalSavedMooring);
+                if(null != serviceArea.getMooringList()) serviceArea.getMooringList().add(finalSavedMooring);
+                else {
+                    serviceArea.setMooringList(new ArrayList<>());
+                    serviceArea.getMooringList().add(finalSavedMooring);
+                }
                 serviceAreaRepository.save(optionalServiceArea.get());
             });
 

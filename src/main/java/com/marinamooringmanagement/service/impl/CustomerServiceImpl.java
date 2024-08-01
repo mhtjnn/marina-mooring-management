@@ -548,10 +548,11 @@ public class CustomerServiceImpl implements CustomerService {
 
                     Optional<Mooring> optionalMooring = Optional.empty();
                     Mooring mooring = null;
-                    if (null != mooringRequestDto.getMooringNumber()) {
+                    if (null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
                         optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                         if (optionalMooring.isPresent()) {
                             mooring = optionalMooring.get();
+                            if(null != mooring.getCustomer() && id == null) throw new RuntimeException(String.format("Mooring with number: %1$s is associated with some other customer", mooringRequestDto.getMooringNumber()));
                             if (null == mooring.getUser())
                                 throw new RuntimeException(String.format("Mooring with the number: %1$s is not associated with any user", mooring.getMooringNumber()));
                             if (!mooring.getUser().getId().equals(user.getId()))
@@ -573,7 +574,7 @@ public class CustomerServiceImpl implements CustomerService {
                                     );
                         }
                     } else {
-                        throw new RuntimeException("Mooring Id cannot be null");
+                        throw new RuntimeException("Mooring Number cannot be blank");
                     }
 
                     mooringList.add(mooring);
