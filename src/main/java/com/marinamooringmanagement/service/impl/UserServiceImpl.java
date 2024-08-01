@@ -581,7 +581,7 @@ public class UserServiceImpl implements UserService {
                                                 && null != workOrder.getTechnicianUser()
                                                 && null != workOrder.getTechnicianUser().getId()
                                                 && workOrder.getTechnicianUser().getId().equals(user.getId())
-                                                && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                                && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
 
                                 )
                                 .toList();
@@ -594,7 +594,7 @@ public class UserServiceImpl implements UserService {
                                                 && null != workOrder.getTechnicianUser()
                                                 && null != workOrder.getTechnicianUser().getId()
                                                 && workOrder.getTechnicianUser().getId().equals(user.getId())
-                                                && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                                && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
                                 )
                                 .toList();
 

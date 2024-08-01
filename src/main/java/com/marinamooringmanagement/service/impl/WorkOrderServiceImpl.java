@@ -343,7 +343,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                             && null != workOrder.getCustomerOwnerUser()
                                             && null != workOrder.getWorkOrderStatus()
                                             && null != workOrder.getWorkOrderStatus().getStatus()
-                                            && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                            && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
                                             && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                             && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                                             && null != workOrder.getScheduledDate()
@@ -396,7 +396,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                         && null != workOrder.getCustomerOwnerUser()
                                         && null != workOrder.getWorkOrderStatus()
                                         && null != workOrder.getWorkOrderStatus().getStatus()
-                                        && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE)
+                                        && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
                                         && workOrder.getTechnicianUser().getId().equals(technicianUser.getId())
                                         && workOrder.getCustomerOwnerUser().getId().equals(technicianUser.getCustomerOwnerId())
                         )
@@ -675,7 +675,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 workOrderResponseDtoList.add(workOrderResponseDto);
                                 return workOrderResponseDto;
                             })
-                            .filter(workOrderResponseDto -> !StringUtils.equals(workOrderResponseDto.getWorkOrderStatusDto().getStatus(), AppConstants.WorkOrderStatusConstants.CLOSE))
+                            .filter(workOrderResponseDto -> !StringUtils.equals(workOrderResponseDto.getWorkOrderStatusDto().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED))
                             .collect(Collectors.toList());
 
 
