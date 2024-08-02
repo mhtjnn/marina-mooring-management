@@ -141,7 +141,7 @@ public class UserServiceImpl implements UserService {
                      */
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-
+                        Join<User, Role> roleJoin = user.join("role", JoinType.LEFT);
                         if (ConversionUtils.canConvertToInt(searchText)) {
                             predicates.add(criteriaBuilder.or(
                                     criteriaBuilder.equal(user.get("id"), searchText),
@@ -149,7 +149,7 @@ public class UserServiceImpl implements UserService {
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                                    criteriaBuilder.like(criteriaBuilder.lower(roleJoin.get("name")), lowerCaseSearchText)
                             ));
                         } else {
                             predicates.add(criteriaBuilder.or(
@@ -157,7 +157,7 @@ public class UserServiceImpl implements UserService {
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
                                     criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
+                                    criteriaBuilder.like(criteriaBuilder.lower(roleJoin.get("name")), lowerCaseSearchText)
                             ));
                         }
                     }

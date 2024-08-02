@@ -444,8 +444,6 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (null != boatyardRequestDto.getGpsCoordinates()) {
                 final String gpsCoordinates = GPSUtil.getGpsCoordinates(boatyardRequestDto.getGpsCoordinates());
                 boatyard.setGpsCoordinates(gpsCoordinates);
-            } else {
-                if (null == id) throw new RuntimeException(String.format("GPS coordinates cannot be null during save"));
             }
 
             if (null != boatyardRequestDto.getStateId()) {
@@ -453,8 +451,6 @@ public class BoatyardServiceImpl implements BoatyardService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", boatyardRequestDto.getStateId()));
                 boatyard.setState(optionalState.get());
-            } else {
-                if (null == id) throw new RuntimeException("State cannot be null.");
             }
 
             if (null != boatyardRequestDto.getCountryId()) {
@@ -462,8 +458,6 @@ public class BoatyardServiceImpl implements BoatyardService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", boatyardRequestDto.getCountryId()));
                 boatyard.setCountry(optionalCountry.get());
-            } else {
-                if (null == id) throw new RuntimeException("Country cannot be null.");
             }
 
             final Boatyard savedBoatyard = boatyardRepository.save(boatyard);

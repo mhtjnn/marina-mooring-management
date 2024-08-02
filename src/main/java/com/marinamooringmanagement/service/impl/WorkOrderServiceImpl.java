@@ -151,7 +151,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("firstName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("lastName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(customerJoin.get("firstName")),
-                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText)
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(technicianUserJoin.get("firstName")),
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(technicianUserJoin.get("lastName")))), lowerCaseSearchText)
                         ));
                     }
 
@@ -629,7 +631,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             openWorkOrderResponseDtoList =
                     workOrderRepository.findAll()
                             .stream()
-                            .filter(workOrder -> FilterUtils.filterWorkOrderDatesProvided(workOrder, user, localGivenScheduleDate, localGivenDueDate))
+                            .filter(
+                                    workOrder -> FilterUtils.filterWorkOrderDatesProvided(workOrder, user, localGivenScheduleDate, localGivenDueDate)
+                                    && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
+                            )
                             .map(workOrder -> {
                                 WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                                 workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
@@ -672,10 +677,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 if (null != workOrder.getScheduledDate())
                                     workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
 
-                                workOrderResponseDtoList.add(workOrderResponseDto);
                                 return workOrderResponseDto;
                             })
-                            .filter(workOrderResponseDto -> !StringUtils.equals(workOrderResponseDto.getWorkOrderStatusDto().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED))
                             .collect(Collectors.toList());
 
 
@@ -698,7 +701,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             allWorkOrdersAndMooringDueForServiceResponse.setMooringDueServiceResponseDtoList(getMooringDueServiceResponseDtoList(workOrderResponseDtoList));
 
             response.setCurrentSize(paginatedWorkOrder.size());
-            response.setTotalSize(workOrderResponseDtoList.size());
+            response.setTotalSize(openWorkOrderResponseDtoList.size());
             response.setMessage(String.format("All open work orders and mooring due for service with customer owner of given id: %1$s fetched successfully", user.getId()));
             response.setStatus(HttpStatus.OK.value());
             response.setContent(allWorkOrdersAndMooringDueForServiceResponse);

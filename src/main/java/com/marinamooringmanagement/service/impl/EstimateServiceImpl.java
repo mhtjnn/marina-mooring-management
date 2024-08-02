@@ -17,10 +17,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.EstimateService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,23 +96,31 @@ public class EstimateServiceImpl implements EstimateService {
 
             Specification<Estimate> spec = new Specification<Estimate>() {
                 @Override
-                public Predicate toPredicate(Root<Estimate> workOrder, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                public Predicate toPredicate(Root<Estimate> estimate, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
 
                     if (null != searchText) {
                         String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
+                        Join<Estimate, Mooring> mooringJoin = estimate.join("mooring", JoinType.LEFT);
+                        Join<Mooring, Customer> customerJoin = mooringJoin.join("customer", JoinType.LEFT);
+                        Join<Mooring, Boatyard> boatyardJoin = mooringJoin.join("boatyard", JoinType.LEFT);
+                        Join<Estimate, User> technicianUserJoin = estimate.join("technicianUser", JoinType.LEFT);
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringNumber")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("lastName")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(estimate.get("problem")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(mooringJoin.get("mooringNumber")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(boatyardJoin.get("boatyardName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("firstName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.lower(technicianUserJoin.get("lastName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(customerJoin.get("firstName")),
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(technicianUserJoin.get("firstName")),
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(technicianUserJoin.get("lastName")))), lowerCaseSearchText)
                         ));
                     }
 
-                    predicates.add(authorizationUtil.fetchPredicateForEstimate(customerOwnerId, workOrder, criteriaBuilder));
+                    predicates.add(authorizationUtil.fetchPredicateForEstimate(customerOwnerId, estimate, criteriaBuilder));
 
                     return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
                 }

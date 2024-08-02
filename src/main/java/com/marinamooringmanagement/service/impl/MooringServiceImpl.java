@@ -167,7 +167,9 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceAreaJoin.get("serviceAreaName")), lowerCaseSearchText)
+                                criteriaBuilder.like(criteriaBuilder.lower(serviceAreaJoin.get("serviceAreaName")), lowerCaseSearchText),
+                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(customerJoin.get("firstName")),
+                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText)
                         ));
                     }
 
