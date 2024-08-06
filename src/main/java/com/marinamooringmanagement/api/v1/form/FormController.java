@@ -89,7 +89,7 @@ public class FormController extends GlobalExceptionHandler {
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
             final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
             final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
-            final @RequestParam(value = "searchText", required = false) String searchText,
+            final @RequestParam(value = "searchText") String searchText,
             final HttpServletRequest request
     ) {
         final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()

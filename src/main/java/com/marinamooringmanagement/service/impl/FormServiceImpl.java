@@ -106,7 +106,7 @@ public class FormServiceImpl implements FormService {
                     })
                     .toList();
 
-            response.setContent(formList);
+            response.setContent(formResponseDtoList);
 
             if(formResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(formResponseDtoList.size());
