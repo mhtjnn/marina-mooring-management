@@ -17,19 +17,13 @@ import com.marinamooringmanagement.service.FormService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.PDFUtils;
 import com.marinamooringmanagement.utils.SortUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -77,38 +71,31 @@ public class FormServiceImpl implements FormService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            authorizationUtil.checkAuthority(customerOwnerId);
-            Specification<Form> spec = new Specification<Form>() {
-                @Override
-                public Predicate toPredicate(Root<Form> form, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.toString(form.get("id")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(form.get("formName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(form.get("fileName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(form.get("createdBy")), lowerCaseSearchText)
-                        ));
-                    }
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, form, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
-
-            final Pageable p = PageRequest.of(
+            final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
-            final Page<Form> formList = formRepository.findAll(spec, p);
 
-            response.setTotalSize(formRepository.findAll(spec).size());
+            final List<Form> formList = formRepository.findAllWithoutFormData(searchText, user.getId());
 
-            final List<FormResponseDto> formResponseDtoList = formList
-                    .getContent()
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), formList.size());
+
+            List<Form> paginatedForm;
+            if (start > formList.size()) {
+                paginatedForm = new ArrayList<>();
+            } else {
+                paginatedForm = formList.subList(start, end);
+            }
+
+
+            response.setTotalSize(formList.size());
+
+            final List<FormResponseDto> formResponseDtoList = paginatedForm
                     .stream()
                     .map(form -> {
                         FormResponseDto formResponseDto = formMapper.toResponseDto(FormResponseDto.builder().build(), form);
@@ -119,7 +106,7 @@ public class FormServiceImpl implements FormService {
                     })
                     .toList();
 
-            response.setContent(formResponseDtoList);
+            response.setContent(formList);
 
             if(formResponseDtoList.isEmpty()) response.setCurrentSize(0);
             else response.setCurrentSize(formResponseDtoList.size());
@@ -191,6 +178,35 @@ public class FormServiceImpl implements FormService {
         } catch (Exception e) {
             throw  e;
         }
+    }
+
+    @Override
+    public BasicRestResponse viewForm(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
+            log.info(String.format("Downloading form with id: %1$s", id));
+            if(ObjectUtils.notEqual(user, form.getUser())) {
+                log.error(String.format("Form with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
+            }
+
+            FormResponseDto formResponseDto = formMapper.toResponseDto(FormResponseDto.builder().build(), form);
+            if(null != form.getCreationDate()) formResponseDto.setSubmittedDate(DateUtil.dateToString(form.getCreationDate()));
+            if(null != form.getCreatedBy()) formResponseDto.setSubmittedBy(form.getCreatedBy());
+            if(null != form.getUser()) formResponseDto.setUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), form.getUser()));
+
+            response.setContent(formResponseDto);
+            response.setMessage(String.format("Form with the id: %1$s fetched successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
     }
 
     private void performSave(final FormRequestDto formRequestDto, final Form form, final Integer id, final HttpServletRequest request) {

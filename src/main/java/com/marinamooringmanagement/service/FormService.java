@@ -17,4 +17,6 @@ public interface FormService {
     BasicRestResponse deleteForm(final Integer id, final HttpServletRequest request);
 
     Form downloadForm(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse viewForm(final Integer id, final HttpServletRequest request);
 }

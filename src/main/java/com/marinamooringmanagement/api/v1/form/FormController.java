@@ -187,4 +187,30 @@ public class FormController extends GlobalExceptionHandler {
                         "attachment; filename=\"" + form.getFileName() + "\"")
                 .body(new ByteArrayResource(form.getFormData()));
     }
+
+    @Operation(
+            summary = "API to view form",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/viewForm/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse viewForm(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return formService.viewForm(id, request);
+    }
 }

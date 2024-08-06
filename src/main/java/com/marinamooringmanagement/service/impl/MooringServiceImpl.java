@@ -414,11 +414,9 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
                 Date installBottomChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
-                LocalDate localDate = installBottomChainDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
+                LocalDate installBottomChainLocalDate = DateUtil.dateToLocalDate(installBottomChainDate);
                 LocalDate currentDate = LocalDate.now();
-                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", localDate, currentDate));
+                if(installBottomChainLocalDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", installBottomChainLocalDate, currentDate));
                 mooring.setInstallBottomChainDate(installBottomChainDate);
             }
 

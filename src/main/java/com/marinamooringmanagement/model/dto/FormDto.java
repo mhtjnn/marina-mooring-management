@@ -13,12 +13,8 @@ import lombok.NoArgsConstructor;
 public class FormDto extends BaseDto{
 
     private Integer id;
-
     private String formName;
-
     private String fileName;
-
     private byte[] formData;
-
     private UserDto userDto;
 }

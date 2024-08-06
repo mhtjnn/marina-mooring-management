@@ -1,10 +1,11 @@
 package com.marinamooringmanagement.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
 
 @Entity
 @Data
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "form_table")
-public class Form extends Base{
+public class Form extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +28,19 @@ public class Form extends Base{
 
     @Lob
     @Column(name = "form_data", length = 102400)
+    @Basic(fetch = FetchType.LAZY)
     private byte[] formData;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    public Form(Integer id, String formName, String fileName, String createdBy, Timestamp createdTime, Integer userId, String firstName, String lastName, Integer roleId, String roleName) {
+        this.id = id;
+        this.formName = formName;
+        this.fileName = fileName;
+        this.createdBy = createdBy;
+        this.creationDate = createdTime;
+        this.user = User.builder().id(userId).firstName(firstName).lastName(lastName).role(Role.builder().id(roleId).name(roleName).build()).build();
+    }
 }

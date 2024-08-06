@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class DateUtil {
 
-    public static Date stringToDate(String dateStr) {
+    public static Date stringToDate(final String dateStr) {
         try {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             LocalDate localDate = LocalDate.parse(dateStr, dateTimeFormatter);
@@ -18,7 +18,7 @@ public class DateUtil {
         }
     }
 
-    public static String dateToString(Date date) {
+    public static String dateToString(final Date date) {
         try {
             LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -28,11 +28,17 @@ public class DateUtil {
         }
     }
 
-    public static LocalDate stringToLocalDate(String dateStr) {
+    public static LocalDate stringToLocalDate(final String dateStr) {
         final Date filterFromDate = stringToDate(dateStr);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = dateFormat.format(filterFromDate);
         return LocalDate.parse(formattedDate);
+    }
+
+    public static LocalDate dateToLocalDate(final Date date) {
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 
 }
