@@ -150,6 +150,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             log.info("API called to fetch all the moorings in the database");
             MooringsWithGPSCoordinatesResponse mooringsWithGPSCoordinatesResponse = MooringsWithGPSCoordinatesResponse.builder().build();
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Specification<Mooring> spec = new Specification<Mooring>() {
                 @Override
@@ -162,7 +163,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                         Join<Mooring, ServiceArea> serviceAreaJoin = mooring.join("serviceArea", JoinType.LEFT);
 
                         predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("boatName")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringNumber")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
                                 criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
@@ -184,10 +184,9 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
-            final Page<Mooring> mooringList = mooringRepository.findAll(spec, pageable);
+            final List<Mooring> mooringList = mooringRepository.findAll(searchText, user.getId());
 
             final List<MooringResponseDto> mooringResponseDtoList = mooringList
-                    .getContent()
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
@@ -212,7 +211,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             mooringsWithGPSCoordinatesResponse.setMooringResponseDtoList(mooringResponseDtoList);
 
-            List<MooringWithGPSCoordinateResponse> mooringWithSpec = fetchMooringWithGpsCoordinates(spec);
+            List<MooringWithGPSCoordinateResponse> mooringWithSpec = fetchMooringWithGpsCoordinates();
 
             mooringsWithGPSCoordinatesResponse.setMooringWithGPSCoordinateResponseList(mooringWithSpec);
 
@@ -229,7 +228,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         return response;
     }
 
-    private List<MooringWithGPSCoordinateResponse> fetchMooringWithGpsCoordinates(final Specification<Mooring> spec) {
+    private List<MooringWithGPSCoordinateResponse> fetchMooringWithGpsCoordinates() {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<MooringWithGPSCoordinateResponse> query = criteriaBuilder.createQuery(MooringWithGPSCoordinateResponse.class);
         Root<Mooring> root = query.from(Mooring.class);
@@ -241,12 +240,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 root.get("gpsCoordinates"),
                 root.join("mooringStatus").get("id")
         ));
-
-        // Applying the provided specification
-        Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
-        if (predicate != null) {
-            query.where(predicate);
-        }
 
         // Executing the query
         TypedQuery<MooringWithGPSCoordinateResponse> typedQuery = entityManager.createQuery(query);

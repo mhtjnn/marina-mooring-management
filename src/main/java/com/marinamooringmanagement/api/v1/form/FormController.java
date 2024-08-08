@@ -27,7 +27,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
 
 @RestController
-@RequestMapping(value = "api/v1/form")
+@RequestMapping(value = "/api/v1/form")
 @CrossOrigin
 @Validated
 @Tag(name = "Form controller", description = "These are the API's for form upload, download and update.")

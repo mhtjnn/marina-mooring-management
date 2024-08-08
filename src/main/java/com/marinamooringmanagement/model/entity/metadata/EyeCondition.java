@@ -1,9 +1,7 @@
 package com.marinamooringmanagement.model.entity.metadata;
 
 import com.marinamooringmanagement.model.entity.Base;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -13,6 +11,11 @@ import lombok.*;
 @NoArgsConstructor
 @Table(name = "eye_condition")
 public class EyeCondition extends Base {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
     @Column(name = "_condition")
     private String condition;

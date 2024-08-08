@@ -35,7 +35,8 @@ public class Form extends Base {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Form(Integer id, String formName, String fileName, String createdBy, Timestamp createdTime, Integer userId, String firstName, String lastName, Integer roleId, String roleName) {
+    public Form(Integer id, String formName, String fileName, String createdBy, Timestamp createdTime,
+                Integer userId, String firstName, String lastName, Integer roleId, String roleName) {
         this.id = id;
         this.formName = formName;
         this.fileName = fileName;

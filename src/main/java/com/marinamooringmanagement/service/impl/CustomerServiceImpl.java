@@ -163,40 +163,27 @@ public class CustomerServiceImpl implements CustomerService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            Specification<Customer> spec = new Specification<Customer>() {
-                @Override
-                public Predicate toPredicate(Root<Customer> customer, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("customerId")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("emailAddress")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customer.get("phone")), lowerCaseSearchText)
-                        ));
-                    }
-
-                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, customer, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
-
-            final Pageable p = PageRequest.of(
+            final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
-            final Page<Customer> customerList = customerRepository.findAll(spec, p);
+            final List<Customer> customerList = customerRepository.findAll(searchText, user.getId());
+            response.setTotalSize(customerList.size());
 
-            response.setTotalSize(customerRepository.findAll(spec).size());
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), customerList.size());
 
-            final List<CustomerResponseDto> customerResponseDtoList = customerList
-                    .getContent()
+            List<Customer> paginatedCustomer;
+            if (start > customerList.size()) {
+                paginatedCustomer = new ArrayList<>();
+            } else {
+                paginatedCustomer = customerList.subList(start, end);
+            }
+
+            final List<CustomerResponseDto> customerResponseDtoList = paginatedCustomer
                     .stream()
                     .map(customer -> {
                         CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer);
@@ -208,23 +195,13 @@ public class CustomerServiceImpl implements CustomerService {
                             customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
                         if(null != customer.getCustomerType())
                             customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
-                        if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
-                            customerResponseDto.setImageDtoList(customer.getImageList()
-                                    .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-                                    .toList());
-                        }
-                        if(null != customer.getQuickBookCustomer())
-                            customerResponseDto.setQuickbookCustomerResponseDto(quickbookCustomerMapper.mapToResponseDto(QuickbookCustomerResponseDto.builder().build(), customer.getQuickBookCustomer()));
-
                         return customerResponseDto;
                     })
                     .toList();
 
             response.setContent(customerResponseDtoList);
 
-            if(customerResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(customerResponseDtoList.size());
+            response.setCurrentSize(customerResponseDtoList.size());
 
             response.setMessage("All customers are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
@@ -241,22 +218,23 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public BasicRestResponse fetchCustomerAndMoorings(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request) {
+    public BasicRestResponse fetchCustomerAndMooringsWithCustomerImages(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
 
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
-            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+            Optional<Customer> optionalCustomer = customerRepository.findCustomerByIdWithImages(customerId, user.getId());
 
             if (optionalCustomer.isEmpty())
                 throw new ResourceNotFoundException(String.format("No customer found with the given ID: %1$s", customerId));
 
             final Customer customer = optionalCustomer.get();
 
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
             if (null != customer.getUser()) {
                 if (!customer.getUser().getId().equals(user.getId()))
                     throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));
@@ -283,8 +261,134 @@ public class CustomerServiceImpl implements CustomerService {
             }
 
             List<Mooring> mooringList = new ArrayList<>();
-            if (null != optionalCustomer.get().getMooringList())
-                mooringList = optionalCustomer.get().getMooringList().stream().filter(mooring -> mooring.getUser().getId().equals(optionalCustomer.get().getUser().getId())).toList();
+
+            mooringList = mooringRepository.fetchMooringsWithCustomerWithoutMooringImages(customer.getId(), user.getId());
+
+            if(mooringList.isEmpty()) response.setTotalSize(0);
+            else response.setTotalSize(mooringList.size());
+
+            List<Boatyard> boatyards = new ArrayList<>();
+            List<String> boatyardNames = new ArrayList<>();
+            List<MooringResponseDto> mooringResponseDtoList = new ArrayList<>();
+
+            final Pageable p = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
+            );
+
+            int start = (int) p.getOffset();
+            int end = Math.min((start + p.getPageSize()), mooringList.size());
+
+            List<Mooring> paginatedMoorings;
+            if (start > mooringList.size()) {
+                paginatedMoorings = List.of(); // Return an empty list if the start index is out of bounds
+            } else {
+                paginatedMoorings = mooringList.subList(start, end);
+            }
+
+            if (!mooringList.isEmpty()) {
+                mooringResponseDtoList = paginatedMoorings
+                        .stream()
+                        .map(mooring -> {
+                            MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+                            if (null != mooring.getUser().getId())
+                                mooringResponseDto.setUserId(mooring.getUser().getId());
+                            if (null != mooring.getCustomer())
+                                mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                            if (null != mooring.getBoatyard()) {
+                                mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+                                if (!boatyards.contains(mooring.getBoatyard())) {
+                                    boatyards.add(mooring.getBoatyard());
+                                    if(null != mooring.getBoatyard().getBoatyardName()) boatyardNames.add(mooring.getBoatyard().getBoatyardName());
+                                }
+                            }
+                            if(null != customerResponseDto.getFirstName() && null != customerResponseDto.getLastName()) mooringResponseDto.setCustomerName(
+                                    customerResponseDto.getFirstName() + " " + customerResponseDto.getLastName()
+                            );
+                            if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
+                            if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                            if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                            if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                            if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
+                            if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
+                                mooringResponseDto.setImageDtoList(mooring.getImageList()
+                                        .stream()
+                                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                        .toList());
+                            }
+                            return mooringResponseDto;
+                        }).toList();
+            }
+
+            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
+            else response.setCurrentSize(mooringResponseDtoList.size());
+
+            boatyards.clear();
+
+            customerResponseDto.setMooringResponseDtoList(mooringResponseDtoList);
+            customerAndMooringsCustomResponse.setCustomerResponseDto(customerResponseDto);
+            customerAndMooringsCustomResponse.setBoatyardNames(boatyardNames);
+
+            response.setContent(customerAndMooringsCustomResponse);
+            response.setTime(new Timestamp(System.currentTimeMillis()));
+            response.setMessage("Customer and its moorings fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public BasicRestResponse fetchCustomerAndMooringsWithMooringImages(final BaseSearchRequest baseSearchRequest, final Integer customerId, final HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            CustomerAndMooringsCustomResponse customerAndMooringsCustomResponse = CustomerAndMooringsCustomResponse.builder().build();
+            Optional<Customer> optionalCustomer = customerRepository.findCustomerByIdWithoutImages(customerId, user.getId());
+
+            if (optionalCustomer.isEmpty())
+                throw new ResourceNotFoundException(String.format("No customer found with the given ID: %1$s", customerId));
+
+            final Customer customer = optionalCustomer.get();
+
+
+            if (null != customer.getUser()) {
+                if (!customer.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));
+            } else {
+                throw new RuntimeException(String.format("Customer with the id: %1$s is not associated with any User", customerId));
+            }
+
+            CustomerResponseDto customerResponseDto = CustomerResponseDto.builder().build();
+            customerMapper.mapToCustomerResponseDto(customerResponseDto, customer);
+            if (null != customer.getState()) customerResponseDto.setStateResponseDto(
+                    stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), customer.getState())
+            );
+            if (null != customer.getCountry()) customerResponseDto.setCountryResponseDto(
+                    countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry())
+            );
+            if(null != customer.getCustomerType())
+                customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
+
+            if(null != customer.getImageList() && !customer.getImageList().isEmpty()) {
+                customerResponseDto.setImageDtoList(customer.getImageList()
+                        .stream()
+                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                        .toList());
+            }
+
+            List<Mooring> mooringList = new ArrayList<>();
+
+            mooringList = mooringRepository.fetchMooringsWithCustomerWithMooringImages(customer.getId(), user.getId());
 
             if(mooringList.isEmpty()) response.setTotalSize(0);
             else response.setTotalSize(mooringList.size());

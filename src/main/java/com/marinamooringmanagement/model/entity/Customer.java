@@ -101,4 +101,47 @@ public class Customer extends Base {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
     @JsonManagedReference
     private QuickbookCustomer quickBookCustomer;
+
+    public Customer(
+            Integer id, String firstName, String lastName, String customerId, String address, String notes, String emailAddress,
+                    Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
+                    String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
+                    Integer roleId, String roleName
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.customerId = customerId;
+        this.address = address;
+        this.notes = notes;
+        this.emailAddress = emailAddress;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.zipCode = zipCode;
+        this.customerType = CustomerType.builder().id(customerTypeId).type(customerTypeName).build();
+        this.phone = phone;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userSecondName).role(Role.builder().id(roleId).name(roleName).build()).build();
+    }
+
+    public Customer(
+            Integer id, String firstName, String lastName, String customerId, String address, String notes, String emailAddress,
+            Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
+            String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
+            Integer roleId, String roleName, List<Image> imageList
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.customerId = customerId;
+        this.address = address;
+        this.notes = notes;
+        this.emailAddress = emailAddress;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.zipCode = zipCode;
+        this.customerType = CustomerType.builder().id(customerTypeId).type(customerTypeName).build();
+        this.phone = phone;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userSecondName).role(Role.builder().id(roleId).name(roleName).build()).build();
+        this.imageList = imageList;
+    }
 }

@@ -147,11 +147,11 @@ public class CustomerController extends GlobalExceptionHandler {
             }
 
     )
-    @GetMapping(value = "/fetchCustomerWithMoorings/{id}",
+    @GetMapping(value = "/fetchCustomerWithMooringsWithMooringImages/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
-    public BasicRestResponse fetchCustomerWithMoorings(
+    public BasicRestResponse fetchCustomerWithMooringsWithMooringImages(
             @PathVariable("id") final Integer customerId,
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -165,7 +165,51 @@ public class CustomerController extends GlobalExceptionHandler {
                 .sortBy(sortBy)
                 .sortDir(sortDir)
                 .build();
-        return customerService.fetchCustomerAndMoorings(baseSearchRequest, customerId, request);
+        return customerService.fetchCustomerAndMooringsWithMooringImages(baseSearchRequest, customerId, request);
+    }
+
+    /**
+     * Retrieves a customer along with their moorings based on the provided customer ID.
+     *
+     * @param customerId The name of the customer to fetch along with their moorings.
+     * @return A BasicRestResponse containing the customer details and their associated moorings.
+     * @throws IllegalArgumentException If the customer ID is null or negative.
+     */
+    @Operation(
+            summary = "Fetch customer and moorings associated with it from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/fetchCustomerWithMooringsWithCustomerImages/{id}",
+            produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse fetchCustomerWithMooringsWithCustomerImages(
+            @PathVariable("id") final Integer customerId,
+            final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            final @RequestParam(value = "sortBy", defaultValue = "customerId", required = false) String sortBy,
+            final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return customerService.fetchCustomerAndMooringsWithCustomerImages(baseSearchRequest, customerId, request);
     }
 
     /**

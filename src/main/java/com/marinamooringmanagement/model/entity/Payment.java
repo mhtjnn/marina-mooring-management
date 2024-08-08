@@ -34,4 +34,20 @@ public class Payment extends Base{
     @JsonBackReference
     @ToString.Exclude
     private WorkOrderInvoice workOrderInvoice;
+
+    public Payment(
+            Integer id, Integer paymentTypeId, String paymentTypeName, Double amount,
+            Integer customerOwnerUserId, String customerOwnerUserFirstName,
+            String customerOwnerUserLastName, Integer workOrderInvoiceId
+    ) {
+        this.id = id;
+        this.paymentType = PaymentType.builder().id(paymentTypeId).type(paymentTypeName).build();
+        this.amount = amount;
+        this.customerOwnerUser = User.builder()
+                .id(customerOwnerUserId)
+                .firstName(customerOwnerUserFirstName)
+                .lastName(customerOwnerUserLastName)
+                .build();
+        this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
+    }
 }

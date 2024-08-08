@@ -1,9 +1,7 @@
 package com.marinamooringmanagement.model.entity.metadata;
 
 import com.marinamooringmanagement.model.entity.Base;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "shackle_swivel_condition")
 public class ShackleSwivelCondition extends Base {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
     @Column(name = "_condition")
     private String condition;

@@ -53,10 +53,6 @@ public class WorkOrder extends Base{
     private User technicianUser;
 
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
-    @JoinColumn(name = "finance_user_id")
-    private User financeUser;
-
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_owner_user_id")
     private User customerOwnerUser;
 
@@ -76,4 +72,29 @@ public class WorkOrder extends Base{
     @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;
 
+    public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
+                     Date completedDate, Time time, String problem, Integer mooringId, String mooringNumber,
+                     Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
+                     Integer customerOwnerUserId, String customerOwnerUserFirstName, String customerOwnerUserLastName,
+                     Integer workOrderStatusId, String workOrderStatusName, Integer workOrderPayStatusId,
+                     String workOrderPayStatusName, Integer workOrderInvoiceId, Integer customerId, String customerFirstName,
+                     String customerLastName, String customerNumber, Integer boatyardId, String boatyardName)
+    {
+        this.id = id;
+        this.workOrderNumber = workOrderNumber;
+        this.dueDate = dueDate;
+        this.scheduledDate = scheduledDate;
+        this.completedDate = completedDate;
+        this.time = time;
+        this.problem = problem;
+        this.mooring = Mooring.builder().id(mooringId).mooringNumber(mooringNumber)
+                .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build())
+                .boatyard(Boatyard.builder().id(boatyardId).boatyardName(boatyardName).build())
+                .build();
+        this.technicianUser = User.builder().id(technicianUserId).firstName(technicianUserFirstName).lastName(technicianUserLastName).build();
+        this.customerOwnerUser = User.builder().id(customerOwnerUserId).firstName(customerOwnerUserFirstName).lastName(customerOwnerUserLastName).build();
+        this.workOrderStatus = WorkOrderStatus.builder().id(workOrderStatusId).status(workOrderStatusName).build();
+        this.workOrderPayStatus = WorkOrderPayStatus.builder().id(workOrderPayStatusId).status(workOrderPayStatusName).build();
+        this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
+    }
 }

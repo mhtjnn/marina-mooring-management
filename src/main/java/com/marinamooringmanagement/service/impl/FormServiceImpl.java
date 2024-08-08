@@ -81,7 +81,6 @@ public class FormServiceImpl implements FormService {
 
             final List<Form> formList = formRepository.findAllWithoutFormData(searchText, user.getId());
 
-
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), formList.size());
 
@@ -91,7 +90,6 @@ public class FormServiceImpl implements FormService {
             } else {
                 paginatedForm = formList.subList(start, end);
             }
-
 
             response.setTotalSize(formList.size());
 
