@@ -89,4 +89,18 @@ public class Boatyard extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public Boatyard(Integer id, String boatyardId, String boatyardName) {
+        this.id = id;
+        this.boatyardId = boatyardId;
+        this.boatyardName = boatyardName;
+    }
+
+    public Boatyard(Integer id, String boatyardName, String boatyardId, Integer userId, String userFirstName, String userLastName) {
+        this.id = id;
+        this.boatyardName = boatyardName;
+        this.boatyardId = boatyardId;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+    }
+
 }

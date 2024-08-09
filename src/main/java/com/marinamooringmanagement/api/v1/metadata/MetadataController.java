@@ -777,7 +777,7 @@ public class MetadataController extends GlobalExceptionHandler {
                 .pageSize(pageSize)
                 .build();
 
-        return metadataService.fetchMooringBasedOnCustomerIdAndMooringId(baseSearchRequest, customerId, boatyardId, request);
+        return metadataService.fetchMooringBasedOnCustomerIdAndBoatyardId(baseSearchRequest, customerId, boatyardId, request);
     }
 
     @Operation(

@@ -64,8 +64,7 @@ public class WorkOrder extends Base{
     @JoinColumn(name = "work_order_pay_status_id")
     private WorkOrderPayStatus workOrderPayStatus;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "work_order_image_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.EAGER)
     private List<Image> imageList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.EAGER)
@@ -74,6 +73,7 @@ public class WorkOrder extends Base{
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
                      Date completedDate, Time time, String problem, Integer mooringId, String mooringNumber,
+                     String gpsCoordinate,
                      Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
                      Integer customerOwnerUserId, String customerOwnerUserFirstName, String customerOwnerUserLastName,
                      Integer workOrderStatusId, String workOrderStatusName, Integer workOrderPayStatusId,
@@ -87,7 +87,7 @@ public class WorkOrder extends Base{
         this.completedDate = completedDate;
         this.time = time;
         this.problem = problem;
-        this.mooring = Mooring.builder().id(mooringId).mooringNumber(mooringNumber)
+        this.mooring = Mooring.builder().id(mooringId).mooringNumber(mooringNumber).gpsCoordinates(gpsCoordinate)
                 .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build())
                 .boatyard(Boatyard.builder().id(boatyardId).boatyardName(boatyardName).build())
                 .build();

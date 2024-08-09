@@ -145,6 +145,21 @@ public class Mooring extends Base {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "boatyard_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private Boatyard boatyard;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "mooring", fetch = FetchType.LAZY)
+    private List<Image> imageList;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_area_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private ServiceArea serviceArea;
+
     public Mooring(Integer id, String mooringNumber, String harborOrArea, String gpsCoordinates,
                    Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
                    Date inspectionDate, String boatName, String boatSize, Integer boatTypeId, String boatTypeName,
@@ -230,22 +245,10 @@ public class Mooring extends Base {
         this.imageList = imageList;
     }
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "boatyard_id")
-    @JsonBackReference
-    @ToString.Exclude
-    private Boatyard boatyard;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "mooring_image_id")
-    private List<Image> imageList;
-
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_area_id")
-    @JsonBackReference
-    @ToString.Exclude
-    private ServiceArea serviceArea;
-
+    public Mooring(Integer id, String mooringNumber) {
+        this.id = id;
+        this.mooringNumber = mooringNumber;
+    }
 
     @Override
     public boolean equals(Object o) {

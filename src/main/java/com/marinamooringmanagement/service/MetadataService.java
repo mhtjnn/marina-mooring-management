@@ -37,7 +37,7 @@ public interface MetadataService {
 
     BasicRestResponse fetchBoatyardBasedOnMooringId(final BaseSearchRequest baseSearchRequest, final Integer mooringId, final HttpServletRequest request);
 
-    BasicRestResponse fetchMooringBasedOnCustomerIdAndMooringId(final BaseSearchRequest baseSearchRequest, final Integer customerId, final Integer boatyardId, final HttpServletRequest request);
+    BasicRestResponse fetchMooringBasedOnCustomerIdAndBoatyardId(final BaseSearchRequest baseSearchRequest, final Integer customerId, final Integer boatyardId, final HttpServletRequest request);
 
     BasicRestResponse fetchMooringIds(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 

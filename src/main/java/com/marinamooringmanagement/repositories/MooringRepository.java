@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.repositories;
 
+import com.marinamooringmanagement.model.entity.Boatyard;
+import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Mooring;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -88,5 +90,82 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
     List<Mooring> fetchMooringsWithCustomerWithMooringImages(@Param("customerId") Integer customerId,
                                                                 @Param("userId") Integer userId);
 
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:customerId IS NOT NULL AND c.id = :customerId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    List<Mooring> findAllMooringsBasedOnCustomerId(@Param("customerId") Integer customerId,
+                                                   @Param("userId") Integer userId);
+
     List<Mooring> findAll(final Specification<Mooring> spec);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatyard b " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:boatyardId IS NOT NULL AND b.id = :boatyardId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    List<Mooring> findAllMooringsBasedOnBoatyardIdMetadata(@Param("boatyardId") Integer boatyardId,
+                                                   @Param("userId") Integer userId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:mooringId IS NOT NULL AND m.id = :mooringId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    Optional<Mooring> findMooringByIdMetadata(@Param("mooringId") Integer mooringId,
+                                               @Param("userId") Integer userId);
+
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
+            "c.id, c.firstName, c.lastName, c.customerId, u.id, u.firstName, u.lastName) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:mooringId IS NOT NULL AND m.id = :mooringId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    Optional<Customer> findCustomerByMooringIdMetadata(@Param("mooringId") Integer mooringId,
+                                                       @Param("userId") Integer userId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
+            "b.id, b.boatyardName, b.boatyardId, u.id, u.firstName, u.lastName) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatyard b " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:mooringId IS NOT NULL AND m.id = :mooringId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    Optional<Boatyard> findBoatyardByMooringIdMetadata(@Param("mooringId") Integer mooringId,
+                                                       @Param("userId") Integer userId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatyard b " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.user u " +
+            "WHERE ((:boatyardId IS NOT NULL AND b.id = :boatyardId) " +
+            "AND (:customerId IS NOT NULL AND c.id = :customerId) " +
+            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "ORDER BY m.id")
+    List<Mooring> findAllMooringsBasedOnBoatyardIdAndCustomerIdMetadata(@Param("boatyardId") Integer boatyardId,
+                                                           @Param("customerId") Integer customerId,
+                                                           @Param("userId") Integer userId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.user u " +
+            "WHERE (:userId is NOT NULL AND u.id = :userId) " +
+            "ORDER BY m.id")
+    List<Mooring> findAllMooringMetadata(@Param("userId") Integer userId);
 }

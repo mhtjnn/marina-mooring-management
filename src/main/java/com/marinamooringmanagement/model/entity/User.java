@@ -95,5 +95,11 @@ public class User extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Country country;
+
+    public User(Integer id, String firstName, String lastName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
 }
 

@@ -94,8 +94,7 @@ public class Customer extends Base {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_image_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Image> imageList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
@@ -144,4 +143,31 @@ public class Customer extends Base {
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userSecondName).role(Role.builder().id(roleId).name(roleName).build()).build();
         this.imageList = imageList;
     }
+
+    public Customer(
+            Integer id, String firstName, String lastName
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+    public Customer(
+            Integer id, String firstName, String lastName, String customerId, Integer userId, String userFirstName, String userLastName
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.customerId = customerId;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+    }
+
+    public Customer(
+            Integer id, String firstName, String lastName, Integer userId, String userFirstName, String userLastName
+    ) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+    }
+
 }

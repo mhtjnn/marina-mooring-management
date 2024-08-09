@@ -483,18 +483,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Date filterFromDate = DateUtil.stringToDate(filterDateFrom);
             final Date filterToDate = DateUtil.stringToDate(filterDateTo);
 
-            List<WorkOrderResponseDto> workOrderResponseDtoList = new ArrayList<>();
             List<WorkOrderResponseDto> openWorkOrderResponseDtoList = new ArrayList<>();
 
             if (filterToDate.before(filterFromDate))
                 throw new RuntimeException(String.format("Invalid date range: %1$s cannot be earlier than %2$s.", filterDateTo, filterDateFrom));
-
-            LocalDate localGivenScheduleDate = filterFromDate.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-            LocalDate localGivenDueDate = filterToDate.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
 
             List<WorkOrder> workOrderList = workOrderRepository.findWorkOrderWithDateFilter(user.getId(), filterFromDate, filterToDate, AppConstants.BooleanStringConst.NO);
 
@@ -588,34 +580,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
 
-            Specification<WorkOrder> spec = new Specification<WorkOrder>() {
-                @Override
-                public Predicate toPredicate(Root<WorkOrder> workOrder, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    if (null != searchText && !searchText.isEmpty()) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.get("problem")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("customer").get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").get("mooringNumber")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("mooring").join("boatyard").get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(workOrder.join("technicianUser").get("lastName")), lowerCaseSearchText)
-                        ));
-                    }
-
-                    predicates.add(criteriaBuilder.equal(workOrder.join("workOrderStatus").get("status"), AppConstants.WorkOrderStatusConstants.COMPLETED));
-
-                    predicates.add(criteriaBuilder.equal(workOrder.join("workOrderPayStatus").get("status"), payStatus));
-
-                    predicates.add(authorizationUtil.fetchPredicateForWorkOrder(customerOwnerId, workOrder, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
-
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
@@ -623,7 +587,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             final List<WorkOrder> workOrderList = workOrderRepository.findAll(searchText, user.getId(), "YES");
 
-            final List<WorkOrderResponseDto> workOrderResponseDtoList = workOrderList
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
+
+            List<WorkOrder> paginatedWorkOrder;
+            if(start > workOrderList.size()) {
+                paginatedWorkOrder = new ArrayList<>();
+            } else {
+                paginatedWorkOrder = workOrderList.subList(start, end);
+            }
+
+            final List<WorkOrderResponseDto> workOrderResponseDtoList = paginatedWorkOrder
                     .stream()
                     .map(workOrder -> {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
@@ -658,8 +632,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     })
                     .collect(Collectors.toList());
 
-            response.setTotalSize(workOrderRepository.findAll(spec).size());
-            response.setCurrentSize(workOrderResponseDtoList.size());
+            response.setTotalSize(workOrderList.size());
+            response.setCurrentSize(paginatedWorkOrder.size());
             response.setMessage("All work orders fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(workOrderResponseDtoList);

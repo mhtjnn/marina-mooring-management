@@ -16,7 +16,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, m.id, m.mooringNumber, " +
+            "wo.time, wo.problem, m.id, m.mooringNumber, m.gpsCoordinates, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
             "wos.id, wos.status, wops.id, wops.status, " +
@@ -50,7 +50,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, m.id, m.mooringNumber, " +
+            "wo.time, wo.problem, m.id, m.mooringNumber, m.gpsCoordinates, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
             "wos.id, wos.status, wops.id, wops.status, " +
@@ -78,7 +78,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, m.id, m.mooringNumber, " +
+            "wo.time, wo.problem, m.id, m.mooringNumber, m.gpsCoordinates, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
             "wos.id, wos.status, wops.id, wops.status, " +
@@ -102,7 +102,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, m.id, m.mooringNumber, " +
+            "wo.time, wo.problem, m.id, m.mooringNumber, m.gpsCoordinates, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
             "wos.id, wos.status, wops.id, wops.status, " +

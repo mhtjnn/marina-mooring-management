@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,4 +37,22 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     Page<User> findAll(final Specification<User> spec, final Pageable pageable);
 
     Optional<User> findByPhoneNumber(String givenPhoneNumber);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName) " +
+            "FROM User u " +
+            "LEFT JOIN u.role r " +
+            "WHERE (r.id = :roleId) " +
+            "ORDER BY u.id")
+    List<User> findAllUsersByRoleMetadata(@Param("roleId") Integer roleId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName) " +
+            "FROM User u " +
+            "LEFT JOIN u.role r " +
+            "WHERE (r.id = :roleId) " +
+            "AND (:customerOwnerId IS NOT NULL AND u.customerOwnerId = :customerOwnerId) " +
+            "ORDER BY u.id")
+    List<User> findAllUsersByCustomerOwnerAndRoleMetadata(@Param("roleId") Integer roleId,
+                                                          @Param("customerOwnerId") Integer customerOwnerId);
 }

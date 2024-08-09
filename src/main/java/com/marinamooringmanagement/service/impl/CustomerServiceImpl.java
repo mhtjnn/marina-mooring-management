@@ -386,9 +386,7 @@ public class CustomerServiceImpl implements CustomerService {
                         .toList());
             }
 
-            List<Mooring> mooringList = new ArrayList<>();
-
-            mooringList = mooringRepository.fetchMooringsWithCustomerWithMooringImages(customer.getId(), user.getId());
+            List<Mooring> mooringList = mooringRepository.fetchMooringsWithCustomerWithoutMooringImages(customer.getId(), user.getId());
 
             if(mooringList.isEmpty()) response.setTotalSize(0);
             else response.setTotalSize(mooringList.size());
@@ -417,6 +415,9 @@ public class CustomerServiceImpl implements CustomerService {
                 mooringResponseDtoList = paginatedMoorings
                         .stream()
                         .map(mooring -> {
+
+                            List<Image> imageList = imageRepository.findImagesByMooringId(mooring.getId());
+
                             MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
                             if (null != mooring.getUser().getId())
                                 mooringResponseDto.setUserId(mooring.getUser().getId());
@@ -437,8 +438,8 @@ public class CustomerServiceImpl implements CustomerService {
                             if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
                             if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                             if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
-                            if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
-                                mooringResponseDto.setImageDtoList(mooring.getImageList()
+                            if(null != imageList && !imageList.isEmpty()) {
+                                mooringResponseDto.setImageDtoList(imageList
                                         .stream()
                                         .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
                                         .toList());
