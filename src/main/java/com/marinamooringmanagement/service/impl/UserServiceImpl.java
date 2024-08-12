@@ -129,59 +129,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
-        final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            Specification<User> spec = new Specification<User>() {
-                @Override
-                public Predicate toPredicate(Root<User> user, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+            final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
 
-                    List<Predicate> predicates = new ArrayList<>();
+            authorizationUtil.checkAuthorityForUser(customerOwnerId, loggedInUserRole);
 
-                    /*
-                     * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
-                     * else we are checking name, email and phone number(saved as string).
-                     */
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        Join<User, Role> roleJoin = user.join("role", JoinType.LEFT);
-                        if (ConversionUtils.canConvertToInt(searchText)) {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.equal(user.get("id"), searchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("firstName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(roleJoin.get("name")), lowerCaseSearchText)
-                            ));
-                        } else {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("firstName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(roleJoin.get("name")), lowerCaseSearchText)
-                            ));
-                        }
-                    }
-
-                    /*
-                     * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
-                     * it will add those users with CUSTOMER_OWNER role.
-                     * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
-                     * and FINANCE role having customerAdminId as given customerAdminId.
-                     *
-                     * If the logged-in user if of role as CUSTOMER_OWNER then
-                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
-                     * as logged-in user ID.
-                     */
-                    predicates.add(authorizationUtil.fetchPredicateForUser(customerOwnerId, user, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
+            List<User> users = userRepository.findAll(customerOwnerId, searchText);
 
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -189,13 +146,20 @@ public class UserServiceImpl implements UserService {
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
-            // Fetching the roles based on the specifications.
-            Page<User> filteredUsers = userRepository.findAll(spec, p);
-            response.setTotalSize(userRepository.findAll(spec).size());
+            int start = (int) p.getOffset();
+            int end = Math.min(start + p.getPageSize(), users.size());
+
+            List<User> paginatedUsers;
+            if(start > users.size()) {
+                paginatedUsers = new ArrayList<>();
+            } else {
+                paginatedUsers = users.subList(start, end);
+            }
+
+            response.setTotalSize(users.size());
 
             // Convert the filtered users to UserResponseDto
-            List<UserResponseDto> filteredUserResponseDtoList = filteredUsers
-                    .getContent()
+            List<UserResponseDto> filteredUserResponseDtoList = paginatedUsers
                     .stream()
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
@@ -211,8 +175,7 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredUserResponseDtoList);
             response.setMessage("Users fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            if (filteredUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(filteredUserResponseDtoList.size());
+            response.setCurrentSize(filteredUserResponseDtoList.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());

@@ -1,10 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.User;
-import lombok.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -31,10 +27,24 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     /**
      * Find all user entities matching the given specification.
      *
-     * @param spec the specification to filter users
      * @return a list of user entities matching the given specification
      */
-    Page<User> findAll(final Specification<User> spec, final Pageable pageable);
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName, u.email, u.phoneNumber, " +
+            "u.address, u.zipCode, r.id, r.name) " +
+            "FROM User u " +
+            "LEFT JOIN u.role r " +
+            "WHERE ((:customerOwnerId = -1 AND r.id = 2) " +
+            "OR ((r.id = 3 OR r.id = 4) AND u.customerOwnerId = :customerOwnerId)) " +
+            "AND (:searchText IS NOT NULL AND (" +
+            "LOWER(u.firstName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
+            "OR LOWER(u.lastName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
+            "OR LOWER(u.email) LIKE CONCAT('%', LOWER(:searchText), '%') " +
+            "OR LOWER(u.phoneNumber) LIKE CONCAT('%', LOWER(:searchText), '%') " +
+            "OR LOWER(r.name) LIKE CONCAT('%', LOWER(:searchText), '%'))) " +
+            "ORDER BY u.companyName")
+    List<User> findAll(@Param("customerOwnerId") Integer customerOwnerId,
+                       @Param("searchText") String searchText);
 
     Optional<User> findByPhoneNumber(String givenPhoneNumber);
 

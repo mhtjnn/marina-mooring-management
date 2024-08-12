@@ -254,7 +254,6 @@ public class AuthorizationUtil {
                 throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
                 throw new RuntimeException(String.format("User with the given id: %1$s is not of Customer Owner role.", customerOwnerId));
-
             return optionalUser.get();
         } else {
             final Integer id = loggedInUserUtil.getLoggedInUserID();

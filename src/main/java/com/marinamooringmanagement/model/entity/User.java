@@ -106,5 +106,18 @@ public class User extends Base {
         this.firstName = firstName;
         this.lastName = lastName;
     }
+
+    public User(Integer id, String firstName, String lastName, String email,
+                String phoneNumber, String address, String zipCode,
+                Integer roleId, String roleName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.zipCode = zipCode;
+        this.role = Role.builder().id(roleId).name(roleName).build();
+    }
 }
 
