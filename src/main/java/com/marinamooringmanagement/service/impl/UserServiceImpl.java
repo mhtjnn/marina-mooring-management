@@ -6,6 +6,7 @@ import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.RoleMapper;
 import com.marinamooringmanagement.mapper.metadata.CountryMapper;
 import com.marinamooringmanagement.mapper.metadata.StateMapper;
+import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.Country;
@@ -25,6 +26,7 @@ import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.*;
 import com.marinamooringmanagement.utils.ConversionUtils;
+import com.marinamooringmanagement.utils.ImageUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import io.jsonwebtoken.io.Decoders;
 import jakarta.persistence.criteria.*;
@@ -114,6 +116,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
@@ -402,9 +407,16 @@ public class UserServiceImpl implements UserService {
     public UserDto findByEmailAddress(String email) {
         UserDto user = null;
         if (null != email) {
-            User empEntity = userRepository.findByEmail(email).get();
-            if (null != empEntity) {
-                user = mapper.mapToUserDto(UserDto.builder().build(), empEntity);
+            User userEntity = userRepository.findByEmail(email).get();
+            if (null != userEntity) {
+                user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
+                if(null != userEntity.getImage()) {
+                    final Image image = userEntity.getImage();
+                    ImageDto imageDto = ImageDto.builder().build();
+                    if (null != image.getImageData()) imageDto.setImageData(image.getImageData());
+                    if (null != image.getId()) imageDto.setId(image.getId());
+                    user.setImageDto(imageDto);
+                }
             }
         }
         return user;
@@ -681,32 +693,19 @@ public class UserServiceImpl implements UserService {
                 user.setEmail(userRequestDto.getEmail());
             }
 
+            //Setting up the image
+            if(null != userRequestDto.getEncodedImage()) {
+                final Image image = Image.builder().build();
+                image.setImageData(ImageUtils.validateEncodedString(userRequestDto.getEncodedImage()));
+                image.setCreationDate(new Date(System.currentTimeMillis()));
+                image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+                final Image savedImage = imageRepository.save(image);
+                user.setImage(savedImage);
+            }
+
             // Setting the password if not null
             if (null != userRequestDto.getPassword() && null != userRequestDto.getConfirmPassword()) {
-
-//                byte[] keyBytesForPassword = Decoders.BASE64.decode(userRequestDto.getPassword());
-//                String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
-//                if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");
-//
-//                byte[] keyBytesForConfirmPassword = Decoders.BASE64.decode(userRequestDto.getConfirmPassword());
-//                String confirmPassword = new String(keyBytesForConfirmPassword, StandardCharsets.UTF_8);
-//                if (!isInPasswordFormat(confirmPassword)) throw new RuntimeException("Invalid Password Format");
-//
-//                userRequestDto.setPassword(password);
-//                userRequestDto.setConfirmPassword(confirmPassword);
-//
-//                if (userRequestDto.getPassword().isBlank()) throw new RuntimeException("Password is blank");
-//                if (userRequestDto.getConfirmPassword().isBlank())
-//                    throw new RuntimeException("Confirm Password is blank");
-//                if (!userRequestDto.getPassword().equals(userRequestDto.getConfirmPassword()))
-//                    throw new RuntimeException("New Password and confirm password are not equal");
-//
-//
-//                if (null != userId && passwordEncoder.matches(userRequestDto.getPassword(), user.getPassword())) {
-//                    throw new RuntimeException("New password is same as old password.");
-//                }
-//
-//                user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
                 updatePassword(
                         user,
                         NewPasswordRequest.builder()
@@ -777,7 +776,7 @@ public class UserServiceImpl implements UserService {
         return password.matches(passwordPattern);
     }
 
-    public User updatePassword(final User user, final NewPasswordRequest newPasswordRequest, final HttpServletRequest request) {
+    public void updatePassword(final User user, final NewPasswordRequest newPasswordRequest, final HttpServletRequest request) {
         try {
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, user.getRole().getName());
@@ -808,6 +807,5 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             throw e;
         }
-        return user;
     }
 }

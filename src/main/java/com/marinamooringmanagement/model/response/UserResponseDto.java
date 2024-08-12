@@ -72,4 +72,6 @@ public class UserResponseDto implements Serializable {
     private String zipCode;
 
     private String companyName;
+
+    private ImageResponseDto imageResponseDto;
 }

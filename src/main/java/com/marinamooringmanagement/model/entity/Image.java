@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,11 @@ public class Image extends Base{
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_image_id")
     private WorkOrder workOrder;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private User user;
 
     public Image(Integer id, String imageName, byte[] imageData) {
         this.id = id;

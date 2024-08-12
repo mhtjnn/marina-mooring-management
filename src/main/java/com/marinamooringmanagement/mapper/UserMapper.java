@@ -24,6 +24,7 @@ public interface UserMapper {
      * @param user the User entity to map.
      * @return the mapped UserDto.
      */
+    @Mapping(target = "imageDto", ignore = true)
     UserDto mapToUserDto(@MappingTarget UserDto dto, User user);
 
     /**
@@ -35,6 +36,7 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
+    @Mapping(target = "image", ignore = true)
     void mapToUser(@MappingTarget User entity, UserDto userDto);
 
     /**
@@ -50,6 +52,7 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "customerOwnerId", ignore = true)
     @Mapping(target = "companyName", ignore = true)
+    @Mapping(target = "image", ignore = true)
     void mapToUser(@MappingTarget User entity, UserRequestDto userRequestDto);
 
     /**
@@ -62,6 +65,7 @@ public interface UserMapper {
     @Mapping(target = "roleResponseDto", ignore = true)
     @Mapping(target = "stateResponseDto", ignore = true)
     @Mapping(target = "countryResponseDto", ignore = true)
+    @Mapping(target = "imageResponseDto", ignore = true)
     UserResponseDto mapToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
 
     @Mapping(target = "roleResponseDto", ignore = true)

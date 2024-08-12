@@ -77,6 +77,8 @@ public class UserDto extends BaseDto implements Serializable {
      * The zip code of the user's location.
      */
     private String zipCode;
+
+    private ImageDto imageDto;
 }
 
 

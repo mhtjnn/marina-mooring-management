@@ -81,6 +81,8 @@ public class UserRequestDto implements Serializable {
     private String zipCode;
 
     private String confirmPassword;
+
+    private String encodedImage;
 }
 
 

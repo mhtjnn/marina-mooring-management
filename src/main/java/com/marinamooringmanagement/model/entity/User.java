@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
@@ -95,6 +96,10 @@ public class User extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Country country;
+
+    @OneToOne(cascade = {}, mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Image image;
 
     public User(Integer id, String firstName, String lastName) {
         this.id = id;

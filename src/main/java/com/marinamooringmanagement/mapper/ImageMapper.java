@@ -12,10 +12,22 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ImageMapper {
 
+    @Mapping(target = "mooringDto", ignore = true)
+    @Mapping(target = "customerDto", ignore = true)
+    @Mapping(target = "workOrderDto", ignore = true)
+    @Mapping(target = "userDto", ignore = true)
     ImageDto toDto(@MappingTarget ImageDto imageDto, Image image);
 
+    @Mapping(target = "mooring", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "workOrder", ignore = true)
+    @Mapping(target = "user", ignore = true)
     void toEntity(@MappingTarget Image image, ImageDto imageDto);
 
+    @Mapping(target = "mooring", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "workOrder", ignore = true)
+    @Mapping(target = "user", ignore = true)
     @Mapping(target = "imageData", ignore = true)
     Image toEntity(@MappingTarget Image image, ImageRequestDto imageDto);
 
