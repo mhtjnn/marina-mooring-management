@@ -571,7 +571,7 @@ public class UserServiceImpl implements UserService {
                 savedRole = optionalRole.get();
                 user.setRole(savedRole);
                 if (optionalRole.get().getName().equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                    if (null == userRequestDto.getCompanyName())
+                    if (userId == null && null == userRequestDto.getCompanyName())
                         throw new RuntimeException("Company name cannot be null while saving a new user with CUSTOMER OWNER role");
                     user.setCompanyName(userRequestDto.getCompanyName());
                 }
