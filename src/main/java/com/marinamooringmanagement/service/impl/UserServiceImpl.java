@@ -530,79 +530,33 @@ public class UserServiceImpl implements UserService {
                 }
             };
 
+            final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the label as %1$s", AppConstants.Role.TECHNICIAN)));
+            List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, searchText);
+
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
+            int start = (int) p.getOffset();
+            int end = Math.min(start + p.getPageSize(), usersWithTechnicianRoleForGivenCustomerOwner.size());
+
             // Fetching the roles based on the specifications.
-            Page<User> filteredUsers = userRepository.findAll(spec, p);
-            response.setTotalSize(userRepository.findAll(spec).size());
+            List<User> filteredUsers = usersWithTechnicianRoleForGivenCustomerOwner.subList(start, end);
+            response.setTotalSize(usersWithTechnicianRoleForGivenCustomerOwner.size());
 
             // Convert the filtered users to UserResponseDto
             List<TechnicianUserResponseDto> filteredTechnicianUserResponseDtoList = filteredUsers
-                    .getContent()
                     .stream()
                     .map(user -> {
                         TechnicianUserResponseDto technicianUserResponseDto = TechnicianUserResponseDto.builder().build();
                         mapper.mapToTechnicianUserResponseDto(technicianUserResponseDto, user);
-                        RoleResponseDto roleResponseDto = RoleResponseDto.builder()
-                                .id(user.getRole().getId())
-                                .name(user.getRole().getName())
-                                .description(user.getRole().getDescription())
-                                .build();
-                        technicianUserResponseDto.setRoleResponseDto(roleResponseDto);
 
-                        StateResponseDto stateResponseDto = null;
-                        if (null != user.getState()) {
-                            stateResponseDto = StateResponseDto.builder()
-                                    .id(user.getState().getId())
-                                    .label(user.getState().getLabel())
-                                    .name(user.getState().getName())
-                                    .build();
-                            technicianUserResponseDto.setStateResponseDto(stateResponseDto);
-                        }
-
-                        if (null != user.getCountry()) {
-                            CountryResponseDto countryResponseDto = CountryResponseDto.builder()
-                                    .id(user.getCountry().getId())
-                                    .label(user.getCountry().getLabel())
-                                    .name(user.getCountry().getName())
-                                    .build();
-                            technicianUserResponseDto.setCountryResponseDto(countryResponseDto);
-                        }
-
-                        List<WorkOrder> openWorkOrderList = workOrderRepository.findAll()
-                                .stream()
-                                .filter(
-                                        workOrder -> null != workOrder.getWorkOrderStatus()
-                                                && null != workOrder.getWorkOrderStatus().getStatus()
-                                                && null != workOrder.getTechnicianUser()
-                                                && null != workOrder.getTechnicianUser().getId()
-                                                && workOrder.getTechnicianUser().getId().equals(user.getId())
-                                                && !StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
-
-                                )
-                                .toList();
-
-                        List<WorkOrder> closeWorkOrderList = workOrderRepository.findAll()
-                                .stream()
-                                .filter(
-                                        workOrder -> null != workOrder.getWorkOrderStatus()
-                                                && null != workOrder.getWorkOrderStatus().getStatus()
-                                                && null != workOrder.getTechnicianUser()
-                                                && null != workOrder.getTechnicianUser().getId()
-                                                && workOrder.getTechnicianUser().getId().equals(user.getId())
-                                                && StringUtils.equals(workOrder.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.COMPLETED)
-                                )
-                                .toList();
-
-                        if (openWorkOrderList.isEmpty()) technicianUserResponseDto.setOpenWorkOrder(0);
-                        else technicianUserResponseDto.setOpenWorkOrder(openWorkOrderList.size());
-
-                        if (closeWorkOrderList.isEmpty()) technicianUserResponseDto.setCloseWorkOrder(0);
-                        else technicianUserResponseDto.setCloseWorkOrder(closeWorkOrderList.size());
+                        Integer openWorkOrderCount = workOrderRepository.countWorkOrderForGivenTechnician(technicianUserResponseDto.getId(), customerOwnerId, AppConstants.BooleanStringConst.NO);
+                        Integer closeWorkOrderCount = workOrderRepository.countWorkOrderForGivenTechnician(technicianUserResponseDto.getId(), customerOwnerId, AppConstants.BooleanStringConst.YES);
+                        technicianUserResponseDto.setOpenWorkOrder(openWorkOrderCount);
+                        technicianUserResponseDto.setCloseWorkOrder(closeWorkOrderCount);
 
                         return technicianUserResponseDto;
                     }).toList();
@@ -610,8 +564,7 @@ public class UserServiceImpl implements UserService {
             response.setContent(filteredTechnicianUserResponseDtoList);
             response.setMessage("Users of technician role fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            if (filteredTechnicianUserResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(filteredTechnicianUserResponseDtoList.size());
+            response.setCurrentSize(filteredUsers.size());
 
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());

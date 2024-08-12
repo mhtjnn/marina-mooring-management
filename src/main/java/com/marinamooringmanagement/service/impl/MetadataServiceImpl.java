@@ -680,7 +680,7 @@ public class MetadataServiceImpl implements MetadataService {
 
             final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the name: %1$s", AppConstants.Role.TECHNICIAN)));
 
-            List<UserMetadataResponse> UserMetadataResponseList = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), user.getId())
+            List<UserMetadataResponse> UserMetadataResponseList = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), user.getId(), "")
                     .stream()
                     .map(user1 -> {
                         UserMetadataResponse userMetadataResponse = UserMetadataResponse.builder().build();

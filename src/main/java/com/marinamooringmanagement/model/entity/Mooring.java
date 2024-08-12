@@ -162,18 +162,21 @@ public class Mooring extends Base {
 
     public Mooring(Integer id, String mooringNumber, String harborOrArea, String gpsCoordinates,
                    Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
-                   Date inspectionDate, String boatName, String boatSize, Integer boatTypeId, String boatTypeName,
+                   Date inspectionDate, String boatName, String boatSize,
+                   Integer boatTypeId, String boatTypeName,
                    String boatWeight,
-                   Integer sizeOfWeight, Integer typeOfWeightId, String typeOfWeightName, Integer eyeConditionId,
-                   String eyeConditionName, Integer topChainConditionId, String topChainConditionName,
-                   Integer bottomChainConditionId, String bottomChainConditionName, Integer shackleSwivelConditionId,
-                   String shackleSwivelConditionName, String pendantCondition, Integer depthAtMeanHighWater,
-                   Integer mooringStatusId, String mooringStatusName, Integer customerId, String customerFirstName,
-                   String customerLastName,
-                   String customerNumber, Integer userId, String userFirstName, String userLastName,
-                   Integer boatyardId,
-                   String boatyardName, Integer serviceAreaId,
-                   String serviceAreaName)
+                   Integer sizeOfWeight,
+                   Integer typeOfWeightId, String typeOfWeightName,
+                   Integer eyeConditionId, String eyeConditionName,
+                   Integer topChainConditionId, String topChainConditionName,
+                   Integer bottomChainConditionId, String bottomChainConditionName,
+                   Integer shackleSwivelConditionId, String shackleSwivelConditionName,
+                   String pendantCondition, Integer depthAtMeanHighWater,
+                   Integer mooringStatusId, String mooringStatusName,
+                   Integer customerId, String customerFirstName, String customerLastName, String customerNumber,
+                   Integer userId, String userFirstName, String userLastName,
+                   Integer boatyardId, String boatyardName,
+                   Integer serviceAreaId, String serviceAreaName)
     {
         this.id = id;
         this.mooringNumber = mooringNumber;

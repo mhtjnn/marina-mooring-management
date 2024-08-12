@@ -50,9 +50,16 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "u.id, u.firstName, u.lastName) " +
             "FROM User u " +
             "LEFT JOIN u.role r " +
-            "WHERE (r.id = :roleId) " +
+            "WHERE r.id = :roleId " +
             "AND (:customerOwnerId IS NOT NULL AND u.customerOwnerId = :customerOwnerId) " +
+            "OR LOWER(CAST(u.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "ORDER BY u.id")
     List<User> findAllUsersByCustomerOwnerAndRoleMetadata(@Param("roleId") Integer roleId,
-                                                          @Param("customerOwnerId") Integer customerOwnerId);
+                                                          @Param("customerOwnerId") Integer customerOwnerId,
+                                                          @Param("searchText") String searchText);
 }
