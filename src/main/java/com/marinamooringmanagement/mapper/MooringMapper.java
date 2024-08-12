@@ -5,6 +5,7 @@ import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.request.MooringRequestDto;
 import com.marinamooringmanagement.model.response.MooringDueServiceResponseDto;
 import com.marinamooringmanagement.model.response.MooringResponseDto;
+import com.marinamooringmanagement.model.response.MooringWithGPSCoordinateResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -88,4 +89,7 @@ public interface MooringMapper {
     @Mapping(target = "mooringDueServiceStatusDto", ignore = true)
     @Mapping(target = "mooringServiceDate", ignore = true)
     MooringDueServiceResponseDto mapToMooringDueServiceResponseDto(@MappingTarget MooringDueServiceResponseDto dto, Mooring mooring);
+
+    @Mapping(target = "statusId", ignore = true)
+    MooringWithGPSCoordinateResponse mapToMooringWithGPSCoordinateResponse(@MappingTarget MooringWithGPSCoordinateResponse mooringWithGPSCoordinateResponse, Mooring mooring);
 }

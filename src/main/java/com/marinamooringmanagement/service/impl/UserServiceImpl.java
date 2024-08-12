@@ -128,10 +128,10 @@ public class UserServiceImpl implements UserService {
      * @return a BasicRestResponse containing the results of the user search.
      */
     @Override
-    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
+    public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
-
+        if(searchText == null) searchText = "";
         try {
             final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();

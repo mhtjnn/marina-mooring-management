@@ -17,7 +17,7 @@ public class MooringWithGPSCoordinateResponse implements Serializable {
 
     private Integer id;
 
-    private String mooringId;
+    private String mooringNumber;
 
     private String gpsCoordinates;
 

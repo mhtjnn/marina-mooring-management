@@ -152,32 +152,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            Specification<Mooring> spec = new Specification<Mooring>() {
-                @Override
-                public Predicate toPredicate(Root<Mooring> mooring, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        Join<Mooring, Customer> customerJoin = mooring.join("customer", JoinType.LEFT);
-                        Join<Mooring, ServiceArea> serviceAreaJoin = mooring.join("serviceArea", JoinType.LEFT);
-
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("mooringNumber")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(mooring.get("gpsCoordinates")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("firstName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("lastName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceAreaJoin.get("serviceAreaName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.concat(criteriaBuilder.lower(customerJoin.get("firstName")),
-                                        criteriaBuilder.concat(" ", criteriaBuilder.lower(customerJoin.get("lastName")))), lowerCaseSearchText)
-                        ));
-                    }
-
-                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, mooring, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
 
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -186,10 +160,17 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             final List<Mooring> mooringList = mooringRepository.findAll(searchText, user.getId());
 
+            List<MooringWithGPSCoordinateResponse> allMooringsWithGPSCoordinate = new ArrayList<>();
+
             final List<MooringResponseDto> mooringResponseDtoList = mooringList
                     .stream()
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+
+                        MooringWithGPSCoordinateResponse mooringWithGPSCoordinateResponse = mooringMapper.mapToMooringWithGPSCoordinateResponse(MooringWithGPSCoordinateResponse.builder().build(), mooring);
+                        if(null != mooring.getMooringStatus()) mooringWithGPSCoordinateResponse.setStatusId(mooring.getMooringStatus().getId());
+                        allMooringsWithGPSCoordinate.add(mooringWithGPSCoordinateResponse);
+
                         if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
                         if (null != mooring.getCustomer()) mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
@@ -209,18 +190,25 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     })
                     .collect(Collectors.toList());
 
-            mooringsWithGPSCoordinatesResponse.setMooringResponseDtoList(mooringResponseDtoList);
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), mooringResponseDtoList.size());
 
-            List<MooringWithGPSCoordinateResponse> mooringWithSpec = fetchMooringWithGpsCoordinates();
+            List<MooringResponseDto> paginatedMooringResponseDtoList;
 
-            mooringsWithGPSCoordinatesResponse.setMooringWithGPSCoordinateResponseList(mooringWithSpec);
+            if(start > mooringList.size()) {
+                paginatedMooringResponseDtoList = new ArrayList<>();
+            } else {
+                paginatedMooringResponseDtoList = mooringResponseDtoList.subList(start, end);
+            }
+
+            mooringsWithGPSCoordinatesResponse.setMooringResponseDtoList(paginatedMooringResponseDtoList);
+            mooringsWithGPSCoordinatesResponse.setMooringWithGPSCoordinateResponseList(allMooringsWithGPSCoordinate);
 
             response.setMessage("All moorings fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(mooringsWithGPSCoordinatesResponse);
-            response.setTotalSize(mooringWithSpec.size());
-            if(mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(mooringResponseDtoList.size());
+            response.setTotalSize(mooringResponseDtoList.size());
+            response.setCurrentSize(paginatedMooringResponseDtoList.size());
         } catch (Exception e) {
             log.error("Error occurred while fetching all the moorings in the database", e);
             throw e;
