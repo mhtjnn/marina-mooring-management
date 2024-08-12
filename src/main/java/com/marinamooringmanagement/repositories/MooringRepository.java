@@ -80,16 +80,6 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
     List<Mooring> fetchMooringsWithCustomerWithoutMooringImages(@Param("customerId") Integer customerId,
                                             @Param("userId") Integer userId);
 
-    @Query("SELECT m " +
-            "FROM Mooring m " +
-            "JOIN m.customer c " +
-            "JOIN m.user u " +
-            "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
-            "AND (:customerId IS NOT NULL AND c.id = :customerId) " +
-            "ORDER BY m.id")
-    List<Mooring> fetchMooringsWithCustomerWithMooringImages(@Param("customerId") Integer customerId,
-                                                                @Param("userId") Integer userId);
-
     @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
             "m.id, m.mooringNumber) " +
             "FROM Mooring m " +

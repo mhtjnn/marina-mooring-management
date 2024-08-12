@@ -572,7 +572,10 @@ public class MetadataServiceImpl implements MetadataService {
             customerMetadataResponseList.add(customerMetadataResponse);
 
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(customerMetadataResponseList);
+
+            if(customer.getId() == null) response.setContent(null);
+            else response.setContent(customerMetadataResponseList);
+
             response.setMessage(String.format("Customer associated with mooring of id: %1$s is fetched successfully", mooringId));
 
         } catch (Exception e) {
@@ -602,7 +605,10 @@ public class MetadataServiceImpl implements MetadataService {
             boatyardMetadataResponseList.add(boatyardMetadataResponse);
 
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(boatyardMetadataResponseList);
+
+            if(boatyard.getId() == null) response.setContent(null);
+            else response.setContent(boatyardMetadataResponseList);
+
             response.setMessage(String.format("Boatyard associated with mooring of id: %1$s is fetched successfully", mooringId));
 
         } catch (Exception e) {

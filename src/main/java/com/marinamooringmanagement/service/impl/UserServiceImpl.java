@@ -241,7 +241,9 @@ public class UserServiceImpl implements UserService {
              * If no user exists with the given ID then this condition will throw an error
              * else this condition will be passed.
              */
-            if (optionalUser.isEmpty()) throw new ResourceNotFoundException("No user found with the given ID");
+            if (optionalUser.isEmpty()) {
+                throw new ResourceNotFoundException("No user found with the given ID");
+            }
 
             // Getting the user which is requested to be deleted.
             User userToBeDeleted = optionalUser.get();
@@ -456,54 +458,6 @@ public class UserServiceImpl implements UserService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
 
         try {
-            Specification<User> spec = new Specification<User>() {
-                @Override
-                public Predicate toPredicate(Root<User> user, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    /*
-                     * If the search text is Integer then we are checking if it matches any ID or email(since email consists of numerical values)
-                     * else we are checking name, email and phone number(saved as string).
-                     */
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-
-                        if (ConversionUtils.canConvertToInt(searchText)) {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.equal(user.get("id"), searchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("firstName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
-                            ));
-                        } else {
-                            predicates.add(criteriaBuilder.or(
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("firstName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("lastName")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("email")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.get("phoneNumber")), lowerCaseSearchText),
-                                    criteriaBuilder.like(criteriaBuilder.lower(user.join("role").get("name")), lowerCaseSearchText)
-                            ));
-                        }
-                    }
-
-                    /*
-                     * If the logged-in user is of ADMINISTRATOR role then if the customerAdminId is not provided then
-                     * it will add those users with CUSTOMER_OWNER role.
-                     * and if customerAdminId is provided then it will add those users which are of TECHNICIAN
-                     * and FINANCE role having customerAdminId as given customerAdminId.
-                     *
-                     * If the logged-in user if of role as CUSTOMER_OWNER then
-                     * it will add those users which are of TECHNICIAN and FINANCE role having customerAdminId
-                     * as logged-in user ID.
-                     */
-                    predicates.add(authorizationUtil.fetchPredicateForTechnician(customerOwnerId, user, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
 
             final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the label as %1$s", AppConstants.Role.TECHNICIAN)));
             List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, searchText);
@@ -595,7 +549,7 @@ public class UserServiceImpl implements UserService {
     public User performSave(final UserRequestDto userRequestDto, final User user, final Integer userId, final HttpServletRequest request) {
         User savedUser = null;
         try {
-            Optional<Role> optionalRole = Optional.empty();
+            Optional<Role> optionalRole;
 
             //Getting the role of the logged-in role
             final String role = loggedInUserUtil.getLoggedInUserRole();
@@ -628,7 +582,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            final User authorziedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
+            final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
@@ -651,7 +605,7 @@ public class UserServiceImpl implements UserService {
             //Updating email of the user
             if (null != userRequestDto.getEmail() && !StringUtils.equals(user.getEmail(), userRequestDto.getEmail())) {
                 Optional<User> optionalUser = userRepository.findByEmail(userRequestDto.getEmail());
-                if (optionalUser.isPresent())
+                if (optionalUser.isPresent() && userId != null && !optionalUser.get().getId().equals(userId))
                     throw new RuntimeException(String.format("Given email as: %1$s is already present for some other user", userRequestDto.getEmail()));
                 user.setEmail(userRequestDto.getEmail());
             }
