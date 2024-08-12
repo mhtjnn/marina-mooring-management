@@ -170,7 +170,7 @@ public class CustomerServiceImpl implements CustomerService {
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
-            final List<Customer> customerList = customerRepository.findAll(searchText, user.getId());
+            final List<Customer> customerList = customerRepository.findAll((null == searchText) ? "" : searchText, user.getId());
             response.setTotalSize(customerList.size());
 
             int start = (int) pageable.getOffset();

@@ -128,45 +128,19 @@ public class BoatyardServiceImpl implements BoatyardService {
      * @return a BasicRestResponse containing the results of the boatyard search.
      */
     @Override
-    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request) {
+    public BasicRestResponse fetchBoatyards(final BaseSearchRequest baseSearchRequest, String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            Specification<Boatyard> spec = new Specification<Boatyard>() {
-                @Override
-                public Predicate toPredicate(Root<Boatyard> boatyard, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-
-                        Join<Boatyard, State> stateJoin = boatyard.join("state", JoinType.LEFT);
-                        Join<Boatyard, Country> countryJoin = boatyard.join("country", JoinType.LEFT);
-
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.toString(boatyard.get("id")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(boatyard.get("boatyardId")), lowerCaseSearchText)
-                        ));
-                    }
-
-                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, boatyard, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
+            List<Boatyard> boatyardList = boatyardRepository.findAll((null == searchText) ? "" : searchText, user.getId());
 
             final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            Page<Boatyard> boatyardList = boatyardRepository.findAll(spec, p);
-
             final List<BoatyardResponseDto> boatyardDtoList = boatyardList
-                    .getContent()
                     .stream()
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
@@ -175,7 +149,7 @@ public class BoatyardServiceImpl implements BoatyardService {
                             boatyardResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), boatyard.getState()));
                         if (null != boatyard.getCountry())
                             boatyardResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), boatyard.getCountry()));
-                        boatyardResponseDto.setMooringInventoried((null == boatyard.getMooringList()) ? 0 : boatyard.getMooringList().size());
+                        boatyardResponseDto.setMooringInventoried(boatyardRepository.countAllMooringForGivenBoatyard(user.getId(), boatyard.getId()));
                         if (null != boatyard.getUser()) boatyardResponseDto.setUserId(boatyard.getUser().getId());
                         return boatyardResponseDto;
                     })
@@ -186,7 +160,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setContent(boatyardDtoList);
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(boatyardRepository.findAll(spec).size());
+            response.setTotalSize(boatyardList.size());
             if (!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
             else response.setCurrentSize(0);
         } catch (Exception e) {
@@ -335,9 +309,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             if (boatyard.getMooringList().isEmpty()) response.setTotalSize(0);
             else response.setTotalSize(boatyard.getMooringList().size());
 
-            List<Mooring> filteredMoorings = boatyard.getMooringList().stream()
-                    .filter(mooring -> mooring.getUser().getId().equals(boatyard.getUser().getId()))
-                    .collect(Collectors.toList());
+            List<Mooring> filteredMoorings = boatyardRepository.findAllMooringForGivenBoatyard(boatyard.getUser().getId(), boatyard.getId());
 
             final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);

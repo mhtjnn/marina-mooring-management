@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Boatyard;
+import com.marinamooringmanagement.model.entity.Mooring;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,55 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
             "ORDER BY b.id")
     List<Boatyard> findAllBoatyardMetadata(@Param("userId") Integer userId);
 
-    Page<Boatyard> findAll(final Specification<Boatyard> spec, final Pageable pageable);
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
+            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatName, " +
+            "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
+            "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardName, " +
+            "s.id, s.serviceAreaName) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatType bt " +
+            "LEFT JOIN m.typeOfWeight tw " +
+            "LEFT JOIN m.eyeCondition ec " +
+            "LEFT JOIN m.topChainCondition tc " +
+            "LEFT JOIN m.bottomChainCondition bc " +
+            "LEFT JOIN m.shackleSwivelCondition sc " +
+            "LEFT JOIN m.mooringStatus ms " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.boatyard byd " +
+            "LEFT JOIN m.serviceArea s " +
+            "JOIN m.user u " +
+            "JOIN u.role r " +
+            "where (:userId IS NOT NULL AND u.id = :userId AND boatyardId IS NOT NULL AND :boatyardId = byd.id) " +
+            "ORDER BY m.id")
+    List<Mooring> findAllMooringForGivenBoatyard(@Param("userId") Integer userId,
+                                                 @Param("boatyardId") Integer boatyardId);
+
+    @Query("SELECT COUNT(m) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatyard byd " +
+            "LEFT JOIN m.user u " +
+            "where (:userId IS NOT NULL AND u.id = :userId AND boatyardId IS NOT NULL AND :boatyardId = byd.id)")
+    Integer countAllMooringForGivenBoatyard(@Param("userId") Integer userId,
+                                                 @Param("boatyardId") Integer boatyardId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
+            "b.id, b.boatyardName, b.boatyardId, b.address, b.gpsCoordinates, " +
+            "u.id, u.firstName, u.lastName) " +
+            "FROM Boatyard b " +
+            "LEFT JOIN b.user u " +
+            "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
+            "AND (:searchText IS NOT NULL AND (" +
+            "LOWER(CAST(b.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(b.address) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')))) " +
+            "ORDER BY b.id")
+    List<Boatyard> findAll(@Param("searchText") String searchText,
+                           @Param("userId") Integer userId);
     List<Boatyard> findAll(final Specification<Boatyard> spec);
 
     Optional<Boatyard> findByBoatyardId(final String boatyardId);

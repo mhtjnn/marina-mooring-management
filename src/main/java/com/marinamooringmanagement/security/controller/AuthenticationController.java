@@ -38,6 +38,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -115,6 +116,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
             }
     )
     @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @Transactional
     public ResponseEntity<?> createAuthenticationToken(
             @Parameter(description = "Username and Password", schema = @Schema(implementation = AuthenticationRequest.class)) final @Valid @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
@@ -353,6 +355,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
      * @param username the username for which to generate the authentication response
      * @return a ResponseEntity containing the authentication response
      */
+    @Transactional
     private ResponseEntity<?> generateAuthenticationResponse(final String username, final AuthenticationResponse response) {
         final UserDto emp = userService.findByEmailAddress(username);
         final String token = jwtUtil.generateToken(emp, normalTokenStr);

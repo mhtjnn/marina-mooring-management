@@ -97,7 +97,7 @@ public class User extends Base {
     @JoinColumn(name = "country_id")
     private Country country;
 
-    @OneToOne(cascade = {}, mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     @JsonManagedReference
     private Image image;
 

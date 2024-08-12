@@ -131,14 +131,18 @@ public class UserServiceImpl implements UserService {
     public BasicRestResponse fetchUsers(final BaseSearchRequest baseSearchRequest, String searchText, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
-        if(searchText == null) searchText = "";
         try {
-            final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
+            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
 
             authorizationUtil.checkAuthorityForUser(customerOwnerId, loggedInUserRole);
 
-            List<User> users = userRepository.findAll(customerOwnerId, searchText);
+            if(StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
+                customerOwnerId = loggedInUserId;
+            }
+
+            List<User> users = userRepository.findAll(customerOwnerId, (null == searchText) ? "" : searchText);
 
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -369,6 +373,7 @@ public class UserServiceImpl implements UserService {
      * @return A {@code UserDto} representing the user if found, otherwise {@code null}.
      */
     @Override
+    @Transactional
     public UserDto findByEmailAddress(String email) {
         UserDto user = null;
         if (null != email) {
@@ -616,9 +621,9 @@ public class UserServiceImpl implements UserService {
                 image.setImageData(ImageUtils.validateEncodedString(userRequestDto.getEncodedImage()));
                 image.setCreationDate(new Date(System.currentTimeMillis()));
                 image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                image.setUser(user);
 
-                final Image savedImage = imageRepository.save(image);
-                user.setImage(savedImage);
+                user.setImage(image);
             }
 
             // Setting the password if not null

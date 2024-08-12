@@ -158,7 +158,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
-            final List<Mooring> mooringList = mooringRepository.findAll(searchText, user.getId());
+            final List<Mooring> mooringList = mooringRepository.findAll((null == searchText) ? "" : searchText, user.getId());
 
             List<MooringWithGPSCoordinateResponse> allMooringsWithGPSCoordinate = new ArrayList<>();
 

@@ -686,7 +686,7 @@ public class MetadataServiceImpl implements MetadataService {
 
             final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the name: %1$s", AppConstants.Role.TECHNICIAN)));
 
-            List<UserMetadataResponse> UserMetadataResponseList = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), user.getId(), "")
+            List<UserMetadataResponse> userMetadataResponseList = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), user.getId(), "")
                     .stream()
                     .map(user1 -> {
                         UserMetadataResponse userMetadataResponse = UserMetadataResponse.builder().build();
@@ -699,7 +699,7 @@ public class MetadataServiceImpl implements MetadataService {
 
             response.setMessage("Technicians fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
-            response.setContent(UserMetadataResponseList);
+            response.setContent(userMetadataResponseList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
@@ -717,7 +717,7 @@ public class MetadataServiceImpl implements MetadataService {
 
             content = workOrderStatusRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
 
-            List<WorkOrderStatusDto> workOrderStatusDtoList = new ArrayList<>();
+            List<WorkOrderStatusDto> workOrderStatusDtoList;
             workOrderStatusDtoList = content
                     .getContent()
                     .stream()

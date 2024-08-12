@@ -79,7 +79,7 @@ public class FormServiceImpl implements FormService {
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
             );
 
-            final List<Form> formList = formRepository.findAllWithoutFormData(searchText, user.getId());
+            final List<Form> formList = formRepository.findAllWithoutFormData((null == searchText) ? "" : searchText, user.getId());
 
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), formList.size());

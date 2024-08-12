@@ -141,7 +141,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
-            final List<WorkOrder> workOrderList = workOrderRepository.findAll(searchText, user.getId(), showCompletedWorkOrders);
+            final List<WorkOrder> workOrderList = workOrderRepository.findAll((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
 
             int start = (int) pageable.getOffset();
             int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
@@ -578,14 +578,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(payStatus).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with status name as %1$s", payStatus)));
 
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
-            final List<WorkOrder> workOrderList = workOrderRepository.findAll(searchText, user.getId(), "YES");
+            final List<WorkOrder> workOrderList = workOrderRepository.findAllWorkOrderWithPayStatus((null == searchText) ? "" : searchText, user.getId(), AppConstants.BooleanStringConst.YES, workOrderPayStatus.getId());
 
             int start = (int) pageable.getOffset();
             int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
@@ -763,7 +765,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
 
-            final List<WorkOrderInvoice> workOrderInvoiceList = workOrderInvoiceRepository.findAll(searchText, user.getId());
+            final List<WorkOrderInvoice> workOrderInvoiceList = workOrderInvoiceRepository.findAll((null == searchText) ? "" : searchText, user.getId());
 
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),

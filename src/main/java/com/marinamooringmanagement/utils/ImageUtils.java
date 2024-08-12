@@ -9,25 +9,6 @@ import java.util.List;
 
 public class ImageUtils {
 
-    public static List<byte[]> uploadImages(final List<String> encodedImageList) {
-        try {
-            List<byte[]> byteArrayList = encodedImageList
-                    .stream()
-                    .map(encodedImage -> {
-                        try {
-                            return validateEncodedString(encodedImage);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .toList();
-
-            return byteArrayList;
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
     public static byte[] validateEncodedString(final String encodedString) throws IOException {
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
