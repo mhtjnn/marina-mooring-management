@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Entity class representing a User.
@@ -99,6 +96,7 @@ public class User extends Base {
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private Image image;
 
     public User(Integer id, String firstName, String lastName) {
@@ -118,6 +116,70 @@ public class User extends Base {
         this.address = address;
         this.zipCode = zipCode;
         this.role = Role.builder().id(roleId).name(roleName).build();
+    }
+    public User(Integer id, String firstName, String lastName, String email,
+                String password, String phoneNumber, String address, String zipCode,
+                Integer roleId, String roleName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.zipCode = zipCode;
+        this.role = Role.builder().id(roleId).name(roleName).build();
+    }
+
+    public User(Integer id, String firstName, String lastName, String email,
+                String password,
+                Integer roleId, String roleName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = Role.builder().id(roleId).name(roleName).build();
+    }
+
+    public User(Integer id, String firstName, String lastName, String email, String password,
+                String phoneNumber, Integer customerOwnerId, String companyName, String address,
+                String zipCode, Integer roleId, String roleName,
+                Integer stateId, String stateName,
+                Integer countryId, String countryName,
+                Integer imageId, byte[] imageData) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.zipCode = zipCode;
+        this.password = password;
+        this.companyName = companyName;
+        this.customerOwnerId = customerOwnerId;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.role = Role.builder().id(roleId).name(roleName).build();
+        this.image = Image.builder().id(imageId).imageData(imageData).build();
+    }
+
+    public User(Integer id, String firstName, String lastName, String email, String password,
+                Integer roleId, String roleName,
+                Integer imageId, byte[] imageData) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = Role.builder().id(roleId).name(roleName).build();
+        this.image = Image.builder().id(imageId).imageData(imageData).build();
+    }
+
+    public User(Integer id,
+                Integer imageId, byte[] imageData) {
+        this.id = id;
+        this.image = Image.builder().id(imageId).imageData(imageData).build();
     }
 }
 

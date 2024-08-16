@@ -77,12 +77,12 @@ public class ImageServiceImpl implements ImageService {
                 mooring.setImageList(imageList);
                 mooringRepository.save(mooring);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.USER)) {
-                final User user = userRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
-                Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
-                user.setImage(image);
-                final User savedUser = userRepository.save(user);
-                final UserDto userDto = userMapper.mapToUserDto(UserDto.builder().build(), savedUser);
-                final ImageDto imageDto = imageMapper.toDto(ImageDto.builder().build(), savedUser.getImage());
+                final User user = userRepository.findByIdWithImage(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
+                final Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
+                image.setUser(user);
+                imageRepository.save(image);
+                final UserDto userDto = userMapper.mapToUserDto(UserDto.builder().build(), user);
+                final ImageDto imageDto = imageMapper.toDto(ImageDto.builder().build(), user.getImage());
                 userDto.setImageDto(imageDto);
                 response.setContent(userDto);
                 response.setMessage(String.format("Image uploaded successfully for the user with id: %1$s", entityId));
@@ -105,7 +105,6 @@ public class ImageServiceImpl implements ImageService {
             final ImageRequestDto imageRequestDto = imageRequestDtoList.get(0);
             if(null == imageRequestDto.getImageData()) throw new RuntimeException("No image data provided");
             image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
-            imageRepository.save(image);
         } catch (Exception e) {
             throw e;
         }

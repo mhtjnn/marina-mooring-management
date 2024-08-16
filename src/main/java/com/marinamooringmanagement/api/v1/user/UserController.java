@@ -284,7 +284,7 @@ public class UserController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.FINANCE + " or " + Authority.TECHNICIAN)
     public BasicRestResponse uploadImage(
             @Parameter(description = "User ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("userId") Integer userId,
             @Parameter(description = "Image Details", schema = @Schema(implementation = ImageRequestDto.class)) final @RequestBody ImageRequestDto imageRequestDto,

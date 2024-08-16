@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,7 +23,24 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
      * @param email the email address of the user to search for
      * @return an optional containing the user entity corresponding to the given email address, or empty if not found
      */
-    Optional<User> findByEmail(final String email);
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName, u.email, u.password, " +
+            "r.id, r.name) " +
+            "FROM User u " +
+            "LEFT JOIN u.role r " +
+            "WHERE (:email IS NOT NULL AND u.email = :email)"
+    )
+    Optional<User> findByEmail(@Param("email") String email);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName, u.email, u.password, " +
+            "r.id, r.name, i.id, i.imageData) " +
+            "FROM User u " +
+            "LEFT JOIN u.role r " +
+            "LEFT JOIN u.image i " +
+            "WHERE (:email IS NOT NULL AND u.email = :email)"
+    )
+    Optional<User> findByEmailWithImage(@Param("email") String email);
 
     /**
      * Find all user entities matching the given specification.
@@ -45,6 +63,15 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "ORDER BY u.companyName")
     List<User> findAll(@Param("customerOwnerId") Integer customerOwnerId,
                        @Param("searchText") String searchText);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, i.id, i.imageData) " +
+            "FROM User u " +
+            "LEFT JOIN u.image i " +
+            "LEFT JOIN u.role r " +
+            "WHERE (:userId IS NOT NULL AND u.id IS NOT NULL AND u.id = :userId)"
+    )
+    Optional<User> findByIdWithImage(@Param("userId") Integer userId);
 
     Optional<User> findByPhoneNumber(String givenPhoneNumber);
 

@@ -377,7 +377,7 @@ public class UserServiceImpl implements UserService {
     public UserDto findByEmailAddress(String email) {
         UserDto user = null;
         if (null != email) {
-            User userEntity = userRepository.findByEmail(email).get();
+            User userEntity = userRepository.findByEmailWithImage(email).get();
             if (null != userEntity) {
                 user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
                 if(null != userEntity.getImage()) {
