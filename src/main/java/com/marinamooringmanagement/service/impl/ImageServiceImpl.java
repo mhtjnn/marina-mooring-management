@@ -4,6 +4,8 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.ImageMapper;
 import com.marinamooringmanagement.mapper.UserMapper;
+import com.marinamooringmanagement.model.dto.ImageDto;
+import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
@@ -79,10 +81,10 @@ public class ImageServiceImpl implements ImageService {
                 Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
                 user.setImage(image);
                 final User savedUser = userRepository.save(user);
-                final UserResponseDto userResponseDto = userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedUser);
-                final ImageResponseDto imageResponseDto = imageMapper.toResponseDto(ImageResponseDto.builder().build(), savedUser.getImage());
-                userResponseDto.setImageResponseDto(imageResponseDto);
-                response.setContent(userResponseDto);
+                final UserDto userDto = userMapper.mapToUserDto(UserDto.builder().build(), savedUser);
+                final ImageDto imageDto = imageMapper.toDto(ImageDto.builder().build(), savedUser.getImage());
+                userDto.setImageDto(imageDto);
+                response.setContent(userDto);
                 response.setMessage(String.format("Image uploaded successfully for the user with id: %1$s", entityId));
                 response.setStatus(HttpStatus.OK.value());
             } else {

@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;
@@ -361,6 +362,7 @@ public class AuthenticationController extends GlobalExceptionHandler {
         final String token = jwtUtil.generateToken(emp, normalTokenStr);
         final String refreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
         tokenService.saveToken(emp, token, refreshToken);
+
         response.setToken(token);
         response.setRefreshToken(refreshToken);
         response.setUser(emp);

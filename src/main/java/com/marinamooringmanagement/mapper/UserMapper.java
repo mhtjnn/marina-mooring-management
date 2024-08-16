@@ -25,6 +25,7 @@ public interface UserMapper {
      * @return the mapped UserDto.
      */
     @Mapping(target = "imageDto", ignore = true)
+    @Mapping(target = "password", ignore = true)
     UserDto mapToUserDto(@MappingTarget UserDto dto, User user);
 
     /**
