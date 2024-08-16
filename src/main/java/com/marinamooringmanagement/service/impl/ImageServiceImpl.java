@@ -3,18 +3,15 @@ package com.marinamooringmanagement.service.impl;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.ImageMapper;
-import com.marinamooringmanagement.model.entity.Customer;
-import com.marinamooringmanagement.model.entity.Image;
-import com.marinamooringmanagement.model.entity.Mooring;
-import com.marinamooringmanagement.model.entity.WorkOrder;
+import com.marinamooringmanagement.mapper.UserMapper;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.ImageResponseDto;
-import com.marinamooringmanagement.repositories.CustomerRepository;
-import com.marinamooringmanagement.repositories.ImageRepository;
-import com.marinamooringmanagement.repositories.MooringRepository;
-import com.marinamooringmanagement.repositories.WorkOrderRepository;
+import com.marinamooringmanagement.model.response.UserResponseDto;
+import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.ImageService;
 import com.marinamooringmanagement.utils.ImageUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,6 +42,12 @@ public class ImageServiceImpl implements ImageService {
     private MooringRepository mooringRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
     private ImageMapper imageMapper;
 
     @Autowired
@@ -58,19 +61,30 @@ public class ImageServiceImpl implements ImageService {
         try {
             if(StringUtils.equals(entity, AppConstants.EntityConstants.CUSTOMER)) {
                 final Customer customer = customerRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", entityId)));
-                List<Image> imageList = uploadImageToEntity(multipleImageRequestDto, (null != customer.getImageList()) ? customer.getImageList() : new ArrayList<>());
+                List<Image> imageList = uploadImagesToEntity(multipleImageRequestDto, (null != customer.getImageList()) ? customer.getImageList() : new ArrayList<>());
                 customer.setImageList(imageList);
                 customerRepository.save(customer);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.WORK_ORDER)) {
                 final WorkOrder workOrder = workOrderRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", entityId)));
-                List<Image> imageList = uploadImageToEntity(multipleImageRequestDto, (null != workOrder.getImageList()) ? workOrder.getImageList() : new ArrayList<>());
+                List<Image> imageList = uploadImagesToEntity(multipleImageRequestDto, (null != workOrder.getImageList()) ? workOrder.getImageList() : new ArrayList<>());
                 workOrder.setImageList(imageList);
                 workOrderRepository.save(workOrder);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.MOORING)) {
                 final Mooring mooring = mooringRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", entityId)));
-                List<Image> imageList = uploadImageToEntity(multipleImageRequestDto, (null != mooring.getImageList()) ? mooring.getImageList() : new ArrayList<>());
+                List<Image> imageList = uploadImagesToEntity(multipleImageRequestDto, (null != mooring.getImageList()) ? mooring.getImageList() : new ArrayList<>());
                 mooring.setImageList(imageList);
                 mooringRepository.save(mooring);
+            } else if(StringUtils.equals(entity, AppConstants.EntityConstants.USER)) {
+                final User user = userRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
+                Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
+                user.setImage(image);
+                final User savedUser = userRepository.save(user);
+                final UserResponseDto userResponseDto = userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedUser);
+                final ImageResponseDto imageResponseDto = imageMapper.toResponseDto(ImageResponseDto.builder().build(), savedUser.getImage());
+                userResponseDto.setImageResponseDto(imageResponseDto);
+                response.setContent(userResponseDto);
+                response.setMessage(String.format("Image uploaded successfully for the user with id: %1$s", entityId));
+                response.setStatus(HttpStatus.OK.value());
             } else {
                 throw new RuntimeException(String.format("Given entity: %1$s is not authorized to have images"));
             }
@@ -78,8 +92,23 @@ public class ImageServiceImpl implements ImageService {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-
         return response;
+    }
+
+    private Image uploadImageToEntity(MultipleImageRequestDto multipleImageRequestDto, Image image) throws IOException {
+        try {
+            List<ImageRequestDto> imageRequestDtoList = multipleImageRequestDto.getImageRequestDtoList();
+            if(imageRequestDtoList.isEmpty()) throw new RuntimeException("No image to upload");
+            if(imageRequestDtoList.size() > 1) throw new RuntimeException("Multiple images to upload");
+            final ImageRequestDto imageRequestDto = imageRequestDtoList.get(0);
+            if(null == imageRequestDto.getImageData()) throw new RuntimeException("No image data provided");
+            image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
+            imageRepository.save(image);
+        } catch (Exception e) {
+            throw e;
+        }
+
+        return image;
     }
 
     @Override
@@ -88,7 +117,7 @@ public class ImageServiceImpl implements ImageService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             List<ImageResponseDto> imageResponseDtoList = new ArrayList<>();
-            List<Image> imageList = new ArrayList<>();
+            List<Image> imageList;
             if(StringUtils.equals(entity, AppConstants.EntityConstants.CUSTOMER)) {
                 final Customer customer = customerRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", entityId)));
                 if(null != customer.getImageList()) {
@@ -180,7 +209,7 @@ public class ImageServiceImpl implements ImageService {
         return response;
     }
 
-    private List<Image> uploadImageToEntity(final MultipleImageRequestDto multipleImageRequestDto, List<Image> imageList) throws IOException {
+    private List<Image> uploadImagesToEntity(final MultipleImageRequestDto multipleImageRequestDto, List<Image> imageList) throws IOException {
         if(null != multipleImageRequestDto.getImageRequestDtoList() && !multipleImageRequestDto.getImageRequestDtoList().isEmpty()) {
             Integer imageNumber = 1;
             for(ImageRequestDto imageRequestDto: multipleImageRequestDto.getImageRequestDtoList()) {

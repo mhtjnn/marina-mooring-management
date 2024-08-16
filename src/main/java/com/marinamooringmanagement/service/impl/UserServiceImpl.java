@@ -622,7 +622,6 @@ public class UserServiceImpl implements UserService {
                 image.setCreationDate(new Date(System.currentTimeMillis()));
                 image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                 image.setUser(user);
-
                 user.setImage(image);
             }
 

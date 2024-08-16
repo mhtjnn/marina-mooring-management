@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.security.Key;
@@ -21,6 +22,7 @@ import java.util.*;
  * Utility class for JWT token handling.
  */
 @Service
+@Transactional
 public class JwtUtil extends GlobalExceptionHandler {
 
     @Autowired

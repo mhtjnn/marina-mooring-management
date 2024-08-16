@@ -143,6 +143,8 @@ public class AppConstants {
         public static final String WORK_ORDER = "WorkOrder";
 
         public static final String MOORING = "Mooring";
+
+        public static final String USER = "User";
     }
 
     public static class ServiceAreaTypeConstants {
