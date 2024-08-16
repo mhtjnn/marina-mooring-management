@@ -71,4 +71,29 @@ public class ServiceArea extends Base{
         this.serviceAreaName = serviceAreaName;
     }
 
+    public ServiceArea(Integer id, String serviceAreaName, String address,
+                       Integer stateId, String stateName,
+                       Integer countryId, String countryName,
+                       String zipCode, String gpsCoordinates,
+                       Integer serviceAreaTypeId, String serviceAreaTypeName,
+                       Integer userId, String userFirstName, String userLastName, String notes) {
+        this.id = id;
+        this.serviceAreaName = serviceAreaName;
+        this.address = address;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.zipCode = zipCode;
+        this.gpsCoordinates = gpsCoordinates;
+        this.serviceAreaType = ServiceAreaType.builder().id(serviceAreaTypeId).type(serviceAreaTypeName).build();
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+        this.notes = notes;
+    }
+
+    public ServiceArea(Integer id, String serviceAreaName,
+                       Integer userId, String userFirstName, String userLastName) {
+        this.id = id;
+        this.serviceAreaName = serviceAreaName;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+    }
+
 }

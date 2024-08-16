@@ -593,6 +593,9 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setLastModifiedDate(new Date(System.currentTimeMillis()));
             customerMapper.mapToCustomer(customer, customerRequestDto);
 
+            if (null == id) customer.setCreationDate(new Date());
+            savedCustomer = customerRepository.save(customer);
+
             if(null != customerRequestDto.getImageRequestDtoList() && !customerRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
                 if(null != customer.getImageList() && !customer.getImageList().isEmpty()) imageList = customer.getImageList();
@@ -606,11 +609,11 @@ public class CustomerServiceImpl implements CustomerService {
                     image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                    image.setCustomer(savedCustomer);
                     imageList.add(image);
-
                     imageNumber++;
                 }
-                customer.setImageList(imageList);
+                imageRepository.saveAll(imageList);
             }
 
             if (null != customerRequestDto.getStateId()) {
@@ -633,9 +636,6 @@ public class CustomerServiceImpl implements CustomerService {
                     throw new RuntimeException(String.format("No customer type found with the given id: %1$s", customerRequestDto.getCustomerTypeId()));
                 customer.setCustomerType(optionalCustomerType.get());
             }
-
-            if (null == id) customer.setCreationDate(new Date());
-            savedCustomer = customerRepository.save(customer);
 
             List<Mooring> mooringList = (null == customer.getMooringList()) ? new ArrayList<>() : customer.getMooringList();
 

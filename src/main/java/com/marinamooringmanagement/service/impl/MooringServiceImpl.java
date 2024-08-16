@@ -357,10 +357,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             final Mooring initialMooring = copyMooring(mooring);
 
             Optional<Mooring> optionalMooring = Optional.empty();
-            Mooring savedMooring = null;
-            mooringMapper.mapToMooring(mooring, mooringRequestDto);
-            mooring.setUser(user);
-
             if(null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
                 optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                 if(optionalMooring.isPresent()) {
@@ -373,6 +369,10 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             } else {
                 throw new RuntimeException(String.format("Mooring number cannot be blank"));
             }
+
+            mooringMapper.mapToMooring(mooring, mooringRequestDto);
+            mooring.setUser(user);
+            Mooring savedMooring = mooringRepository.save(mooring);
 
             if(null != mooringRequestDto.getImageRequestDtoList() && !mooringRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
@@ -387,10 +387,11 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                    image.setMooring(savedMooring);
                     imageList.add(image);
                     imageNumber++;
                 }
-                mooring.setImageList(imageList);
+                imageRepository.saveAll(imageList);
             }
 
             if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
@@ -398,7 +399,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 LocalDate installBottomChainLocalDate = DateUtil.dateToLocalDate(installBottomChainDate);
                 LocalDate currentDate = LocalDate.now();
                 if(installBottomChainLocalDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", installBottomChainLocalDate, currentDate));
-                mooring.setInstallBottomChainDate(installBottomChainDate);
+                savedMooring.setInstallBottomChainDate(installBottomChainDate);
             }
 
             if(null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
@@ -408,7 +409,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                         .toLocalDate();
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", localDate, currentDate));
-                mooring.setInstallTopChainDate(installTopChainDate);
+                savedMooring.setInstallTopChainDate(installTopChainDate);
             }
 
             if(null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
@@ -418,7 +419,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                         .toLocalDate();
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
-                mooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
+                savedMooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
             }
 
             if(null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
@@ -428,12 +429,12 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                         .toLocalDate();
                 LocalDate currentDate = LocalDate.now();
                 if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Inspection Date of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
-                mooring.setInspectionDate(inspectionDate);
+                savedMooring.setInspectionDate(inspectionDate);
             }
 
             if (null != mooringRequestDto.getGpsCoordinates() && !mooringRequestDto.getGpsCoordinates().isEmpty()) {
                 final String gpsCoordinates = GPSUtil.getGpsCoordinates(mooringRequestDto.getGpsCoordinates());
-                mooring.setGpsCoordinates(gpsCoordinates);
+                savedMooring.setGpsCoordinates(gpsCoordinates);
             }
 
             Optional<Customer> optionalCustomer;
@@ -441,7 +442,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
                 if (optionalCustomer.isEmpty())
                     throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
-                mooring.setCustomer(optionalCustomer.get());
+                savedMooring.setCustomer(optionalCustomer.get());
                 final Customer customer = optionalCustomer.get();
                 if (!customer.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
                     throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
@@ -460,7 +461,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 final Boatyard boatyard = optionalBoatyard.get();
                 if (!boatyard.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
                     throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other customer owner", mooringRequestDto.getBoatyardId()));
-                mooring.setBoatyard(optionalBoatyard.get());
+                savedMooring.setBoatyard(optionalBoatyard.get());
             } else {
                 optionalBoatyard = Optional.empty();
             }
@@ -473,7 +474,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 final ServiceArea serviceArea = optionalServiceArea.get();
                 if (!serviceArea.getUser().getId().equals((customerOwnerId == -1) ? loggedInUserUtil.getLoggedInUserID() : customerOwnerId))
                     throw new RuntimeException(String.format("Service area with the id: %1$s is associated with some other customer owner", mooringRequestDto.getServiceAreaId()));
-                mooring.setServiceArea(serviceArea);
+                savedMooring.setServiceArea(serviceArea);
             } else {
                 optionalServiceArea = Optional.empty();
             }
@@ -482,52 +483,52 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             if (optionalMooringStatus.isEmpty())
                 throw new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId()));
 
-            mooring.setMooringStatus(optionalMooringStatus.get());
+            savedMooring.setMooringStatus(optionalMooringStatus.get());
 
             if (null != mooringRequestDto.getBoatTypeId()) {
                 Optional<BoatType> optionalBoatType = boatTypeRepository.findById(mooringRequestDto.getBoatTypeId());
                 if (optionalBoatType.isEmpty())
                     throw new ResourceNotFoundException(String.format("No boat type found with the given id: %1$s", mooringRequestDto.getBoatTypeId()));
-                mooring.setBoatType(optionalBoatType.get());
+                savedMooring.setBoatType(optionalBoatType.get());
             }
 
             if (null != mooringRequestDto.getTypeOfWeightId()) {
                 Optional<TypeOfWeight> optionalTypeOfWeight = typeOfWeightRepository.findById(mooringRequestDto.getTypeOfWeightId());
                 if (optionalTypeOfWeight.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Type of weight found with the given id: %1$s", mooringRequestDto.getTypeOfWeightId()));
-                mooring.setTypeOfWeight(optionalTypeOfWeight.get());
+                savedMooring.setTypeOfWeight(optionalTypeOfWeight.get());
             }
 
             if (null != mooringRequestDto.getEyeConditionId()) {
                 Optional<EyeCondition> optionalEyeCondition = eyeConditionRepository.findById(mooringRequestDto.getEyeConditionId());
                 if (optionalEyeCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Eye condition found with the given id: %1$s", mooringRequestDto.getEyeConditionId()));
-                mooring.setEyeCondition(optionalEyeCondition.get());
+                savedMooring.setEyeCondition(optionalEyeCondition.get());
             }
 
             if (null != mooringRequestDto.getTopChainConditionId()) {
                 Optional<TopChainCondition> optionalTopChainCondition = topChainConditionRepository.findById(mooringRequestDto.getTopChainConditionId());
                 if (optionalTopChainCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Top chain condition found with the given id: %1$s", mooringRequestDto.getTopChainConditionId()));
-                mooring.setTopChainCondition(optionalTopChainCondition.get());
+                savedMooring.setTopChainCondition(optionalTopChainCondition.get());
             }
 
             if (null != mooringRequestDto.getBottomChainConditionId()) {
                 Optional<BottomChainCondition> optionalBottomChainCondition = bottomChainConditionRepository.findById(mooringRequestDto.getBottomChainConditionId());
                 if (optionalBottomChainCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Bottom chain condition found with the given id: %1$s", mooringRequestDto.getBottomChainConditionId()));
-                mooring.setBottomChainCondition(optionalBottomChainCondition.get());
+                savedMooring.setBottomChainCondition(optionalBottomChainCondition.get());
             }
             if (null != mooringRequestDto.getShackleSwivelConditionId()) {
                 Optional<ShackleSwivelCondition> optionalShackleSwivelCondition = shackleSwivelConditionRepository.findById(mooringRequestDto.getShackleSwivelConditionId());
                 if (optionalShackleSwivelCondition.isEmpty())
                     throw new ResourceNotFoundException(String.format("No Shackle swivel condition found with the given id: %1$s", mooringRequestDto.getShackleSwivelConditionId()));
-                mooring.setShackleSwivelCondition(optionalShackleSwivelCondition.get());
+                savedMooring.setShackleSwivelCondition(optionalShackleSwivelCondition.get());
             }
 
             mooring.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-            savedMooring = mooringRepository.save(mooring);
+            savedMooring = mooringRepository.save(savedMooring);
             Mooring finalSavedMooring = savedMooring;
 
             optionalBoatyard.ifPresent(boatyard -> {

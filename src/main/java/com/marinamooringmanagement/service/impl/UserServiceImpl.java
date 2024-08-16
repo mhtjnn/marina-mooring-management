@@ -465,7 +465,7 @@ public class UserServiceImpl implements UserService {
         try {
 
             final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the label as %1$s", AppConstants.Role.TECHNICIAN)));
-            List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, searchText);
+            List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, (searchText==null) ? "" : searchText);
 
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),

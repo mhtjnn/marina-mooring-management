@@ -291,23 +291,20 @@ public class BoatyardServiceImpl implements BoatyardService {
 
         try {
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(id);
+            Optional<Boatyard> optionalBoatyard = boatyardRepository.findBoatyardWithUserMetadata(user.getId(), id);
             if (optionalBoatyard.isEmpty())
                 throw new ResourceNotFoundException(String.format("No boatyard found with the given id: %1$s", id));
 
             final Boatyard boatyard = optionalBoatyard.get();
 
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
             if (null != boatyard.getUser()) {
                 if (!boatyard.getUser().getId().equals(user.getId()))
                     throw new RuntimeException(String.format("Boatyard with the id: %1$s is associated with some other user", id));
             } else {
                 throw new RuntimeException(String.format("Boatyard with the id: %1$s is not associated with any User", id));
             }
-
-            if (boatyard.getMooringList().isEmpty()) response.setTotalSize(0);
-            else response.setTotalSize(boatyard.getMooringList().size());
 
             List<Mooring> filteredMoorings = boatyardRepository.findAllMooringForGivenBoatyard(boatyard.getUser().getId(), boatyard.getId());
 
@@ -356,10 +353,8 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setMessage(String.format("Moorings fetched with the boatyard id as %1$s", id));
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setContent(mooringResponseDtoList);
-
-            if (mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(mooringResponseDtoList.size());
-
+            response.setTotalSize(filteredMoorings.size());
+            response.setCurrentSize(mooringResponseDtoList.size());
             response.setStatus(HttpStatus.OK.value());
 
         } catch (Exception e) {

@@ -134,37 +134,24 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-
-            Specification<ServiceArea> spec = new Specification<ServiceArea>() {
-                @Override
-                public Predicate toPredicate(Root<ServiceArea> serviceArea, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-                    List<Predicate> predicates = new ArrayList<>();
-
-                    if (null != searchText) {
-                        String lowerCaseSearchText = "%" + searchText.toLowerCase() + "%";
-                        Join<ServiceArea, State> stateJoin = serviceArea.join("state", JoinType.LEFT);
-                        Join<ServiceArea, Country> countryJoin = serviceArea.join("country", JoinType.LEFT);
-                        predicates.add(criteriaBuilder.or(
-                                criteriaBuilder.like(criteriaBuilder.lower(serviceArea.get("serviceAreaName")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.toString(serviceArea.get("id")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(stateJoin.get("name")), lowerCaseSearchText),
-                                criteriaBuilder.like(criteriaBuilder.lower(countryJoin.get("name")), lowerCaseSearchText)
-                        ));
-                    }
-
-                    predicates.add(authorizationUtil.fetchPredicate(customerOwnerId, serviceArea, criteriaBuilder));
-
-                    return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-                }
-            };
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            Page<ServiceArea> serviceAreaList = serviceAreaRepository.findAll(spec, p);
+            List<ServiceArea> serviceAreaList = serviceAreaRepository.findAll(user.getId(), (searchText==null) ? "" : searchText);
 
-            final List<ServiceAreaResponseDto> serviceAreaResponseDtoList = serviceAreaList
-                    .getContent()
+            int start = (int) p.getOffset();
+            int end = Math.min(start + p.getPageSize(), serviceAreaList.size());
+
+            List<ServiceArea> paginatedServiceArea;
+            if(start > serviceAreaList.size()) {
+                paginatedServiceArea = new ArrayList<>();
+            } else {
+                paginatedServiceArea = serviceAreaList.subList(start, end);
+            }
+
+            final List<ServiceAreaResponseDto> serviceAreaResponseDtoList = paginatedServiceArea
                     .stream()
                     .map(serviceArea -> {
                         ServiceAreaResponseDto serviceAreaResponseDto = ServiceAreaResponseDto.builder().build();
@@ -175,7 +162,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                             serviceAreaResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), serviceArea.getState()));
                         if (null != serviceArea.getCountry())
                             serviceAreaResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), serviceArea.getCountry()));
-                        serviceAreaResponseDto.setMooringInventoried((null == serviceArea.getMooringList()) ? 0 : serviceArea.getMooringList().size());
+                        serviceAreaResponseDto.setMooringInventoried(serviceAreaRepository.countAllMooringForGivenServiceArea(user.getId(), serviceArea.getId()));
                         if (null != serviceArea.getUser()) serviceAreaResponseDto.setUserId(serviceArea.getUser().getId());
                         return serviceAreaResponseDto;
                     })
@@ -186,9 +173,8 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
             response.setContent(serviceAreaResponseDtoList);
             response.setMessage("All service areas fetched successfully");
             response.setStatus(HttpStatus.OK.value());
-            response.setTotalSize(serviceAreaRepository.findAll(spec).size());
-            if (!serviceAreaResponseDtoList.isEmpty()) response.setCurrentSize(serviceAreaResponseDtoList.size());
-            else response.setCurrentSize(0);
+            response.setTotalSize(serviceAreaList.size());
+            response.setCurrentSize(serviceAreaResponseDtoList.size());
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching ServiceArea: %s", e.getMessage()), e);
             throw e;
@@ -202,14 +188,14 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
 
         try {
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            Optional<ServiceArea> optionalServiceArea = serviceAreaRepository.findById(id);
+            Optional<ServiceArea> optionalServiceArea = serviceAreaRepository.findServiceAreaWithUserMetadata(user.getId(), id);
             if (optionalServiceArea.isEmpty())
                 throw new ResourceNotFoundException(String.format("No service area found with the given id: %1$s", id));
 
             final ServiceArea serviceArea = optionalServiceArea.get();
 
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
             if (null != serviceArea.getUser()) {
                 if (!serviceArea.getUser().getId().equals(user.getId()))
                     throw new RuntimeException(String.format("ServiceArea with the id: %1$s is associated with some other user", id));
@@ -217,12 +203,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                 throw new RuntimeException(String.format("ServiceArea with the id: %1$s is not associated with any User", id));
             }
 
-            if (serviceArea.getMooringList().isEmpty()) response.setTotalSize(0);
-            else response.setTotalSize(serviceArea.getMooringList().size());
-
-            List<Mooring> filteredMoorings = serviceArea.getMooringList().stream()
-                    .filter(mooring -> mooring.getUser().getId().equals(serviceArea.getUser().getId()))
-                    .collect(Collectors.toList());
+            List<Mooring> filteredMoorings = serviceAreaRepository.findAllMooringForGivenServiceArea(user.getId(), serviceArea.getId());
 
             final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
@@ -241,7 +222,7 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                     .map(mooring -> {
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
                         if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
+                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerName(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName());
                         if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
                         if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
@@ -250,15 +231,14 @@ public class ServiceAreaServiceImpl implements ServiceAreaService {
                         if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                         return mooringResponseDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info(String.format("Moorings fetched with the serviceArea id as %1$s", id));
             response.setMessage(String.format("Moorings fetched with the serviceArea id as %1$s", id));
             response.setTime(new Timestamp(System.currentTimeMillis()));
             response.setContent(mooringResponseDtoList);
-
-            if (mooringResponseDtoList.isEmpty()) response.setCurrentSize(0);
-            else response.setCurrentSize(mooringResponseDtoList.size());
+            response.setTotalSize(filteredMoorings.size());
+            response.setCurrentSize(mooringResponseDtoList.size());
 
             response.setStatus(HttpStatus.OK.value());
 

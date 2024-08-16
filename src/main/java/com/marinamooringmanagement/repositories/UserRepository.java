@@ -89,7 +89,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "LEFT JOIN u.role r " +
             "WHERE r.id = :roleId " +
             "AND (:customerOwnerId IS NOT NULL AND u.customerOwnerId IS NOT NULL AND u.customerOwnerId = :customerOwnerId) " +
-            "AND (LOWER(CAST(u.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "AND (:searchText IS NOT NULL AND LOWER(CAST(u.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchText, '%')) " +

@@ -58,7 +58,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
             "LEFT JOIN m.serviceArea s " +
             "JOIN m.user u " +
             "JOIN u.role r " +
-            "where (:userId IS NOT NULL AND u.id = :userId AND boatyardId IS NOT NULL AND :boatyardId = byd.id) " +
+            "where (:userId IS NOT NULL AND u.id = :userId AND :boatyardId IS NOT NULL AND :boatyardId = byd.id) " +
             "ORDER BY m.id")
     List<Mooring> findAllMooringForGivenBoatyard(@Param("userId") Integer userId,
                                                  @Param("boatyardId") Integer boatyardId);
@@ -67,7 +67,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
             "FROM Mooring m " +
             "LEFT JOIN m.boatyard byd " +
             "LEFT JOIN m.user u " +
-            "where (:userId IS NOT NULL AND u.id = :userId AND boatyardId IS NOT NULL AND :boatyardId = byd.id)")
+            "where (:userId IS NOT NULL AND u.id = :userId AND :boatyardId IS NOT NULL AND :boatyardId = byd.id)")
     Integer countAllMooringForGivenBoatyard(@Param("userId") Integer userId,
                                                  @Param("boatyardId") Integer boatyardId);
 
