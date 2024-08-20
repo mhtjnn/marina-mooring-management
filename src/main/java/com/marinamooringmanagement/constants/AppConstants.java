@@ -174,4 +174,10 @@ public class AppConstants {
         public static final String CUSTOMER_OWNER_ID = "CUSTOMER_OWNER_ID";
 
     }
+
+    public static class CountryConstants {
+        public static final String AUSTRALIA = "Australia";
+
+        public static final String USA = "United States of America";
+    }
 }

@@ -404,7 +404,7 @@ public class MarinaMooringManagementApplication implements CommandLineRunner {
                     Country.builder().name("Ukraine").label("Ukraine").build(),
                     Country.builder().name("United Arab Emirates").label("United Arab Emirates").build(),
                     Country.builder().name("United Kingdom").label("United Kingdom").build(),
-                    Country.builder().name("United States").label("United States of America").build(),
+                    Country.builder().name("United States of America").label("United States of America").build(),
                     Country.builder().name("Uruguay").label("Uruguay").build(),
                     Country.builder().name("Uzbekistan").label("Uzbekistan").build(),
                     Country.builder().name("Vanuatu").label("Vanuatu").build(),
