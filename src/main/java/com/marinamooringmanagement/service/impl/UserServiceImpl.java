@@ -4,11 +4,14 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.RoleMapper;
+import com.marinamooringmanagement.mapper.config.ConfigMapper;
 import com.marinamooringmanagement.mapper.metadata.CountryMapper;
 import com.marinamooringmanagement.mapper.metadata.StateMapper;
 import com.marinamooringmanagement.model.dto.ImageDto;
 import com.marinamooringmanagement.model.dto.UserDto;
+import com.marinamooringmanagement.model.dto.config.ConfigDto;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.config.Config;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -115,6 +118,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private ConfigMapper configMapper;
 
     /**
      * Fetches a list of users based on the provided search request parameters, customer admin ID, and search text.
@@ -373,7 +379,7 @@ public class UserServiceImpl implements UserService {
     public UserDto findByEmailAddress(String email) {
         UserDto user = null;
         if (null != email) {
-            User userEntity = userRepository.findByEmailWithImage(email).get();
+            User userEntity = userRepository.findByEmailWithImage(email).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", email)));
             if (null != userEntity) {
                 user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
                 if(null != userEntity.getImage()) {
@@ -382,6 +388,11 @@ public class UserServiceImpl implements UserService {
                     if (null != image.getImageData()) imageDto.setImageData(image.getImageData());
                     if (null != image.getId()) imageDto.setId(image.getId());
                     user.setImageDto(imageDto);
+                }
+
+                if(null != userEntity.getConfig()) {
+                    final ConfigDto configDto = configMapper.toDto(ConfigDto.builder().build(), userEntity.getConfig());
+                    user.setConfigDto(configDto);
                 }
             }
         }
@@ -583,7 +594,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
+            authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
@@ -667,6 +678,17 @@ public class UserServiceImpl implements UserService {
                 final Optional<Country> optionalCountry = countryRepository.findById(userRequestDto.getCountryId());
                 if (optionalCountry.isPresent()) {
                     user.setCountry(optionalCountry.get());
+                    if(null == userId) {
+                        Config config = Config.builder().build();
+                        if(StringUtils.equals(optionalCountry.get().getName(), AppConstants.CountryConstants.AUSTRALIA)) {
+                            config.setIsMarina(true);
+                            config.setIsBoatyard(false);
+                        } else {
+                            config.setIsBoatyard(true);
+                            config.setIsMarina(false);
+                        }
+                        user.setConfig(config);
+                    }
                 } else {
                     throw new RuntimeException("No country found with the given country name");
                 }

@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.service;
 
+import com.marinamooringmanagement.model.entity.WorkOrder;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
@@ -18,6 +19,8 @@ public interface EmailService {
      * @return SendEmailResponse        The response indicating if the email was sent successfully or not.
      */
     SendEmailResponse sendForgetPasswordEmail(final HttpServletRequest request, final ForgetPasswordEmailRequest forgetPasswordEmailRequest);
+
+    SendEmailResponse sendNotificationForWorkOrder(final WorkOrder workOrder);
 
     /**
      * Sends an email using the provided SendEmailRequest object.

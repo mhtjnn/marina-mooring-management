@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.dto.config.ConfigDto;
 import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 import com.marinamooringmanagement.model.dto.metadata.StateDto;
 import lombok.AllArgsConstructor;
@@ -79,6 +80,8 @@ public class UserDto extends BaseDto implements Serializable {
     private String zipCode;
 
     private ImageDto imageDto;
+
+    private ConfigDto configDto;
 }
 
 

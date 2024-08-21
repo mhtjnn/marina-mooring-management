@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.response;
 
+import com.marinamooringmanagement.model.response.config.ConfigResponseDto;
 import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
 import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import lombok.*;
@@ -74,4 +75,6 @@ public class UserResponseDto implements Serializable {
     private String companyName;
 
     private ImageResponseDto imageResponseDto;
+
+    private ConfigResponseDto configResponseDto;
 }

@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.WorkOrder;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -261,4 +260,19 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
                                              @Param("showCompletedWorkOrders") String showCompletedWorkOrders);
 
     Optional<WorkOrder> findByWorkOrderNumber(final String workOrderNumber);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
+            "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.time, wo.problem, " +
+            "m.mooringNumber, " +
+            "c.firstName, c.lastName, c.customerId, " +
+            "wos.status, " +
+            "tu.firstName, tu.lastName, tu.email)" +
+            "FROM WorkOrder wo " +
+            "LEFT JOIN wo.technicianUser tu " +
+            "LEFT JOIN wo.mooring m " +
+            "LEFT JOIN wo.workOrderStatus wos " +
+            "LEFT JOIN m.customer c " +
+            "WHERE (wo.dueDate = :after30DaysDate) "
+    )
+    List<WorkOrder> findAllWorkOrderWithOpenWorkOrderWithDateNotification(@Param("after30DaysDate") Date after30DaysDate);
 }

@@ -363,8 +363,6 @@ public class AuthenticationController extends GlobalExceptionHandler {
         final String refreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
         tokenService.saveToken(emp, token, refreshToken);
 
-
-
         response.setToken(token);
         response.setRefreshToken(refreshToken);
         response.setUser(emp);

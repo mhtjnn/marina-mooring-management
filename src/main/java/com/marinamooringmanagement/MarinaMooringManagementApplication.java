@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -21,6 +22,7 @@ import java.util.List;
 
 @SpringBootApplication
 @EnableTransactionManagement
+@EnableScheduling
 public class MarinaMooringManagementApplication implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;

@@ -19,20 +19,18 @@ import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
+import com.marinamooringmanagement.scheduler.WorkOrderDueScheduler;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
-import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,6 +119,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private WorkOrderDueScheduler workOrderDueScheduler;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 

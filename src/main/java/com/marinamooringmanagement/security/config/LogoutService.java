@@ -4,13 +4,9 @@ import com.marinamooringmanagement.model.entity.Token;
 import com.marinamooringmanagement.repositories.TokenRepository;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +30,7 @@ public class LogoutService{
         jwt = authHeader.substring(7);
         Integer userId = jwtUtil.getUserIdFromToken(jwt);
         final Token token = tokenRepository.findByToken(jwt);
-        if(null != token) {
+        if(null != token && !ObjectUtils.notEqual(userId, token.getUser().getId())) {
             tokenRepository.delete(token);
         }
     }

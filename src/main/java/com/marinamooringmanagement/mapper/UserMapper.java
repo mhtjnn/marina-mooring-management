@@ -26,6 +26,7 @@ public interface UserMapper {
      */
     @Mapping(target = "imageDto", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "configDto", ignore = true)
     UserDto mapToUserDto(@MappingTarget UserDto dto, User user);
 
     /**
@@ -38,6 +39,7 @@ public interface UserMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "image", ignore = true)
+    @Mapping(target = "config", ignore = true)
     void mapToUser(@MappingTarget User entity, UserDto userDto);
 
     /**
@@ -67,6 +69,7 @@ public interface UserMapper {
     @Mapping(target = "stateResponseDto", ignore = true)
     @Mapping(target = "countryResponseDto", ignore = true)
     @Mapping(target = "imageResponseDto", ignore = true)
+    @Mapping(target = "configResponseDto", ignore = true)
     UserResponseDto mapToUserResponseDto(@MappingTarget UserResponseDto dto, User user);
 
     @Mapping(target = "roleResponseDto", ignore = true)

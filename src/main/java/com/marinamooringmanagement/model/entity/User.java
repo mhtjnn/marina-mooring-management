@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.marinamooringmanagement.model.entity.config.Config;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
@@ -99,6 +100,10 @@ public class User extends Base {
     @ToString.Exclude
     private Image image;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "config_id")
+    private Config config;
+
     public User(Integer id, String firstName, String lastName) {
         this.id = id;
         this.firstName = firstName;
@@ -176,10 +181,33 @@ public class User extends Base {
         this.image = Image.builder().id(imageId).imageData(imageData).build();
     }
 
+    public User(Integer id, String firstName, String lastName, String email, String password,
+                Integer roleId, String roleName,
+                Integer imageId, byte[] imageData, Integer configId, Boolean isMarina, Boolean isBoatyard) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = Role.builder().id(roleId).name(roleName).build();
+        this.image = Image.builder().id(imageId).imageData(imageData).build();
+        this.config = Config.builder().id(configId).isMarina(isMarina).isBoatyard(isBoatyard).build();
+    }
+
     public User(Integer id,
                 Integer imageId, byte[] imageData) {
         this.id = id;
         this.image = Image.builder().id(imageId).imageData(imageData).build();
+    }
+
+    public User(
+            String firstName,
+            String lastName,
+            String email
+    ) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
     }
 }
 

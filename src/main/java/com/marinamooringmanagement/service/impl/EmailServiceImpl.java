@@ -1,12 +1,14 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.model.entity.WorkOrder;
 import com.marinamooringmanagement.model.request.ForgetPasswordEmailRequest;
 import com.marinamooringmanagement.model.request.ResetPasswordEmailTemplate;
 import com.marinamooringmanagement.model.request.SendEmailRequest;
 import com.marinamooringmanagement.model.response.SendEmailResponse;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.service.EmailService;
+import com.marinamooringmanagement.service.ThymeleafService;
 import com.marinamooringmanagement.service.TokenService;
 import com.marinamooringmanagement.utils.EmailUtils;
 import jakarta.mail.internet.MimeMessage;
@@ -20,6 +22,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Service implementation class for Email related methods.
@@ -37,6 +43,9 @@ public class EmailServiceImpl implements EmailService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ThymeleafService thymeleafService;
 
     @Value("${spring.mail.username}")
     private String fromMailID;
@@ -81,6 +90,48 @@ public class EmailServiceImpl implements EmailService {
             response.setSuccess(false);
             return response;
         }
+    }
+
+    public SendEmailResponse sendNotificationForWorkOrder(final WorkOrder workOrder) {
+        final SendEmailResponse response = SendEmailResponse.builder().build();
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    message,
+                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                    StandardCharsets.UTF_8.name()
+            );
+
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("technicianUserFirstName", workOrder.getTechnicianUser().getFirstName());
+            variables.put("technicianUserLastName", workOrder.getTechnicianUser().getLastName());
+            variables.put("workOrderNumber", workOrder.getWorkOrderNumber());
+            variables.put("dueDate", workOrder.getDueDate().toString());
+            variables.put("scheduledDate", workOrder.getScheduledDate().toString());
+            variables.put("time", workOrder.getTime().toString());
+            variables.put("problem", workOrder.getProblem());
+            variables.put("mooringNumber", workOrder.getMooring().getMooringNumber());
+            variables.put("customerFirstName", workOrder.getMooring().getCustomer().getFirstName());
+            variables.put("customerLastName", workOrder.getMooring().getCustomer().getLastName());
+            variables.put("customerId", workOrder.getMooring().getCustomer().getCustomerId());
+            variables.put("workOrderStatus", workOrder.getWorkOrderStatus().getStatus());
+
+            helper.setFrom(fromMailID);
+            helper.setText(thymeleafService.createContent("technician-notification-email-template.html", variables), true);
+            helper.setTo(workOrder.getTechnicianUser().getEmail());
+            helper.setSubject(String.format("Work order with id: %1$s due notification", workOrder.getWorkOrderNumber()));
+
+            javaMailSender.send(message);
+
+            response.setResponse("Mail send successfully!!!");
+            response.setSuccess(false);
+        } catch (Exception e) {
+            log.error("Error occurred during mail send operation");
+            log.error(e.getLocalizedMessage());
+            response.setResponse(e.getLocalizedMessage());
+            response.setSuccess(false);
+        }
+        return response;
     }
 
     /**
