@@ -66,6 +66,8 @@ public class MooringResponseDto implements Serializable {
      */
     private BoatTypeDto boatType;
 
+    private String boatRegistration;
+
     /**
      * The weight of the boat associated with the mooring.
      */

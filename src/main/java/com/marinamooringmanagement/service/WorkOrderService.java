@@ -26,5 +26,9 @@ public interface WorkOrderService {
 
     BasicRestResponse denyWorkOrder(final Integer id, final HttpServletRequest request, final String reportProblem);
 
-    BasicRestResponse fetchWorkOrderInvoice(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request);
+    BasicRestResponse fetchWorkOrderInvoice(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
+
+    BasicRestResponse fetchWorkOrderByJobType(final BaseSearchRequest baseSearchRequest, final Integer jobTypeId, final String showCompletedWorkOrders, final String searchText, final HttpServletRequest request);
+
+    BasicRestResponse fetchWorkOrderByJobLocation(final BaseSearchRequest baseSearchRequest, final Integer jobLocationId, final String showCompletedWorkOrders, final String searchText, HttpServletRequest request);
 }

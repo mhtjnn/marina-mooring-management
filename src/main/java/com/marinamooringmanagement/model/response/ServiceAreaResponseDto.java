@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Builder
@@ -37,6 +38,8 @@ public class ServiceAreaResponseDto implements Serializable {
     private String notes;
 
     private Integer userId;
+
+    private List<String> subServiceAreas;
 
     private Integer mooringInventoried;
 }

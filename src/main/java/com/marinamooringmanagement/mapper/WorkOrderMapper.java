@@ -17,6 +17,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "workOrderStatus", ignore = true)
     @Mapping(target = "workOrderPayStatus", ignore = true)
     @Mapping(target = "customerOwnerUser", ignore = true)
+    @Mapping(target = "jobType", ignore = true)
     @Mapping(target = "imageList", ignore = true)
     WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderDto workOrderDto);
 
@@ -27,6 +28,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "customerOwnerUser", ignore = true)
     @Mapping(target = "dueDate", ignore = true)
     @Mapping(target = "scheduledDate", ignore = true)
+    @Mapping(target = "jobType", ignore = true)
     @Mapping(target = "imageList", ignore = true)
     @Mapping(target = "completedDate", ignore = true)
     void mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderRequestDto workOrderRequestDto);
@@ -36,12 +38,14 @@ public interface WorkOrderMapper {
     @Mapping(target = "workOrderStatusDto", ignore = true)
     @Mapping(target = "workOrderPayStatusDto", ignore = true)
     @Mapping(target = "technicianUserDto", ignore = true)
+    @Mapping(target = "jobTypeDto", ignore = true)
     @Mapping(target = "imageDtoList", ignore = true)
     WorkOrderDto mapToWorkOrderDto(@MappingTarget WorkOrderDto workOrderDto, WorkOrder workOrder);
 
     @Mapping(target = "customerResponseDto", ignore = true)
     @Mapping(target = "mooringResponseDto", ignore = true)
     @Mapping(target = "boatyardResponseDto", ignore = true)
+    @Mapping(target = "serviceAreaResponseDto", ignore = true)
     @Mapping(target = "technicianUserResponseDto", ignore = true)
     @Mapping(target = "customerOwnerUserResponseDto", ignore = true)
     @Mapping(target = "workOrderStatusDto", ignore = true)
@@ -49,6 +53,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "dueDate", ignore = true)
     @Mapping(target = "scheduledDate", ignore = true)
     @Mapping(target = "completedDate", ignore = true)
+    @Mapping(target = "jobTypeResponseDto", ignore = true)
     WorkOrderResponseDto mapToWorkOrderResponseDto(@MappingTarget WorkOrderResponseDto workOrderResponseDto, WorkOrder workOrder);
 
 }

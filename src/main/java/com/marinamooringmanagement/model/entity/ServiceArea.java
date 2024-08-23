@@ -66,6 +66,8 @@ public class ServiceArea extends Base{
     @Column(name = "notes")
     private String notes;
 
+    private List<String> subServiceAreas;
+
     public ServiceArea(Integer id, String serviceAreaName) {
         this.id = id;
         this.serviceAreaName = serviceAreaName;

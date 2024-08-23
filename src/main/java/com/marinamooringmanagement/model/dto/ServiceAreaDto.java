@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -37,6 +39,8 @@ public class ServiceAreaDto extends BaseDto{
     private String zipCode;
 
     private String gpsCoordinates;
+
+    private List<String> subServiceAreas;
 
     private UserDto userDto;
 

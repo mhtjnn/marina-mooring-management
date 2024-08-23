@@ -1,9 +1,9 @@
 package com.marinamooringmanagement.model.response;
 
 import com.marinamooringmanagement.model.dto.ImageDto;
-import com.marinamooringmanagement.model.dto.PaymentDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.response.metadata.JobTypeResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +25,8 @@ public class WorkOrderResponseDto implements Serializable {
 
     private String workOrderNumber;
 
+    private String orderDate;
+
     private String dueDate;
 
     private String scheduledDate;
@@ -41,6 +43,8 @@ public class WorkOrderResponseDto implements Serializable {
 
     private BoatyardResponseDto boatyardResponseDto;
 
+    private ServiceAreaResponseDto serviceAreaResponseDto;
+
     private UserResponseDto technicianUserResponseDto;
 
     private UserResponseDto financeUserResponseDto;
@@ -50,6 +54,8 @@ public class WorkOrderResponseDto implements Serializable {
     private WorkOrderStatusDto workOrderStatusDto;
 
     private WorkOrderPayStatusDto workOrderPayStatusDto;
+
+    private JobTypeResponseDto jobTypeResponseDto;
 
     private List<ImageDto> imageDtoList;
 }

@@ -37,5 +37,7 @@ public class WorkOrderRequestDto {
 
     private Integer workOrderPayStatusId;
 
+    private Integer jobTypeId;
+
     private List<String> encodedImages;
 }

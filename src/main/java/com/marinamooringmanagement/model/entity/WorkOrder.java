@@ -63,6 +63,10 @@ public class WorkOrder extends Base{
     @JoinColumn(name = "work_order_pay_status_id")
     private WorkOrderPayStatus workOrderPayStatus;
 
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_type_id")
+    private JobType jobType;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.EAGER)
     private List<Image> imageList;
 
@@ -70,7 +74,7 @@ public class WorkOrder extends Base{
     @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;
 
-    public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
+    public WorkOrder(Integer id, String workOrderNumber, Date creationDate, Date dueDate, Date scheduledDate,
                      Date completedDate, Time time, String problem,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
@@ -88,16 +92,18 @@ public class WorkOrder extends Base{
                      Integer customerId, String customerFirstName, String customerLastName, String customerNumber,
                      Integer userId, String userFirstName, String userLastName,
                      Integer boatyardId, String boatyardName,
-                     Integer serviceAreaId, String serviceAreaName,
+                     Integer serviceAreaId, String serviceAreaName, String serviceAreaGpsCoordinates,
                      Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
                      Integer customerOwnerUserId, String customerOwnerUserFirstName, String customerOwnerUserLastName,
                      Integer workOrderStatusId, String workOrderStatusName, Integer workOrderPayStatusId,
-                     String workOrderPayStatusName, Integer workOrderInvoiceId
+                     String workOrderPayStatusName, Integer workOrderInvoiceId,
+                     Integer jobTypeId, String jobTypeName
     )
     {
         this.id = id;
         this.workOrderNumber = workOrderNumber;
         this.dueDate = dueDate;
+        this.creationDate = creationDate;
         this.scheduledDate = scheduledDate;
         this.completedDate = completedDate;
         this.time = time;
@@ -128,13 +134,20 @@ public class WorkOrder extends Base{
                         .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build())
                         .user(User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build())
                         .boatyard(Boatyard.builder().id(boatyardId).boatyardName(boatyardName).build())
-                        .serviceArea(ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).build())
+                        .serviceArea(ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).gpsCoordinates(serviceAreaGpsCoordinates).build())
                         .build();
         this.technicianUser = User.builder().id(technicianUserId).firstName(technicianUserFirstName).lastName(technicianUserLastName).build();
         this.customerOwnerUser = User.builder().id(customerOwnerUserId).firstName(customerOwnerUserFirstName).lastName(customerOwnerUserLastName).build();
         this.workOrderStatus = WorkOrderStatus.builder().id(workOrderStatusId).status(workOrderStatusName).build();
         this.workOrderPayStatus = WorkOrderPayStatus.builder().id(workOrderPayStatusId).status(workOrderPayStatusName).build();
         this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
+        this.jobType = JobType.builder().id(jobTypeId).type(jobTypeName).build();
+    }
+
+    public WorkOrder(Integer id, String workOrderNumber, Integer jobTypeId, String jobTypeName) {
+        this.id = id;
+        this.workOrderNumber = workOrderNumber;
+        this.jobType = JobType.builder().id(jobTypeId).type(jobTypeName).build();
     }
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,

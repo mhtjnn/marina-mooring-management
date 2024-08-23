@@ -441,4 +441,77 @@ public class WorkOrderController extends GlobalExceptionHandler {
     ) {
         return workOrderService.denyWorkOrder(id, request, reportProblem);
     }
+
+    @Operation(
+            summary = "API to fetch work order by job type from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping("/jobType/{jobTypeId}")
+    public BasicRestResponse fetchWorkOrderByJobType(
+            @Parameter(description = "JobTypeId", schema = @Schema(implementation = Integer.class)) final @PathVariable("jobTypeId") Integer jobTypeId,
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Show completed work orders or not", schema = @Schema(implementation = String.class)) final @RequestParam(value = "showCompletedWorkOrders", defaultValue = NO) String showCompletedWorkOrders,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return workOrderService.fetchWorkOrderByJobType(baseSearchRequest, jobTypeId, showCompletedWorkOrders, searchText, request);
+    }
+
+    @Operation(
+            summary = "API to fetch work order by job location from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping("/jobLocation/{jobLocationId}")
+    public BasicRestResponse fetchWorkOrderByJobLocation(
+            @Parameter(description = "JobLocationId", schema = @Schema(implementation = Integer.class)) final @PathVariable("jobLocationId") Integer jobLocationId,
+            @Parameter(description = "Page Number", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
+            @Parameter(description = "Page Size", schema = @Schema(implementation = Integer.class)) final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @Parameter(description = "Sort By(field)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @Parameter(description = "Sort Dir(asc --> ascending or des --> descending)", schema = @Schema(implementation = String.class)) final @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir,
+            @Parameter(description = "Search Text", schema = @Schema(implementation = String.class)) final @RequestParam(value = "searchText", required = false) String searchText,
+            @Parameter(description = "Show completed work orders or not", schema = @Schema(implementation = String.class)) final @RequestParam(value = "showCompletedWorkOrders", defaultValue = NO) String showCompletedWorkOrders,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+        return workOrderService.fetchWorkOrderByJobLocation(baseSearchRequest, jobLocationId, showCompletedWorkOrders, searchText, request);
+    }
+
 }

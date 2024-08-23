@@ -71,6 +71,9 @@ public class Mooring extends Base {
     @JoinColumn(name = "boat_type_id")
     private BoatType boatType;
 
+    @Column(name = "boat_registration")
+    private String boatRegistration;
+
     /**
      * Weight of the boat associated with the mooring.
      */

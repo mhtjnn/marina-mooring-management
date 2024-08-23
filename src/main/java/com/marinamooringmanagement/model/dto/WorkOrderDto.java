@@ -1,7 +1,9 @@
 package com.marinamooringmanagement.model.dto;
 
+import com.marinamooringmanagement.model.dto.metadata.JobTypeDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
+import com.marinamooringmanagement.model.entity.metadata.JobType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,6 +44,8 @@ public class WorkOrderDto extends BaseDto{
     private UserDto technicianUserDto;
 
     private UserDto financeUserDto;
+
+    private JobTypeDto jobTypeDto;
 
     private List<ImageDto> imageDtoList;
 }

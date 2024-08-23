@@ -67,6 +67,8 @@ public class MooringDto extends BaseDto implements Serializable {
      */
     private BoatTypeDto boatType;
 
+    private String boatRegistration;
+
     /**
      * Weight of the boat associated with the mooring.
      */

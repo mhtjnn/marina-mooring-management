@@ -8,18 +8,16 @@ import com.marinamooringmanagement.mapper.metadata.*;
 import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.dto.metadata.*;
 import com.marinamooringmanagement.model.entity.*;
-import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
+import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.JobTypeResponseDto;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.metadata.JobTypeRepository;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
-import com.marinamooringmanagement.scheduler.WorkOrderDueScheduler;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
@@ -36,7 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -121,11 +118,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private WorkOrderDueScheduler workOrderDueScheduler;
+    private JobTypeRepository jobTypeRepository;
+
+    @Autowired
+    private JobTypeMapper jobTypeMapper;
+
+    @Autowired
+    private ServiceAreaRepository serviceAreaRepository;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request) {
@@ -161,6 +162,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
@@ -169,6 +172,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
                         if (null != workOrder.getWorkOrderPayStatus())
                             workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
                         if (null != workOrder.getDueDate())
                             workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
@@ -181,9 +186,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
                                     .toList());
                         }
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                        }
                         return workOrderResponseDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             response.setTotalSize(workOrderList.size());
             response.setCurrentSize(workOrderResponseDtoList.size());
@@ -347,19 +355,25 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
                             workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if (null != workOrder.getWorkOrderStatus())
                             workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
                         if (null != workOrder.getDueDate())
                             workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
                         if (null != workOrder.getCompletedDate())
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
-
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                        }
                         return workOrderResponseDto;
                     })
                     .toList();
@@ -388,9 +402,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             Date filterFromDate;
             Date filterToDate;
 
-            List<WorkOrderResponseDto> workOrderResponseDtoList = new ArrayList<>();
+            List<WorkOrderResponseDto> workOrderResponseDtoList;
 
-            List<WorkOrder> workOrderList = new ArrayList<>();
+            List<WorkOrder> workOrderList;
 
             if (null != filterDateFrom && null != filterDateTo) {
                 filterFromDate = DateUtil.stringToDate(filterDateFrom);
@@ -442,19 +456,25 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
                             workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                         if (null != workOrder.getWorkOrderStatus())
                             workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
                         if (null != workOrder.getDueDate())
                             workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
                         if (null != workOrder.getCompletedDate())
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
-
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                        }
                         return workOrderResponseDto;
                     })
                     .toList();
@@ -484,7 +504,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Date filterFromDate = DateUtil.stringToDate(filterDateFrom);
             final Date filterToDate = DateUtil.stringToDate(filterDateTo);
 
-            List<WorkOrderResponseDto> openWorkOrderResponseDtoList = new ArrayList<>();
+            List<WorkOrderResponseDto> openWorkOrderResponseDtoList;
 
             if (filterToDate.before(filterFromDate))
                 throw new RuntimeException(String.format("Invalid date range: %1$s cannot be earlier than %2$s.", filterDateTo, filterDateFrom));
@@ -547,11 +567,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
                                 if (null != workOrder.getWorkOrderStatus())
                                     workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                                if (null != workOrder.getCreationDate())
+                                    workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
                                 if (null != workOrder.getDueDate())
                                     workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                                 if (null != workOrder.getScheduledDate())
                                     workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
-
+                                if(null != workOrder.getJobType()) {
+                                    workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                                }
                                 return workOrderResponseDto;
                             })
                             .collect(Collectors.toList());
@@ -610,6 +634,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
@@ -618,6 +644,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
                         if (null != workOrder.getWorkOrderPayStatus())
                             workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
                         if (null != workOrder.getDueDate())
                             workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
@@ -630,6 +658,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }
                         if (null != workOrder.getCompletedDate()) {
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
+                        }
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
                         }
                         return workOrderResponseDto;
                     })
@@ -844,6 +875,172 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchWorkOrderByJobType(final BaseSearchRequest baseSearchRequest, final Integer jobTypeId, final String showCompletedWorkOrders, final String searchText, final HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final JobType jobType = jobTypeRepository.findById(jobTypeId)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No job type found with the given Id: %1$s", jobTypeId)));
+
+            List<WorkOrder> workOrderList = workOrderRepository.findAllWorkOrderByJobType((null == searchText) ? "" : searchText, jobType.getId(), user.getId(), showCompletedWorkOrders);
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
+
+            List<WorkOrder> paginatedWorkOrder;
+            if(start > workOrderList.size()) {
+                paginatedWorkOrder = new ArrayList<>();
+            } else {
+                paginatedWorkOrder = workOrderList.subList(start, end);
+            }
+
+            final List<WorkOrderResponseDto> workOrderResponseDtoList = paginatedWorkOrder
+                    .stream()
+                    .map(workOrder -> {
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if (null != workOrder.getMooring())
+                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
+                        if (null != workOrder.getCustomerOwnerUser())
+                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if (null != workOrder.getTechnicianUser())
+                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if (null != workOrder.getWorkOrderStatus())
+                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
+                        if (null != workOrder.getDueDate())
+                            workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
+                        if (null != workOrder.getScheduledDate())
+                            workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
+                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
+                        if (null != workOrder.getCompletedDate()) {
+                            workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
+                        }
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                        }
+                        return workOrderResponseDto;
+                    })
+                    .toList();
+
+            response.setTotalSize(workOrderList.size());
+            response.setCurrentSize(paginatedWorkOrder.size());
+            response.setMessage("All work orders fetched successfully.");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDtoList);
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchWorkOrderByJobLocation(BaseSearchRequest baseSearchRequest, Integer jobLocationId, String showCompletedWorkOrders, String searchText, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final ServiceArea serviceArea = serviceAreaRepository.findServiceAreaWithUserMetadata(user.getId(), jobLocationId)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No job type found with the given Id: %1$s", jobLocationId)));
+
+            List<WorkOrder> workOrderList = workOrderRepository.findAllWorkOrderByJobLocation((null == searchText) ? "" : searchText, serviceArea.getId(), user.getId(), showCompletedWorkOrders);
+
+            final Pageable pageable = PageRequest.of(
+                    baseSearchRequest.getPageNumber(),
+                    baseSearchRequest.getPageSize(),
+                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
+
+            List<WorkOrder> paginatedWorkOrder;
+            if(start > workOrderList.size()) {
+                paginatedWorkOrder = new ArrayList<>();
+            } else {
+                paginatedWorkOrder = workOrderList.subList(start, end);
+            }
+
+            final List<WorkOrderResponseDto> workOrderResponseDtoList = paginatedWorkOrder
+                    .stream()
+                    .map(workOrder -> {
+                        WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if (null != workOrder.getMooring())
+                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getServiceArea())
+                            workOrderResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
+                        if (null != workOrder.getCustomerOwnerUser())
+                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if (null != workOrder.getTechnicianUser())
+                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if (null != workOrder.getWorkOrderStatus())
+                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getCreationDate())
+                            workOrderResponseDto.setOrderDate(DateUtil.dateToString(workOrder.getCreationDate()));
+                        if (null != workOrder.getDueDate())
+                            workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
+                        if (null != workOrder.getScheduledDate())
+                            workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
+                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+                                    .stream()
+                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .toList());
+                        }
+                        if (null != workOrder.getCompletedDate()) {
+                            workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
+                        }
+                        if(null != workOrder.getJobType()) {
+                            workOrderResponseDto.setJobTypeResponseDto(jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), workOrder.getJobType()));
+                        }
+                        return workOrderResponseDto;
+                    })
+                    .toList();
+
+            response.setTotalSize(workOrderList.size());
+            response.setCurrentSize(paginatedWorkOrder.size());
+            response.setMessage("All work orders fetched successfully.");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDtoList);
+
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -992,10 +1189,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("While saving work order status cannot be null"));
             }
 
+            if(workOrderRequestDto.getJobTypeId() != null) {
+                final JobType jobType = jobTypeRepository.findById(workOrderRequestDto.getJobTypeId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No job type found with the given id: %1$s", workOrderRequestDto.getJobTypeId())));
+
+                workOrder.setJobType(jobType);
+            }
+
             if (null != workOrderRequestDto.getMooringId()) {
                 Optional<Mooring> optionalMooring = mooringRepository.findById(workOrderRequestDto.getMooringId());
                 if (optionalMooring.isEmpty())
-                    throw new RuntimeException(String.format("No mooring found with the given id: %1$s", workOrderRequestDto.getMooringId()));
+                    throw new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", workOrderRequestDto.getMooringId()));
 
                 final Mooring mooring = optionalMooring.get();
 
@@ -1004,11 +1208,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 if (null == workOrderRequestDto.getBoatyardId())
                     throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
                 if (null == mooring.getCustomer())
-                    throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
+                    throw new ResourceNotFoundException(String.format("No customer found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
                 if (null == mooring.getBoatyard())
-                    throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
+                    throw new ResourceNotFoundException(String.format("No boatyard found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
                 if (null == mooring.getUser())
-                    throw new RuntimeException(String.format("No user found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
+                    throw new ResourceNotFoundException(String.format("No user found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
                 if (!mooring.getCustomer().getId().equals(workOrderRequestDto.getCustomerId()))
                     throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
                 if (!mooring.getBoatyard().getId().equals(workOrderRequestDto.getBoatyardId()))
