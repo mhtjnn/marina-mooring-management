@@ -3,7 +3,6 @@ package com.marinamooringmanagement.api.v1.customer;
 import com.marinamooringmanagement.constants.Authority;
 import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.CustomerDto;
-import com.marinamooringmanagement.model.entity.Base;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.CustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -20,12 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;

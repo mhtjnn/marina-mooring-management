@@ -326,13 +326,16 @@ public class AuthenticationController extends GlobalExceptionHandler {
 
             Date refreshTokenExpirationTime = jwtUtil.getExpireTimeFromToken(refreshToken);
 
-            final List<Token> refreshTokenEntityList = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
+            final List<Integer> refreshTokenEntityList = tokenRepository.findTokenEntityByRefreshToken(refreshToken);
 
             if(refreshTokenEntityList.isEmpty()) throw new ResourceNotFoundException(String.format("No tokens found with the given token: %1$s", refreshToken));
 
             String newRefreshToken = refreshToken;
 
-            if (refreshTokenExpirationTime.before(new Date())) newRefreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+            if (refreshTokenExpirationTime.before(new Date())) {
+                tokenRepository.deleteAllById(refreshTokenEntityList);
+                newRefreshToken = jwtUtil.generateToken(emp, refreshTokenStr);
+            }
 
             tokenService.saveToken(emp, token, refreshToken);
             response.setToken(token);
