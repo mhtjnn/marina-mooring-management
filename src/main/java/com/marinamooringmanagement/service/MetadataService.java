@@ -5,7 +5,7 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface MetadataService {
-    BasicRestResponse fetchStatus(final BaseSearchRequest baseSearchRequest);
+    BasicRestResponse fetchMooringStatus(final BaseSearchRequest baseSearchRequest);
 
     BasicRestResponse fetchBoatType(final BaseSearchRequest baseSearchRequest);
 

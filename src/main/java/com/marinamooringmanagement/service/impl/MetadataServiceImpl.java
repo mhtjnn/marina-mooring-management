@@ -158,7 +158,7 @@ public class MetadataServiceImpl implements MetadataService {
     private RoleRepository roleRepository;
 
     @Override
-    public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
+    public BasicRestResponse fetchMooringStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -878,4 +878,5 @@ public class MetadataServiceImpl implements MetadataService {
         }
         return response;
     }
+
 }

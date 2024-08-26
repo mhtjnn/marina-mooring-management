@@ -479,11 +479,12 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 optionalServiceArea = Optional.empty();
             }
 
-            Optional<MooringStatus> optionalMooringStatus = mooringStatusRepository.findById(1);
-            if (optionalMooringStatus.isEmpty())
-                throw new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId()));
+            if(null != mooringRequestDto.getStatusId()) {
+                final MooringStatus mooringStatus = mooringStatusRepository.findById(mooringRequestDto.getStatusId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId())));
 
-            savedMooring.setMooringStatus(optionalMooringStatus.get());
+                savedMooring.setMooringStatus(mooringStatus);
+            }
 
             if (null != mooringRequestDto.getBoatTypeId()) {
                 Optional<BoatType> optionalBoatType = boatTypeRepository.findById(mooringRequestDto.getBoatTypeId());

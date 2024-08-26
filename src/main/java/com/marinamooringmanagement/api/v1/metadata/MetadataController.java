@@ -193,7 +193,7 @@ public class MetadataController extends GlobalExceptionHandler {
                     )
             }
     )
-    @GetMapping("/status")
+    @GetMapping("/mooringStatus")
     @ResponseStatus(HttpStatus.OK)
     public BasicRestResponse fetchStatus(
             @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
@@ -204,7 +204,7 @@ public class MetadataController extends GlobalExceptionHandler {
                 .pageSize(pageSize)
                 .build();
 
-        return metadataService.fetchStatus(baseSearchRequest);
+        return metadataService.fetchMooringStatus(baseSearchRequest);
     }
 
     @Operation(
