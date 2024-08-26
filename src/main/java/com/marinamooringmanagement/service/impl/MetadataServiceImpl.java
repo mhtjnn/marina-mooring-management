@@ -157,6 +157,12 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private JobTypeRepository jobTypeRepository;
+
+    @Autowired
+    private JobTypeMapper jobTypeMapper;
+
     @Override
     public BasicRestResponse fetchStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -871,6 +877,31 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Types of payment fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(paymentTypeDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchJobTypes(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        Page<JobType> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            content = jobTypeRepository.findAll(PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize()));
+
+            List<JobTypeResponseDto> jobTypeResponseDtoList = content
+                    .getContent()
+                    .stream()
+                    .map(jobType -> jobTypeMapper.toResponseDto(JobTypeResponseDto.builder().build(), jobType))
+                    .toList();
+
+            response.setMessage("Types of job types fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(jobTypeResponseDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
