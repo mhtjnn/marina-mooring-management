@@ -20,19 +20,17 @@ import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatus
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
-import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,8 +122,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
     @Override
     public BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
@@ -136,12 +132,22 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
 
+            final String loggedInUserRole = LoggedInUserUtil.getLoggedInUserRole();
+
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
                     baseSearchRequest.getPageSize(),
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
-            final List<WorkOrder> workOrderList = workOrderRepository.findAll((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
+            final List<WorkOrder> workOrderList;
+            if(StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)
+                    || StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
+                workOrderList = workOrderRepository.findAll((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
+            } else if(StringUtils.equals(loggedInUserRole, AppConstants.Role.TECHNICIAN)) {
+                workOrderList = workOrderRepository.findAllByTechnicianUser((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
+            } else {
+                throw new RuntimeException("No authorized");
+            }
 
             int start = (int) pageable.getOffset();
             int end = Math.min(start + pageable.getPageSize(), workOrderList.size());

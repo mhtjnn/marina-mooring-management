@@ -12,7 +12,7 @@ public class LoggedInUserUtil {
      *
      * @return The role of the currently logged-in user.
      */
-    public String getLoggedInUserRole() {
+    public static String getLoggedInUserRole() {
         try {
             final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
             return authDetails.getLoggedInUserRole();
@@ -26,7 +26,7 @@ public class LoggedInUserUtil {
      *
      * @return The ID of the currently logged-in user.
      */
-    public Integer getLoggedInUserID() {
+    public static Integer getLoggedInUserID() {
         try {
             final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
             return authDetails.getLoggedInUserId();
