@@ -20,6 +20,9 @@ import java.util.Date;
 @Table(name = "token_config")
 public class Token extends Base {
 
+    @Column(name = "id")
+    private Integer id;
+
     /**
      * The token value.
      */
@@ -50,4 +53,8 @@ public class Token extends Base {
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+
+    Token(Integer id) {
+        this.id = id;
+    }
 }

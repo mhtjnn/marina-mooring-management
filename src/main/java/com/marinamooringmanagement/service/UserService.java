@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service;
 
 
+import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 import com.marinamooringmanagement.model.dto.UserDto;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.NewPasswordRequest;

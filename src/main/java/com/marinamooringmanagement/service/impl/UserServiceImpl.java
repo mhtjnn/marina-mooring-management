@@ -378,23 +378,27 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto findByEmailAddress(String email) {
         UserDto user = null;
-        if (null != email) {
-            User userEntity = userRepository.findByEmailWithImage(email).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", email)));
-            if (null != userEntity) {
-                user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
-                if(null != userEntity.getImage()) {
-                    final Image image = userEntity.getImage();
-                    ImageDto imageDto = ImageDto.builder().build();
-                    if (null != image.getImageData()) imageDto.setImageData(image.getImageData());
-                    if (null != image.getId()) imageDto.setId(image.getId());
-                    user.setImageDto(imageDto);
-                }
+        try {
+            if (null != email) {
+                User userEntity = userRepository.findByEmailWithImage(email).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", email)));
+                if (null != userEntity) {
+                    user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
+                    if (null != userEntity.getImage()) {
+                        final Image image = userEntity.getImage();
+                        ImageDto imageDto = ImageDto.builder().build();
+                        if (null != image.getImageData()) imageDto.setImageData(image.getImageData());
+                        if (null != image.getId()) imageDto.setId(image.getId());
+                        user.setImageDto(imageDto);
+                    }
 
-                if(null != userEntity.getConfig()) {
-                    final ConfigDto configDto = configMapper.toDto(ConfigDto.builder().build(), userEntity.getConfig());
-                    user.setConfigDto(configDto);
+                    if (null != userEntity.getConfig()) {
+                        final ConfigDto configDto = configMapper.toDto(ConfigDto.builder().build(), userEntity.getConfig());
+                        user.setConfigDto(configDto);
+                    }
                 }
             }
+        } catch (Exception e) {
+            throw e;
         }
         return user;
     }

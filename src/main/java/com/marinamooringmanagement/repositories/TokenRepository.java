@@ -2,6 +2,8 @@ package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,7 +28,11 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
      * @param refreshToken the refresh token value to search for
      * @return an optional containing the token entity corresponding to the given refresh token value, or empty if not found
      */
-    List<Token> findTokenEntityByRefreshToken(String refreshToken);
+    @Query("SELECT " +
+            "t.id " +
+            "FROM Token t " +
+            "WHERE t.refreshToken = :refreshToken")
+    List<Integer> findTokenEntityByRefreshToken(@Param("refreshToken") String refreshToken);
 
     /**
      * Find a list of Token entities of a user using the ID of the user.
