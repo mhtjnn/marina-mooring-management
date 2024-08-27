@@ -44,10 +44,11 @@ public class Image extends Base{
     @ToString.Exclude
     private User user;
 
-    public Image(Integer id, String imageName, byte[] imageData) {
+    public Image(Integer id, String imageName, byte[] imageData, String note) {
         this.id = id;
         this.imageName = imageName;
         this.imageData = imageData;
+        this.note = note;
     }
 
 }

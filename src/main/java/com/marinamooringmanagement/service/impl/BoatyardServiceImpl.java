@@ -340,9 +340,8 @@ public class BoatyardServiceImpl implements BoatyardService {
                         if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
                         if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
                         if (null != mooring.getCustomer()) {
-                            if(null == mooring.getCustomer().getFirstName()) throw new RuntimeException(String.format("First name is null for customer with id: %1$s", mooring.getCustomer().getId()));
-                            if(null == mooring.getCustomer().getLastName()) throw new RuntimeException(String.format("Last name is null for customer with id: %1$s", mooring.getCustomer().getId()));
-                            mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
+                            StringBuilder customerName = getFullCustomerName(mooring);
+                            mooringResponseDto.setCustomerName(customerName.toString());
                         }
                         if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
                         return mooringResponseDto;
@@ -363,6 +362,18 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
+    }
+
+    private static StringBuilder getFullCustomerName(Mooring mooring) {
+        StringBuilder customerName = new StringBuilder();
+        if(null != mooring.getCustomer().getFirstName()) {
+            customerName.append(mooring.getCustomer().getFirstName());
+            customerName.append(" ");
+        }
+        if(null != mooring.getCustomer().getLastName()) {
+            customerName.append(mooring.getCustomer().getLastName());
+        }
+        return customerName;
     }
 
     /**

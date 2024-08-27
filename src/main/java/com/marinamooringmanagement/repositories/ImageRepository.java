@@ -16,7 +16,7 @@ public interface ImageRepository extends JpaRepository<Image, Integer> {
     Optional<Image> findByImageData(byte[] imageByteArray);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Image( " +
-            "i.id, i.imageName, i.imageData) " +
+            "i.id, i.imageName, i.imageData, i.note) " +
             "FROM Image i " +
             "LEFT JOIN i.mooring m " +
             "WHERE (:mooringId IS NOT NULL AND m.id = :mooringId) " +

@@ -111,7 +111,7 @@ public class AuthorizationUtil {
 
         if(null == vendor.getUser()) throw new RuntimeException(String.format("Vendor with id: %1$s has no user", vendorId));
 
-        if(!vendor.getUser().equals(user)) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner", vendorId));
+        if(!vendor.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner", vendorId));
 
         return vendor;
     }

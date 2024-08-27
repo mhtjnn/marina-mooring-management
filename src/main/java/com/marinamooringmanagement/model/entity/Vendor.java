@@ -137,4 +137,36 @@ public class Vendor extends Base {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Inventory> inventoryList;
+
+    Vendor(Integer id, String vendorName, String companyPhoneNumber, String website, String address,
+           Integer stateId, String stateName,
+           Integer countryId, String countryName,
+           String zipCode, String companyEmail, String accountNumber, String remitAddress,
+           Integer remitStateId, String remitStateName,
+           Integer remitCountryId, String remitCountryName,
+           String remitZipCode, String remitEmailAddress,
+           String firstName, String lastName, String salesRepPhoneNumber, String salesRepEmail,
+           String salesRepNote, Integer userId, String userFirstName, String userLastName) {
+        this.id = id;
+        this.vendorName = vendorName;
+        this.companyPhoneNumber = companyPhoneNumber;
+        this.website = website;
+        this.address = address;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.zipCode = zipCode;
+        this.companyEmail = companyEmail;
+        this.accountNumber = accountNumber;
+        this.remitAddress = remitAddress;
+        this.remitState = State.builder().id(remitStateId).name(remitStateName).build();
+        this.remitCountry = Country.builder().id(remitCountryId).name(remitCountryName).build();
+        this.remitZipCode = remitZipCode;
+        this.remitEmailAddress = remitEmailAddress;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.salesRepPhoneNumber = salesRepPhoneNumber;
+        this.salesRepEmail = salesRepEmail;
+        this.salesRepNote = salesRepNote;
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+    }
 }
