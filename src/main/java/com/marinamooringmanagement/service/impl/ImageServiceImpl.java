@@ -77,7 +77,7 @@ public class ImageServiceImpl implements ImageService {
                 mooring.setImageList(imageList);
                 mooringRepository.save(mooring);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.USER)) {
-                final User user = userRepository.findByIdWithImage(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
+                final User user = userRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
                 final Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
                 image.setUser(user);
                 imageRepository.save(image);

@@ -164,6 +164,26 @@ public class User extends Base {
         this.image = Image.builder().id(imageId).imageData(imageData).build();
     }
 
+    public User(Integer id, String firstName, String lastName, String email,
+                String phoneNumber, Integer customerOwnerId, String companyName, String address,
+                String zipCode,
+                Integer roleId, String roleName,
+                Integer stateId, String stateName,
+                Integer countryId, String countryName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.zipCode = zipCode;
+        this.companyName = companyName;
+        this.customerOwnerId = customerOwnerId;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.role = Role.builder().id(roleId).name(roleName).build();
+    }
+
     public User(Integer id, String firstName, String lastName, String email, String password,
                 Integer roleId, String roleName,
                 Integer imageId, byte[] imageData) {

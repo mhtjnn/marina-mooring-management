@@ -73,8 +73,6 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     )
     Optional<User> findByIdWithImage(@Param("userId") Integer userId);
 
-    Optional<User> findByPhoneNumber(String givenPhoneNumber);
-
     @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
             "u.id, u.firstName, u.lastName) " +
             "FROM User u " +
@@ -99,4 +97,17 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     List<User> findAllUsersByCustomerOwnerAndRoleMetadata(@Param("roleId") Integer roleId,
                                                           @Param("customerOwnerId") Integer customerOwnerId,
                                                           @Param("searchText") String searchText);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
+            "u.id, u.firstName, u.lastName, u.email, u.phoneNumber, " +
+            "u.customerOwnerId, u.companyName, u.address, u.zipCode," +
+            "r.id, r.name, " +
+            "s.id, s.name, " +
+            "c.id, c.name) " +
+            "FROM User u " +
+            "LEFT JOIN u.state s " +
+            "LEFT JOIN u.country c " +
+            "LEFT JOIN u.role r " +
+            "WHERE u.id = :id")
+    Optional<User> findUserByIdWithoutImage(@Param("id") Integer customerOwnerId);
 }

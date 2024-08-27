@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +41,12 @@ public class AuthorizationUtil {
         } else if(loggedInRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
             user = checksForCustomerOwner(customerOwnerId);
         } else if(loggedInRole.equals(AppConstants.Role.TECHNICIAN)) {
-            user = userRepository.findById(loggedInUserId)
+            user = userRepository.findUserByIdWithoutImage(loggedInUserId)
                     .orElseThrow(() -> new RuntimeException(String.format("No user found with the given id: %1$s", loggedInUserId)));
             if(!StringUtils.equals(user.getRole().getName(), AppConstants.Role.TECHNICIAN))
                 throw new RuntimeException(String.format("User with the given id: %1$s is not of technician role", loggedInUserId));
         } else if(StringUtils.equals(loggedInRole, AppConstants.Role.FINANCE)) {
-            user = userRepository.findById(loggedInUserId)
+            user = userRepository.findUserByIdWithoutImage(loggedInUserId)
                     .orElseThrow(() -> new RuntimeException(String.format("No user found with the given id: %1$s", loggedInUserId)));
             if(!StringUtils.equals(user.getRole().getName(), AppConstants.Role.FINANCE))
                 throw new RuntimeException(String.format("User with the given id: %1$s is not of finance role", loggedInUserId));
@@ -135,91 +134,10 @@ public class AuthorizationUtil {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
-    public <T> Predicate fetchPredicateForTechnician(final Integer customerOwnerId, Root<T> root, CriteriaBuilder criteriaBuilder) {
-        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-
-        List<Predicate> predicates = new ArrayList<>();
-        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(customerOwnerId == -1) {
-                throw new RuntimeException(String.format("Please select a customer owner"));
-            } else {
-                predicates.add(criteriaBuilder.equal(root.join("role").get("name"), AppConstants.Role.TECHNICIAN));
-                predicates.add(criteriaBuilder.equal(root.get("customerOwnerId"), customerOwnerId));
-            }
-        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            predicates.add(criteriaBuilder.equal(root.join("role").get("name"), AppConstants.Role.TECHNICIAN));
-            predicates.add(criteriaBuilder.equal(root.get("customerOwnerId"), loggedInUserId));
-        } else {
-            throw new RuntimeException("Not Authorized");
-        }
-
-        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-    }
-
-    public <T> Predicate fetchPredicateForWorkOrder(final Integer customerOwnerId, Root<T> root, CriteriaBuilder criteriaBuilder) {
-        try {
-            final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-            final User loggedInUser = userRepository.findById(loggedInUserId)
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No User found with the given id: %1$s", loggedInUserId)));
-
-            List<Predicate> predicates = new ArrayList<>();
-            if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-                checksForAdministrator(customerOwnerId);
-                predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), customerOwnerId));
-            } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-                checksForCustomerOwner(customerOwnerId);
-                predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUserId));
-            } else if (loggedInUserRole.equals(AppConstants.Role.TECHNICIAN)) {
-                predicates.add(criteriaBuilder.equal(root.join("technicianUser").get("id"), loggedInUserId));
-            } else if(loggedInUserRole.equals(AppConstants.Role.FINANCE)) {
-                if(null == loggedInUser.getCustomerOwnerId()) throw new RuntimeException(String.format("No customer owner found of logged-in user with id: %1$s", loggedInUserId));
-                predicates.add(criteriaBuilder.equal(root.join("customerOwnerUser").get("id"), loggedInUser.getCustomerOwnerId()));
-            } else {
-                throw new RuntimeException("Not Authorized");
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    public <T> Predicate fetchPredicateForUser(final Integer customerOwnerId, Root<T> user, CriteriaBuilder criteriaBuilder) {
-        final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
-        final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
-
-        List<Predicate> predicates = new ArrayList<>();
-        if (loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
-            if(customerOwnerId == -1) {
-                predicates.add(criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.CUSTOMER_OWNER));
-            } else {
-                predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), customerOwnerId)));
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                        criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
-                ));
-            }
-        } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
-            if (customerOwnerId != -1 && !customerOwnerId.equals(loggedInUserId))
-                throw new RuntimeException("Difference in customer owner Id");
-            predicates.add(criteriaBuilder.or(
-                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.TECHNICIAN),
-                    criteriaBuilder.equal(user.join("role").get("name"), AppConstants.Role.FINANCE)
-            ));
-            predicates.add(criteriaBuilder.and(criteriaBuilder.equal(user.get("customerOwnerId"), loggedInUserId)));
-        } else {
-            throw new RuntimeException("Not Authorized");
-        }
-
-        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-    }
-
     private User checksForAdministrator(final Integer customerOwnerId) {
         try {
             if (customerOwnerId == -1) throw new RuntimeException("Please select a customer owner");
-            Optional<User> optionalUser = userRepository.findById(customerOwnerId);
+            Optional<User> optionalUser = userRepository.findUserByIdWithoutImage(customerOwnerId);
             if (optionalUser.isEmpty())
                 throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
@@ -235,7 +153,7 @@ public class AuthorizationUtil {
             final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
             if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
                 throw new RuntimeException(String.format("Cannot do operations with different customer owner Id"));
-            Optional<User> optionalUser = userRepository.findById(loggedInUserId);
+            Optional<User> optionalUser = userRepository.findUserByIdWithoutImage(loggedInUserId);
             if (optionalUser.isEmpty())
                 throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", loggedInUserId));
             return optionalUser.get();
@@ -249,7 +167,7 @@ public class AuthorizationUtil {
                 || role.equals(AppConstants.Role.FINANCE);
         if(customerOwnerId == -1 && roleTechnicianOrFinance) throw new RuntimeException("Please select a customer owner");
         if(customerOwnerId != -1) {
-            Optional<User> optionalUser = userRepository.findById(customerOwnerId);
+            Optional<User> optionalUser = userRepository.findUserByIdWithoutImage(customerOwnerId);
             if (optionalUser.isEmpty())
                 throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
             if (!optionalUser.get().getRole().getName().equals(AppConstants.Role.CUSTOMER_OWNER))
@@ -257,7 +175,7 @@ public class AuthorizationUtil {
             return optionalUser.get();
         } else {
             final Integer id = loggedInUserUtil.getLoggedInUserID();
-            return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId)));
+            return userRepository.findUserByIdWithoutImage(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId)));
         }
     }
 
@@ -265,7 +183,7 @@ public class AuthorizationUtil {
         final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
         if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
             throw new RuntimeException("Cannot do operations on user with different customer owner Id");
-        Optional<User> optionalUser = userRepository.findById(loggedInUserId);
+        Optional<User> optionalUser = userRepository.findUserByIdWithoutImage(loggedInUserId);
         if (optionalUser.isEmpty())
             throw new ResourceNotFoundException(String.format("No user found with the given id: %1$s", customerOwnerId));
         return optionalUser.get();
@@ -275,7 +193,7 @@ public class AuthorizationUtil {
 
         final User user = checkAuthority(customerOwnerId);
 
-        Optional<User> optionalTechnicianUser = userRepository.findById(technicianId);
+        Optional<User> optionalTechnicianUser = userRepository.findUserByIdWithoutImage(technicianId);
         if (optionalTechnicianUser.isEmpty())
             throw new RuntimeException(String.format(String.format("No user found with the given id: %1$s", technicianId)));
         final User technicianUser = optionalTechnicianUser.get();
@@ -293,6 +211,8 @@ public class AuthorizationUtil {
 
         return optionalTechnicianUser.get();
     }
+
+
 
     public Predicate fetchPredicateForEstimate(Integer customerOwnerId, Root<Estimate> root, CriteriaBuilder criteriaBuilder) {
         final String loggedInUserRole = loggedInUserUtil.getLoggedInUserRole();
