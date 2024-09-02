@@ -695,11 +695,9 @@ public class UserServiceImpl implements UserService {
 
     public void updatePassword(final User user, final NewPasswordRequest newPasswordRequest, final HttpServletRequest request) {
         try {
-            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, user.getRole().getName());
-            if(Objects.isNull(authorizedUser)) throw new RuntimeException("Please select a customer owner");
 
-            if(!authorizationUtil.checkAuthorityForPasswordUpdate(user, authorizedUser)) throw new RuntimeException("Not authorized!!!");
+            if(!authorizationUtil.checkAuthorityForPasswordUpdate(user, request)) throw new RuntimeException("Not authorized!!!");
+
             byte[] keyBytesForPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
             String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
             if (!isInPasswordFormat(password)) throw new RuntimeException("Invalid Password Format");

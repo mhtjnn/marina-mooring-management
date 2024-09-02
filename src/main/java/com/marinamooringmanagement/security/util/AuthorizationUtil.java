@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -234,13 +235,16 @@ public class AuthorizationUtil {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
-    public Boolean checkAuthorityForPasswordUpdate(final User user, final User authorizedUser) {
-        if(user == authorizedUser) return true;
-        if(user.getRole().getId().equals(2)) {
-            if(authorizedUser.getRole().getId().equals(1)) return true;
+    public Boolean checkAuthorityForPasswordUpdate(final User user, final HttpServletRequest request) {
+        Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+        final String loggedInUserRole = LoggedInUserUtil.getLoggedInUserRole();
+
+        if(StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)) {
+            return true;
+        } else if(StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
+            return (user.getCustomerOwnerId() != null && user.getCustomerOwnerId().equals(customerOwnerId));
+        } else {
+            return false;
         }
-        return (user.getRole().getId().equals(3) || user.getRole().getId().equals(4))
-                && authorizedUser.getRole().getId().equals(2)
-                && user.getCustomerOwnerId().equals(authorizedUser.getId());
     }
 }

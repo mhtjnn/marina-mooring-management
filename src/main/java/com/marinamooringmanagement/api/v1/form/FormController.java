@@ -55,7 +55,7 @@ public class FormController extends GlobalExceptionHandler {
     @PostMapping(value = "/uploadForm",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse uploadForm(
             final @RequestBody FormRequestDto formRequestDto,
             final HttpServletRequest request
@@ -83,7 +83,7 @@ public class FormController extends GlobalExceptionHandler {
     @GetMapping(value = "/fetchForms",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse fetchForms(
             final @RequestParam(value = "pageNumber", defaultValue = DEFAULT_PAGE_NUM, required = false) Integer pageNumber,
             final @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
@@ -120,7 +120,7 @@ public class FormController extends GlobalExceptionHandler {
     @PutMapping(value = "/editForm/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse editForm(
             final @PathVariable(value = "id") Integer id,
             final @RequestBody FormRequestDto formRequestDto,
@@ -174,7 +174,7 @@ public class FormController extends GlobalExceptionHandler {
     )
     @GetMapping(value = "/downloadForm/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public ResponseEntity<ByteArrayResource> downloadForm(
             final @PathVariable(value = "id") Integer id,
             final HttpServletRequest request
@@ -206,7 +206,7 @@ public class FormController extends GlobalExceptionHandler {
     )
     @GetMapping(value = "/viewForm/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse viewForm(
             final @PathVariable(value = "id") Integer id,
             final HttpServletRequest request

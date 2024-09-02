@@ -146,7 +146,7 @@ public class FormServiceImpl implements FormService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Deleting form with id: %1$s", id));
-            if(ObjectUtils.notEqual(user, form.getUser())) {
+            if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
             }
@@ -187,7 +187,7 @@ public class FormServiceImpl implements FormService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Downloading form with id: %1$s", id));
-            if(ObjectUtils.notEqual(user, form.getUser())) {
+            if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
             }

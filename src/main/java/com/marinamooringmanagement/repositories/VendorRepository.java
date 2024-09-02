@@ -22,10 +22,6 @@ public interface VendorRepository extends JpaRepository<Vendor, Integer> {
 
     List<Vendor> findAll(final Specification<Vendor> spec);
 
-    Optional<Vendor> findByCompanyPhoneNumber(final String givenPhoneNumber);
-
-    Optional<Vendor> findBySalesRepPhoneNumber(final String givenPhoneNumber);
-
     Optional<Vendor> findByCompanyEmail(final String companyEmail);
 
     Optional<Vendor> findByRemitEmailAddress(final String remitEmailAddress);
