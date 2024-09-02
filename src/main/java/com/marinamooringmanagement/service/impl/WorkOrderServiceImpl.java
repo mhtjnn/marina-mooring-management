@@ -13,6 +13,7 @@ import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
+import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
@@ -869,13 +870,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setCreationDate(new Date(System.currentTimeMillis()));
             }
 
-            if (null != workOrderRequestDto.getEncodedImages() && !workOrderRequestDto.getEncodedImages().isEmpty()) {
+            if (null != workOrderRequestDto.getImageRequestDtoList() && !workOrderRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
                 if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty())
                     imageList = workOrder.getImageList();
-                for (String endcodedImageString : workOrderRequestDto.getEncodedImages()) {
-                    Image image = Image.builder().build();
-                    image.setImageData(ImageUtils.validateEncodedString(endcodedImageString));
+                for (ImageRequestDto imageRequestDto : workOrderRequestDto.getImageRequestDtoList()) {
+                    Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
+                    if(null != imageRequestDto.getImageData()) image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
