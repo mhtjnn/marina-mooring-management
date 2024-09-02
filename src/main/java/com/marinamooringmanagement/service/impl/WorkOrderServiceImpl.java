@@ -886,7 +886,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
-                workOrderRequestDto.getFormRequestDtoList()
+                List<Form> dbSavedForm = (null != workOrder.getFormList()) ? workOrder.getFormList() : new ArrayList<>();
+                List<Form> savedForm = workOrderRequestDto.getFormRequestDtoList()
                         .stream()
                         .map(formRequestDto -> {
                             Form form = Form.builder().build();
@@ -910,8 +911,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             form.setUser(user);
                             form.setWorkOrder(workOrder);
 
-                            return null;
-                        });
+                            return form;
+                        }).toList();
+
+                dbSavedForm.addAll(savedForm);
+                workOrder.setFormList(dbSavedForm);
             }
 
             final LocalDate currentDate = LocalDate.now();
