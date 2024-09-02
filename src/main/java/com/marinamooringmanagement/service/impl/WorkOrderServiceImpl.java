@@ -21,6 +21,7 @@ import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusR
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
+import com.marinamooringmanagement.service.FormService;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -119,6 +120,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private FormMapper formMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -139,10 +143,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
 
             final List<WorkOrder> workOrderList;
-            if(StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)
+            if (StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)
                     || StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
                 workOrderList = workOrderRepository.findAll((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
-            } else if(StringUtils.equals(loggedInUserRole, AppConstants.Role.TECHNICIAN)) {
+            } else if (StringUtils.equals(loggedInUserRole, AppConstants.Role.TECHNICIAN)) {
                 workOrderList = workOrderRepository.findAllByTechnicianUser((null == searchText) ? "" : searchText, user.getId(), showCompletedWorkOrders);
             } else {
                 throw new RuntimeException("No authorized");
@@ -598,7 +602,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             int end = Math.min(start + pageable.getPageSize(), workOrderList.size());
 
             List<WorkOrder> paginatedWorkOrder;
-            if(start > workOrderList.size()) {
+            if (start > workOrderList.size()) {
                 paginatedWorkOrder = new ArrayList<>();
             } else {
                 paginatedWorkOrder = workOrderList.subList(start, end);
@@ -781,7 +785,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             int end = Math.min(start + pageable.getPageSize(), workOrderInvoiceList.size());
 
             List<WorkOrderInvoice> paginatedWorkOrderInvoiceList;
-            if(start > workOrderInvoiceList.size()) paginatedWorkOrderInvoiceList = new ArrayList<>();
+            if (start > workOrderInvoiceList.size()) paginatedWorkOrderInvoiceList = new ArrayList<>();
             else paginatedWorkOrderInvoiceList = workOrderInvoiceList.subList(start, end);
 
             final List<WorkOrderInvoiceResponseDto> workOrderInvoiceResponseDtoList = paginatedWorkOrderInvoiceList
@@ -878,6 +882,35 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 }
 
                 workOrder.setImageList(imageList);
+            }
+
+            if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
+                workOrderRequestDto.getFormRequestDtoList()
+                        .stream()
+                        .map(formRequestDto -> {
+                            Form form = Form.builder().build();
+                            if (null == formRequestDto.getFormName())
+                                throw new RuntimeException("Form name cannot be blank during save");
+                            if (null == formRequestDto.getFileName())
+                                throw new RuntimeException("File name cannot be blank during save");
+                            form.setCreationDate(new Date(System.currentTimeMillis()));
+                            form.setCreatedBy(user.getFirstName() + " " + user.getLastName());
+                            form.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+                            formMapper.toEntity(form, formRequestDto);
+
+                            if (null != formRequestDto.getEncodedFormData()) {
+                                byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
+                                form.setFormData(formData);
+                            } else {
+                                throw new RuntimeException("Form data cannot be null during save");
+                            }
+
+                            form.setUser(user);
+                            form.setWorkOrder(workOrder);
+
+                            return null;
+                        });
             }
 
             final LocalDate currentDate = LocalDate.now();

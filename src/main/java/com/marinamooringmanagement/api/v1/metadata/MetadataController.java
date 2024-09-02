@@ -929,5 +929,35 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchPaymentTypes(baseSearchRequest, request);
     }
+
+    @Operation(
+            summary = "API to fetch forms from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
+    @GetMapping("/forms")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchForms(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchForms(baseSearchRequest, request);
+    }
 }
 

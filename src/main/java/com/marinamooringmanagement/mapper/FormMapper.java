@@ -14,9 +14,11 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface FormMapper {
 
     @Mapping(target = "userDto", ignore = true)
+    @Mapping(target = "workOrderDto", ignore = true)
     FormDto toDto(@MappingTarget FormDto formDto, Form form);
 
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "workOrder", ignore = true)
     void toEntity(@MappingTarget Form form, ImageDto imageDto);
 
     @Mapping(target = "formData", ignore = true)
@@ -26,5 +28,6 @@ public interface FormMapper {
     @Mapping(target = "userResponseDto", ignore = true)
     @Mapping(target = "submittedBy", ignore = true)
     @Mapping(target = "submittedDate", ignore = true)
+    @Mapping(target = "workOrderResponseDto", ignore = true)
     FormResponseDto toResponseDto(@MappingTarget FormResponseDto formResponseDto, Form form);
 }

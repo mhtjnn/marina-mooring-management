@@ -43,30 +43,33 @@ public class WorkOrder extends Base{
     @Column(name = "problem")
     private String problem;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "mooring_id")
     private Mooring mooring;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "technician_user_id")
     private User technicianUser;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_owner_user_id")
     private User customerOwnerUser;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_status_id")
     private WorkOrderStatus workOrderStatus;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_pay_status_id")
     private WorkOrderPayStatus workOrderPayStatus;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
     private List<Image> imageList;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    private List<Form> formList;
+
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)
     @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;
 

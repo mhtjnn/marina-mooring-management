@@ -44,4 +44,6 @@ public class WorkOrderDto extends BaseDto{
     private UserDto financeUserDto;
 
     private List<ImageDto> imageDtoList;
+
+    private List<FormDto> formDtoList;
 }

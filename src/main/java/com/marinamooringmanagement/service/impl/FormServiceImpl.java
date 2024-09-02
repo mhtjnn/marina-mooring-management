@@ -213,8 +213,8 @@ public class FormServiceImpl implements FormService {
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if(null == id) {
-                if(null == formRequestDto.getFormName()) throw new RuntimeException(String.format("Form name cannot be blank during save"));
-                if(null == formRequestDto.getFileName()) throw new RuntimeException(String.format("File name cannot be blank during save"));
+                if(null == formRequestDto.getFormName()) throw new RuntimeException("Form name cannot be blank during save");
+                if(null == formRequestDto.getFileName()) throw new RuntimeException("File name cannot be blank during save");
                 form.setCreationDate(new Date(System.currentTimeMillis()));
                 form.setCreatedBy(user.getFirstName() + " " + user.getLastName());
             }
@@ -226,7 +226,7 @@ public class FormServiceImpl implements FormService {
                 byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
                 form.setFormData(formData);
             } else {
-                if(null == id) throw new RuntimeException(String.format("Form data cannot be null during save"));
+                if(null == id) throw new RuntimeException("Form data cannot be null during save");
             }
 
             if(null == id) form.setUser(user);

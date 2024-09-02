@@ -32,6 +32,10 @@ public class Form extends Base {
     private byte[] formData;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_order_id")
+    private WorkOrder workOrder;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 

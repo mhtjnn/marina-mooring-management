@@ -25,4 +25,6 @@ public class FormResponseDto {
 
     private UserResponseDto userResponseDto;
 
+    private WorkOrderResponseDto workOrderResponseDto;
+
 }

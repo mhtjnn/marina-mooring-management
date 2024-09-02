@@ -157,6 +157,12 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private FormRepository formRepository;
+
+    @Autowired
+    private FormMapper formMapper;
+
     @Override
     public BasicRestResponse fetchMooringStatus(BaseSearchRequest baseSearchRequest) {
         Page<MooringStatus> content = null;
@@ -871,6 +877,34 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Types of payment fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(paymentTypeDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchForms(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        List<Form> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+
+            User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            content = formRepository.findAllWithoutFormData("", user.getId());
+
+            List<FormResponseDto> formResponseDtoList = content
+                    .stream()
+                    .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                    .toList();
+
+            response.setMessage("Forms fetched successfully!!!");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(formResponseDtoList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
