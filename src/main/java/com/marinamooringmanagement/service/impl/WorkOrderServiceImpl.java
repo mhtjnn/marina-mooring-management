@@ -125,6 +125,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private MooringStatusRepository mooringStatusRepository;
 
+    @Autowired
+    private VoiceMEMORepository voiceMEMORepository;
+
+    @Autowired
+    private VoiceMEMOMapper voiceMEMOMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -219,10 +225,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 throw new RuntimeException("Technician Id cannot be null");
             if (null == workOrderRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
 
-            performSave(workOrderRequestDto, workOrder, null, request);
+            WorkOrderResponseDto workOrderResponseDto = performSave(workOrderRequestDto, workOrder, null, request);
 
             response.setMessage("Work order saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
+            response.setContent(workOrderResponseDto);
         } catch (Exception e) {
             log.error("Error occurred while saving the work order in the database {}", e.getLocalizedMessage());
             response.setMessage(e.getMessage());
@@ -242,9 +249,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
             Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findById(workOrderId);
             final WorkOrder workOrder = optionalWorkOrder.orElseThrow(() -> new ResourceNotFoundException(String.format("Work order not found with id: %1$s", workOrderId)));
-            performSave(workOrderRequestDto, workOrder, workOrderId, request);
+            final WorkOrderResponseDto workOrderResponseDto = performSave(workOrderRequestDto, workOrder, workOrderId, request);
             response.setMessage("Work order updated successfully");
             response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDto);
         } catch (Exception e) {
             log.error("Error occurred while updating work order {}", e.getLocalizedMessage());
             response.setMessage(e.getMessage());
@@ -848,7 +856,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
-    private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
+    private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
@@ -924,6 +932,38 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 dbSavedForm.addAll(savedForm);
                 workOrder.setFormList(dbSavedForm);
+            }
+
+            if (null != workOrderRequestDto.getVoiceMEMORequestDtoList() && !workOrderRequestDto.getVoiceMEMORequestDtoList().isEmpty()) {
+                List<VoiceMEMO> dbSavedVoiceMEMO = (null != workOrder.getVoiceMEMOList()) ? workOrder.getVoiceMEMOList() : new ArrayList<>();
+                List<VoiceMEMO> savedVoiceMEMO = workOrderRequestDto.getVoiceMEMORequestDtoList()
+                        .stream()
+                        .map(voiceMEMORequestDto -> {
+                            VoiceMEMO voiceMEMO = VoiceMEMO.builder().build();
+                            if (null == voiceMEMORequestDto.getName())
+                                throw new RuntimeException("Voice MEMO name cannot be blank during save");
+
+                            voiceMEMO.setCreationDate(new Date(System.currentTimeMillis()));
+                            voiceMEMO.setCreatedBy(user.getFirstName() + " " + user.getLastName());
+                            voiceMEMO.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+                            voiceMEMOMapper.toEntity(voiceMEMO, voiceMEMORequestDto);
+
+                            if (null != voiceMEMORequestDto.getEncodedData()) {
+                                byte[] data = PDFUtils.isPdfFile(voiceMEMORequestDto.getEncodedData());
+                                voiceMEMO.setData(data);
+                            } else {
+                                throw new RuntimeException("Data cannot be null during save");
+                            }
+
+                            voiceMEMO.setUser(user);
+                            voiceMEMO.setWorkOrder(workOrder);
+
+                            return voiceMEMO;
+                        }).toList();
+
+                dbSavedVoiceMEMO.addAll(savedVoiceMEMO);
+                workOrder.setVoiceMEMOList(dbSavedVoiceMEMO);
             }
 
             final LocalDate currentDate = LocalDate.now();
@@ -1101,7 +1141,28 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
             }
 
-            workOrderRepository.save(workOrder);
+            final WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+            WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), savedWorkOrder);
+            if (null != savedWorkOrder.getMooring())
+                workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), savedWorkOrder.getMooring()));
+            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getCustomer())
+                workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer()));
+            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getBoatyard())
+                workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedWorkOrder.getMooring().getBoatyard()));
+            if (null != savedWorkOrder.getCustomerOwnerUser())
+                workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedWorkOrder.getCustomerOwnerUser()));
+            if (null != savedWorkOrder.getTechnicianUser())
+                workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedWorkOrder.getTechnicianUser()));
+            if (null != savedWorkOrder.getWorkOrderStatus())
+                workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), savedWorkOrder.getWorkOrderStatus()));
+            if (null != savedWorkOrder.getDueDate())
+                workOrderResponseDto.setDueDate(DateUtil.dateToString(savedWorkOrder.getDueDate()));
+            if (null != savedWorkOrder.getScheduledDate())
+                workOrderResponseDto.setScheduledDate(DateUtil.dateToString(savedWorkOrder.getScheduledDate()));
+            if (null != savedWorkOrder.getCompletedDate())
+                workOrderResponseDto.setCompletedDate(DateUtil.dateToString(savedWorkOrder.getCompletedDate()));
+
+            return workOrderResponseDto;
         } catch (
                 Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());

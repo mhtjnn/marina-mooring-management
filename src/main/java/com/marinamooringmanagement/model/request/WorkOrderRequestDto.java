@@ -43,4 +43,6 @@ public class WorkOrderRequestDto {
     private List<ImageRequestDto> imageRequestDtoList;
 
     private List<FormRequestDto> formRequestDtoList;
+
+    private List<VoiceMEMORequestDto> voiceMEMORequestDtoList;
 }

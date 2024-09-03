@@ -19,6 +19,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "customerOwnerUser", ignore = true)
     @Mapping(target = "imageList", ignore = true)
     @Mapping(target = "formList", ignore = true)
+    @Mapping(target = "voiceMEMOList", ignore = true)
     WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderDto workOrderDto);
 
     @Mapping(target = "mooring", ignore = true)
@@ -30,6 +31,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "scheduledDate", ignore = true)
     @Mapping(target = "imageList", ignore = true)
     @Mapping(target = "formList", ignore = true)
+    @Mapping(target = "voiceMEMOList", ignore = true)
     void mapToWorkOrder(@MappingTarget WorkOrder workOrder, WorkOrderRequestDto workOrderRequestDto);
 
     @Mapping(target = "mooringDto", ignore = true)
@@ -39,6 +41,7 @@ public interface WorkOrderMapper {
     @Mapping(target = "technicianUserDto", ignore = true)
     @Mapping(target = "imageDtoList", ignore = true)
     @Mapping(target = "formDtoList", ignore = true)
+    @Mapping(target = "voiceMEMODtoList", ignore = true)
     WorkOrderDto mapToWorkOrderDto(@MappingTarget WorkOrderDto workOrderDto, WorkOrder workOrder);
 
     @Mapping(target = "customerResponseDto", ignore = true)

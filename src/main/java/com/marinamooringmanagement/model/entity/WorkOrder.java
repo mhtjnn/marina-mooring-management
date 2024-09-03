@@ -72,6 +72,9 @@ public class WorkOrder extends Base{
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
     private List<Form> formList;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    private List<VoiceMEMO> voiceMEMOList;
+
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)
     @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;

@@ -48,4 +48,6 @@ public class WorkOrderDto extends BaseDto{
     private List<ImageDto> imageDtoList;
 
     private List<FormDto> formDtoList;
+
+    private List<VoiceMEMODto> voiceMEMODtoList;
 }
