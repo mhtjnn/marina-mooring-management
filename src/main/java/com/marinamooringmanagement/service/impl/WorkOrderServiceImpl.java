@@ -8,16 +8,14 @@ import com.marinamooringmanagement.mapper.metadata.*;
 import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.dto.metadata.*;
 import com.marinamooringmanagement.model.entity.*;
-import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
+import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
+import com.marinamooringmanagement.repositories.metadata.MooringStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
@@ -123,6 +121,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private FormMapper formMapper;
+
+    @Autowired
+    private MooringStatusRepository mooringStatusRepository;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
@@ -864,6 +865,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setCreationDate(new Date(System.currentTimeMillis()));
             }
 
+
+
             if (null != workOrderRequestDto.getImageRequestDtoList() && !workOrderRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
                 if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty())
@@ -1034,6 +1037,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("No mooring found with the given id: %1$s", workOrderRequestDto.getMooringId()));
 
                 final Mooring mooring = optionalMooring.get();
+
+                if(null != workOrderRequestDto.getMooringStatusId()) {
+                    final MooringStatus mooringStatus = mooringStatusRepository.findById(workOrderRequestDto.getMooringStatusId())
+                            .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring status found with the given id: %1$s", workOrderRequestDto.getMooringStatusId())));
+
+                    mooring.setMooringStatus(mooringStatus);
+                }
 
                 if (null == workOrderRequestDto.getCustomerId())
                     throw new RuntimeException("Customer Id cannot be null during saving/updating work order");

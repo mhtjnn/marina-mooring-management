@@ -35,6 +35,8 @@ public class WorkOrderResponseDto implements Serializable {
 
     private String problem;
 
+    private String notes;
+
     private CustomerResponseDto customerResponseDto;
 
     private MooringResponseDto mooringResponseDto;

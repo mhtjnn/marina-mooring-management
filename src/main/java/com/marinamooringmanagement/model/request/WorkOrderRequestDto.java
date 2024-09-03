@@ -36,6 +36,10 @@ public class WorkOrderRequestDto {
 
     private Integer workOrderPayStatusId;
 
+    private Integer mooringStatusId;
+
+    private String notes;
+
     private List<ImageRequestDto> imageRequestDtoList;
 
     private List<FormRequestDto> formRequestDtoList;

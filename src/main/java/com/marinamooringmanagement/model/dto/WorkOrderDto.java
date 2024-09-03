@@ -31,6 +31,8 @@ public class WorkOrderDto extends BaseDto{
 
     private String problem;
 
+    private String notes;
+
     private WorkOrderStatusDto workOrderStatusDto;
 
     private WorkOrderPayStatusDto workOrderPayStatusDto;
