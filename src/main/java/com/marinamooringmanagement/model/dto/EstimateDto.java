@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.Date;
 
@@ -24,6 +25,8 @@ public class EstimateDto extends BaseDto{
     private Time time;
 
     private String problem;
+
+    private BigDecimal cost;
 
     private WorkOrderStatusDto workOrderStatusDto;
 

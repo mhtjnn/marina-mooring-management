@@ -24,4 +24,6 @@ public class InventoryRequestDto {
     private BigDecimal salePrice;
 
     private String taxable;
+
+    private Integer quantity;
 }

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.Date;
 
@@ -34,6 +35,9 @@ public class Estimate extends Base{
 
     @Column(name = "problem")
     private String problem;
+
+    @Column(name = "cost")
+    private BigDecimal cost;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "mooring_id")

@@ -32,6 +32,9 @@ public class Inventory extends Base{
     @Column(name = "taxable")
     private Boolean taxable;
 
+    @Column(name = "quantity")
+    private Integer quantity;
+
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_type_id")
     private InventoryType inventoryType;

@@ -24,6 +24,8 @@ public class InventoryDto extends BaseDto{
 
     private Boolean taxable;
 
+    private Integer quantity;
+
     private InventoryTypeDto inventoryTypeDto;
 
     private VendorDto vendorDto;

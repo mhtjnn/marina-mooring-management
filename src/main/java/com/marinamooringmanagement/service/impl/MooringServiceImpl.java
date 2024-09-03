@@ -424,11 +424,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             if(null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
                 Date inspectionDate = DateUtil.stringToDate(mooringRequestDto.getInspectionDate());
-                LocalDate localDate = inspectionDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                LocalDate currentDate = LocalDate.now();
-                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Inspection Date of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
                 savedMooring.setInspectionDate(inspectionDate);
             }
 

@@ -125,4 +125,6 @@ public class MooringDueServiceResponseDto implements Serializable {
     private MooringDueServiceStatusDto mooringDueServiceStatusDto;
 
     private String mooringServiceDate;
+
+    private Boolean under30;
 }

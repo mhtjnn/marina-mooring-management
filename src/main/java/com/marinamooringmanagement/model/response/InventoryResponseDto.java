@@ -27,6 +27,8 @@ public class InventoryResponseDto implements Serializable {
 
     private String taxable;
 
+    private Integer quantity;
+
     private InventoryTypeDto inventoryType;
 
     private VendorResponseDto vendorResponseDto;

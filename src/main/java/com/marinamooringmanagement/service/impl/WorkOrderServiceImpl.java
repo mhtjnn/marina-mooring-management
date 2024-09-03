@@ -22,7 +22,6 @@ import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusR
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
-import com.marinamooringmanagement.service.FormService;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -481,7 +481,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchAllOpenWorkOrdersAndMooringDueForService(BaseSearchRequest baseSearchRequest, HttpServletRequest request, String filterDateFrom, String filterDateTo) {
+    public BasicRestResponse fetchAllOpenWorkOrdersAndMooringDueForService(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -490,15 +490,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             final AllWorkOrdersAndMooringDueForServiceResponse allWorkOrdersAndMooringDueForServiceResponse = AllWorkOrdersAndMooringDueForServiceResponse.builder().build();
 
-            final Date filterFromDate = DateUtil.stringToDate(filterDateFrom);
-            final Date filterToDate = DateUtil.stringToDate(filterDateTo);
+            List<WorkOrderResponseDto> openWorkOrderResponseDtoList;
 
-            List<WorkOrderResponseDto> openWorkOrderResponseDtoList = new ArrayList<>();
-
-            if (filterToDate.before(filterFromDate))
-                throw new RuntimeException(String.format("Invalid date range: %1$s cannot be earlier than %2$s.", filterDateTo, filterDateFrom));
-
-            List<WorkOrder> workOrderList = workOrderRepository.findWorkOrderWithDateFilter(user.getId(), filterFromDate, filterToDate, AppConstants.BooleanStringConst.NO);
+            List<WorkOrder> workOrderList = workOrderRepository.findAll("", user.getId(), AppConstants.BooleanStringConst.NO);
 
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -1097,7 +1091,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     private List<MooringDueServiceResponseDto> getMooringDueServiceResponseDtoList(final List<WorkOrder> workOrderList) {
 
+        LocalDate currentDate = LocalDate.now();
+        LocalDate dateAfter31Days = currentDate.plusDays(31);
+
         HashMap<String, MooringDueServiceResponseDto> mooringDueServiceResponseDtoHashMap = new HashMap<>();
+
         for (WorkOrder workOrder : workOrderList) {
             if (null == workOrder.getMooring())
                 throw new RuntimeException(String.format("No mooring found for the work order with the id: %1$s", workOrder.getId()));
@@ -1119,10 +1117,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             mooringDueServiceResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), boatyard));
 
             Optional<MooringDueServiceStatus> optionalMooringDueServiceStatus;
+
             final MooringDueServiceStatus mooringDueServiceStatus;
             final MooringDueServiceStatusDto mooringDueServiceStatusDto;
 
             if (workOrder.getWorkOrderStatus().getStatus().equals(AppConstants.WorkOrderStatusConstants.CLOSE)) {
+
+                if(mooringDueServiceResponseDto.getMooringDueServiceStatusDto() != null) continue;
+
                 optionalMooringDueServiceStatus = mooringDueServiceStatusRepository.findByStatus(AppConstants.MooringDueServiceStatusConstants.COMPLETE);
                 if (optionalMooringDueServiceStatus.isEmpty())
                     throw new RuntimeException(String.format("No mooring due for service status found with the status as complete"));
@@ -1145,7 +1147,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             if (mooringDueServiceResponseDtoHashMap.containsKey(mooringDueServiceResponseDto.getMooringNumber())) {
+
                 MooringDueServiceResponseDto mooringDueServiceResponseDtoFromMap = mooringDueServiceResponseDtoHashMap.get(mooringDueServiceResponseDto.getMooringNumber());
+
                 if (
                         null != mooringDueServiceStatusDto
                                 && mooringDueServiceResponseDtoFromMap.getMooringDueServiceStatusDto().getStatus().equals(AppConstants.MooringDueServiceStatusConstants.COMPLETE)
@@ -1155,10 +1159,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 }
 
                 if (null != mooringDueServiceResponseDtoFromMap.getMooringServiceDate()) {
+                    String mooringDueServiceDateStr = mooringDueServiceResponseDtoFromMap.getMooringServiceDate();
+                    LocalDate mooringDueServiceDate = DateUtil.stringToLocalDate(mooringDueServiceDateStr);
+
+                    if(mooringDueServiceDate.isBefore(dateAfter31Days)) mooringDueServiceResponseDtoFromMap.setUnder30(true);
+
                     if (null != workOrder.getDueDate()) {
                         Date savedDueDate = workOrder.getDueDate();
                         Date mooringServiceDate = DateUtil.stringToDate(mooringDueServiceResponseDtoFromMap.getMooringServiceDate());
-                        if (savedDueDate.after(mooringServiceDate)) {
+                        if (savedDueDate.before(mooringServiceDate)) {
                             mooringDueServiceResponseDtoFromMap.setMooringServiceDate(DateUtil.dateToString(workOrder.getDueDate()));
                         }
                     } else {
@@ -1170,7 +1179,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             } else {
                 if (null == workOrder.getDueDate())
                     throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrder.getId()));
+
                 mooringDueServiceResponseDto.setMooringServiceDate(DateUtil.dateToString(workOrder.getDueDate()));
+
+                String mooringDueServiceDateStr = mooringDueServiceResponseDto.getMooringServiceDate();
+                LocalDate mooringDueServiceDate = DateUtil.stringToLocalDate(mooringDueServiceDateStr);
+
+                if(mooringDueServiceDate.isBefore(dateAfter31Days)) mooringDueServiceResponseDto.setUnder30(true);
+
                 if (null != workOrder.getMooring()) {
                     if (null != workOrder.getMooring().getInstallBottomChainDate())
                         mooringDueServiceResponseDto.setInstallBottomChainDate(DateUtil.dateToString(workOrder.getMooring().getInstallBottomChainDate()));
