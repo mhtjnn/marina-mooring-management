@@ -31,5 +31,6 @@ public interface ImageMapper {
     @Mapping(target = "imageData", ignore = true)
     Image toEntity(@MappingTarget Image image, ImageRequestDto imageDto);
 
+    @Mapping(target = "encodedData", ignore = true)
     ImageResponseDto toResponseDto(@MappingTarget ImageResponseDto imageResponseDto, Image image);
 }

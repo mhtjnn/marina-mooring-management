@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -131,6 +130,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private VoiceMEMOMapper voiceMEMOMapper;
 
+    @Autowired
+    private FormRepository formRepository;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -191,10 +193,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
                         if (null != workOrder.getCompletedDate())
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
-                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
-                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+
+                        List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
+                        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(workOrder.getId());
+
+                        if (null != imageList && !imageList.isEmpty()) {
+                            workOrderResponseDto.setImageResponseDtoList(imageList
                                     .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                                    .toList());
+                        }
+                        if (null != formList && !formList.isEmpty()) {
+                            workOrderResponseDto.setFormResponseDtoList(formList
+                                    .stream()
+                                    .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                                    .toList());
+                        }
+                        if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+                            workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
+                                    .stream()
+                                    .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
                                     .toList());
                         }
                         return workOrderResponseDto;
@@ -635,9 +654,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null != workOrder.getScheduledDate())
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
                         if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
-                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+                            workOrderResponseDto.setImageResponseDtoList(workOrder.getImageList()
                                     .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
                                     .toList());
                         }
                         if (null != workOrder.getCompletedDate()) {

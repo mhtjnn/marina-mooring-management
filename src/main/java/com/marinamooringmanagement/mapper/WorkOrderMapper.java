@@ -54,6 +54,9 @@ public interface WorkOrderMapper {
     @Mapping(target = "dueDate", ignore = true)
     @Mapping(target = "scheduledDate", ignore = true)
     @Mapping(target = "completedDate", ignore = true)
+    @Mapping(target = "formResponseDtoList", ignore = true)
+    @Mapping(target = "imageResponseDtoList", ignore = true)
+    @Mapping(target = "voiceMEMOResponseDtoList", ignore = true)
     WorkOrderResponseDto mapToWorkOrderResponseDto(@MappingTarget WorkOrderResponseDto workOrderResponseDto, WorkOrder workOrder);
 
 }

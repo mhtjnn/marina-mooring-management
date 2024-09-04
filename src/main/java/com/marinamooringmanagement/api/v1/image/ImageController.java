@@ -114,4 +114,30 @@ public class ImageController extends GlobalExceptionHandler {
         return imageService.editImage(id, entity, entityId, imageRequestDto ,request);
     }
 
+    @Operation(
+            summary = "API to view image",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/viewImage/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    public BasicRestResponse viewImage(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return imageService.viewImage(id, request);
+    }
+
 }

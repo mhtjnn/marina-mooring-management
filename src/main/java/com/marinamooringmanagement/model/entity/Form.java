@@ -48,4 +48,10 @@ public class Form extends Base {
         this.creationDate = createdTime;
         this.user = User.builder().id(userId).firstName(firstName).lastName(lastName).role(Role.builder().id(roleId).name(roleName).build()).build();
     }
+
+    public Form(Integer id, String formName, String fileName) {
+        this.id = id;
+        this.formName = formName;
+        this.fileName = fileName;
+    }
 }

@@ -22,5 +22,5 @@ public class ImageResponseDto implements Serializable {
 
     private String note;
 
-    private byte[] imageData;
+    private String encodedData;
 }

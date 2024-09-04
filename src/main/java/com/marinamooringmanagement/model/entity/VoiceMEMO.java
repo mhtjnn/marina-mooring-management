@@ -34,4 +34,9 @@ public class VoiceMEMO extends Base{
     @JoinColumn(name = "user_id")
     private User user;
 
+    VoiceMEMO(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
 }

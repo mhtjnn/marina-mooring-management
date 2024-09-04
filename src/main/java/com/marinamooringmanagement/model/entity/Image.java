@@ -51,4 +51,10 @@ public class Image extends Base{
         this.note = note;
     }
 
+    public Image(Integer id, String imageName, String note) {
+        this.id = id;
+        this.imageName = imageName;
+        this.note = note;
+    }
+
 }

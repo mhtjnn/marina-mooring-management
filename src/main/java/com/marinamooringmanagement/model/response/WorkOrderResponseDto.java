@@ -53,5 +53,9 @@ public class WorkOrderResponseDto implements Serializable {
 
     private WorkOrderPayStatusDto workOrderPayStatusDto;
 
-    private List<ImageDto> imageDtoList;
+    private List<ImageResponseDto> imageResponseDtoList;
+
+    private List<FormResponseDto> formResponseDtoList;
+
+    private List<VoiceMEMOResponseDto> voiceMEMOResponseDtoList;
 }

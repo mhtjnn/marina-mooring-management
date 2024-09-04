@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -196,6 +197,9 @@ public class FormServiceImpl implements FormService {
             if(null != form.getCreationDate()) formResponseDto.setSubmittedDate(DateUtil.dateToString(form.getCreationDate()));
             if(null != form.getCreatedBy()) formResponseDto.setSubmittedBy(form.getCreatedBy());
             if(null != form.getUser()) formResponseDto.setUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), form.getUser()));
+
+            String encodedData = Base64.getEncoder().encodeToString(form.getFormData());
+            formResponseDto.setEncodedData(encodedData);
 
             response.setContent(formResponseDto);
             response.setMessage(String.format("Form with the id: %1$s fetched successfully", id));
