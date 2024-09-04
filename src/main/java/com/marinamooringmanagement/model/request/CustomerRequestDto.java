@@ -42,6 +42,9 @@ public class CustomerRequestDto {
     private String notes;
 
     private String address;
+
+    private String city;
+
     /**
      * The state or region of the customer's address.
      */

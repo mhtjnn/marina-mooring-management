@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ImageRequestDto {
 
+    private Integer id;
+
     private String imageName;
 
     private String note;

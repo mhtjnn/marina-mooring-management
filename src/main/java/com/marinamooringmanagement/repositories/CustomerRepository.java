@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
-            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.notes, c.emailAddress, " +
+            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.city, c.notes, c.emailAddress, " +
             "s.id, s.name, co.id, co.name, c.zipCode, cu.id, cu.type, u.id, u.firstName, u.lastName, " +
             "c.phone, r.id, r.name) " +
             "FROM Customer c " +
@@ -66,7 +66,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
                                                      @Param("userId") Integer userId);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
-            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.notes, c.emailAddress, " +
+            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.city, c.notes, c.emailAddress, " +
             "s.id, s.name, co.id, co.name, c.zipCode, cu.id, cu.type, u.id, u.firstName, u.lastName, " +
             "c.phone, r.id, r.name) " +
             "FROM Customer c " +

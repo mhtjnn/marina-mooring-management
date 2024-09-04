@@ -64,6 +64,9 @@ public class Customer extends Base {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "city")
+    private String city;
+
     /**
      * The state of the customer's address.
      */
@@ -102,7 +105,7 @@ public class Customer extends Base {
     private QuickbookCustomer quickBookCustomer;
 
     public Customer(
-            Integer id, String firstName, String lastName, String customerId, String address, String notes, String emailAddress,
+            Integer id, String firstName, String lastName, String customerId, String address, String city, String notes, String emailAddress,
                     Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
                     String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
                     Integer roleId, String roleName
@@ -112,6 +115,7 @@ public class Customer extends Base {
         this.lastName = lastName;
         this.customerId = customerId;
         this.address = address;
+        this.city = city;
         this.notes = notes;
         this.emailAddress = emailAddress;
         this.state = State.builder().id(stateId).name(stateName).build();
@@ -123,7 +127,7 @@ public class Customer extends Base {
     }
 
     public Customer(
-            Integer id, String firstName, String lastName, String customerId, String address, String notes, String emailAddress,
+            Integer id, String firstName, String lastName, String customerId, String address, String city, String notes, String emailAddress,
             Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
             String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
             Integer roleId, String roleName, List<Image> imageList
@@ -133,6 +137,7 @@ public class Customer extends Base {
         this.lastName = lastName;
         this.customerId = customerId;
         this.address = address;
+        this.city = city;
         this.notes = notes;
         this.emailAddress = emailAddress;
         this.state = State.builder().id(stateId).name(stateName).build();

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FormRequestDto {
 
+    private Integer id;
+
     private String formName;
 
     private String fileName;

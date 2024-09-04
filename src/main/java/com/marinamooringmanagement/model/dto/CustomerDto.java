@@ -45,6 +45,9 @@ public class CustomerDto extends BaseDto {
      * The street and house number of the customer's address.
      */
     private String address;
+
+    private String city;
+
     /**
      * The state of the customer's address.
      */

@@ -124,6 +124,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private FormMapper formMapper;
 
+    @Autowired
+    private FormRepository formRepository;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -885,6 +888,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         .stream()
                         .map(formRequestDto -> {
                             Form form = Form.builder().build();
+
+                            if(formRequestDto.getId() != null) {
+                                form = formRepository.findById(formRequestDto.getId())
+                                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", formRequestDto.getId())));
+                            }
+
                             if (null == formRequestDto.getFormName())
                                 throw new RuntimeException("Form name cannot be blank during save");
                             if (null == formRequestDto.getFileName())
