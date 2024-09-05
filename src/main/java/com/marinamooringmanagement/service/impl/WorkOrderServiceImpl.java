@@ -914,9 +914,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     if(null != imageRequestDto.getImageData()) image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+
+                    image.setUser(user);
+                    image.setWorkOrder(workOrder);
+
                     imageList.add(image);
                 }
-
+                imageRepository.saveAll(imageList);
                 workOrder.setImageList(imageList);
             }
 
@@ -950,6 +954,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }).toList();
 
                 dbSavedForm.addAll(savedForm);
+
+                formRepository.saveAll(dbSavedForm);
+
                 workOrder.setFormList(dbSavedForm);
             }
 
@@ -982,6 +989,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }).toList();
 
                 dbSavedVoiceMEMO.addAll(savedVoiceMEMO);
+
+                voiceMEMORepository.saveAll(dbSavedVoiceMEMO);
+
                 workOrder.setVoiceMEMOList(dbSavedVoiceMEMO);
             }
 

@@ -179,7 +179,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER  + " or " + Authority.TECHNICIAN)
     @RequestMapping(
             value = "/fetchOpenWorkOrders/{technicianId}",
             method = RequestMethod.GET,
@@ -258,7 +258,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
                     )
             }
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER  + " or " + Authority.TECHNICIAN)
     @RequestMapping(
             value = "/fetchCloseWorkOrders/{technicianId}",
             method = RequestMethod.GET,
