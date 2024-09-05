@@ -233,6 +233,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -258,6 +259,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer workOrderId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -875,6 +877,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Transactional
     private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -915,7 +918,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
-                    image.setUser(user);
                     image.setWorkOrder(workOrder);
 
                     imageList.add(image);
@@ -947,7 +949,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 throw new RuntimeException("Form data cannot be null during save");
                             }
 
-                            form.setUser(user);
                             form.setWorkOrder(workOrder);
 
                             return form;
@@ -982,7 +983,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 throw new RuntimeException("Data cannot be null during save");
                             }
 
-                            voiceMEMO.setUser(user);
                             voiceMEMO.setWorkOrder(workOrder);
 
                             return voiceMEMO;

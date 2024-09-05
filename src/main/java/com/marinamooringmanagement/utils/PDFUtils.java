@@ -1,7 +1,10 @@
 package com.marinamooringmanagement.utils;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Base64;
 
+@Transactional
 public class PDFUtils {
 
     public static byte[] isPdfFile(String encodedString) {

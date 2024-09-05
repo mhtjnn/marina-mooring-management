@@ -1,5 +1,7 @@
 package com.marinamooringmanagement.utils;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
 
+@Transactional
 public class ImageUtils {
 
     public static byte[] validateEncodedString(final String encodedString) throws IOException {
