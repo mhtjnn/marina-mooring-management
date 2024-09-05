@@ -37,6 +37,7 @@ public class SpringSecurityConfiguration{
             "/swagger-ui/**",
             "/webjars/**",
             "/v3/api-docs",
+            "/api/v1/QBO/oauth2redirect",
             "/**"
     };
 
