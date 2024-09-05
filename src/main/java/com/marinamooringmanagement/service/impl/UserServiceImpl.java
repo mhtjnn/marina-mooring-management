@@ -583,7 +583,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Checking if the logged-in user has the authority to perform save functionality.
-            final User authorizedUser = authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
+            authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
             if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));

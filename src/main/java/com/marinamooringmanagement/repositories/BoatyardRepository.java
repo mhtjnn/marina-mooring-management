@@ -73,9 +73,13 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
             "b.id, b.boatyardName, b.boatyardId, b.address, b.gpsCoordinates, " +
+            "s.id, s.name, " +
+            "c.id, c.name, " +
             "u.id, u.firstName, u.lastName) " +
             "FROM Boatyard b " +
             "LEFT JOIN b.user u " +
+            "LEFT JOIN b.state s " +
+            "LEFT JOIN b.country c " +
             "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
             "AND (:searchText IS NOT NULL AND (" +
             "LOWER(CAST(b.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +

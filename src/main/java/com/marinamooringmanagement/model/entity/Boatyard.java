@@ -105,12 +105,16 @@ public class Boatyard extends Base {
 
     public Boatyard(Integer id, String boatyardName, String boatyardId, String address,
                     String gpsCoordinates,
+                    Integer stateId, String stateName,
+                    Integer countryId, String countryName,
                     Integer userId, String userFirstName, String userLastName) {
         this.id = id;
         this.boatyardName = boatyardName;
         this.boatyardId = boatyardId;
         this.address = address;
         this.gpsCoordinates = gpsCoordinates;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
     }
 }

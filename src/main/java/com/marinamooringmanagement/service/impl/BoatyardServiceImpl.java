@@ -140,7 +140,18 @@ public class BoatyardServiceImpl implements BoatyardService {
             final Sort sort = SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir());
             final Pageable p = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), sort);
 
-            final List<BoatyardResponseDto> boatyardDtoList = boatyardList
+            int start = (int) p.getOffset();
+            int end = Math.min(start + p.getPageSize(), boatyardList.size());
+
+            List<Boatyard> paginatedList;
+
+            if(start > end) {
+                paginatedList = new ArrayList<>();
+            } else {
+                paginatedList = boatyardList.subList(start, end);
+            }
+
+            final List<BoatyardResponseDto> boatyardDtoList = paginatedList
                     .stream()
                     .map(boatyard -> {
                         BoatyardResponseDto boatyardResponseDto = BoatyardResponseDto.builder().build();
@@ -161,8 +172,7 @@ public class BoatyardServiceImpl implements BoatyardService {
             response.setMessage("All boatyard are fetched successfully");
             response.setStatus(HttpStatus.OK.value());
             response.setTotalSize(boatyardList.size());
-            if (!boatyardDtoList.isEmpty()) response.setCurrentSize(boatyardDtoList.size());
-            else response.setCurrentSize(0);
+            response.setCurrentSize(paginatedList.size());
         } catch (Exception e) {
             log.error(String.format("Error occurred while fetching Boatyard: %s", e.getMessage()), e);
             throw e;
