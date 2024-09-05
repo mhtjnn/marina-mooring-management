@@ -877,8 +877,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
+
+                    image.setWorkOrder(workOrder);
                 }
 
+                imageRepository.saveAll(imageList);
                 workOrder.setImageList(imageList);
             }
 
@@ -918,6 +921,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }).toList();
 
                 dbSavedForm.addAll(savedForm);
+
+                formRepository.saveAll(dbSavedForm);
+
                 workOrder.setFormList(dbSavedForm);
             }
 

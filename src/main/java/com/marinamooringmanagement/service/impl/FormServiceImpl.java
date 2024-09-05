@@ -12,13 +12,16 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.FormResponseDto;
 import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.FormRepository;
+import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.FormService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.PDFUtils;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,9 @@ public class FormServiceImpl implements FormService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     public BasicRestResponse uploadForm(final FormRequestDto formRequestDto, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
@@ -71,7 +77,17 @@ public class FormServiceImpl implements FormService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final Pageable pageable = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -143,7 +159,19 @@ public class FormServiceImpl implements FormService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Deleting form with id: %1$s", id));
             if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
@@ -165,7 +193,18 @@ public class FormServiceImpl implements FormService {
     public Form downloadForm(Integer id, HttpServletRequest request) {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Downloading form with id: %1$s", id));
             if(ObjectUtils.notEqual(user, form.getUser())) {
@@ -184,7 +223,18 @@ public class FormServiceImpl implements FormService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Downloading form with id: %1$s", id));
             if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
@@ -210,7 +260,17 @@ public class FormServiceImpl implements FormService {
     private void performSave(final FormRequestDto formRequestDto, final Form form, final Integer id, final HttpServletRequest request) {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             if(null == id) {
                 if(null == formRequestDto.getFormName()) throw new RuntimeException("Form name cannot be blank during save");
