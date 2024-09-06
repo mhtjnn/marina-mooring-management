@@ -23,7 +23,7 @@ public class VoiceMEMO extends Base{
     @Column(name = "name")
     private String name;
 
-    @Column(name = "data")
+    @Column(name = "data", length = 102400)
     private byte[] data;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
