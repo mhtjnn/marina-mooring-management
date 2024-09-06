@@ -90,7 +90,7 @@ public class WorkOrder extends Base{
                      Integer mooringStatusId, String mooringStatusName,
                      Integer customerId, String customerFirstName, String customerLastName, String customerNumber,
                      Integer userId, String userFirstName, String userLastName,
-                     Integer boatyardId, String boatyardName,
+                     Integer boatyardId, String boatyardNumber, String boatyardName,
                      Integer serviceAreaId, String serviceAreaName,
                      Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
                      Integer customerOwnerUserId, String customerOwnerUserFirstName, String customerOwnerUserLastName,
@@ -130,7 +130,7 @@ public class WorkOrder extends Base{
                         .mooringStatus(MooringStatus.builder().id(mooringStatusId).status(mooringStatusName).build())
                         .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build())
                         .user(User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build())
-                        .boatyard(Boatyard.builder().id(boatyardId).boatyardName(boatyardName).build())
+                        .boatyard(Boatyard.builder().id(boatyardId).boatyardId(boatyardNumber).boatyardName(boatyardName).build())
                         .serviceArea(ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).build())
                         .build();
         this.technicianUser = User.builder().id(technicianUserId).firstName(technicianUserFirstName).lastName(technicianUserLastName).build();
