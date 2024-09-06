@@ -233,7 +233,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional
     public BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -259,7 +258,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional
     public BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer workOrderId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -886,7 +884,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
-    @Transactional
+
     private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -1200,6 +1198,29 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrderResponseDto.setScheduledDate(DateUtil.dateToString(savedWorkOrder.getScheduledDate()));
             if (null != savedWorkOrder.getCompletedDate())
                 workOrderResponseDto.setCompletedDate(DateUtil.dateToString(savedWorkOrder.getCompletedDate()));
+
+            List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
+            List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
+            List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(workOrder.getId());
+
+            if (null != imageList && !imageList.isEmpty()) {
+                workOrderResponseDto.setImageResponseDtoList(imageList
+                        .stream()
+                        .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                        .toList());
+            }
+            if (null != formList && !formList.isEmpty()) {
+                workOrderResponseDto.setFormResponseDtoList(formList
+                        .stream()
+                        .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                        .toList());
+            }
+            if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+                workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
+                        .stream()
+                        .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
+                        .toList());
+            }
 
             return workOrderResponseDto;
         } catch (
