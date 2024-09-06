@@ -297,7 +297,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 throw new RuntimeException(String.format("No work order exists with %1$s", workOrderId));
             final WorkOrder savedWorkOrder = optionalWorkOrder.get();
 
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             if (null != savedWorkOrder.getCustomerOwnerUser()) {
                 if (!savedWorkOrder.getCustomerOwnerUser().getId().equals(user.getId()))
@@ -920,6 +929,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     image.setWorkOrder(workOrder);
 
+                    image.setCustomerOwnerUser(user);
                     imageList.add(image);
                 }
                 imageRepository.saveAll(imageList);
@@ -950,7 +960,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             }
 
                             form.setWorkOrder(workOrder);
-
+                            form.setUser(user);
                             return form;
                         }).toList();
 
@@ -977,14 +987,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             voiceMEMOMapper.toEntity(voiceMEMO, voiceMEMORequestDto);
 
                             if (null != voiceMEMORequestDto.getEncodedData()) {
-                                byte[] data = PDFUtils.isPdfFile(voiceMEMORequestDto.getEncodedData());
-                                voiceMEMO.setData(data);
+                                byte[] decodedBytes = Base64.getDecoder().decode(voiceMEMORequestDto.getEncodedData());
+                                voiceMEMO.setData(decodedBytes);
                             } else {
                                 throw new RuntimeException("Data cannot be null during save");
                             }
 
                             voiceMEMO.setWorkOrder(workOrder);
-
+                            voiceMEMO.setUser(user);
                             return voiceMEMO;
                         }).toList();
 

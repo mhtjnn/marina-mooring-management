@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO (Data Transfer Object) class representing User entity data.
@@ -79,6 +80,8 @@ public class UserDto extends BaseDto implements Serializable {
     private String zipCode;
 
     private ImageDto imageDto;
+
+    private List<ImageDto> imageDtoList;
 }
 
 

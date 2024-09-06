@@ -140,4 +140,30 @@ public class ImageController extends GlobalExceptionHandler {
         return imageService.viewImage(id, request);
     }
 
+    @Operation(
+            summary = "API to delete image",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/delete/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    public BasicRestResponse deleteImage(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return imageService.deleteImage(id, request);
+    }
+
 }

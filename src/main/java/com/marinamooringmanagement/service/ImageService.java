@@ -13,4 +13,6 @@ public interface ImageService {
     BasicRestResponse editImage(final Integer id, final String entity, final Integer entityId, final ImageRequestDto imageRequestDto, final HttpServletRequest request);
 
     BasicRestResponse viewImage(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse deleteImage(final Integer id, final HttpServletRequest request);
 }

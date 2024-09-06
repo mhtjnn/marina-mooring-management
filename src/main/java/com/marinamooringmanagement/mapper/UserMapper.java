@@ -26,6 +26,7 @@ public interface UserMapper {
      */
     @Mapping(target = "imageDto", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "imageDtoList", ignore = true)
     UserDto mapToUserDto(@MappingTarget UserDto dto, User user);
 
     /**
@@ -38,6 +39,7 @@ public interface UserMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "country", ignore = true)
     @Mapping(target = "image", ignore = true)
+    @Mapping(target = "imageList", ignore = true)
     void mapToUser(@MappingTarget User entity, UserDto userDto);
 
     /**
@@ -54,6 +56,7 @@ public interface UserMapper {
     @Mapping(target = "customerOwnerId", ignore = true)
     @Mapping(target = "companyName", ignore = true)
     @Mapping(target = "image", ignore = true)
+    @Mapping(target = "imageList", ignore = true)
     void mapToUser(@MappingTarget User entity, UserRequestDto userRequestDto);
 
     /**

@@ -33,4 +33,5 @@ public class ImageDto extends BaseDto{
 
     private UserDto userDto;
 
+    private UserDto customerOwnerUserDto;
 }

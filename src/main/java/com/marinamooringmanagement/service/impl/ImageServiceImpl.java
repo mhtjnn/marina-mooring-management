@@ -242,7 +242,8 @@ public class ImageServiceImpl implements ImageService {
 
             Image image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No image found with the given id: %1$s", id)));
             log.info(String.format("Downloading image with id: %1$s", id));
-            if(ObjectUtils.notEqual(user.getId(), image.getUser().getId())) {
+
+            if(null != image.getCustomerOwnerUser() && ObjectUtils.notEqual(user.getId(), image.getCustomerOwnerUser().getId())) {
                 log.error(String.format("Image with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Image with id: %1$s is associated with other user", id));
             }
@@ -253,7 +254,39 @@ public class ImageServiceImpl implements ImageService {
             imageResponseDto.setEncodedData(encodedData);
 
             response.setContent(imageResponseDto);
-            response.setMessage(String.format("Form with the id: %1$s fetched successfully", id));
+            response.setMessage(String.format("Image with the id: %1$s fetched successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse deleteImage(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)){
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            Image image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No image found with the given id: %1$s", id)));
+
+            imageRepository.delete(image);
+
+            response.setMessage(String.format("Image with the id: %1$s deleted successfully", id));
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());

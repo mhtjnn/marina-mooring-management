@@ -6,6 +6,8 @@ import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 /**
  * Entity class representing a User.
  * This class inherits common fields from the Base class and includes user-specific attributes.
@@ -98,6 +100,9 @@ public class User extends Base {
     @JsonManagedReference
     @ToString.Exclude
     private Image image;
+
+    @OneToMany(cascade = {}, mappedBy = "customerOwnerUser", fetch = FetchType.LAZY)
+    private List<Image> imageList;
 
     public User(Integer id, String firstName, String lastName) {
         this.id = id;

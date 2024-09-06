@@ -44,6 +44,10 @@ public class Image extends Base{
     @ToString.Exclude
     private User user;
 
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_owner_user_id")
+    private User customerOwnerUser;
+
     public Image(Integer id, String imageName, byte[] imageData, String note) {
         this.id = id;
         this.imageName = imageName;
