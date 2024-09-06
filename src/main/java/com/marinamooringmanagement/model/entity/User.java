@@ -117,6 +117,26 @@ public class User extends Base {
         this.zipCode = zipCode;
         this.role = Role.builder().id(roleId).name(roleName).build();
     }
+
+    public User(Integer id, String firstName, String lastName, String email,
+                String phoneNumber, String address, String zipCode,
+                Integer customerOwnerId, String companyName,
+                Integer stateId, String stateName,
+                Integer countryId, String countryName,
+                Integer roleId, String roleName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.customerOwnerId = customerOwnerId;
+        this.companyName = companyName;
+        this.address = address;
+        this.zipCode = zipCode;
+        this.state = State.builder().id(stateId).name(stateName).build();
+        this.country = Country.builder().id(countryId).name(countryName).build();
+        this.role = Role.builder().id(roleId).name(roleName).build();
+    }
     public User(Integer id, String firstName, String lastName, String email,
                 String password, String phoneNumber, String address, String zipCode,
                 Integer roleId, String roleName) {

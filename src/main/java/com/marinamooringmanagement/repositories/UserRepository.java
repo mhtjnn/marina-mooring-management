@@ -49,9 +49,12 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
      */
     @Query("SELECT new com.marinamooringmanagement.model.entity.User( " +
             "u.id, u.firstName, u.lastName, u.email, u.phoneNumber, " +
-            "u.address, u.zipCode, r.id, r.name) " +
+            "u.address, u.zipCode, u.customerOwnerId, u.companyName, " +
+            "s.id, s.name, c.id, c.name, r.id, r.name) " +
             "FROM User u " +
             "LEFT JOIN u.role r " +
+            "LEFT JOIN u.state s " +
+            "LEFT JOIN u.country c " +
             "WHERE ((:customerOwnerId = -1 AND r.id = 2) " +
             "OR ((r.id = 3 OR r.id = 4) AND u.customerOwnerId = :customerOwnerId)) " +
             "AND (:searchText IS NOT NULL AND (" +

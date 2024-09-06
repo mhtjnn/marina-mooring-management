@@ -291,6 +291,7 @@ public class UserController extends GlobalExceptionHandler {
             final HttpServletRequest request
     ) {
         Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+
         if(ObjectUtils.notEqual(userId, loggedInUserId)) {
             BasicRestResponse response = BasicRestResponse.builder().build();
             response.setMessage(String.format("Not authorized to upload image for different user as Given id: %1$s is different from logged-in user Id: %2$s", userId, loggedInUserId));

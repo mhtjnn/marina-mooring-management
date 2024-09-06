@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -585,7 +584,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final WorkOrderPayStatus workOrderPayStatus = workOrderPayStatusRepository.findByStatus(payStatus).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with status name as %1$s", payStatus)));
 
@@ -770,7 +778,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to fetch all the work order invoices in the database");
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+            final User user;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final List<WorkOrderInvoice> workOrderInvoiceList = workOrderInvoiceRepository.findAll((null == searchText) ? "" : searchText, user.getId());
 

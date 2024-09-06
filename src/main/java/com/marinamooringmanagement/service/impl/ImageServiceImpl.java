@@ -78,7 +78,7 @@ public class ImageServiceImpl implements ImageService {
                 mooringRepository.save(mooring);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.USER)) {
                 final User user = userRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
-                final Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
+                final Image image = uploadImageToEntity(multipleImageRequestDto, (null == user.getImage()) ? Image.builder().build() : user.getImage());
                 image.setUser(user);
                 imageRepository.save(image);
                 final UserDto userDto = userMapper.mapToUserDto(UserDto.builder().build(), user);
@@ -104,7 +104,10 @@ public class ImageServiceImpl implements ImageService {
             if(imageRequestDtoList.size() > 1) throw new RuntimeException("Multiple images to upload");
             final ImageRequestDto imageRequestDto = imageRequestDtoList.get(0);
             if(null == imageRequestDto.getImageData()) throw new RuntimeException("No image data provided");
-            image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
+
+            byte[] data = ImageUtils.validateEncodedString(imageRequestDto.getImageData());
+
+            image.setImageData(data);
         } catch (Exception e) {
             throw e;
         }
