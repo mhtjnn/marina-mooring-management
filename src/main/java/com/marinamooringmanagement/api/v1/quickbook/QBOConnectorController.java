@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +26,9 @@ import java.util.List;
 @CrossOrigin
 @Controller
 @RequestMapping(value = "/api/v1/QBO")
-public class QBOController {
+public class QBOConnectorController {
 
-    private static final Logger logger = LoggerFactory.getLogger(QBOController.class);
+    private static final Logger logger = LoggerFactory.getLogger(QBOConnectorController.class);
 
     @Autowired
     OAuth2PlatformClientFactory factory;
@@ -55,6 +57,24 @@ public class QBOController {
         return null;
     }
 
+    @RequestMapping("/status")
+    public ResponseEntity<String> status(@RequestParam("result") String result) {
+        String message = "QuickBooks connected successfully!";
+        if ("failure".equals(result)) {
+            message = "Failed to connect to QuickBooks.";
+        }
+
+        String script = "<html><body><script type=\"text/javascript\">" +
+                "alert('" + message + "');" +
+                "window.close();" +
+                "window.location.href = 'http://localhost:3000/dashboard';" +
+                "</script></body></html>";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(script);
+    }
+
     @RequestMapping("/oauth2redirect")
     public String callBackFromOAuth(@RequestParam("code") String authCode, @RequestParam("state") String state, @RequestParam(value = "realmId", required = false) String realmId, HttpSession session) {
         logger.info("inside oauth2redirect of sample"  );
@@ -75,13 +95,14 @@ public class QBOController {
 
                 // Update your Data store here with user's AccessToken and RefreshToken along with the realmId
 
-                return "connected";
+                return "redirect:/api/v1/QBO/status?result=success";
             }
             logger.info("csrf token mismatch " );
         } catch (OAuthException e) {
             logger.error("Exception in callback handler ", e);
+            return "redirect:/api/v1/QBO/status?result=failure";
         }
-        return null;
+        return "redirect:/api/v1/QBO/status?result=failure";
     }
 
 }

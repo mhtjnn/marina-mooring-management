@@ -139,4 +139,25 @@ public class WorkOrder extends Base{
         this.workOrderPayStatus = WorkOrderPayStatus.builder().id(workOrderPayStatusId).status(workOrderPayStatusName).build();
         this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
     }
+
+    public WorkOrder(
+        Integer id, String workOrderNumber, Date dueDate, Date scheduledDate, Time time, String problem,
+        String mooringNumber,
+        String customerFirstName, String customerLastName, String customerId,
+        String workOrderStatusName,
+        String technicianUserFirstName, String technicianUserLastName, String technicianUserEmail
+    ) {
+        this.id = id;
+        this.workOrderNumber = workOrderNumber;
+        this.dueDate = dueDate;
+        this.scheduledDate = scheduledDate;
+        this.time = time;
+        this.problem = problem;
+        this.mooring = Mooring.builder()
+                .mooringNumber(mooringNumber)
+                .customer(Customer.builder().firstName(customerFirstName).lastName(customerLastName).customerId(customerId).build())
+                .build();
+        this.workOrderStatus = WorkOrderStatus.builder().status(workOrderStatusName).build();
+        this.technicianUser = User.builder().firstName(technicianUserFirstName).lastName(technicianUserLastName).email(technicianUserEmail).build();
+    }
 }

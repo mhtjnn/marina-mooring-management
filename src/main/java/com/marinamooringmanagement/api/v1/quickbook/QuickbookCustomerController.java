@@ -48,7 +48,7 @@ public class QuickbookCustomerController extends GlobalExceptionHandler {
      * @return A {@link BasicRestResponse} containing a list of {@link QuickbookCustomerResponseDto} representing the quickbook.
      */
     @Operation(
-            summary = "API to fetch quickbooks from the database",
+            summary = "API to fetch quickbook customer from the database",
             responses = {
                     @ApiResponse(
                             description = "Success",
