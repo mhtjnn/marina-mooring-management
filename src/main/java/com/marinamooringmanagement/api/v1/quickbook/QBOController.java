@@ -31,6 +31,11 @@ public class QBOController {
     @Autowired
     OAuth2PlatformClientFactory factory;
 
+    @RequestMapping("/connected")
+    public String connected() {
+        return "connected";
+    }
+
     @RequestMapping("/connectToQuickbooks")
     public View connectToQuickbooks(HttpSession session) {
         logger.info("inside connectToQuickbooks ");

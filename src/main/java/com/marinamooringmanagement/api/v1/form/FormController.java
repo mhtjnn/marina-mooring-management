@@ -148,7 +148,7 @@ public class FormController extends GlobalExceptionHandler {
     @DeleteMapping(value = "/deleteForm/{id}",
             produces = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse deleteForm(
             final @PathVariable(value = "id") Integer id,
             final HttpServletRequest request

@@ -49,7 +49,7 @@ public class WorkOrderInvoice extends Base{
 
     public WorkOrderInvoice(Integer id, Double invoiceAmount, Integer workOrderInvoiceStatusId, String workOrderInvoiceStatusName,
                             Integer workOrderId, String workOrderNumber, Date dueDate, Date scheduledDate,
-                            Date completedDate, Time time, String problem, Integer mooringId, String mooringNumber,
+                            Date completedDate, Date creationDate ,Time time, String problem, Integer mooringId, String mooringNumber,
                             Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
                             Integer woCustomerOwnerUserId, String woCustomerOwnerUserFirstName, String woCustomerOwnerUserLastName,
                             Integer workOrderStatusId, String workOrderStatusName,
@@ -62,6 +62,7 @@ public class WorkOrderInvoice extends Base{
         this.id = id;
         this.invoiceAmount = invoiceAmount;
         this.workOrderInvoiceStatus = WorkOrderInvoiceStatus.builder().id(workOrderInvoiceStatusId).status(workOrderInvoiceStatusName).build();
+        this.creationDate = creationDate;
         this.workOrder = WorkOrder.builder()
                 .id(workOrderId)
                 .workOrderNumber(workOrderNumber)
