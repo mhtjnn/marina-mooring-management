@@ -180,7 +180,6 @@ class UserServiceImplTest {
 
         User result = userServiceImpl.performSave(userRequestDto, user, 1, request);
 
-        assertEquals(userRequestDto.getName(),result.getName());
         assertEquals(userRequestDto.getEmail(),result.getEmail());
 
         verify(userRepository, times(1)).save(user);
@@ -259,7 +258,6 @@ class UserServiceImplTest {
         UserResponseDto userResponseDto=UserResponseDto.builder().build();
         userResponseDto.setCustomerOwnerId(1);
         userResponseDto.setEmail("user@example.com");
-        userResponseDto.setName("user");
         userResponseDto.setRoleResponseDto(roleResponseDtoInstance());
         return userResponseDto;
     }
@@ -275,7 +273,6 @@ class UserServiceImplTest {
         User user=User.builder().build();
         user.setId(1);
         user.setCustomerOwnerId(1);
-        user.setName("User");
         user.setEmail("user@example.com");
         user.setRole(roleInstance());
         user.setState(newStateInstance());
@@ -299,7 +296,6 @@ class UserServiceImplTest {
         UserRequestDto userRequestDto=UserRequestDto.builder().build();
 
         userRequestDto.setId(1);
-        userRequestDto.setName("User");
         userRequestDto.setEmail("user@example.com");
         userRequestDto.setPassword("VGVzdGluZ0AxMzQ=");
         userRequestDto.setConfirmPassword("VGVzdGluZ0AxMzQ=");
