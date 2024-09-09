@@ -104,7 +104,7 @@ public class Boatyard extends Base {
     }
 
     public Boatyard(Integer id, String boatyardName, String boatyardId, String address,
-                    String gpsCoordinates,
+                    String gpsCoordinates, String mainContact, String zipCode, List<String> storageAreas,
                     Integer stateId, String stateName,
                     Integer countryId, String countryName,
                     Integer userId, String userFirstName, String userLastName) {
@@ -113,6 +113,9 @@ public class Boatyard extends Base {
         this.boatyardId = boatyardId;
         this.address = address;
         this.gpsCoordinates = gpsCoordinates;
+        this.mainContact = mainContact;
+        this.zipCode = zipCode;
+        this.storageAreas = storageAreas;
         this.state = State.builder().id(stateId).name(stateName).build();
         this.country = Country.builder().id(countryId).name(countryName).build();
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();

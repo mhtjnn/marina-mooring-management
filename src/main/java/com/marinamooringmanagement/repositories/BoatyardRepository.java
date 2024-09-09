@@ -72,7 +72,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
                                                  @Param("boatyardId") Integer boatyardId);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
-            "b.id, b.boatyardName, b.boatyardId, b.address, b.gpsCoordinates, " +
+            "b.id, b.boatyardName, b.boatyardId, b.address, b.gpsCoordinates, b.mainContact, b.zipCode, b.storageAreas, " +
             "s.id, s.name, " +
             "c.id, c.name, " +
             "u.id, u.firstName, u.lastName) " +

@@ -17,7 +17,7 @@ public interface WorkOrderInvoiceRepository extends JpaRepository<WorkOrderInvoi
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrderInvoice(" +
             "woi.id, woi.invoiceAmount, " +
             "wois.id, wois.status, " +
-            "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, wo.time, wo.problem, " +
+            "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, woi.creationDate, wo.time, wo.problem, " +
             "m.id, m.mooringNumber, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cou.id, cou.firstName, cou.lastName, " +
