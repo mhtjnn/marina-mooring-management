@@ -10,14 +10,11 @@ import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
-import com.marinamooringmanagement.model.response.FormResponseDto;
 import com.marinamooringmanagement.model.response.ImageResponseDto;
-import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.ImageService;
-import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.ImageUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
@@ -268,21 +265,35 @@ public class ImageServiceImpl implements ImageService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user;
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            User user;
+            User technicianUser = null;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
-            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)){
-                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
-                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+                if(null != technicianUser.getCustomerOwnerId()) customerOwnerId = technicianUser.getCustomerOwnerId();
+
+                Integer finalCustomerOwnerId = customerOwnerId;
 
                 user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
-                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner found with the given id: %1$s", finalCustomerOwnerId)));
 
             } else {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
 
             Image image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No image found with the given id: %1$s", id)));
+
+            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), image.getWorkOrder().getTechnicianUser().getId())) {
+                log.error(String.format("Image with id: %1$s is associated with other work order", id));
+                throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other work order", id));
+            }
+
+            if(ObjectUtils.notEqual(user, image.getUser())) {
+                log.error(String.format("Imgage with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other user", id));
+            }
 
             imageRepository.delete(image);
 

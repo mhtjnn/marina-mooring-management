@@ -149,14 +149,37 @@ public class FormServiceImpl implements FormService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            User user;
+            User technicianUser = null;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                if(null != technicianUser.getCustomerOwnerId()) customerOwnerId = technicianUser.getCustomerOwnerId();
+
+                Integer finalCustomerOwnerId = customerOwnerId;
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner found with the given id: %1$s", finalCustomerOwnerId)));
+
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Deleting form with id: %1$s", id));
+
+            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), form.getWorkOrder().getTechnicianUser().getId())) {
+                log.error(String.format("Form with id: %1$s is associated with other work order", id));
+                throw new RuntimeException(String.format("Form with id: %1$s is associated with other work order", id));
+            }
+
             if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
             }
+
             formRepository.delete(form);
             log.info(String.format("Form with id: %1$s is deleted successfully!!!", id));
             response.setMessage(String.format("Form with id: %1$s is deleted successfully!!!", id));
@@ -171,14 +194,37 @@ public class FormServiceImpl implements FormService {
     @Override
     public Form downloadForm(Integer id, HttpServletRequest request) {
         try {
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            User user;
+            User technicianUser = null;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                if(null != technicianUser.getCustomerOwnerId()) customerOwnerId = technicianUser.getCustomerOwnerId();
+
+                Integer finalCustomerOwnerId = customerOwnerId;
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner found with the given id: %1$s", finalCustomerOwnerId)));
+
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
-            log.info(String.format("Downloading form with id: %1$s", id));
+
+            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), form.getWorkOrder().getTechnicianUser().getId())) {
+                log.error(String.format("Form with id: %1$s is associated with other work order", id));
+                throw new RuntimeException(String.format("Form with id: %1$s is associated with other work order", id));
+            }
+
             if(ObjectUtils.notEqual(user, form.getUser())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
             }
+
+            log.info(String.format("Downloading form with id: %1$s", id));
             return form;
         } catch (Exception e) {
             throw  e;

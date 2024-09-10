@@ -47,4 +47,30 @@ public class VoiceMEMOController {
         return voiceMEMOService.fetchVoiceMEMO(id, request);
     }
 
+    @Operation(
+            summary = "API to delete voice MEMO",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = {@Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json")},
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @DeleteMapping(value = "/deleteVoiceMEMO/{id}",
+            produces = {"application/json"})
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    public BasicRestResponse deleteForm(
+            final @PathVariable(value = "id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return voiceMEMOService.deleteVoiceMEMO(id, request);
+    }
 }
