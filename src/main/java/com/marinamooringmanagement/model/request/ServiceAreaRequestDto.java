@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,5 +34,7 @@ public class ServiceAreaRequestDto {
     private String notes;
 
     private String gpsCoordinates;
+
+    private List<String> subServiceAreaList;
 
 }

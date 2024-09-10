@@ -349,14 +349,14 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         try {
             log.info("performSave() function called");
 
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             if(id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
 
             final Mooring initialMooring = copyMooring(mooring);
 
-            Optional<Mooring> optionalMooring = Optional.empty();
+            Optional<Mooring> optionalMooring;
             if(null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
                 optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
                 if(optionalMooring.isPresent()) {
@@ -396,29 +396,16 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
                 Date installBottomChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
-                LocalDate installBottomChainLocalDate = DateUtil.dateToLocalDate(installBottomChainDate);
-                LocalDate currentDate = LocalDate.now();
-                if(installBottomChainLocalDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install bottom chain date: %1$s is before current system date: %2$s", installBottomChainLocalDate, currentDate));
                 savedMooring.setInstallBottomChainDate(installBottomChainDate);
             }
 
             if(null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
                 Date installTopChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
-                LocalDate localDate = installTopChainDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                LocalDate currentDate = LocalDate.now();
-                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install top chain date: %1$s is before current system date: %2$s", localDate, currentDate));
                 savedMooring.setInstallTopChainDate(installTopChainDate);
             }
 
             if(null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
                 Date conditionOfEyeDate = DateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
-                LocalDate localDate = conditionOfEyeDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                LocalDate currentDate = LocalDate.now();
-                if(localDate.isBefore(currentDate)) throw new RuntimeException(String.format("Install condition of eye date: %1$s is before current system date: %2$s", localDate, currentDate));
                 savedMooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
             }
 

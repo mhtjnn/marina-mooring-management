@@ -47,7 +47,7 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
         try {
             String realmId = (String) session.getAttribute("realmId");
             if (StringUtils.isEmpty(realmId)) {
-                throw new RuntimeException("o realm ID.  QBO calls only work if the accounting scope was passed!");
+                throw new RuntimeException("No realm ID.  QBO calls only work if the accounting scope was passed!");
             }
             String accessToken = (String) session.getAttribute("access_token");
 

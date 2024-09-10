@@ -1,10 +1,8 @@
 package com.marinamooringmanagement.repositories;
 
-import com.marinamooringmanagement.model.entity.Boatyard;
 import com.marinamooringmanagement.model.entity.Mooring;
 import com.marinamooringmanagement.model.entity.ServiceArea;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +20,7 @@ public interface ServiceAreaRepository extends JpaRepository<ServiceArea, Intege
             "sa.id, sa.serviceAreaName, sa.address, " +
             "st.id, st.name, " +
             "co.id, co.name, " +
-            "sa.zipCode, sa.gpsCoordinates, " +
+            "sa.zipCode, sa.gpsCoordinates, sa.subServiceAreaList, " +
             "sat.id, sat.type, " +
             "u.id, u.firstName, u.lastName, " +
             "sa.notes) " +

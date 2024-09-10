@@ -55,6 +55,9 @@ public class ServiceArea extends Base{
     @JoinColumn(name = "service_area_type_id")
     private ServiceAreaType serviceAreaType;
 
+    @Column(name = "sub_service_area_list")
+    private List<String> subServiceAreaList;
+
     @OneToMany(mappedBy = "serviceArea", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Mooring> mooringList;
@@ -75,6 +78,7 @@ public class ServiceArea extends Base{
                        Integer stateId, String stateName,
                        Integer countryId, String countryName,
                        String zipCode, String gpsCoordinates,
+                       List<String> subServiceAreaList,
                        Integer serviceAreaTypeId, String serviceAreaTypeName,
                        Integer userId, String userFirstName, String userLastName, String notes) {
         this.id = id;
@@ -87,6 +91,7 @@ public class ServiceArea extends Base{
         this.serviceAreaType = ServiceAreaType.builder().id(serviceAreaTypeId).type(serviceAreaTypeName).build();
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
         this.notes = notes;
+        this.subServiceAreaList = subServiceAreaList;
     }
 
     public ServiceArea(Integer id, String serviceAreaName,
