@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
             authorizationUtil.checkAuthorityForUser(customerOwnerId, loggedInUserRole);
 
-            if(StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
+            if (StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
                 customerOwnerId = loggedInUserId;
             }
 
@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService {
             int end = Math.min(start + p.getPageSize(), users.size());
 
             List<User> paginatedUsers;
-            if(start > users.size()) {
+            if (start > users.size()) {
                 paginatedUsers = new ArrayList<>();
             } else {
                 paginatedUsers = users.subList(start, end);
@@ -164,9 +164,12 @@ public class UserServiceImpl implements UserService {
                     .map(user -> {
                         UserResponseDto userResponseDto = UserResponseDto.builder().build();
                         mapper.mapToUserResponseDto(userResponseDto, user);
-                        if(null != user.getRole()) userResponseDto.setRoleResponseDto(roleMapper.mapToRoleResponseDto(RoleResponseDto.builder().build(), user.getRole()));
-                        if (null != user.getState()) userResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), user.getState()));
-                        if(null != user.getCountry()) userResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), user.getCountry()));
+                        if (null != user.getRole())
+                            userResponseDto.setRoleResponseDto(roleMapper.mapToRoleResponseDto(RoleResponseDto.builder().build(), user.getRole()));
+                        if (null != user.getState())
+                            userResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), user.getState()));
+                        if (null != user.getCountry())
+                            userResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), user.getCountry()));
 
                         return userResponseDto;
                     }).toList();
@@ -376,7 +379,7 @@ public class UserServiceImpl implements UserService {
             User userEntity = userRepository.findByEmailWithImage(email).get();
             if (null != userEntity) {
                 user = mapper.mapToUserDto(UserDto.builder().build(), userEntity);
-                if(null != userEntity.getImage()) {
+                if (null != userEntity.getImage()) {
                     final Image image = userEntity.getImage();
                     ImageDto imageDto = ImageDto.builder().build();
                     if (null != image.getImageData()) imageDto.setImageData(image.getImageData());
@@ -437,15 +440,20 @@ public class UserServiceImpl implements UserService {
                 //If the new password is same as old password then exception is thrown as "New password is same as old password".
                 if (passwordEncoder.matches(newPassword, user.getPassword())) {
                     throw new RuntimeException("New password is same as old password");
-                } else if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                    throw new RuntimeException("Old Password doesn't match with the existing password");
-                } else {
-                    // Setting the new password for the user and then saving it to the database.
-                    user.setPassword(passwordEncoder.encode(newPassword));
-                    userRepository.save(user);
-                    passwordResponse.setMessage("Password changed Successfully!!!");
-                    passwordResponse.setStatus(HttpStatus.OK.value());
                 }
+                if (null != oldPassword) {
+                    byte[] keyBytesOldPassword = Decoders.BASE64.decode(oldPassword);
+                    String oldPasswordStr = new String(keyBytesOldPassword, StandardCharsets.UTF_8);
+                    if (!passwordEncoder.matches(oldPasswordStr, user.getPassword())) {
+                        throw new RuntimeException("Old Password doesn't match with the existing password");
+                    }
+                }
+                // Setting the new password for the user and then saving it to the database.
+                user.setPassword(passwordEncoder.encode(newPassword));
+                userRepository.save(user);
+                passwordResponse.setMessage("Password changed Successfully!!!");
+                passwordResponse.setStatus(HttpStatus.OK.value());
+
             }
         } catch (Exception e) {
             passwordResponse.setMessage(e.getMessage());
@@ -463,7 +471,7 @@ public class UserServiceImpl implements UserService {
         try {
 
             final Role role = roleRepository.findByName(AppConstants.Role.TECHNICIAN).orElseThrow(() -> new ResourceNotFoundException(String.format("No role found with the label as %1$s", AppConstants.Role.TECHNICIAN)));
-            List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, (searchText==null) ? "" : searchText);
+            List<User> usersWithTechnicianRoleForGivenCustomerOwner = userRepository.findAllUsersByCustomerOwnerAndRoleMetadata(role.getId(), customerOwnerId, (searchText == null) ? "" : searchText);
 
             final Pageable p = PageRequest.of(
                     baseSearchRequest.getPageNumber(),
@@ -614,7 +622,7 @@ public class UserServiceImpl implements UserService {
             }
 
             //Setting up the image
-            if(null != userRequestDto.getEncodedImage()) {
+            if (null != userRequestDto.getEncodedImage()) {
                 final Image image = Image.builder().build();
                 image.setImageData(ImageUtils.validateEncodedString(userRequestDto.getEncodedImage()));
                 image.setCreationDate(new Date(System.currentTimeMillis()));
@@ -629,7 +637,7 @@ public class UserServiceImpl implements UserService {
                         user,
                         NewPasswordRequest.builder()
                                 .newPassword(userRequestDto.getPassword())
-                                .confirmPassword( userRequestDto.getConfirmPassword())
+                                .confirmPassword(userRequestDto.getConfirmPassword())
                                 .build(),
                         request
                 );
@@ -698,7 +706,8 @@ public class UserServiceImpl implements UserService {
     public void updatePassword(final User user, final NewPasswordRequest newPasswordRequest, final HttpServletRequest request) {
         try {
 
-            if(!authorizationUtil.checkAuthorityForPasswordUpdate(user, request)) throw new RuntimeException("Not authorized!!!");
+            if (!authorizationUtil.checkAuthorityForPasswordUpdate(user, request))
+                throw new RuntimeException("Not authorized!!!");
 
             byte[] keyBytesForPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
             String password = new String(keyBytesForPassword, StandardCharsets.UTF_8);
