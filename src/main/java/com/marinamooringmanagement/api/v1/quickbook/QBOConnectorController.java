@@ -7,12 +7,23 @@ import com.intuit.oauth2.data.BearerTokenResponse;
 import com.intuit.oauth2.exception.InvalidRequestException;
 import com.intuit.oauth2.exception.OAuthException;
 import com.marinamooringmanagement.client.OAuth2PlatformClientFactory;
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.model.entity.QBO.QBOUser;
+import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
+import com.marinamooringmanagement.repositories.UserRepository;
+import com.marinamooringmanagement.security.model.AuthenticationDetails;
+import com.marinamooringmanagement.security.util.JwtUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,13 +44,23 @@ public class QBOConnectorController {
     @Autowired
     OAuth2PlatformClientFactory factory;
 
+    @Autowired
+    private JwtUtil jwtTokenUtil;
+
+    @Autowired
+    private QBOUserRepository qboUserRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @RequestMapping("/connected")
     public String connected() {
         return "connected";
     }
 
     @RequestMapping("/connectToQuickbooks")
-    public View connectToQuickbooks(HttpSession session) {
+    public View connectToQuickbooks(HttpSession session,
+                                    @RequestParam("authToken") final String authToken) {
         logger.info("inside connectToQuickbooks ");
         OAuth2Config oauth2Config = factory.getOAuth2Config();
 
@@ -47,6 +68,11 @@ public class QBOConnectorController {
 
         String csrf = oauth2Config.generateCSRFToken();
         session.setAttribute("csrfToken", csrf);
+
+        final String userEmail = jwtTokenUtil.getUsernameFromToken(authToken);
+
+        session.setAttribute("userEmail", userEmail);
+
         try {
             List<Scope> scopes = new ArrayList<Scope>();
             scopes.add(Scope.All);
@@ -93,7 +119,21 @@ public class QBOConnectorController {
                 session.setAttribute("access_token", bearerTokenResponse.getAccessToken());
                 session.setAttribute("refresh_token", bearerTokenResponse.getRefreshToken());
 
-                // Update your Data store here with user's AccessToken and RefreshToken along with the realmId
+                if(null == session.getAttribute("userEmail")) throw new ResourceNotFoundException("No user email found!!!");
+                final String userEmail = session.getAttribute("userEmail").toString();
+
+                final User user = userRepository.findByEmail(userEmail)
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", userEmail)));
+
+                QBOUser qboUser = QBOUser.builder()
+                        .email(user.getEmail())
+                        .realmId(realmId)
+                        .authCode(authCode)
+                        .accessToken(bearerTokenResponse.getAccessToken())
+                        .refreshToken(bearerTokenResponse.getRefreshToken())
+                        .build();
+
+                qboUserRepository.save(qboUser);
 
                 return "redirect:/api/v1/QBO/status?result=success";
             }

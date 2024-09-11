@@ -39,7 +39,7 @@ public class QBOCustomer {
             }
     )
     @GetMapping("/")
-    public BasicRestResponse fetchQBOCustomers(final HttpSession session) {
+    public BasicRestResponse fetchQBOCustomers(HttpSession session) {
         return qboCustomerService.fetchCustomers(session);
     }
 
