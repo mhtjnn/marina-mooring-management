@@ -219,7 +219,7 @@ class UserServiceImplTest {
 
         when(jwtUtil.validateToken("user@example.com")).thenReturn(true);
         when(userRepository.save(any(User.class))).thenReturn(user);
-        BasicRestResponse basicRestResponse=userServiceImpl.updatePassword("user@example.com",newPasswordRequest);
+        BasicRestResponse basicRestResponse=userServiceImpl.updatePassword("", "user@example.com",newPasswordRequest);
 
         assertEquals("Password changed Successfully!!!",basicRestResponse.getMessage());
 

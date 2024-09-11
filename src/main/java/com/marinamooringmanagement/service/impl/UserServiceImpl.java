@@ -397,7 +397,7 @@ public class UserServiceImpl implements UserService {
      * @throws Exception If an error occurs during password update.
      */
     @Override
-    public BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception {
+    public BasicRestResponse updatePassword(final String oldPassword, final String token, final NewPasswordRequest newPasswordRequest) throws Exception {
         final BasicRestResponse passwordResponse = BasicRestResponse.builder().build();
         passwordResponse.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -406,7 +406,7 @@ public class UserServiceImpl implements UserService {
 
             if (!isInPasswordFormat(newPassword)) throw new RuntimeException("Invalid Password Format");
 
-            byte[] keyBytesConfirmPassword = Decoders.BASE64.decode(newPasswordRequest.getNewPassword());
+            byte[] keyBytesConfirmPassword = Decoders.BASE64.decode(newPasswordRequest.getConfirmPassword());
             final String confirmPassword = new String(keyBytesConfirmPassword, StandardCharsets.UTF_8);
 
             // Checking if the token is valid or not.
@@ -437,6 +437,8 @@ public class UserServiceImpl implements UserService {
                 //If the new password is same as old password then exception is thrown as "New password is same as old password".
                 if (passwordEncoder.matches(newPassword, user.getPassword())) {
                     throw new RuntimeException("New password is same as old password");
+                } else if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+                    throw new RuntimeException("Old Password doesn't match with the existing password");
                 } else {
                     // Setting the new password for the user and then saving it to the database.
                     user.setPassword(passwordEncoder.encode(newPassword));

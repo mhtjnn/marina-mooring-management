@@ -206,9 +206,10 @@ public class AuthenticationController extends GlobalExceptionHandler {
     )
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
     public BasicRestResponse resetPasswordWithNewPassword(
+            @Parameter(description = "Old Password", schema = @Schema(implementation = String.class)) final @RequestParam(value = "oldPassword", required = false) String oldPassword,
             @Parameter(description = "Reset Password Token", schema = @Schema(implementation = String.class)) final @RequestParam("token") String token,
             @Parameter(description = "New Password", schema = @Schema(implementation = NewPasswordRequest.class)) final @RequestBody NewPasswordRequest newPasswordRequest) throws Exception {
-        return userService.updatePassword(token, newPasswordRequest);
+        return userService.updatePassword(oldPassword, token, newPasswordRequest);
     }
 
     /**

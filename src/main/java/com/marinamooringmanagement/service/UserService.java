@@ -73,7 +73,7 @@ public interface UserService {
      * @return A {@code BasicRestResponse} object indicating the status of the operation.
      * @throws Exception If an error occurs during the password update process.
      */
-    BasicRestResponse updatePassword(final String token, final NewPasswordRequest newPasswordRequest) throws Exception;
+    BasicRestResponse updatePassword(final String oldPassword, final String token, final NewPasswordRequest newPasswordRequest) throws Exception;
 
     BasicRestResponse fetchUsersOfTechnicianRole(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request);
 }
