@@ -110,12 +110,12 @@ public class VoiceMEMOServiceImpl implements VoiceMEMOService {
             VoiceMEMO voiceMEMO = voiceMEMORepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No voice MEMO found with the given id: %1$s", id)));
             log.info(String.format("Deleting voice MEMO with id: %1$s", id));
 
-            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), voiceMEMO.getWorkOrder().getTechnicianUser().getId())) {
+            if(null != technicianUser && null != voiceMEMO.getWorkOrder() && ObjectUtils.notEqual(technicianUser.getId(), voiceMEMO.getWorkOrder().getTechnicianUser().getId())) {
                 log.error(String.format("Voice MEMO with id: %1$s is associated with other work order", id));
                 throw new RuntimeException(String.format("Voice MEMO with id: %1$s is associated with other work order", id));
             }
 
-            if(ObjectUtils.notEqual(user.getId(), voiceMEMO.getUser().getId())) {
+            if(null != voiceMEMO.getUser() && ObjectUtils.notEqual(user.getId(), voiceMEMO.getUser().getId())) {
                 log.error(String.format("Voice MEMO with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Voice MEMO with id: %1$s is associated with other user", id));
             }

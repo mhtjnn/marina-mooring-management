@@ -290,7 +290,7 @@ public class ImageServiceImpl implements ImageService {
                 throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other work order", id));
             }
 
-            if(ObjectUtils.notEqual(user, image.getUser())) {
+            if(null != image.getCustomerOwnerUser() && ObjectUtils.notEqual(user.getId(), image.getCustomerOwnerUser().getId())) {
                 log.error(String.format("Imgage with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other user", id));
             }

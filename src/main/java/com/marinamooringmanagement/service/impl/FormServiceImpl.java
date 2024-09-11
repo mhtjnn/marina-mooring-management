@@ -170,12 +170,12 @@ public class FormServiceImpl implements FormService {
             Form form = formRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", id)));
             log.info(String.format("Deleting form with id: %1$s", id));
 
-            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), form.getWorkOrder().getTechnicianUser().getId())) {
+            if(null != technicianUser && null != form.getWorkOrder() && ObjectUtils.notEqual(technicianUser.getId(), form.getWorkOrder().getTechnicianUser().getId())) {
                 log.error(String.format("Form with id: %1$s is associated with other work order", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other work order", id));
             }
 
-            if(ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
+            if(null != form.getUser() && ObjectUtils.notEqual(user.getId(), form.getUser().getId())) {
                 log.error(String.format("Form with id: %1$s is associated with other user", id));
                 throw new RuntimeException(String.format("Form with id: %1$s is associated with other user", id));
             }

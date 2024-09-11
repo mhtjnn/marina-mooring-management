@@ -156,7 +156,7 @@ public class ImageController extends GlobalExceptionHandler {
             }
 
     )
-    @GetMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     public BasicRestResponse deleteImage(
