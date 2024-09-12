@@ -17,8 +17,11 @@ public class QuickbookCustomer extends Base{
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "quickbook_customer_name")
-    private String quickbookCustomerName;
+    @Column(name = "quickbook_customer_first_name")
+    private String quickbookCustomerFirstName;
+
+    @Column(name = "quickbook_customer_last_name")
+    private String quickbookCustomerLastName;
 
     @Column(name = "quickbook_customer_id")
     private String quickbookCustomerId;

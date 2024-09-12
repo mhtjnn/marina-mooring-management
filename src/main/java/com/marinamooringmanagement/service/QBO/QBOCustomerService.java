@@ -1,8 +1,10 @@
 package com.marinamooringmanagement.service.QBO;
 
 import com.marinamooringmanagement.model.response.BasicRestResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpRequest;
 
 public interface QBOCustomerService {
-    BasicRestResponse fetchCustomers(HttpSession session);
+    BasicRestResponse fetchCustomers(HttpSession session, HttpServletRequest request);
 }

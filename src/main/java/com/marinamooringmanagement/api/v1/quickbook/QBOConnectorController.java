@@ -25,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,11 +33,13 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @CrossOrigin
 @Controller
 @RequestMapping(value = "/api/v1/QBO")
+@Transactional
 public class QBOConnectorController {
 
     private static final Logger logger = LoggerFactory.getLogger(QBOConnectorController.class);
@@ -125,6 +128,11 @@ public class QBOConnectorController {
                 final User user = userRepository.findByEmail(userEmail)
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", userEmail)));
 
+                //check if user already exists
+                final QBOUser dbQboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+                qboUserRepository.delete(dbQboUser);
+
                 QBOUser qboUser = QBOUser.builder()
                         .email(user.getEmail())
                         .realmId(realmId)
@@ -132,6 +140,10 @@ public class QBOConnectorController {
                         .accessToken(bearerTokenResponse.getAccessToken())
                         .refreshToken(bearerTokenResponse.getRefreshToken())
                         .build();
+
+                qboUser.setCreationDate(new Date(System.currentTimeMillis()));
+                qboUser.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                qboUser.setCreatedBy(user.getEmail());
 
                 qboUserRepository.save(qboUser);
 

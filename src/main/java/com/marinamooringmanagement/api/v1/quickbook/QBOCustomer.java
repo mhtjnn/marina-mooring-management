@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -39,8 +40,8 @@ public class QBOCustomer {
             }
     )
     @GetMapping("/")
-    public BasicRestResponse fetchQBOCustomers(HttpSession session) {
-        return qboCustomerService.fetchCustomers(session);
+    public BasicRestResponse fetchQBOCustomers(HttpSession session, HttpServletRequest request) {
+        return qboCustomerService.fetchCustomers(session, request);
     }
 
 }

@@ -23,10 +23,12 @@ public class QBOUser extends Base {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "access_token")
+    @Lob
+    @Column(name = "access_token", length = 5024)
     private String accessToken;
 
-    @Column(name = "refresh_token")
+    @Lob
+    @Column(name = "refresh_token", length = 5024)
     private String refreshToken;
 
     @Column(name = "realmId")
