@@ -4,6 +4,7 @@ import com.marinamooringmanagement.model.dto.VendorDto;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.model.request.VendorRequestDto;
 import com.marinamooringmanagement.model.response.VendorResponseDto;
+import com.marinamooringmanagement.model.response.metadata.VendorMetadataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -67,4 +68,6 @@ public interface VendorMapper {
     @Mapping(target = "remitCountry", ignore = true)
     @Mapping(target = "user", ignore = true)
     Vendor mapToVendor(@MappingTarget Vendor vendor, VendorRequestDto dto);
+
+    VendorMetadataResponse mapToVendorMetadataResponse(@MappingTarget VendorMetadataResponse dto, Vendor vendor);
 }

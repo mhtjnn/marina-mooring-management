@@ -959,5 +959,66 @@ public class MetadataController extends GlobalExceptionHandler {
 
         return metadataService.fetchForms(baseSearchRequest, request);
     }
+
+    @Operation(
+            summary = "API to fetch vendors for a particular customer owner from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
+    @GetMapping("/vendors")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchVendors(
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchVendors(baseSearchRequest, request);
+    }
+
+    @Operation(
+            summary = "API to fetch inventory from a particular vendor from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
+    @GetMapping("/inventory/{vendorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BasicRestResponse fetchInventoryForVendor(
+            @PathVariable(value = "vendorId") final Integer vendorId,
+            @RequestParam(value = "pageNumber",defaultValue = DEFAULT_PAGE_NUM, required = false) final Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = DEFAULT_PAGE_SIZE, required = false) final Integer pageSize,
+            final HttpServletRequest request
+    ) {
+        final BaseSearchRequest baseSearchRequest = BaseSearchRequest.builder()
+                .pageNumber(pageNumber)
+                .pageSize(pageSize)
+                .build();
+
+        return metadataService.fetchInventoryForVendor(vendorId, baseSearchRequest, request);
+    }
 }
 

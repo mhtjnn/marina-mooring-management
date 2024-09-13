@@ -169,4 +169,9 @@ public class Vendor extends Base {
         this.salesRepNote = salesRepNote;
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
     }
+
+    Vendor(Integer id, String vendorName) {
+        this.id = id;
+        this.vendorName = vendorName;
+    }
 }

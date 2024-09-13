@@ -10,11 +10,17 @@ import com.marinamooringmanagement.client.OAuth2PlatformClientFactory;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.entity.QBO.QBOUser;
 import com.marinamooringmanagement.model.entity.User;
+import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.model.AuthenticationDetails;
 import com.marinamooringmanagement.security.util.JwtUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +46,7 @@ import java.util.List;
 @Controller
 @RequestMapping(value = "/api/v1/QBO")
 @Transactional
+@Tag(name = "Quickbook Connector Controller", description = "These are API's for quickbook connection.")
 public class QBOConnectorController {
 
     private static final Logger logger = LoggerFactory.getLogger(QBOConnectorController.class);
@@ -56,11 +63,21 @@ public class QBOConnectorController {
     @Autowired
     private UserRepository userRepository;
 
-    @RequestMapping("/connected")
-    public String connected() {
-        return "connected";
-    }
-
+    @Operation(
+            summary = "API to connect quickbook with the application",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @RequestMapping("/connectToQuickbooks")
     public View connectToQuickbooks(HttpSession session,
                                     @RequestParam("authToken") final String authToken) {
@@ -86,6 +103,21 @@ public class QBOConnectorController {
         return null;
     }
 
+    @Operation(
+            summary = "API to fetch quickbook connection status",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @RequestMapping("/status")
     public ResponseEntity<String> status(@RequestParam("result") String result) {
         String message = "QuickBooks connected successfully!";
@@ -104,6 +136,21 @@ public class QBOConnectorController {
                 .body(script);
     }
 
+    @Operation(
+            summary = "API to redirect to the OAUTH",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+    )
     @RequestMapping("/oauth2redirect")
     public String callBackFromOAuth(@RequestParam("code") String authCode, @RequestParam("state") String state, @RequestParam(value = "realmId", required = false) String realmId, HttpSession session) {
         logger.info("inside oauth2redirect of sample"  );

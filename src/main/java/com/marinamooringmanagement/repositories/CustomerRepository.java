@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Customer;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -101,4 +102,22 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     Optional<Customer> findByCustomerId(String customerId);
 
     Optional<Customer> findByPhone(String phoneNumber);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
+            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.city, c.notes, c.emailAddress, c.quickbookCustomerId, " +
+            "s.id, s.name, co.id, co.name, c.zipCode, cu.id, cu.type, u.id, u.firstName, u.lastName, " +
+            "c.phone, r.id, r.name) " +
+            "FROM Customer c " +
+            "LEFT JOIN c.state s " +
+            "LEFT JOIN c.country co " +
+            "LEFT JOIN c.customerType cu " +
+            "JOIN c.user u " +
+            "JOIN u.role r " +
+            "WHERE (:userId IS NOT NULL AND u.id = :userId AND c.id = :customerId) " +
+            "AND (:quickbookCustomerId IS NOT NULL AND :quickbookCustomerId = c.quickbookCustomerId) " +
+            "ORDER BY c.id")
+    Optional<Customer> findCustomerByQuickbookCustomerId(
+            @Param("quickbookCustomerId") String quickbookCustomerId,
+            @Param("userId") Integer userId
+    );
 }

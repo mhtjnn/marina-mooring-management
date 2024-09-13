@@ -14,7 +14,10 @@ import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.QuickbookCustomerResponseDto;
 import com.marinamooringmanagement.repositories.CustomerRepository;
 import com.marinamooringmanagement.repositories.QuickbookCustomerRepository;
+import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
+import com.marinamooringmanagement.service.QBO.impl.QBOCustomerServiceImpl;
 import com.marinamooringmanagement.service.QuickbookCustomerService;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -57,6 +60,12 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
     @Autowired
     private CustomerMapper customerMapper;
+
+    @Autowired
+    private QBOCustomerServiceImpl qboCustomerService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final Logger log = LoggerFactory.getLogger(QuickbookCustomerServiceImpl.class);
 
@@ -230,38 +239,48 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
     }
 
     @Override
-    public BasicRestResponse saveMappingCustomerToQuickbook(Integer quickbookCustomerId, Integer customerId, HttpServletRequest request) {
+    public BasicRestResponse saveMappingCustomerToQuickbook(final String quickbookCustomerId, final Integer customerId, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader("CUSTOMER_OWNER_ID");
-            User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
-            Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            Optional<Customer> optionalCustomer = customerRepository.findCustomerByIdWithoutImages(customerId, user.getId());
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given id: %1$s", customerId));
 
-            Optional<QuickbookCustomer> optionalQuickbookCustomer = quickbookCustomerRepository.findById(quickbookCustomerId);
-            if(optionalQuickbookCustomer.isEmpty()) throw new RuntimeException(String.format("No quickbook customer found with the given id: %1$s", quickbookCustomerId));
-
             final Customer customer = optionalCustomer.get();
-            final QuickbookCustomer quickbookCustomer = optionalQuickbookCustomer.get();
+            final QuickbookCustomer quickbookCustomer = (QuickbookCustomer) qboCustomerService.fetchQBOCustomerById(quickbookCustomerId, request).getContent();
+
+            final Optional<Customer> optionalMappedCustomer = customerRepository.findCustomerByQuickbookCustomerId(quickbookCustomerId, user.getId());
+
+            if(optionalMappedCustomer.isPresent()) {
+                final Customer mappedCustomer = optionalMappedCustomer.get();
+                mappedCustomer.setQuickbookCustomerId(null);
+
+                customerRepository.save(mappedCustomer);
+            }
+
+            if(null == quickbookCustomer) throw new ResourceNotFoundException(String.format("No Quickbook customer found with the given id: %1$s", quickbookCustomerId));
 
             if(!StringUtils.equals(customer.getUser().getRole().getName(), AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User associated with customer of given id: %1$s is not of customer owner role", customerId));
             if(!StringUtils.equals(quickbookCustomer.getUser().getRole().getName(), AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User associated with quickbook customer of given id: %1$s is not of customer owner role", customerId));
 
             if(null == customer.getUser()) throw new RuntimeException(String.format("Customer with the given id: %1$s is not associated with any customer owner", customerId));
-            if(null == quickbookCustomer.getUser()) throw new RuntimeException(String.format("Quickbook customer with the given id: %1$s is not associated with any customer owner", customerId));
 
             if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the given id: %1$s is associated with other customer owner", customerId));
-            if(!quickbookCustomer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Quickbook customer with the id: %1$s is associated with other customer owner", quickbookCustomerId));
 
-            if(ObjectUtils.notEqual(customer.getUser().getId(), quickbookCustomer.getUser().getId())) throw new RuntimeException(String.format("Customer with the given id: %1$s and quickbook customer with the given id: %2$s are associated with different customer owners", customerId, quickbookCustomerId));
-
-            if(null != quickbookCustomer.getCustomer() && !quickbookCustomer.getCustomer().getId().equals(customerId)) throw new RuntimeException(String.format("Quickbook customer with the given id: %1$s is already mapped to some other customer", quickbookCustomerId));
-            if(null != customer.getQuickBookCustomer() && !customer.getQuickBookCustomer().getId().equals(quickbookCustomerId)) throw new RuntimeException(String.format("Customer with the given id: %1$s is already mapped with other quickbook customer", customerId));
-
-            quickbookCustomer.setCustomer(customer);
-            quickbookCustomerRepository.save(quickbookCustomer);
+            customer.setQuickbookCustomerId(quickbookCustomer.getQuickbookCustomerId());
+            customerRepository.save(customer);
 
             response.setMessage(String.format("Customer with given id: %1$s is successfully mapped to quickbook customer with given id: %2$s", customerId, quickbookCustomerId));
             response.setStatus(HttpStatus.OK.value());

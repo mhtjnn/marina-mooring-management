@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,6 +18,6 @@ public class PaymentRequestDto {
     private Integer paymentTypeId;
 
     @NotNull(message = "Amount cannot be blank")
-    private Double amount;
+    private BigDecimal amount;
 
 }

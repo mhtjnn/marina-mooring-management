@@ -140,6 +140,73 @@ public class WorkOrder extends Base{
         this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
     }
 
+    public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
+                     Date completedDate, Time time, String problem,
+                     Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
+                     Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
+                     Date inspectionDate, String boatName, String boatSize,
+                     Integer boatTypeId, String boatTypeName,
+                     String boatWeight,
+                     Integer sizeOfWeight,
+                     Integer typeOfWeightId, String typeOfWeightName,
+                     Integer eyeConditionId, String eyeConditionName,
+                     Integer topChainConditionId, String topChainConditionName,
+                     Integer bottomChainConditionId, String bottomChainConditionName,
+                     Integer shackleSwivelConditionId, String shackleSwivelConditionName,
+                     String pendantCondition, Integer depthAtMeanHighWater,
+                     Integer mooringStatusId, String mooringStatusName,
+                     Integer customerId, String customerFirstName, String customerLastName, String customerNumber, String quickbookCustomerId,
+                     Integer userId, String userFirstName, String userLastName,
+                     Integer boatyardId, String boatyardNumber, String boatyardName,
+                     Integer serviceAreaId, String serviceAreaName,
+                     Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,
+                     Integer customerOwnerUserId, String customerOwnerUserFirstName, String customerOwnerUserLastName,
+                     Integer workOrderStatusId, String workOrderStatusName, Integer workOrderPayStatusId,
+                     String workOrderPayStatusName, Integer workOrderInvoiceId
+    )
+    {
+        this.id = id;
+        this.workOrderNumber = workOrderNumber;
+        this.dueDate = dueDate;
+        this.scheduledDate = scheduledDate;
+        this.completedDate = completedDate;
+        this.time = time;
+        this.problem = problem;
+        this.mooring =
+                Mooring.builder()
+                        .id(mooringId)
+                        .mooringNumber(mooringNumber)
+                        .harborOrArea(harborOrArea)
+                        .gpsCoordinates(gpsCoordinates)
+                        .installBottomChainDate(installBottomChainDate)
+                        .installTopChainDate(installTopChainDate)
+                        .installConditionOfEyeDate(installConditionOfEyeDate)
+                        .inspectionDate(inspectionDate)
+                        .boatName(boatName)
+                        .boatSize(boatSize)
+                        .boatType(BoatType.builder().id(boatTypeId).boatType(boatTypeName).build())
+                        .boatWeight(boatWeight)
+                        .sizeOfWeight(sizeOfWeight)
+                        .typeOfWeight(TypeOfWeight.builder().id(typeOfWeightId).type(typeOfWeightName).build())
+                        .eyeCondition(EyeCondition.builder().id(eyeConditionId).condition(eyeConditionName).build())
+                        .topChainCondition(TopChainCondition.builder().id(topChainConditionId).condition(topChainConditionName).build())
+                        .bottomChainCondition(BottomChainCondition.builder().id(bottomChainConditionId).condition(bottomChainConditionName).build())
+                        .shackleSwivelCondition(ShackleSwivelCondition.builder().id(shackleSwivelConditionId).condition(shackleSwivelConditionName).build())
+                        .pendantCondition(pendantCondition)
+                        .depthAtMeanHighWater(depthAtMeanHighWater)
+                        .mooringStatus(MooringStatus.builder().id(mooringStatusId).status(mooringStatusName).build())
+                        .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).quickbookCustomerId(quickbookCustomerId).build())
+                        .user(User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build())
+                        .boatyard(Boatyard.builder().id(boatyardId).boatyardId(boatyardNumber).boatyardName(boatyardName).build())
+                        .serviceArea(ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).build())
+                        .build();
+        this.technicianUser = User.builder().id(technicianUserId).firstName(technicianUserFirstName).lastName(technicianUserLastName).build();
+        this.customerOwnerUser = User.builder().id(customerOwnerUserId).firstName(customerOwnerUserFirstName).lastName(customerOwnerUserLastName).build();
+        this.workOrderStatus = WorkOrderStatus.builder().id(workOrderStatusId).status(workOrderStatusName).build();
+        this.workOrderPayStatus = WorkOrderPayStatus.builder().id(workOrderPayStatusId).status(workOrderPayStatusName).build();
+        this.workOrderInvoice = WorkOrderInvoice.builder().id(workOrderInvoiceId).build();
+    }
+
     public WorkOrder(
         Integer id, String workOrderNumber, Date dueDate, Date scheduledDate, Time time, String problem,
         String mooringNumber,

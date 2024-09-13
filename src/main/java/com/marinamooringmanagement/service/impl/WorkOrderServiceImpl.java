@@ -667,9 +667,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
-            WorkOrder workOrder = workOrderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            WorkOrder workOrder = workOrderRepository.findByIdWithBigData(id, user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
 
             if (null == workOrder.getCustomerOwnerUser())
                 throw new RuntimeException(String.format("Work order with the id: %1$s is not associated with any customer owner", id));
@@ -704,6 +714,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderInvoice.setWorkOrder(workOrder);
             workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
             workOrderInvoice.setCustomerOwnerUser(user);
+            workOrderInvoice.setQuickbookCustomerId(workOrder.getMooring().getCustomer().getQuickbookCustomerId());
             workOrderInvoice.setPaymentList(new ArrayList<>());
 
             final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);

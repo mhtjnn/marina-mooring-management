@@ -56,4 +56,8 @@ public interface MetadataService {
     BasicRestResponse fetchPaymentTypes(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 
     BasicRestResponse fetchForms(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchVendors(final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
+
+    BasicRestResponse fetchInventoryForVendor(final Integer vendorId, final BaseSearchRequest baseSearchRequest, final HttpServletRequest request);
 }

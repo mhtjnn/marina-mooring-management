@@ -6,5 +6,5 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpRequest;
 
 public interface QBOCustomerService {
-    BasicRestResponse fetchCustomers(HttpSession session, HttpServletRequest request);
+    BasicRestResponse fetchCustomers(HttpServletRequest request);
 }

@@ -228,9 +228,9 @@ public class QuickbookCustomerController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.FINANCE)
     public BasicRestResponse saveMappingCustomerToQuickbook(
-            @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
+            @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") String quickbookCustomerId,
             @Parameter(description = "Customer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("customerId") Integer customerId,
             final HttpServletRequest request
     ) {
@@ -260,7 +260,7 @@ public class QuickbookCustomerController extends GlobalExceptionHandler {
             produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.FINANCE)
     public BasicRestResponse editMappingCustomerToQuickbook(
             @Parameter(description = "QuickbookCustomer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("quickbookCustomerId") Integer quickbookCustomerId,
             @Parameter(description = "Customer ID", schema = @Schema(implementation = Integer.class)) final @PathVariable("customerId") Integer customerId,

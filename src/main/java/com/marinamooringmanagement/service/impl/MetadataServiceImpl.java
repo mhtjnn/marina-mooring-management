@@ -17,6 +17,7 @@ import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.MetadataService;
 import com.marinamooringmanagement.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -162,6 +163,12 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Autowired
     private FormMapper formMapper;
+
+    @Autowired
+    private VendorRepository vendorRepository;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
     @Override
     public BasicRestResponse fetchMooringStatus(BaseSearchRequest baseSearchRequest) {
@@ -906,6 +913,73 @@ public class MetadataServiceImpl implements MetadataService {
             response.setMessage("Forms fetched successfully!!!");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(formResponseDtoList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchVendors(BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        List<VendorMetadataResponse> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            List<VendorMetadataResponse> vendorMetadataResponseList = vendorRepository.findAllByUserIdMetadata(user.getId());
+
+            response.setMessage(String.format("Vendors with customer owner id: %1$s fetched successfully!!!", user.getId()));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(vendorMetadataResponseList);
+
+        } catch (Exception ex) {
+            response.setMessage(ex.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchInventoryForVendor(Integer vendorId, BaseSearchRequest baseSearchRequest, HttpServletRequest request) {
+        List<InventoryMetadataResponse> content = null;
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            final Vendor vendor = vendorRepository.findById(vendorId)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No vendor found with the given id: %1$s", vendorId)));
+
+            if(ObjectUtils.notEqual(vendor.getUser().getId(), user.getId())) throw new RuntimeException(String.format("Vendor with the id %1$s is associated with some other user"));
+
+            List<InventoryMetadataResponse> inventoryMetadataResponseList = inventoryRepository.findAllByVendorIdMetadata(vendorId);
+
+            response.setMessage(String.format("Inventory with vendor of id: %1$s fetched successfully!!!", vendor.getId()));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(inventoryMetadataResponseList);
 
         } catch (Exception ex) {
             response.setMessage(ex.getLocalizedMessage());
