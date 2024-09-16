@@ -73,6 +73,11 @@ public class WorkOrder extends Base{
     @JsonManagedReference
     private WorkOrderInvoice workOrderInvoice;
 
+    @OneToMany(cascade = {}, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Inventory> inventoryList;
+
+
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
                      Date completedDate, Time time, String problem,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,

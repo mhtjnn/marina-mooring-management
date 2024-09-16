@@ -29,7 +29,11 @@ public class InventoryResponseDto implements Serializable {
 
     private Integer quantity;
 
+    private Integer parentInventoryId;
+
     private InventoryTypeDto inventoryType;
 
     private VendorResponseDto vendorResponseDto;
+
+    private WorkOrderResponseDto workOrderResponseDto;
 }

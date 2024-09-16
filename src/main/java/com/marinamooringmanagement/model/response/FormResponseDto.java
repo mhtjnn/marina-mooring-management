@@ -21,7 +21,7 @@ public class FormResponseDto {
 
     private String fileName;
 
-    private byte[] formData;
+    private String encodedData;
 
     private UserResponseDto userResponseDto;
 

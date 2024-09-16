@@ -29,5 +29,6 @@ public interface FormMapper {
     @Mapping(target = "submittedBy", ignore = true)
     @Mapping(target = "submittedDate", ignore = true)
     @Mapping(target = "workOrderResponseDto", ignore = true)
+    @Mapping(target = "encodedData", ignore = true)
     FormResponseDto toResponseDto(@MappingTarget FormResponseDto formResponseDto, Form form);
 }

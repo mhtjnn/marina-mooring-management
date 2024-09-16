@@ -26,4 +26,6 @@ public class InventoryRequestDto {
     private String taxable;
 
     private Integer quantity;
+
+    private Integer workOrderId;
 }

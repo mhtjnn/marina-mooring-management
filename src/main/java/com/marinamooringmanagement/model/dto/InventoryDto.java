@@ -30,4 +30,6 @@ public class InventoryDto extends BaseDto{
 
     private VendorDto vendorDto;
 
+    private WorkOrderDto workOrderDto;
+
 }

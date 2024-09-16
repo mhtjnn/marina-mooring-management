@@ -90,6 +90,8 @@ public class AppConstants {
 
         public static final String DENIED = "Denied";
 
+        public static final String WAITING_ON_PARTS = "Waiting on Parts";
+
     }
 
     public static class CustomerTypeConstants {

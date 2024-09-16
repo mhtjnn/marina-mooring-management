@@ -13,17 +13,24 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface InventoryMapper {
 
     @Mapping(target = "vendor", ignore = true)
+    @Mapping(target = "workOrder", ignore = true)
     Inventory mapToInventory(@MappingTarget Inventory inventory, InventoryDto inventoryDto);
 
     @Mapping(target = "vendorDto", ignore = true)
+    @Mapping(target = "workOrderDto", ignore = true)
     InventoryDto mapToInventoryDto(@MappingTarget InventoryDto inventoryDto, Inventory inventory);
 
     @Mapping(target = "vendor", ignore = true)
     @Mapping(target = "taxable", ignore = true)
+    @Mapping(target = "workOrder", ignore = true)
     Inventory mapToInventory(@MappingTarget Inventory inventory, InventoryRequestDto inventoryRequestDto);
 
     @Mapping(target = "taxable", ignore = true)
     @Mapping(target = "vendorResponseDto", ignore = true)
+    @Mapping(target = "workOrderResponseDto", ignore = true)
     InventoryResponseDto mapToInventoryResponseDto(@MappingTarget InventoryResponseDto inventoryResponseDto, Inventory inventory);
+
+    @Mapping(target = "id", ignore = true)
+    Inventory mapToInventory(@MappingTarget Inventory childInventory, Inventory parentInventory);
 
 }

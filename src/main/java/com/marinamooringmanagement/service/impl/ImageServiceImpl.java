@@ -11,14 +11,16 @@ import com.marinamooringmanagement.model.request.ImageRequestDto;
 import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.ImageResponseDto;
-import com.marinamooringmanagement.model.response.UserResponseDto;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.ImageService;
 import com.marinamooringmanagement.utils.ImageUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
 @Service
 @Transactional
 public class ImageServiceImpl implements ImageService {
+
+    private static final Logger log = LoggerFactory.getLogger(ImageServiceImpl.class);
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -54,6 +59,9 @@ public class ImageServiceImpl implements ImageService {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private AuthorizationUtil authorizationUtil;
 
     @Override
     public BasicRestResponse uploadImage(Integer entityId, String entity, MultipleImageRequestDto multipleImageRequestDto, HttpServletRequest request) {
@@ -78,7 +86,7 @@ public class ImageServiceImpl implements ImageService {
                 mooringRepository.save(mooring);
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.USER)) {
                 final User user = userRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", entityId)));
-                final Image image = uploadImageToEntity(multipleImageRequestDto, (null == user.getImage()) ? Image.builder().build() : user.getImage());
+                final Image image = uploadImageToEntity(multipleImageRequestDto, user.getImage());
                 image.setUser(user);
                 imageRepository.save(image);
                 final UserDto userDto = userMapper.mapToUserDto(UserDto.builder().build(), user);
@@ -104,10 +112,7 @@ public class ImageServiceImpl implements ImageService {
             if(imageRequestDtoList.size() > 1) throw new RuntimeException("Multiple images to upload");
             final ImageRequestDto imageRequestDto = imageRequestDtoList.get(0);
             if(null == imageRequestDto.getImageData()) throw new RuntimeException("No image data provided");
-
-            byte[] data = ImageUtils.validateEncodedString(imageRequestDto.getImageData());
-
-            image.setImageData(data);
+            image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
         } catch (Exception e) {
             throw e;
         }
@@ -210,6 +215,94 @@ public class ImageServiceImpl implements ImageService {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse viewImage(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)){
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            Image image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No image found with the given id: %1$s", id)));
+            log.info(String.format("Downloading image with id: %1$s", id));
+
+            if(null != image.getCustomerOwnerUser() && ObjectUtils.notEqual(user.getId(), image.getCustomerOwnerUser().getId())) {
+                log.error(String.format("Image with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Image with id: %1$s is associated with other user", id));
+            }
+
+            ImageResponseDto imageResponseDto = imageMapper.toResponseDto(ImageResponseDto.builder().build(), image);
+
+            String encodedData = Base64.getEncoder().encodeToString(image.getImageData());
+            imageResponseDto.setEncodedData(encodedData);
+
+            response.setContent(imageResponseDto);
+            response.setMessage(String.format("Image with the id: %1$s fetched successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse deleteImage(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            User user;
+            User technicianUser = null;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                if(null != technicianUser.getCustomerOwnerId()) customerOwnerId = technicianUser.getCustomerOwnerId();
+
+                Integer finalCustomerOwnerId = customerOwnerId;
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner found with the given id: %1$s", finalCustomerOwnerId)));
+
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            Image image = imageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("No image found with the given id: %1$s", id)));
+
+            if(null != technicianUser && ObjectUtils.notEqual(technicianUser.getId(), image.getWorkOrder().getTechnicianUser().getId())) {
+                log.error(String.format("Image with id: %1$s is associated with other work order", id));
+                throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other work order", id));
+            }
+
+            if(null != image.getCustomerOwnerUser() && ObjectUtils.notEqual(user.getId(), image.getCustomerOwnerUser().getId())) {
+                log.error(String.format("Imgage with id: %1$s is associated with other user", id));
+                throw new RuntimeException(String.format("Imgage with id: %1$s is associated with other user", id));
+            }
+
+            imageRepository.delete(image);
+
+            response.setMessage(String.format("Image with the id: %1$s deleted successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
         return response;
     }
 

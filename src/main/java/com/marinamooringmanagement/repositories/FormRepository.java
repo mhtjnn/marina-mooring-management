@@ -29,4 +29,14 @@ public interface FormRepository extends JpaRepository<Form, Integer>, JpaSpecifi
 
     List<Form> findAll(Specification<Form> spec);
 
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Form(" +
+            "f.id, f.formName, f.fileName) " +
+            "FROM Form f " +
+            "LEFT JOIN f.workOrder w " +
+            "WHERE w.id = :workOrderId " +
+            "ORDER BY f.id")
+    List<Form> findFormsByWorkOrderIdWithoutData(
+            @Param("workOrderId") Integer id
+    );
 }

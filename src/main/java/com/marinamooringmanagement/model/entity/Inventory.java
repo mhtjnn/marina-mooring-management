@@ -35,6 +35,9 @@ public class Inventory extends Base{
     @Column(name = "quantity")
     private Integer quantity;
 
+    @Column(name = "parent_inventory_id")
+    private Integer parentInventoryId;
+
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_type_id")
     private InventoryType inventoryType;
@@ -44,5 +47,20 @@ public class Inventory extends Base{
     @JsonBackReference
     @ToString.Exclude
     private Vendor vendor;
+
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_order_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private WorkOrder workOrder;
+
+    Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, Integer workOrderId) {
+        this.id = id;
+        this.itemName = itemName;
+        this.quantity = quantity;
+        this.parentInventoryId = parentInventoryId;
+        this.vendor = Vendor.builder().id(vendorId).build();
+        this.workOrder = WorkOrder.builder().id(workOrderId).build();
+    }
 
 }

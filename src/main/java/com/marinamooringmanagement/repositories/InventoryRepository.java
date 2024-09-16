@@ -24,6 +24,14 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
             "i.id, i.itemName, i.quantity) " +
             "FROM Inventory i " +
             "LEFT JOIN i.vendor v " +
-            "WHERE v.id = :vendorId")
+            "WHERE v.id = :vendorId AND i.quantity > 0")
     List<InventoryMetadataResponse> findAllByVendorIdMetadata(@Param("vendorId") Integer vendorId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Inventory(" +
+            "i.id, i.itemName, i.quantity, i.parentInventoryId, v.id, w.id) " +
+            "FROM Inventory i " +
+            "LEFT JOIN i.vendor v " +
+            "LEFT JOIN i.workOrder w " +
+            "WHERE w.id = :workOrderId")
+    List<Inventory> findInventoriesByWorkOrder(@Param("workOrderId") Integer workOrderId);
 }

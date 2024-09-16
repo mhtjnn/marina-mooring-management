@@ -2,7 +2,9 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
+import com.marinamooringmanagement.exception.MathException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.exception.ResourceNotProvidedException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.*;
 import com.marinamooringmanagement.model.dto.*;
@@ -14,6 +16,7 @@ import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.ImageRequestDto;
+import com.marinamooringmanagement.model.request.InventoryRequestDto;
 import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
@@ -126,6 +129,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private FormRepository formRepository;
 
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private InventoryMapper inventoryMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -186,10 +195,27 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
                         if (null != workOrder.getCompletedDate())
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
-                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
-                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
+
+                        List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Inventory> inventoryList = inventoryRepository.findInventoriesByWorkOrder(workOrder.getId());
+
+                        if (null != imageList && !imageList.isEmpty()) {
+                            workOrderResponseDto.setImageResponseDtoList(imageList
                                     .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                                    .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                                    .toList());
+                        }
+                        if (null != formList && !formList.isEmpty()) {
+                            workOrderResponseDto.setFormResponseDtoList(formList
+                                    .stream()
+                                    .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                                    .toList());
+                        }
+                        if (null != inventoryList && !inventoryList.isEmpty()) {
+                            workOrderResponseDto.setInventoryResponseDtoList(inventoryList
+                                    .stream()
+                                    .map(inventory -> inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory))
                                     .toList());
                         }
                         return workOrderResponseDto;
@@ -585,7 +611,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user;
-            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
                 final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
@@ -636,12 +662,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
                         if (null != workOrder.getScheduledDate())
                             workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
-                        if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
-                            workOrderResponseDto.setImageDtoList(workOrder.getImageList()
-                                    .stream()
-                                    .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
-                                    .toList());
-                        }
                         if (null != workOrder.getCompletedDate()) {
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
                         }
@@ -668,7 +688,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user;
-            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
                 final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
@@ -790,7 +810,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user;
-            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
                 final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
@@ -901,7 +921,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     imageList = workOrder.getImageList();
                 for (ImageRequestDto imageRequestDto : workOrderRequestDto.getImageRequestDtoList()) {
                     Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
-                    if(null != imageRequestDto.getImageData()) image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                    if (null != imageRequestDto.getImageData())
+                        image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
@@ -920,7 +941,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         .map(formRequestDto -> {
                             Form form = Form.builder().build();
 
-                            if(formRequestDto.getId() != null) {
+                            if (formRequestDto.getId() != null) {
                                 form = formRepository.findById(formRequestDto.getId())
                                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", formRequestDto.getId())));
                             }
@@ -949,9 +970,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }).toList();
 
                 dbSavedForm.addAll(savedForm);
-
                 formRepository.saveAll(dbSavedForm);
-
                 workOrder.setFormList(dbSavedForm);
             }
 
@@ -1065,6 +1084,77 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 } else {
                     if (null != workOrder.getCompletedDate()) workOrder.setCompletedDate(null);
                 }
+
+                // Waiting on Parts section
+                if (workOrderStatus.getStatus().equals(AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
+                    if (null == workOrderRequestDto.getInventoryRequestDtoList()) {
+                        throw new ResourceNotProvidedException("No inventory item/s provided!!!");
+                    }
+
+                    List<Integer> toDelete;
+                    List<Integer> savedInventoryIds;
+                    List<Inventory> inventoryList = new ArrayList<>();
+                    if (null != workOrder.getInventoryList() && !workOrder.getInventoryList().isEmpty()) {
+                        inventoryList = workOrder.getInventoryList();
+
+                        savedInventoryIds = workOrder.getInventoryList().stream().map(Inventory::getId).toList();
+
+                        toDelete = savedInventoryIds
+                                .stream()
+                                .filter(id -> workOrderRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
+                                .toList();
+
+                        inventoryRepository.deleteAllById(toDelete);
+                    }
+
+                    for (InventoryRequestDto inventoryRequestDto : workOrderRequestDto.getInventoryRequestDtoList()) {
+                        int quantityAfterOperation;
+
+                        final Inventory inventory = inventoryRepository.findById(inventoryRequestDto.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
+
+                        if (null == inventory.getParentInventoryId()) {
+                            final Inventory childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+                            childInventory.setParentInventoryId(inventory.getId());
+
+                            quantityAfterOperation = inventory.getQuantity() - inventoryRequestDto.getQuantity();
+
+                            if (quantityAfterOperation < 0) {
+                                throw new MathException("Given quantity is greater than available quantity");
+                            }
+
+                            inventory.setQuantity(quantityAfterOperation);
+                            childInventory.setQuantity(inventoryRequestDto.getQuantity());
+                            inventoryList.add(childInventory);
+                            workOrder.setInventoryList(inventoryList);
+
+                            workOrderRepository.save(workOrder);
+                            childInventory.setWorkOrder(workOrder);
+
+
+                            inventoryRepository.save(childInventory);
+                            inventoryRepository.save(inventory);
+
+                        } else {
+                            final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
+                                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
+
+                            quantityAfterOperation = parentInventory.getQuantity() + inventory.getQuantity() - inventoryRequestDto.getQuantity();
+
+                            if (quantityAfterOperation < 0) {
+                                throw new MathException("Given quantity is greater than available quantity");
+                            }
+
+                            inventory.setQuantity(inventoryRequestDto.getQuantity());
+                            parentInventory.setQuantity(quantityAfterOperation);
+
+                            inventoryRepository.save(inventory);
+                            inventoryRepository.save(parentInventory);
+                        }
+
+                    }
+                }
+
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {
                 if (null == workOrderId)
@@ -1166,7 +1256,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             if (workOrder.getWorkOrderStatus().getStatus().equals(AppConstants.WorkOrderStatusConstants.CLOSE)) {
 
-                if(mooringDueServiceResponseDto.getMooringDueServiceStatusDto() != null) continue;
+                if (mooringDueServiceResponseDto.getMooringDueServiceStatusDto() != null) continue;
 
                 optionalMooringDueServiceStatus = mooringDueServiceStatusRepository.findByStatus(AppConstants.MooringDueServiceStatusConstants.COMPLETE);
                 if (optionalMooringDueServiceStatus.isEmpty())
@@ -1205,7 +1295,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     String mooringDueServiceDateStr = mooringDueServiceResponseDtoFromMap.getMooringServiceDate();
                     LocalDate mooringDueServiceDate = DateUtil.stringToLocalDate(mooringDueServiceDateStr);
 
-                    if(mooringDueServiceDate.isBefore(dateAfter31Days)) mooringDueServiceResponseDtoFromMap.setUnder30(true);
+                    if (mooringDueServiceDate.isBefore(dateAfter31Days))
+                        mooringDueServiceResponseDtoFromMap.setUnder30(true);
 
                     if (null != workOrder.getDueDate()) {
                         Date savedDueDate = workOrder.getDueDate();
@@ -1228,7 +1319,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 String mooringDueServiceDateStr = mooringDueServiceResponseDto.getMooringServiceDate();
                 LocalDate mooringDueServiceDate = DateUtil.stringToLocalDate(mooringDueServiceDateStr);
 
-                if(mooringDueServiceDate.isBefore(dateAfter31Days)) mooringDueServiceResponseDto.setUnder30(true);
+                if (mooringDueServiceDate.isBefore(dateAfter31Days)) mooringDueServiceResponseDto.setUnder30(true);
 
                 if (null != workOrder.getMooring()) {
                     if (null != workOrder.getMooring().getInstallBottomChainDate())
