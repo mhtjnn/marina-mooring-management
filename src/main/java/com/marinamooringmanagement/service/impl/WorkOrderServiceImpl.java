@@ -132,6 +132,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private InventoryMapper inventoryMapper;
 
+    @Autowired
+    private VendorMapper vendorMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -212,7 +215,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null != inventoryList && !inventoryList.isEmpty()) {
                             workOrderResponseDto.setInventoryResponseDtoList(inventoryList
                                     .stream()
-                                    .map(inventory -> inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory))
+                                    .map(inventory -> {
+                                        final InventoryResponseDto inventoryResponseDto = inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory);
+                                        VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor());
+                                        inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
+                                        return inventoryResponseDto;
+                                    })
                                     .toList());
                         }
                         return workOrderResponseDto;
@@ -1117,6 +1125,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null == inventory.getParentInventoryId()) {
                             final Inventory childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
                             childInventory.setParentInventoryId(inventory.getId());
+                            childInventory.setItemName(String.format(inventory.getItemName() + "_" + workOrder.getWorkOrderNumber()));
 
                             quantityAfterOperation = inventory.getQuantity() - inventoryRequestDto.getQuantity();
 

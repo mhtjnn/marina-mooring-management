@@ -54,12 +54,12 @@ public class Inventory extends Base{
     @ToString.Exclude
     private WorkOrder workOrder;
 
-    Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, Integer workOrderId) {
+    Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, String vendorName, Integer workOrderId) {
         this.id = id;
         this.itemName = itemName;
         this.quantity = quantity;
         this.parentInventoryId = parentInventoryId;
-        this.vendor = Vendor.builder().id(vendorId).build();
+        this.vendor = Vendor.builder().id(vendorId).vendorName(vendorName).build();
         this.workOrder = WorkOrder.builder().id(workOrderId).build();
     }
 
