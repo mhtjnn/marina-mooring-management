@@ -130,7 +130,7 @@ public class InventoryServiceImpl implements InventoryService {
                             ));
                         }
                     }
-
+                    predicates.add(criteriaBuilder.isNull(inventory.get("workOrder")));
                     // Always add the vendor ID predicate
                     predicates.add(criteriaBuilder.equal(inventory.join("vendor").get("id"), vendor.getId()));
 
