@@ -23,4 +23,6 @@ public class FormDto extends BaseDto{
     private UserDto userDto;
 
     private WorkOrderDto workOrderDto;
+
+    private Integer parentFormId;
 }

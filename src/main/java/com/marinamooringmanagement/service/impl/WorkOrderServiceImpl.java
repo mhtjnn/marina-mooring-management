@@ -14,10 +14,7 @@ import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
-import com.marinamooringmanagement.model.request.BaseSearchRequest;
-import com.marinamooringmanagement.model.request.ImageRequestDto;
-import com.marinamooringmanagement.model.request.InventoryRequestDto;
-import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
+import com.marinamooringmanagement.model.request.*;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
@@ -898,6 +895,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Transactional
     private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
@@ -930,48 +928,51 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     image.setWorkOrder(workOrder);
                 }
 
-                imageRepository.saveAll(imageList);
                 workOrder.setImageList(imageList);
             }
 
+            // Update form list
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
-                List<Form> dbSavedForm = (null != workOrder.getFormList()) ? workOrder.getFormList() : new ArrayList<>();
-                List<Form> savedForm = workOrderRequestDto.getFormRequestDtoList()
-                        .stream()
-                        .map(formRequestDto -> {
-                            Form form = Form.builder().build();
+                List<Form> savedForms = new ArrayList<>();
 
-                            if (formRequestDto.getId() != null) {
-                                form = formRepository.findById(formRequestDto.getId())
-                                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No form found with the given id: %1$s", formRequestDto.getId())));
-                            }
+                if(null != workOrderId) {
+                    List<Integer> savedFormsIds;
 
-                            if (null == formRequestDto.getFormName())
-                                throw new RuntimeException("Form name cannot be blank during save");
-                            if (null == formRequestDto.getFileName())
-                                throw new RuntimeException("File name cannot be blank during save");
-                            form.setCreationDate(new Date(System.currentTimeMillis()));
-                            form.setCreatedBy(user.getFirstName() + " " + user.getLastName());
-                            form.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                    savedFormsIds = workOrder.getFormList().stream().map(Form::getId).toList();
 
-                            formMapper.toEntity(form, formRequestDto);
+                    List<Integer> toDelete = savedFormsIds.stream()
+                            .filter(id -> workOrderRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
+                            .toList();
 
-                            if (null != formRequestDto.getEncodedFormData()) {
-                                byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
-                                form.setFormData(formData);
-                            } else {
-                                throw new RuntimeException("Form data cannot be null during save");
-                            }
+                    formRepository.deleteAllById(toDelete);
+                }
 
-                            form.setUser(user);
-                            form.setWorkOrder(workOrder);
+                savedForms = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
 
-                            return form;
-                        }).toList();
+                for(FormRequestDto formRequestDto: workOrderRequestDto.getFormRequestDtoList()) {
+                    Form parentForm;
+                    Form childForm;
+                    if(null == formRequestDto.getParentFormId()) {
+                        parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
+                        childForm = formMapper.toEntity(Form.builder().build(), parentForm);
 
-                dbSavedForm.addAll(savedForm);
-                formRepository.saveAll(dbSavedForm);
-                workOrder.setFormList(dbSavedForm);
+                        childForm.setParentFormId(parentForm.getId());
+                        childForm.setWorkOrder(workOrder);
+                        savedForms.add(childForm);
+                    } else {
+                        childForm = formRepository.findByIdWithoutData(formRequestDto.getId());
+                    }
+
+                    if(null != formRequestDto.getEncodedFormData()) {
+                        byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
+                        childForm.setFormData(formData);
+                    } else {
+                        throw new RuntimeException("Form data cannot be null during save");
+                    }
+
+                }
+
+                workOrder.setFormList(savedForms);
             }
 
             final LocalDate currentDate = LocalDate.now();
@@ -1126,13 +1127,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             inventory.setQuantity(quantityAfterOperation);
                             childInventory.setQuantity(inventoryRequestDto.getQuantity());
                             inventoryList.add(childInventory);
-                            workOrder.setInventoryList(inventoryList);
 
-                            workOrderRepository.save(workOrder);
                             childInventory.setWorkOrder(workOrder);
 
-
-                            inventoryRepository.save(childInventory);
                             inventoryRepository.save(inventory);
 
                         } else {
@@ -1148,12 +1145,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             inventory.setQuantity(inventoryRequestDto.getQuantity());
                             parentInventory.setQuantity(quantityAfterOperation);
 
-                            inventoryRepository.save(inventory);
                             inventoryRepository.save(parentInventory);
                         }
 
                     }
+
+                    workOrder.setInventoryList(inventoryList);
                 }
+
 
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {

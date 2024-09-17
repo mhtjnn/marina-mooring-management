@@ -31,4 +31,6 @@ public interface FormMapper {
     @Mapping(target = "workOrderResponseDto", ignore = true)
     @Mapping(target = "encodedData", ignore = true)
     FormResponseDto toResponseDto(@MappingTarget FormResponseDto formResponseDto, Form form);
+
+    Form toEntity(@MappingTarget Form childForm, Form parentForm);
 }

@@ -38,6 +38,9 @@ public class Form extends Base {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "parent_form_id")
+    private Integer parentFormId;
+
     public Form(Integer id, String formName, String fileName, String createdBy, Timestamp createdTime,
                 Integer userId, String firstName, String lastName, Integer roleId, String roleName) {
         this.id = id;

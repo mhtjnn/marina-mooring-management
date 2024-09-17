@@ -20,4 +20,5 @@ public class FormRequestDto {
 
     private String encodedFormData;
 
+    private Integer parentFormId;
 }
