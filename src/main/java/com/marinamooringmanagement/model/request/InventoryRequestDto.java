@@ -27,5 +27,9 @@ public class InventoryRequestDto {
 
     private Integer quantity;
 
+    private Integer parentInventoryId;
+
     private Integer workOrderId;
+
+    private Integer estimateId;
 }

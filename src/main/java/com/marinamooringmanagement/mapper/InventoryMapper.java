@@ -33,4 +33,7 @@ public interface InventoryMapper {
     @Mapping(target = "id", ignore = true)
     Inventory mapToInventory(@MappingTarget Inventory childInventory, Inventory parentInventory);
 
+    @Mapping(target = "workOrderId", ignore = true)
+    @Mapping(target = "estimateId", ignore = true)
+    InventoryRequestDto mapToInventoryRequestDto(@MappingTarget InventoryRequestDto inventoryRequestDto, Inventory inventory);
 }

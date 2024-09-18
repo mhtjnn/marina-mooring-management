@@ -47,6 +47,7 @@ public interface EstimateMapper {
     @Mapping(target = "inventoryResponseDtoList", ignore = true)
     EstimateResponseDto mapToEstimateResponseDto(@MappingTarget EstimateResponseDto estimateResponseDto, Estimate estimate);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "mooring", ignore = true)
     @Mapping(target = "technicianUser", ignore = true)
     @Mapping(target = "workOrderStatus", ignore = true)

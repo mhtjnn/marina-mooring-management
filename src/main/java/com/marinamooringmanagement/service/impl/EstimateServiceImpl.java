@@ -22,6 +22,7 @@ import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,14 +151,22 @@ public class EstimateServiceImpl implements EstimateService {
                     .stream()
                     .map(estimate -> {
                         EstimateResponseDto estimateResponseDto = estimateMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), estimate);
-                        if(null != estimate.getMooring()) estimateResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), estimate.getMooring()));
-                        if(null != estimate.getMooring() && null != estimate.getMooring().getCustomer()) estimateResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), estimate.getMooring().getCustomer()));
-                        if(null != estimate.getMooring() && null != estimate.getMooring().getBoatyard()) estimateResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), estimate.getMooring().getBoatyard()));
-                        if(null != estimate.getCustomerOwnerUser()) estimateResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getCustomerOwnerUser()));
-                        if(null != estimate.getTechnicianUser()) estimateResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getTechnicianUser()));
-                        if(null != estimate.getWorkOrderStatus()) estimateResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), estimate.getWorkOrderStatus()));
-                        if(null != estimate.getDueDate()) estimateResponseDto.setDueDate(DateUtil.dateToString(estimate.getDueDate()));
-                        if(null != estimate.getScheduledDate()) estimateResponseDto.setScheduledDate(DateUtil.dateToString(estimate.getScheduledDate()));
+                        if (null != estimate.getMooring())
+                            estimateResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), estimate.getMooring()));
+                        if (null != estimate.getMooring() && null != estimate.getMooring().getCustomer())
+                            estimateResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), estimate.getMooring().getCustomer()));
+                        if (null != estimate.getMooring() && null != estimate.getMooring().getBoatyard())
+                            estimateResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), estimate.getMooring().getBoatyard()));
+                        if (null != estimate.getCustomerOwnerUser())
+                            estimateResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getCustomerOwnerUser()));
+                        if (null != estimate.getTechnicianUser())
+                            estimateResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getTechnicianUser()));
+                        if (null != estimate.getWorkOrderStatus())
+                            estimateResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), estimate.getWorkOrderStatus()));
+                        if (null != estimate.getDueDate())
+                            estimateResponseDto.setDueDate(DateUtil.dateToString(estimate.getDueDate()));
+                        if (null != estimate.getScheduledDate())
+                            estimateResponseDto.setScheduledDate(DateUtil.dateToString(estimate.getScheduledDate()));
 
                         List<Inventory> inventoryList = inventoryRepository.findInventoriesByEstimate(estimate.getId());
 
@@ -197,8 +206,9 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to save the estimate in the database");
             final Estimate workOrder = Estimate.builder().build();
 
-            if(null == estimateRequestDto.getTechnicianId()) throw new RuntimeException("Technician Id cannot be null");
-            if(null == estimateRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
+            if (null == estimateRequestDto.getTechnicianId())
+                throw new RuntimeException("Technician Id cannot be null");
+            if (null == estimateRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
 
             performSave(estimateRequestDto, workOrder, null, request);
 
@@ -240,16 +250,19 @@ public class EstimateServiceImpl implements EstimateService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            if(-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID)) customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
+            if (-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID))
+                customerOwnerId = (Integer) request.getAttribute("CUSTOMER_OWNER_ID");
 
             Optional<Estimate> optionalEstimate = estimateRepository.findById(estimateId);
-            if (optionalEstimate.isEmpty()) throw new RuntimeException(String.format("No estimate exists with %1$s", estimateId));
+            if (optionalEstimate.isEmpty())
+                throw new RuntimeException(String.format("No estimate exists with %1$s", estimateId));
             final Estimate savedEstimate = optionalEstimate.get();
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(null != savedEstimate.getCustomerOwnerUser()) {
-                if(!savedEstimate.getCustomerOwnerUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Estimate with the id: %1$s is associated with some other customer owner", estimateId));
+            if (null != savedEstimate.getCustomerOwnerUser()) {
+                if (!savedEstimate.getCustomerOwnerUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Estimate with the id: %1$s is associated with some other customer owner", estimateId));
             } else {
                 throw new RuntimeException(String.format("Estimate with the id: %1$s is not associated with any customer owner", estimateId));
             }
@@ -270,6 +283,7 @@ public class EstimateServiceImpl implements EstimateService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse convertEstimateToWorkOrder(final Integer id, final HttpServletRequest request) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -286,26 +300,63 @@ public class EstimateServiceImpl implements EstimateService {
 
             workOrder.setWorkOrderNumber(workOrderServiceImpl.createWorkOrderNumber());
 
-            if(null != estimate.getTechnicianUser()) {
+            if (null != estimate.getTechnicianUser()) {
                 workOrder.setTechnicianUser(estimate.getTechnicianUser());
             } else {
                 throw new RuntimeException(String.format("No technician found for this estimate"));
             }
 
-            if(null != estimate.getMooring()) {
+            if (null != estimate.getMooring()) {
                 workOrder.setMooring(estimate.getMooring());
             } else {
                 throw new RuntimeException(String.format("No mooring found for this estimate"));
             }
 
-            if(null != estimate.getCustomerOwnerUser()) {
-                if(!user.getId().equals(estimate.getCustomerOwnerUser().getId())) throw new RuntimeException(String.format("Estimate with the id: %1$s is associated with other customer owner", estimate.getId()));
+            if (null != estimate.getCustomerOwnerUser()) {
+                if (!user.getId().equals(estimate.getCustomerOwnerUser().getId()))
+                    throw new RuntimeException(String.format("Estimate with the id: %1$s is associated with other customer owner", estimate.getId()));
                 workOrder.setCustomerOwnerUser(estimate.getCustomerOwnerUser());
             } else {
                 throw new RuntimeException(String.format("No customer owner found for this estimate"));
             }
 
-            if(null != estimate.getWorkOrderStatus()) {
+            if (null != estimate.getWorkOrderStatus()) {
+
+                if (StringUtils.equals(estimate.getWorkOrderStatus().getStatus(), AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
+                    if (null == estimate.getInventoryList() || estimate.getInventoryList().isEmpty()) {
+                        throw new ResourceNotProvidedException("No inventory item/s provided!!!");
+                    }
+
+                    List<Inventory> inventoryList = new ArrayList<>();
+
+                    for(Inventory inventory: estimate.getInventoryList()) {
+
+                        final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
+
+                        if(parentInventory.getQuantity() < inventory.getQuantity()) {
+                            throw new MathException("Given quantity is greater than available quantity");
+                        }
+
+                        parentInventory.setQuantity(parentInventory.getQuantity()-inventory.getQuantity());
+                        inventoryRepository.save(parentInventory);
+
+                        String originalItemName = inventory.getItemName().split("_")[0];
+                        String workOrderNumber = workOrder.getWorkOrderNumber();
+
+                        inventory.setItemName(originalItemName + "_WOR_" + workOrderNumber);
+                        inventory.setEstimate(null);
+                        inventory.setWorkOrder(workOrder);
+
+                        inventoryRepository.save(inventory);
+
+                        inventoryList.add(inventory);
+                    }
+
+                    workOrder.setInventoryList(inventoryList);
+                }
+
+                // Set work order status from estimate
                 workOrder.setWorkOrderStatus(estimate.getWorkOrderStatus());
             } else {
                 throw new RuntimeException(String.format("No status found for this estimate"));
@@ -327,7 +378,7 @@ public class EstimateServiceImpl implements EstimateService {
 
     private void performSave(final EstimateRequestDto estimateRequestDto, final Estimate estimate, final Integer estimateId, final HttpServletRequest request) {
         try {
-            if(null == estimateId) estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            if (null == estimateId) estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
@@ -421,9 +472,10 @@ public class EstimateServiceImpl implements EstimateService {
                 estimate.setDueDate(givenDueDate);
             }
 
-            if(null != estimateRequestDto.getWorkOrderStatusId()) {
+            if (null != estimateRequestDto.getWorkOrderStatusId()) {
                 final Optional<WorkOrderStatus> optionalWorkOrderStatus = workOrderStatusRepository.findById(estimateRequestDto.getWorkOrderStatusId());
-                if(optionalWorkOrderStatus.isEmpty()) throw new RuntimeException(String.format("No estimate status found with the given id: %1$s", estimateRequestDto.getWorkOrderStatusId()));
+                if (optionalWorkOrderStatus.isEmpty())
+                    throw new RuntimeException(String.format("No estimate status found with the given id: %1$s", estimateRequestDto.getWorkOrderStatusId()));
 
                 final WorkOrderStatus workOrderStatus = optionalWorkOrderStatus.get();
 
@@ -455,7 +507,7 @@ public class EstimateServiceImpl implements EstimateService {
                         if (null == inventory.getParentInventoryId()) {
                             final Inventory childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
                             childInventory.setParentInventoryId(inventory.getId());
-                            childInventory.setItemName(String.format(inventory.getItemName() + "_EST_" + estimate.getId()));
+                            childInventory.setItemName(String.format(inventory.getItemName() + "_EST"));
 
                             int parentInventoryCount = inventory.getQuantity();
                             int childInventoryCount = inventoryRequestDto.getQuantity();
@@ -489,40 +541,53 @@ public class EstimateServiceImpl implements EstimateService {
 
                 estimate.setWorkOrderStatus(workOrderStatus);
             } else {
-                if(null == estimateId) throw new RuntimeException(String.format("While saving estimate status cannot be null"));
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("While saving estimate status cannot be null"));
             }
 
-            if(null != estimateRequestDto.getMooringId()) {
+            if (null != estimateRequestDto.getMooringId()) {
                 Optional<Mooring> optionalMooring = mooringRepository.findById(estimateRequestDto.getMooringId());
-                if(optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring found with the given id: %1$s", estimateRequestDto.getMooringId()));
+                if (optionalMooring.isEmpty())
+                    throw new RuntimeException(String.format("No mooring found with the given id: %1$s", estimateRequestDto.getMooringId()));
 
                 final Mooring mooring = optionalMooring.get();
 
-                if(null == estimateRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null during saving/updating work order");
-                if(null == estimateRequestDto.getBoatyardId()) throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
-                if(null == mooring.getCustomer()) throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", estimateRequestDto.getMooringId()));
-                if(null == mooring.getBoatyard()) throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", estimateRequestDto.getBoatyardId()));
-                if(!mooring.getCustomer().getId().equals(estimateRequestDto.getCustomerId())) throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
-                if(!mooring.getBoatyard().getId().equals(estimateRequestDto.getBoatyardId())) throw new RuntimeException(String.format("Boatyard Id is different in mooring with given id: %1$s", mooring.getId()));
+                if (null == estimateRequestDto.getCustomerId())
+                    throw new RuntimeException("Customer Id cannot be null during saving/updating work order");
+                if (null == estimateRequestDto.getBoatyardId())
+                    throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
+                if (null == mooring.getCustomer())
+                    throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", estimateRequestDto.getMooringId()));
+                if (null == mooring.getBoatyard())
+                    throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", estimateRequestDto.getBoatyardId()));
+                if (!mooring.getCustomer().getId().equals(estimateRequestDto.getCustomerId()))
+                    throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
+                if (!mooring.getBoatyard().getId().equals(estimateRequestDto.getBoatyardId()))
+                    throw new RuntimeException(String.format("Boatyard Id is different in mooring with given id: %1$s", mooring.getId()));
 
                 estimate.setMooring(mooring);
             } else {
-                if(null == estimateId) throw new RuntimeException(String.format("While saving work order mooring id cannot be null"));
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("While saving work order mooring id cannot be null"));
             }
 
-            if(null != estimateRequestDto.getTechnicianId()) {
+            if (null != estimateRequestDto.getTechnicianId()) {
                 Optional<User> optionalTechnician = userRepository.findById(estimateRequestDto.getTechnicianId());
-                if(optionalTechnician.isEmpty()) throw new RuntimeException(String.format("No technician found with the given id: %1$s", estimateRequestDto.getTechnicianId()));
+                if (optionalTechnician.isEmpty())
+                    throw new RuntimeException(String.format("No technician found with the given id: %1$s", estimateRequestDto.getTechnicianId()));
 
                 final User technician = optionalTechnician.get();
 
-                if(null == technician.getRole()) throw new RuntimeException(String.format("User with id: %1$s is not assigned to any role", technician.getId()));
+                if (null == technician.getRole())
+                    throw new RuntimeException(String.format("User with id: %1$s is not assigned to any role", technician.getId()));
 
-                if(!technician.getRole().getName().equals(AppConstants.Role.TECHNICIAN)) throw new RuntimeException(String.format("User with the id: %1$s is not of technician role", technician.getId()));
+                if (!technician.getRole().getName().equals(AppConstants.Role.TECHNICIAN))
+                    throw new RuntimeException(String.format("User with the id: %1$s is not of technician role", technician.getId()));
 
                 estimate.setTechnicianUser(technician);
             } else {
-                if(null == estimateId) throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
+                if (null == estimateId)
+                    throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
             }
 
             estimateRepository.save(estimate);
