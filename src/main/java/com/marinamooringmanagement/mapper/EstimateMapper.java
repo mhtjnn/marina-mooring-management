@@ -17,6 +17,7 @@ public interface EstimateMapper {
     @Mapping(target = "technicianUser", ignore = true)
     @Mapping(target = "workOrderStatus", ignore = true)
     @Mapping(target = "customerOwnerUser", ignore = true)
+    @Mapping(target = "inventoryList", ignore = true)
     Estimate mapToEstimate(@MappingTarget Estimate estimate, EstimateDto estimateDto);
 
     @Mapping(target = "mooring", ignore = true)
@@ -25,12 +26,14 @@ public interface EstimateMapper {
     @Mapping(target = "customerOwnerUser", ignore = true)
     @Mapping(target = "dueDate", ignore = true)
     @Mapping(target = "scheduledDate", ignore = true)
+    @Mapping(target = "inventoryList", ignore = true)
     Estimate mapToEstimate(@MappingTarget Estimate estimate, EstimateRequestDto estimateRequestDto);
 
     @Mapping(target = "mooringDto", ignore = true)
     @Mapping(target = "customerOwnerUserDto", ignore = true)
     @Mapping(target = "workOrderStatusDto", ignore = true)
     @Mapping(target = "technicianUserDto", ignore = true)
+    @Mapping(target = "inventoryDtoList", ignore = true)
     EstimateDto mapToEstimateDto(@MappingTarget EstimateDto estimateDto, Estimate estimate);
 
     @Mapping(target = "customerResponseDto", ignore = true)
@@ -41,11 +44,13 @@ public interface EstimateMapper {
     @Mapping(target = "workOrderStatusDto", ignore = true)
     @Mapping(target = "dueDate", ignore = true)
     @Mapping(target = "scheduledDate", ignore = true)
+    @Mapping(target = "inventoryResponseDtoList", ignore = true)
     EstimateResponseDto mapToEstimateResponseDto(@MappingTarget EstimateResponseDto estimateResponseDto, Estimate estimate);
 
     @Mapping(target = "mooring", ignore = true)
     @Mapping(target = "technicianUser", ignore = true)
     @Mapping(target = "workOrderStatus", ignore = true)
     @Mapping(target = "customerOwnerUser", ignore = true)
+    @Mapping(target = "inventoryList", ignore = true)
     WorkOrder mapToWorkOrder(@MappingTarget WorkOrder workOrder, Estimate estimate);
 }

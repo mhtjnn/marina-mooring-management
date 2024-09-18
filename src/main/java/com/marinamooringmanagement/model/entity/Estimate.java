@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -54,5 +56,9 @@ public class Estimate extends Base{
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_status_id")
     private WorkOrderStatus workOrderStatus;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "estimate", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Inventory> inventoryList;
 
 }

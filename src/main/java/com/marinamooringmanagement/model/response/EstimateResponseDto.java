@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Time;
+import java.util.List;
 
 @Data
 @Builder
@@ -41,5 +42,7 @@ public class EstimateResponseDto implements Serializable {
     private UserResponseDto customerOwnerUserResponseDto;
 
     private WorkOrderStatusDto workOrderStatusDto;
+
+    private List<InventoryResponseDto> inventoryResponseDtoList;
 
 }

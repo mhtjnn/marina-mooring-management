@@ -941,7 +941,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             // Update form list
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
-                List<Form> savedForms = new ArrayList<>();
+                List<Form> savedForms;
 
                 if(null != workOrderId) {
                     List<Integer> savedFormsIds;

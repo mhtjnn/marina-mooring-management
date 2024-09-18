@@ -2,7 +2,9 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
+import com.marinamooringmanagement.exception.MathException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
+import com.marinamooringmanagement.exception.ResourceNotProvidedException;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.WorkOrderStatusMapper;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
@@ -10,6 +12,7 @@ import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
 import com.marinamooringmanagement.model.request.EstimateRequestDto;
+import com.marinamooringmanagement.model.request.InventoryRequestDto;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
@@ -81,6 +84,15 @@ public class EstimateServiceImpl implements EstimateService {
     @Autowired
     private WorkOrderServiceImpl workOrderServiceImpl;
 
+    @Autowired
+    private InventoryMapper inventoryMapper;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private VendorMapper vendorMapper;
+
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
     @Override
@@ -136,20 +148,34 @@ public class EstimateServiceImpl implements EstimateService {
             final List<EstimateResponseDto> estimateResponseDtoList = estimateList
                     .getContent()
                     .stream()
-                    .map(workOrder -> {
-                        EstimateResponseDto workOrderResponseDto = estimateMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), workOrder);
-                        if(null != workOrder.getMooring()) workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                        if(null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
-                        if(null != workOrder.getCustomerOwnerUser()) workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
-                        if(null != workOrder.getTechnicianUser()) workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
-                        if(null != workOrder.getWorkOrderStatus()) workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
-                        if(null != workOrder.getDueDate()) workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
-                        if(null != workOrder.getScheduledDate()) workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
+                    .map(estimate -> {
+                        EstimateResponseDto estimateResponseDto = estimateMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), estimate);
+                        if(null != estimate.getMooring()) estimateResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), estimate.getMooring()));
+                        if(null != estimate.getMooring() && null != estimate.getMooring().getCustomer()) estimateResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), estimate.getMooring().getCustomer()));
+                        if(null != estimate.getMooring() && null != estimate.getMooring().getBoatyard()) estimateResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), estimate.getMooring().getBoatyard()));
+                        if(null != estimate.getCustomerOwnerUser()) estimateResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getCustomerOwnerUser()));
+                        if(null != estimate.getTechnicianUser()) estimateResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getTechnicianUser()));
+                        if(null != estimate.getWorkOrderStatus()) estimateResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), estimate.getWorkOrderStatus()));
+                        if(null != estimate.getDueDate()) estimateResponseDto.setDueDate(DateUtil.dateToString(estimate.getDueDate()));
+                        if(null != estimate.getScheduledDate()) estimateResponseDto.setScheduledDate(DateUtil.dateToString(estimate.getScheduledDate()));
 
-                        return workOrderResponseDto;
+                        List<Inventory> inventoryList = inventoryRepository.findInventoriesByEstimate(estimate.getId());
+
+                        if (null != inventoryList && !inventoryList.isEmpty()) {
+                            estimateResponseDto.setInventoryResponseDtoList(inventoryList
+                                    .stream()
+                                    .map(inventory -> {
+                                        final InventoryResponseDto inventoryResponseDto = inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory);
+                                        VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor());
+                                        inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
+                                        return inventoryResponseDto;
+                                    })
+                                    .toList());
+                        }
+
+                        return estimateResponseDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             response.setMessage("All estimates fetched successfully.");
             response.setTotalSize(estimateRepository.findAll(spec).size());
@@ -397,12 +423,73 @@ public class EstimateServiceImpl implements EstimateService {
 
             if(null != estimateRequestDto.getWorkOrderStatusId()) {
                 final Optional<WorkOrderStatus> optionalWorkOrderStatus = workOrderStatusRepository.findById(estimateRequestDto.getWorkOrderStatusId());
-                if(optionalWorkOrderStatus.isEmpty()) throw new RuntimeException(String.format("No work order status found with the given id: %1$s", estimateRequestDto.getWorkOrderStatusId()));
+                if(optionalWorkOrderStatus.isEmpty()) throw new RuntimeException(String.format("No estimate status found with the given id: %1$s", estimateRequestDto.getWorkOrderStatusId()));
 
                 final WorkOrderStatus workOrderStatus = optionalWorkOrderStatus.get();
+
+                if (workOrderStatus.getStatus().equals(AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
+                    if (null == estimateRequestDto.getInventoryRequestDtoList()) {
+                        throw new ResourceNotProvidedException("No inventory item/s provided!!!");
+                    }
+
+                    List<Integer> toDelete;
+                    List<Integer> savedInventoryIds;
+                    List<Inventory> inventoryList = new ArrayList<>();
+                    if (null != estimate.getInventoryList() && !estimate.getInventoryList().isEmpty()) {
+                        inventoryList = estimate.getInventoryList();
+
+                        savedInventoryIds = estimate.getInventoryList().stream().map(Inventory::getId).toList();
+
+                        toDelete = savedInventoryIds
+                                .stream()
+                                .filter(id -> estimateRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
+                                .toList();
+
+                        inventoryRepository.deleteAllById(toDelete);
+                    }
+
+                    for (InventoryRequestDto inventoryRequestDto : estimateRequestDto.getInventoryRequestDtoList()) {
+                        final Inventory inventory = inventoryRepository.findById(inventoryRequestDto.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
+
+                        if (null == inventory.getParentInventoryId()) {
+                            final Inventory childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+                            childInventory.setParentInventoryId(inventory.getId());
+                            childInventory.setItemName(String.format(inventory.getItemName() + "_EST_" + estimate.getId()));
+
+                            int parentInventoryCount = inventory.getQuantity();
+                            int childInventoryCount = inventoryRequestDto.getQuantity();
+
+                            if (childInventoryCount > parentInventoryCount) {
+                                throw new MathException("Given quantity is greater than available quantity");
+                            }
+
+                            childInventory.setQuantity(inventoryRequestDto.getQuantity());
+                            childInventory.setEstimate(estimate);
+                            inventoryList.add(childInventory);
+
+                        } else {
+                            final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
+                                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
+
+                            int parentInventoryCount = parentInventory.getQuantity();
+                            int childInventoryCount = inventory.getQuantity();
+
+                            if (childInventoryCount > parentInventoryCount) {
+                                throw new MathException("Given quantity is greater than available quantity");
+                            }
+
+                            inventory.setQuantity(childInventoryCount);
+                        }
+
+                    }
+
+                    estimate.setInventoryList(inventoryList);
+                }
+
                 estimate.setWorkOrderStatus(workOrderStatus);
             } else {
-                if(null == estimateId) throw new RuntimeException(String.format("While saving work order status cannot be null"));
+                if(null == estimateId) throw new RuntimeException(String.format("While saving estimate status cannot be null"));
             }
 
             if(null != estimateRequestDto.getMooringId()) {

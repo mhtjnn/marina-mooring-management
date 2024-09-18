@@ -54,13 +54,29 @@ public class Inventory extends Base{
     @ToString.Exclude
     private WorkOrder workOrder;
 
-    Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, String vendorName, Integer workOrderId) {
+    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "estimate_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private Estimate estimate;
+
+    public Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, String vendorName, Integer workOrderId, String workOrderNumber) {
         this.id = id;
         this.itemName = itemName;
         this.quantity = quantity;
         this.parentInventoryId = parentInventoryId;
         this.vendor = Vendor.builder().id(vendorId).vendorName(vendorName).build();
-        this.workOrder = WorkOrder.builder().id(workOrderId).build();
+        this.workOrder = WorkOrder.builder().id(workOrderId).workOrderNumber(workOrderNumber).build();
+    }
+
+    // Constructor for estimate
+    public Inventory(Integer id, String itemName, Integer quantity, Integer parentInventoryId, Integer vendorId, String vendorName, Integer estimateId) {
+        this.id = id;
+        this.itemName = itemName;
+        this.quantity = quantity;
+        this.parentInventoryId = parentInventoryId;
+        this.vendor = Vendor.builder().id(vendorId).vendorName(vendorName).build();
+        this.estimate = Estimate.builder().id(estimateId).build();
     }
 
 }
