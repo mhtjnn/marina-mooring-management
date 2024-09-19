@@ -31,7 +31,7 @@ public interface FormRepository extends JpaRepository<Form, Integer>, JpaSpecifi
 
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Form(" +
-            "f.id, f.formName, f.fileName) " +
+            "f.id, f.formName, f.fileName, f.parentFormId) " +
             "FROM Form f " +
             "LEFT JOIN f.workOrder w " +
             "WHERE w.id = :workOrderId " +

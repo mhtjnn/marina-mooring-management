@@ -66,7 +66,7 @@ public class WorkOrder extends Base{
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
     private List<Image> imageList;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Form> formList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)

@@ -939,49 +939,70 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setImageList(imageList);
             }
 
-            // Update form list
+            List<Form> formsToDelete = new ArrayList<>();
+
+// Update form list
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
                 List<Form> savedForms;
 
-                if(null != workOrderId) {
-                    List<Integer> savedFormsIds;
+                if (null != workOrderId) {
+                    List<Integer> savedFormIds;
 
-                    savedFormsIds = workOrder.getFormList().stream().map(Form::getId).toList();
+                    if (null != workOrder.getFormList()) {
+                        savedFormIds = workOrder.getFormList().stream()
+                                .map(Form::getId)
+                                .toList();
 
-                    List<Integer> toDelete = savedFormsIds.stream()
-                            .filter(id -> workOrderRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
-                            .toList();
+                        List<Integer> toDelete = savedFormIds.stream()
+                                .filter(id -> workOrderRequestDto.getFormRequestDtoList().stream()
+                                        .noneMatch(formRequestDto -> null != formRequestDto.getId() && formRequestDto.getId().equals(id)))
+                                .toList();
 
-                    formRepository.deleteAllById(toDelete);
+                        if (!toDelete.isEmpty()) {
+                            // Fetch the forms to ensure they are managed
+                            formsToDelete = formRepository.findAllById(toDelete);
+
+                            // Remove the forms from workOrder formList, this triggers orphan removal
+                            formsToDelete.forEach(form -> {
+                                workOrder.getFormList().remove(form);
+                                form.setWorkOrder(null);  // Necessary to prevent re-association
+                            });
+                        }
+                    }
                 }
 
+                // Fetch forms without data, used for updating existing forms
                 savedForms = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
 
-                for(FormRequestDto formRequestDto: workOrderRequestDto.getFormRequestDtoList()) {
-                    Form parentForm;
+                for (FormRequestDto formRequestDto : workOrderRequestDto.getFormRequestDtoList()) {
                     Form childForm;
-                    if(null == formRequestDto.getParentFormId()) {
-                        parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
+
+                    if (null == formRequestDto.getParentFormId()) {
+                        // Handle parent form creation
+                        Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
                         childForm = formMapper.toEntity(Form.builder().build(), parentForm);
 
                         childForm.setParentFormId(parentForm.getId());
                         childForm.setWorkOrder(workOrder);
                         savedForms.add(childForm);
                     } else {
+                        // Fetch existing child form
                         childForm = formRepository.findByIdWithoutData(formRequestDto.getId());
                     }
 
-                    if(null != formRequestDto.getEncodedFormData()) {
+                    if (null != formRequestDto.getEncodedFormData()) {
                         byte[] formData = PDFUtils.isPdfFile(formRequestDto.getEncodedFormData());
                         childForm.setFormData(formData);
                     } else {
                         throw new RuntimeException("Form data cannot be null during save");
                     }
-
                 }
 
-                workOrder.setFormList(savedForms);
+                // No need to replace formList; just clear and add the updated list
+                workOrder.getFormList().clear();
+                workOrder.getFormList().addAll(savedForms);
             }
+
 
             final LocalDate currentDate = LocalDate.now();
 
@@ -1155,6 +1176,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             parentInventory.setQuantity(quantityAfterOperation);
 
                             inventoryRepository.save(parentInventory);
+
+                            if (inventoryRequestDto.getQuantity() == 0) {
+                                inventory.setWorkOrder(null);
+                                inventoryList.remove(inventory);
+                                inventoryRepository.delete(inventory);
+                            }
                         }
 
                     }
@@ -1222,6 +1249,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             workOrderRepository.save(workOrder);
+
+            formRepository.deleteAll(formsToDelete);
         } catch (
                 Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());

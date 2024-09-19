@@ -532,6 +532,12 @@ public class EstimateServiceImpl implements EstimateService {
                             }
 
                             inventory.setQuantity(childInventoryCount);
+
+                            if(inventoryRequestDto.getQuantity() == 0) {
+                                inventory.setWorkOrder(null);
+                                inventoryList.remove(inventory);
+                                inventoryRepository.delete(inventory);
+                            }
                         }
 
                     }

@@ -144,7 +144,7 @@ public class VendorServiceImpl implements VendorService {
                         if (null != vendor.getCountry()) vendorResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), vendor.getCountry()));
                         if (null != vendor.getRemitState()) vendorResponseDto.setRemitStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), vendor.getRemitState()));
                         if (null != vendor.getRemitCountry()) vendorResponseDto.setRemitCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), vendor.getRemitCountry()));
-                        vendorResponseDto.setInventoryItems((null == vendor.getInventoryList()) ? 0 : vendor.getInventoryList().size());
+                        vendorResponseDto.setInventoryItems((null == vendor.getInventoryList()) ? 0 : vendor.getInventoryList().stream().filter(inventory -> inventory.getWorkOrder() == null && inventory.getEstimate() == null).toList().size());
                         return vendorResponseDto;
                     })
                     .collect(Collectors.toList());

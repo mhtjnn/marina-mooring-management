@@ -56,4 +56,11 @@ public class Form extends Base {
         this.formName = formName;
         this.fileName = fileName;
     }
+
+    public Form(Integer id, String formName, String fileName, Integer parentFormId) {
+        this.id = id;
+        this.formName = formName;
+        this.fileName = fileName;
+        this.parentFormId = parentFormId;
+    }
 }
