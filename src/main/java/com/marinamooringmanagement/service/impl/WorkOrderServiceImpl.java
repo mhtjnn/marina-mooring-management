@@ -1001,8 +1001,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setFormList(formList);
             }
 
-
-
             final LocalDate currentDate = LocalDate.now();
 
             if (null == workOrderRequestDto.getScheduledDate() && null == workOrderRequestDto.getDueDate()) {

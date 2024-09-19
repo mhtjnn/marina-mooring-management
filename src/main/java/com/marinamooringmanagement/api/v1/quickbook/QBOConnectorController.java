@@ -41,6 +41,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @Controller
@@ -176,9 +177,8 @@ public class QBOConnectorController {
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given email: %1$s", userEmail)));
 
                 //check if user already exists
-                final QBOUser dbQboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
-                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
-                qboUserRepository.delete(dbQboUser);
+                final Optional<QBOUser> dbQboUser = qboUserRepository.findQBOUserByEmail(user.getEmail());
+                dbQboUser.ifPresent(qboUser -> qboUserRepository.delete(qboUser));
 
                 QBOUser qboUser = QBOUser.builder()
                         .email(user.getEmail())
