@@ -975,6 +975,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 savedForms = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
 
                 for (FormRequestDto formRequestDto : workOrderRequestDto.getFormRequestDtoList()) {
+
+                    if(formRequestDto.getEncodedFormData() == null) continue;
+
                     Form childForm;
 
                     if (null == formRequestDto.getParentFormId()) {
@@ -982,6 +985,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
                         childForm = formMapper.toEntity(Form.builder().build(), parentForm);
 
+                        String workOrderNumber = workOrder.getWorkOrderNumber();
+                        childForm.setFormName(parentForm.getFormName() + "_" + workOrderNumber);
                         childForm.setParentFormId(parentForm.getId());
                         childForm.setWorkOrder(workOrder);
                         savedForms.add(childForm);
