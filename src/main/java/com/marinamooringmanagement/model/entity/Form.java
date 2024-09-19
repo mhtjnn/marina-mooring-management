@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,11 +28,12 @@ public class Form extends Base {
 
     @Lob
     @Column(name = "form_data", length = 102400)
-    @Basic(fetch = FetchType.LAZY)
     private byte[] formData;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_id")
+    @JsonBackReference
+    @ToString.Exclude
     private WorkOrder workOrder;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

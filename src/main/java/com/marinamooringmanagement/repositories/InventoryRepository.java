@@ -44,4 +44,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
             "LEFT JOIN i.estimate e " +
             "WHERE e.id = :estimateId")
     List<Inventory> findInventoriesByEstimate(@Param("estimateId") Integer estimateId);
+
 }

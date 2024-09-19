@@ -1,12 +1,10 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.*;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Time;
 import java.util.Date;
@@ -45,6 +43,8 @@ public class WorkOrder extends Base{
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "mooring_id")
+    @JsonBackReference
+    @ToString.Exclude
     private Mooring mooring;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
@@ -64,17 +64,23 @@ public class WorkOrder extends Base{
     private WorkOrderPayStatus workOrderPayStatus;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
     private List<Image> imageList;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.EAGER, orphanRemoval = true)
+    @JsonManagedReference
+    @ToString.Exclude
     private List<Form> formList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "workOrder",fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private WorkOrderInvoice workOrderInvoice;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Inventory> inventoryList;
 
 

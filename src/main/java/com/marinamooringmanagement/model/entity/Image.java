@@ -36,6 +36,8 @@ public class Image extends Base{
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "work_order_image_id")
+    @JsonBackReference
+    @ToString.Exclude
     private WorkOrder workOrder;
 
     @OneToOne

@@ -941,55 +941,50 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             List<Form> formsToDelete = new ArrayList<>();
 
-// Update form list
+            // Update form list
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
-                List<Form> savedForms;
 
-                if (null != workOrderId) {
-                    List<Integer> savedFormIds;
+                List<Integer> toDelete;
+                List<Integer> savedFormIds;
+                List<Form> formList = workOrder.getFormList();
+                if (null != workOrder.getFormList() && !workOrder.getFormList().isEmpty()) {
+                    savedFormIds = formList.stream().map(Form::getId).toList();
 
-                    if (null != workOrder.getFormList()) {
-                        savedFormIds = workOrder.getFormList().stream()
-                                .map(Form::getId)
-                                .toList();
+                    toDelete = savedFormIds.stream()
+                            .filter(id -> workOrderRequestDto.getFormRequestDtoList().stream()
+                                    .noneMatch(formRequestDto -> null != formRequestDto.getId() && formRequestDto.getId().equals(id)))
+                            .toList();
 
-                        List<Integer> toDelete = savedFormIds.stream()
-                                .filter(id -> workOrderRequestDto.getFormRequestDtoList().stream()
-                                        .noneMatch(formRequestDto -> null != formRequestDto.getId() && formRequestDto.getId().equals(id)))
-                                .toList();
-
-                        if (!toDelete.isEmpty()) {
-                            // Fetch the forms to ensure they are managed
-                            formsToDelete = formRepository.findAllById(toDelete);
-
-                            // Remove the forms from workOrder formList, this triggers orphan removal
-                            formsToDelete.forEach(form -> {
-                                workOrder.getFormList().remove(form);
-                                form.setWorkOrder(null);  // Necessary to prevent re-association
-                            });
-                        }
-                    }
+                    List<Form> toDeleteForms = formRepository.findAllById(toDelete);
+                    formList.removeAll(toDeleteForms);
                 }
 
-                // Fetch forms without data, used for updating existing forms
-                savedForms = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
+                if(null == formList) formList = new ArrayList<>();
 
                 for (FormRequestDto formRequestDto : workOrderRequestDto.getFormRequestDtoList()) {
 
                     if(formRequestDto.getEncodedFormData() == null) continue;
 
-                    Form childForm;
+                    Form childForm = null;
 
                     if (null == formRequestDto.getParentFormId()) {
                         // Handle parent form creation
                         Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
-                        childForm = formMapper.toEntity(Form.builder().build(), parentForm);
+
+                        for(Form savedForm: workOrder.getFormList()) {
+                            if(savedForm.getParentFormId().equals(parentForm.getId())) {
+                                childForm = savedForm;
+                                break;
+                            }
+                        }
+
+                        if(null == childForm) childForm = formMapper.toEntity(Form.builder().build(), parentForm);
 
                         String workOrderNumber = workOrder.getWorkOrderNumber();
                         childForm.setFormName(parentForm.getFormName() + "_" + workOrderNumber);
                         childForm.setParentFormId(parentForm.getId());
                         childForm.setWorkOrder(workOrder);
-                        savedForms.add(childForm);
+                        formList.add(childForm);
                     } else {
                         // Fetch existing child form
                         childForm = formRepository.findByIdWithoutData(formRequestDto.getId());
@@ -1003,10 +998,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     }
                 }
 
-                // No need to replace formList; just clear and add the updated list
-                workOrder.getFormList().clear();
-                workOrder.getFormList().addAll(savedForms);
+                workOrder.setFormList(formList);
             }
+
 
 
             final LocalDate currentDate = LocalDate.now();
@@ -1149,7 +1143,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                 .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
 
                         if (null == inventory.getParentInventoryId()) {
-                            final Inventory childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+                            Inventory childInventory = null;
+
+                            for(Inventory savedInventory: workOrder.getInventoryList()) {
+                                if(savedInventory.getParentInventoryId().equals(inventory.getId())) {
+                                    childInventory = savedInventory;
+                                    inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
+                                    break;
+                                }
+                            }
+
+                            if(null == childInventory) childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+
                             childInventory.setParentInventoryId(inventory.getId());
                             childInventory.setItemName(String.format(inventory.getItemName() + "_" + workOrder.getWorkOrderNumber()));
 
