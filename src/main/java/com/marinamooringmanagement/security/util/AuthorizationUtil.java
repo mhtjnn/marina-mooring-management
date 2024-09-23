@@ -242,7 +242,7 @@ public class AuthorizationUtil {
         if(StringUtils.equals(loggedInUserRole, AppConstants.Role.ADMINISTRATOR)) {
             return true;
         } else if(StringUtils.equals(loggedInUserRole, AppConstants.Role.CUSTOMER_OWNER)) {
-            return (user.getCustomerOwnerId() != null && user.getCustomerOwnerId().equals(customerOwnerId));
+            return (user.getCustomerOwnerId() != null && user.getCustomerOwnerId().equals(LoggedInUserUtil.getLoggedInUserID()));
         } else {
             return false;
         }

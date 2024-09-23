@@ -104,7 +104,7 @@ public class Customer extends Base {
     @JsonManagedReference
     private QuickbookCustomer quickBookCustomer;
 
-    @Column(name = "quickbook_customer_id", unique = true)
+    @Column(name = "quickbook_customer_id")
     private String quickbookCustomerId;
 
     public Customer(

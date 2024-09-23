@@ -23,6 +23,7 @@ import com.marinamooringmanagement.model.entity.QuickbookCustomer;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
+import com.marinamooringmanagement.repositories.QuickbookCustomerRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
@@ -35,12 +36,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -61,6 +64,8 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
     @Autowired
     private QBOUserRepository qboUserRepository;
 
+    @Autowired
+    private QuickbookCustomerRepository quickbookCustomerRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(QBOCustomerServiceImpl.class);
     private static final String failureMsg = "Failed";
@@ -205,7 +210,7 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
 
             try {
                 responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-                if(responseEntity.getStatusCode() == HttpStatus.OK) {
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
                     response.setContent(responseEntity.getBody());
                     response.setStatus(HttpStatus.OK.value());
                 } else {
@@ -231,7 +236,7 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
                 headers.set("Authorization", "Bearer " + newAccessToken);
 
                 responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-                if(responseEntity.getStatusCode() == HttpStatus.OK) {
+                if (responseEntity.getStatusCode() == HttpStatus.OK) {
                     response.setContent(responseEntity.getBody());
                     response.setStatus(HttpStatus.OK.value());
                 } else {
@@ -246,22 +251,53 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
         return responseEntity;
     }
 
-    public Customer getQuickBooksCustomerById(String quickbookCustomerId, HttpServletRequest request) {
+    public QuickbookCustomer getQuickBooksCustomerByQuickbookCustomerResponse(com.marinamooringmanagement.model.entity.Customer customer, String quickbookCustomerId, HttpServletRequest request) {
         // Call your fetchQBOCustomerById to get the ResponseEntity
         ResponseEntity<String> responseEntity = fetchQBOCustomerById(quickbookCustomerId, request);
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
             String jsonResponse = responseEntity.getBody();
             try {
-                // Parse the outer JSON object
-                JsonNode rootNode = objectMapper.readTree(jsonResponse);
+                Optional<QuickbookCustomer> optionalQuickbookCustomer = quickbookCustomerRepository.findByQuickbookCustomerId(quickbookCustomerId);
+                QuickbookCustomer quickbookCustomer = null;
+                if (optionalQuickbookCustomer.isEmpty()) {
+                    // Parse the outer JSON object
+                    JsonNode rootNode = objectMapper.readTree(jsonResponse);
 
-                // Extract the "Customer" field from the JSON
-                JsonNode customerNode = rootNode.get("Customer");
+                    // Extract the "Customer" field from the JSON
+                    JsonNode customerNode = rootNode.get("Customer");
 
-                // Map the extracted "Customer" node to the Customer class
-                return objectMapper.treeToValue(customerNode, Customer.class);
+                    // Use findPath to locate the "Id" field in case it's nested inside _children
+                    JsonNode idNode = customerNode.get("Id");
 
+                    quickbookCustomer = QuickbookCustomer.builder().build();
+                    // Return the Id as a String if found
+                    if (!idNode.isMissingNode()) {
+                        String idNodeStr = idNode.asText();  // This gives you the string representation
+                        quickbookCustomer.setQuickbookCustomerId(idNodeStr);
+                    } else {
+                        throw new RuntimeException("Customer ID not found in response");
+                    }
+
+                    JsonNode givenNameNode = customerNode.get("GivenName");
+                    if (!givenNameNode.isMissingNode()) {
+                        String givenNameNodeStr = givenNameNode.asText();  // This gives you the string representation
+                        quickbookCustomer.setQuickbookCustomerFirstName(givenNameNodeStr);
+                    } else {
+                        throw new RuntimeException("Customer ID not found in response");
+                    }
+
+                    JsonNode familyNameNode = customerNode.get("FamilyName");
+                    if (!familyNameNode.isMissingNode()) {
+                        String familyNameNodeStr = familyNameNode.asText();  // This gives you the string representation
+                        quickbookCustomer.setQuickbookCustomerLastName(familyNameNodeStr);
+                    } else {
+                        throw new RuntimeException("Customer ID not found in response");
+                    }
+                }
+
+                if(optionalQuickbookCustomer.isPresent()) quickbookCustomer = optionalQuickbookCustomer.get();
+                return quickbookCustomer;
             } catch (Exception e) {
                 throw new RuntimeException("Error parsing response to Customer object", e);
             }

@@ -946,7 +946,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 List<Integer> toDelete;
                 List<Integer> savedFormIds;
-                List<Form> formList = workOrder.getFormList();
+                List<Form> formList;
+
+                if(null != workOrder.getFormList()) formList = workOrder.getFormList();
+                else formList = new ArrayList<>();
+
                 if (null != workOrder.getFormList() && !workOrder.getFormList().isEmpty()) {
                     savedFormIds = formList.stream().map(Form::getId).toList();
 
@@ -958,8 +962,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     List<Form> toDeleteForms = formRepository.findAllById(toDelete);
                     formList.removeAll(toDeleteForms);
                 }
-
-                if(null == formList) formList = new ArrayList<>();
 
                 for (FormRequestDto formRequestDto : workOrderRequestDto.getFormRequestDtoList()) {
 
@@ -1196,7 +1198,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     workOrder.setInventoryList(inventoryList);
                 }
-
 
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {

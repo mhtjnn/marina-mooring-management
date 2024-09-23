@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.marinamooringmanagement.model.entity.metadata.InventoryType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
@@ -42,7 +45,7 @@ public class Inventory extends Base{
     @JoinColumn(name = "inventory_type_id")
     private InventoryType inventoryType;
 
-    @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "vendor_id")
     @JsonBackReference
     @ToString.Exclude

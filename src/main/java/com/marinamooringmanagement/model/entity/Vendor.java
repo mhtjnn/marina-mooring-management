@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -136,6 +133,7 @@ public class Vendor extends Base {
 
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Inventory> inventoryList;
 
     Vendor(Integer id, String vendorName, String companyPhoneNumber, String website, String address,

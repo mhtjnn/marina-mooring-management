@@ -18,4 +18,6 @@ public interface QuickbookCustomerRepository extends JpaRepository<QuickbookCust
     List<QuickbookCustomer> findAll(Specification<QuickbookCustomer> spec);
 
     Optional<QuickbookCustomer> findByQuickbookCustomerId(String quickbookCustomerId);
+
+    Optional<QuickbookCustomer> findByCustomerId(Integer customerId);
 }

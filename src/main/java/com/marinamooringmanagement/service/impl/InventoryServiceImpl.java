@@ -35,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -216,10 +217,12 @@ public class InventoryServiceImpl implements InventoryService {
                 throw new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", id));
             final Inventory inventory = optionalInventory.get();
 
-            if (!inventory.getVendor().equals(vendor))
+            final Vendor mappedVendor = inventory.getVendor();
+
+            if (!mappedVendor.getId().equals(vendor.getId()))
                 throw new RuntimeException(String.format("Inventory with id: %1$s is not associated with vendor of id: %2$s", id, vendorId));
 
-            vendor.getInventoryList().removeIf(inventory1 -> inventory1.getId().equals(inventory.getId()));
+            if(null != vendor.getInventoryList()) vendor.getInventoryList().removeIf(inventory1 -> inventory1.getId().equals(inventory.getId()));
 
             inventoryRepository.delete(inventory);
 
@@ -247,26 +250,28 @@ public class InventoryServiceImpl implements InventoryService {
             inventoryMapper.mapToInventory(inventory, inventoryRequestDto);
 
             if (null == inventoryId) {
+                inventory.setVendor(vendor);
                 inventory.setCreationDate(new Date(System.currentTimeMillis()));
 
-                if (null == inventoryRequestDto.getInventoryTypeId())
+                if (null == inventoryRequestDto.getInventoryTypeId()) {
                     throw new RuntimeException("Please select an inventory type");
+                }
 
-                inventory.setVendor(vendor);
             } else {
                 inventory.setLastModifiedDate(new Date(System.currentTimeMillis()));
             }
 
-            if(null != inventoryRequestDto.getTaxable()) {
-                if(inventoryRequestDto.getTaxable().equals("yes")) {
+            if (null != inventoryRequestDto.getTaxable()) {
+                if (inventoryRequestDto.getTaxable().equals("yes")) {
                     inventory.setTaxable(true);
-                } else if (inventoryRequestDto.getTaxable().equals("no")){
+                } else if (inventoryRequestDto.getTaxable().equals("no")) {
                     inventory.setTaxable(false);
                 } else {
                     throw new RuntimeException("Taxable can only be yes or no");
                 }
             } else {
-                if(null == inventoryId) throw new RuntimeException(String.format("Taxable cannot be null during save"));
+                if (null == inventoryId)
+                    throw new RuntimeException(String.format("Taxable cannot be null during save"));
             }
 
             if (null != inventoryRequestDto.getInventoryTypeId()) {
@@ -286,9 +291,6 @@ public class InventoryServiceImpl implements InventoryService {
                 vendor.setInventoryList(new ArrayList<>());
             }
 
-            vendor.getInventoryList().add(savedInventory);
-
-            vendorRepository.save(vendor);
         } catch (Exception e) {
             throw e;
         }

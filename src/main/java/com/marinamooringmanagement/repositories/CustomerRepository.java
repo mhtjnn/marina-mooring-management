@@ -113,11 +113,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
             "LEFT JOIN c.customerType cu " +
             "JOIN c.user u " +
             "JOIN u.role r " +
-            "WHERE (:userId IS NOT NULL AND u.id = :userId AND c.id = :customerId) " +
-            "AND (:quickbookCustomerId IS NOT NULL AND :quickbookCustomerId = c.quickbookCustomerId) " +
+            "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
+            "AND (:quickbookCustomerId IS NOT NULL AND c.quickbookCustomerId = :quickbookCustomerId) " +
             "ORDER BY c.id")
     Optional<Customer> findCustomerByQuickbookCustomerId(
             @Param("quickbookCustomerId") String quickbookCustomerId,
             @Param("userId") Integer userId
     );
+
+    Optional<Customer> findByQuickbookCustomerId(String quickbookCustomerId);
 }
