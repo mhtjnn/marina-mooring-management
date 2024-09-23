@@ -184,4 +184,29 @@ public class MooringController extends GlobalExceptionHandler {
         return mooringService.deleteMooring(id, request);
     }
 
+    @Operation(
+            summary = "API to get information of the mooring with the given id from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @GetMapping(value = "/{id}", produces = {"application/json"})
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse getMooringById(
+            @Parameter(description = "Id of the mooring", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
+            final HttpServletRequest request
+    ) {
+        return mooringService.getMooringById(id, request);
+    }
+
 }

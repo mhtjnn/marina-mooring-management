@@ -74,6 +74,31 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
             "LEFT JOIN m.serviceArea s " +
             "JOIN m.user u " +
             "JOIN u.role r " +
+            "WHERE m.id = :mooringId AND u.id = :userId")
+    Optional<Mooring> findById(@Param("mooringId") Integer mooringId,
+                               @Param("userId") Integer userId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
+            "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
+            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatName, " +
+            "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
+            "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardName, " +
+            "s.id, s.serviceAreaName) " +
+            "FROM Mooring m " +
+            "LEFT JOIN m.boatType bt " +
+            "LEFT JOIN m.typeOfWeight tw " +
+            "LEFT JOIN m.eyeCondition ec " +
+            "LEFT JOIN m.topChainCondition tc " +
+            "LEFT JOIN m.bottomChainCondition bc " +
+            "LEFT JOIN m.shackleSwivelCondition sc " +
+            "LEFT JOIN m.mooringStatus ms " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.boatyard byd " +
+            "LEFT JOIN m.serviceArea s " +
+            "JOIN m.user u " +
+            "JOIN u.role r " +
             "where (:userId IS NOT NULL AND u.id = :userId " +
             "AND c.id = :customerId) " +
             "ORDER BY m.id")

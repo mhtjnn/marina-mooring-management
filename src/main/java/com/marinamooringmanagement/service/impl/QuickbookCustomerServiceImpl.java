@@ -1,6 +1,8 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marinamooringmanagement.constants.AppConstants;
+import com.marinamooringmanagement.exception.ClassConversionException;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
@@ -35,6 +37,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -259,7 +262,19 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given id: %1$s", customerId));
 
             final Customer customer = optionalCustomer.get();
-            final QuickbookCustomer quickbookCustomer = (QuickbookCustomer) qboCustomerService.fetchQBOCustomerById(quickbookCustomerId, request).getContent();
+//            final ResponseEntity<String> responseBody = qboCustomerService.fetchQBOCustomerById(quickbookCustomerId, request);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            com.intuit.ipp.data.Customer quickbookCustomer = qboCustomerService.getQuickBooksCustomerById(quickbookCustomerId, request);
+//            try {
+//                quickbookCustomer = objectMapper.readValue(responseBody.getBody(), com.intuit.ipp.data.Customer.class);
+//            } catch (Exception e) {
+//                throw new ClassConversionException("Error converting response to Customer object", e);
+//            }
+
+            if(quickbookCustomer == null) {
+                throw new NullPointerException("No quickbooks customer found!!!");
+            }
 
             final Optional<Customer> optionalMappedCustomer = customerRepository.findCustomerByQuickbookCustomerId(quickbookCustomerId, user.getId());
 
@@ -270,16 +285,13 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
                 customerRepository.save(mappedCustomer);
             }
 
-            if(null == quickbookCustomer) throw new ResourceNotFoundException(String.format("No Quickbook customer found with the given id: %1$s", quickbookCustomerId));
-
             if(!StringUtils.equals(customer.getUser().getRole().getName(), AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User associated with customer of given id: %1$s is not of customer owner role", customerId));
-            if(!StringUtils.equals(quickbookCustomer.getUser().getRole().getName(), AppConstants.Role.CUSTOMER_OWNER)) throw new RuntimeException(String.format("User associated with quickbook customer of given id: %1$s is not of customer owner role", customerId));
 
             if(null == customer.getUser()) throw new RuntimeException(String.format("Customer with the given id: %1$s is not associated with any customer owner", customerId));
 
             if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the given id: %1$s is associated with other customer owner", customerId));
 
-            customer.setQuickbookCustomerId(quickbookCustomer.getQuickbookCustomerId());
+            customer.setQuickbookCustomerId(quickbookCustomer.getId());
             customerRepository.save(customer);
 
             response.setMessage(String.format("Customer with given id: %1$s is successfully mapped to quickbook customer with given id: %2$s", customerId, quickbookCustomerId));

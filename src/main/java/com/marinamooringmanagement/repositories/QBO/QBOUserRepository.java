@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface QBOUserRepository extends JpaRepository<QBOUser, Integer> {
     Optional<QBOUser> findQBOUserByEmail(String email);
+
+    Optional<QBOUser> findQBOUserByCreatedBy(String email);
 }

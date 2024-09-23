@@ -128,5 +128,7 @@ public class MooringResponseDto implements Serializable {
 
     private ServiceAreaResponseDto serviceAreaResponseDto;
 
+    private CustomerResponseDto customerResponseDto;
+
     private List<ImageDto> imageDtoList;
 }

@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  * Service implementation for managing Mooring entities.
  */
 @Service
-public class MooringServiceImpl extends GlobalExceptionHandler implements MooringService{
+public class MooringServiceImpl extends GlobalExceptionHandler implements MooringService {
 
     private static final Logger log = LoggerFactory.getLogger(MooringServiceImpl.class);
 
@@ -81,9 +81,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
     private BoatTypeRepository boatTypeRepository;
 
     @Autowired
-    private SizeOfWeightRepository sizeOfWeightRepository;
-
-    @Autowired
     private TypeOfWeightRepository typeOfWeightRepository;
 
     @Autowired
@@ -97,9 +94,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
     @Autowired
     private ShackleSwivelConditionRepository shackleSwivelConditionRepository;
-
-    @Autowired
-    private PennantConditionRepository pennantConditionRepository;
 
     @Autowired
     private LoggedInUserUtil loggedInUserUtil;
@@ -118,9 +112,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
     @Autowired
     private UserMapper userMapper;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     private ServiceAreaRepository serviceAreaRepository;
@@ -168,19 +159,28 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                         MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
 
                         MooringWithGPSCoordinateResponse mooringWithGPSCoordinateResponse = mooringMapper.mapToMooringWithGPSCoordinateResponse(MooringWithGPSCoordinateResponse.builder().build(), mooring);
-                        if(null != mooring.getMooringStatus()) mooringWithGPSCoordinateResponse.setStatusId(mooring.getMooringStatus().getId());
+                        if (null != mooring.getMooringStatus())
+                            mooringWithGPSCoordinateResponse.setStatusId(mooring.getMooringStatus().getId());
                         allMooringsWithGPSCoordinate.add(mooringWithGPSCoordinateResponse);
 
-                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
-                        if (null != mooring.getCustomer()) mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
-                        if(null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
-                        if(null != mooring.getBoatyard()) mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
-                        if(null != mooring.getServiceArea()) mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
-                        if(null != mooring.getInstallBottomChainDate()) mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
-                        if(null != mooring.getInstallTopChainDate()) mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
-                        if(null != mooring.getInstallConditionOfEyeDate()) mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
-                        if(null != mooring.getInspectionDate()) mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
-                        if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
+                        if (null != mooring.getCustomer())
+                            mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+                        if (null != mooring.getCustomer())
+                            mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
+                        if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+                        if (null != mooring.getBoatyard())
+                            mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+                        if (null != mooring.getServiceArea())
+                            mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
+                        if (null != mooring.getInstallBottomChainDate())
+                            mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+                        if (null != mooring.getInstallTopChainDate())
+                            mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+                        if (null != mooring.getInstallConditionOfEyeDate())
+                            mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+                        if (null != mooring.getInspectionDate())
+                            mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
+                        if (null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
                             mooringResponseDto.setImageDtoList(mooring.getImageList()
                                     .stream()
                                     .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
@@ -195,7 +195,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             List<MooringResponseDto> paginatedMooringResponseDtoList;
 
-            if(start > mooringList.size()) {
+            if (start > mooringList.size()) {
                 paginatedMooringResponseDtoList = new ArrayList<>();
             } else {
                 paginatedMooringResponseDtoList = mooringResponseDtoList.subList(start, end);
@@ -216,24 +216,6 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         return response;
     }
 
-    private List<MooringWithGPSCoordinateResponse> fetchMooringWithGpsCoordinates() {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<MooringWithGPSCoordinateResponse> query = criteriaBuilder.createQuery(MooringWithGPSCoordinateResponse.class);
-        Root<Mooring> root = query.from(Mooring.class);
-
-        // Selecting id, mooring_id, gps_coordinates
-        query.select(criteriaBuilder.construct(MooringWithGPSCoordinateResponse.class,
-                root.get("id"),
-                root.get("mooringNumber"),
-                root.get("gpsCoordinates"),
-                root.join("mooringStatus").get("id")
-        ));
-
-        // Executing the query
-        TypedQuery<MooringWithGPSCoordinateResponse> typedQuery = entityManager.createQuery(query);
-        return typedQuery.getResultList();
-    }
-
     /**
      * Saves a mooring based on the provided request DTO.
      *
@@ -248,7 +230,8 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             log.info("API called to save the mooring in the database");
             final Mooring mooring = new Mooring();
 
-            if(null == mooringRequestDto.getMooringNumber()) throw new RuntimeException("Mooring number cannot be blank");
+            if (null == mooringRequestDto.getMooringNumber())
+                throw new RuntimeException("Mooring number cannot be blank");
 
             performSave(mooringRequestDto, mooring, null, request);
 
@@ -304,7 +287,8 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            if(-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID)) customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            if (-1 == customerOwnerId && null != request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID))
+                customerOwnerId = (Integer) request.getAttribute(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(id);
             if (optionalMooring.isEmpty()) throw new RuntimeException(String.format("No mooring exists with %1$s", id));
@@ -312,13 +296,14 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(null != savedMooring.getUser()) {
-                if(!savedMooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other user", id));
+            if (null != savedMooring.getUser()) {
+                if (!savedMooring.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with some other user", id));
             } else {
                 throw new RuntimeException(String.format("Mooring with the id: %1$s is not associated with any User", id));
             }
 
-            if(null != optionalMooring.get().getCustomer()) {
+            if (null != optionalMooring.get().getCustomer()) {
                 Customer customer = optionalMooring.get().getCustomer();
                 List<Mooring> mooringList = customer.getMooringList();
                 mooringList.removeIf(mooring -> mooring.getId().equals(optionalMooring.get().getId()));
@@ -338,6 +323,43 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         return response;
     }
 
+    @Override
+    public BasicRestResponse getMooringById(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            final Mooring mooring = mooringRepository.findById(id, user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", id)));
+
+            final MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
+            if(null != mooring.getCustomer()) {
+                final CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), mooring.getCustomer());
+                mooringResponseDto.setCustomerResponseDto(customerResponseDto);
+            }
+            if(null != mooring.getBoatyard()) {
+                final BoatyardResponseDto boatyardResponseDto = boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard());
+                mooringResponseDto.setBoatyardResponseDto(boatyardResponseDto);
+            }
+            if(null != mooring.getServiceArea()) {
+                final ServiceAreaResponseDto serviceAreaResponseDto = serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea());
+                mooringResponseDto.setServiceAreaResponseDto(serviceAreaResponseDto);
+            }
+
+            response.setMessage(String.format("Mooring with the id: %1$s fetched success", id));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(mooringResponseDto);
+
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return response;
+    }
+
     /**
      * Performs the actual saving of a mooring entity based on the request DTO and mooring object.
      *
@@ -352,18 +374,19 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            if(id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
+            if (id == null) mooring.setCreationDate(new Date(System.currentTimeMillis()));
 
             final Mooring initialMooring = copyMooring(mooring);
 
             Optional<Mooring> optionalMooring;
-            if(null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
+            if (null != mooringRequestDto.getMooringNumber() && !mooringRequestDto.getMooringNumber().isBlank()) {
                 optionalMooring = mooringRepository.findByMooringNumber(mooringRequestDto.getMooringNumber());
-                if(optionalMooring.isPresent()) {
-                    if(null == id) {
+                if (optionalMooring.isPresent()) {
+                    if (null == id) {
                         throw new RuntimeException(String.format("Given mooring number: %1$s is already present", mooringRequestDto.getMooringNumber()));
                     } else {
-                        if(!optionalMooring.get().getId().equals(id)) throw new RuntimeException(String.format("Given mooring number: %1$s is associated with other mooring", mooringRequestDto.getMooringNumber()));
+                        if (!optionalMooring.get().getId().equals(id))
+                            throw new RuntimeException(String.format("Given mooring number: %1$s is associated with other mooring", mooringRequestDto.getMooringNumber()));
                     }
                 }
             } else {
@@ -374,15 +397,18 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             mooring.setUser(user);
             Mooring savedMooring = mooringRepository.save(mooring);
 
-            if(null != mooringRequestDto.getImageRequestDtoList() && !mooringRequestDto.getImageRequestDtoList().isEmpty()) {
+            if (null != mooringRequestDto.getImageRequestDtoList() && !mooringRequestDto.getImageRequestDtoList().isEmpty()) {
                 List<Image> imageList = new ArrayList<>();
-                if(null != mooring.getImageList() && !mooring.getImageList().isEmpty()) imageList = mooring.getImageList();
+                if (null != mooring.getImageList() && !mooring.getImageList().isEmpty())
+                    imageList = mooring.getImageList();
                 Integer imageNumber = 1;
-                for(ImageRequestDto imageRequestDto: mooringRequestDto.getImageRequestDtoList()) {
+                for (ImageRequestDto imageRequestDto : mooringRequestDto.getImageRequestDtoList()) {
                     Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
 
-                    if(null == imageRequestDto.getImageName()) throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
-                    if(null == imageRequestDto.getImageData()) throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
+                    if (null == imageRequestDto.getImageName())
+                        throw new RuntimeException(String.format("No name provided for image at number: %1$s", imageNumber));
+                    if (null == imageRequestDto.getImageData())
+                        throw new RuntimeException(String.format("No image provided for: %1$s", imageRequestDto.getImageName()));
 
                     image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
                     image.setCreationDate(new Date(System.currentTimeMillis()));
@@ -394,22 +420,22 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 imageRepository.saveAll(imageList);
             }
 
-            if(null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
+            if (null != mooringRequestDto.getInstallBottomChainDate() && !mooringRequestDto.getInstallBottomChainDate().isEmpty()) {
                 Date installBottomChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallBottomChainDate());
                 savedMooring.setInstallBottomChainDate(installBottomChainDate);
             }
 
-            if(null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
+            if (null != mooringRequestDto.getInstallTopChainDate() && !mooringRequestDto.getInstallTopChainDate().isEmpty()) {
                 Date installTopChainDate = DateUtil.stringToDate(mooringRequestDto.getInstallTopChainDate());
                 savedMooring.setInstallTopChainDate(installTopChainDate);
             }
 
-            if(null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
+            if (null != mooringRequestDto.getInstallConditionOfEyeDate() && !mooringRequestDto.getInstallConditionOfEyeDate().isEmpty()) {
                 Date conditionOfEyeDate = DateUtil.stringToDate(mooringRequestDto.getInstallConditionOfEyeDate());
                 savedMooring.setInstallConditionOfEyeDate(conditionOfEyeDate);
             }
 
-            if(null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
+            if (null != mooringRequestDto.getInspectionDate() && !mooringRequestDto.getInspectionDate().isEmpty()) {
                 Date inspectionDate = DateUtil.stringToDate(mooringRequestDto.getInspectionDate());
                 savedMooring.setInspectionDate(inspectionDate);
             }
@@ -420,7 +446,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             }
 
             Optional<Customer> optionalCustomer;
-            if(null != mooringRequestDto.getCustomerId()) {
+            if (null != mooringRequestDto.getCustomerId()) {
                 optionalCustomer = customerRepository.findById(mooringRequestDto.getCustomerId());
                 if (optionalCustomer.isEmpty())
                     throw new RuntimeException(String.format("No customer found with the given customer Id: %1$s", mooringRequestDto.getCustomerId()));
@@ -430,7 +456,8 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other customer owner", mooringRequestDto.getCustomerId()));
 
                 final CustomerType customerType = customerTypeRepository.findByType(AppConstants.CustomerTypeConstants.DOCK);
-                if(null != mooringRequestDto.getAddDock() && mooringRequestDto.getAddDock()) customer.setCustomerType(customerType);
+                if (null != mooringRequestDto.getAddDock() && mooringRequestDto.getAddDock())
+                    customer.setCustomerType(customerType);
             } else {
                 optionalCustomer = Optional.empty();
             }
@@ -461,7 +488,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 optionalServiceArea = Optional.empty();
             }
 
-            if(null != mooringRequestDto.getStatusId()) {
+            if (null != mooringRequestDto.getStatusId()) {
                 final MooringStatus mooringStatus = mooringStatusRepository.findById(mooringRequestDto.getStatusId())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No status found with the given id: %1$s", mooringRequestDto.getStatusId())));
 
@@ -515,7 +542,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             Mooring finalSavedMooring = savedMooring;
 
             optionalBoatyard.ifPresent(boatyard -> {
-                if(null != boatyard.getMooringList()) boatyard.getMooringList().add(finalSavedMooring);
+                if (null != boatyard.getMooringList()) boatyard.getMooringList().add(finalSavedMooring);
                 else {
                     boatyard.setMooringList(new ArrayList<>());
                     boatyard.getMooringList().add(finalSavedMooring);
@@ -523,7 +550,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 boatyardRepository.save(optionalBoatyard.get());
             });
             optionalCustomer.ifPresent(customer -> {
-                if(null != customer.getMooringList()) customer.getMooringList().add(finalSavedMooring);
+                if (null != customer.getMooringList()) customer.getMooringList().add(finalSavedMooring);
                 else {
                     customer.setMooringList(new ArrayList<>());
                     customer.getMooringList().add(finalSavedMooring);
@@ -531,7 +558,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                 customerRepository.save(customer);
             });
             optionalServiceArea.ifPresent(serviceArea -> {
-                if(null != serviceArea.getMooringList()) serviceArea.getMooringList().add(finalSavedMooring);
+                if (null != serviceArea.getMooringList()) serviceArea.getMooringList().add(finalSavedMooring);
                 else {
                     serviceArea.setMooringList(new ArrayList<>());
                     serviceArea.getMooringList().add(finalSavedMooring);
@@ -555,11 +582,14 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
             Optional<Mooring> optionalMooring = mooringRepository.findById(mooringId);
-            if(optionalMooring.isEmpty()) throw new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", mooringId));
+            if (optionalMooring.isEmpty())
+                throw new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", mooringId));
             final Mooring mooring = optionalMooring.get();
 
-            if(null == mooring.getUser()) throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with no user", mooringId));
-            if(!mooring.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Mooring with given id: %1$s is associated with some other user", mooringId));
+            if (null == mooring.getUser())
+                throw new RuntimeException(String.format("Mooring with the id: %1$s is associated with no user", mooringId));
+            if (!mooring.getUser().getId().equals(user.getId()))
+                throw new RuntimeException(String.format("Mooring with given id: %1$s is associated with some other user", mooringId));
 
             return mooring;
         } catch (Exception e) {
@@ -572,29 +602,35 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
 
         final Mooring copyMooring = Mooring.builder().build();
 
-        if(null != mooring.getId()) copyMooring.setId(mooring.getId());
-        if(null != mooring.getMooringNumber()) copyMooring.setMooringNumber(mooring.getMooringNumber());
-        if(null != mooring.getHarborOrArea()) copyMooring.setHarborOrArea(mooring.getHarborOrArea());
-        if(null != mooring.getGpsCoordinates()) copyMooring.setGpsCoordinates(mooring.getGpsCoordinates());
-        if(null != mooring.getInstallTopChainDate()) copyMooring.setInstallTopChainDate(mooring.getInstallTopChainDate());
-        if(null != mooring.getInstallBottomChainDate()) copyMooring.setInstallBottomChainDate(mooring.getInstallBottomChainDate());
-        if(null != mooring.getInstallConditionOfEyeDate()) copyMooring.setInstallConditionOfEyeDate(mooring.getInstallConditionOfEyeDate());
-        if(null != mooring.getBoatName()) copyMooring.setBoatName(mooring.getBoatName());
-        if(null != mooring.getBoatSize()) copyMooring.setBoatSize(mooring.getBoatSize());
-        if(null != mooring.getBoatType()) copyMooring.setBoatType(mooring.getBoatType());
-        if(null != mooring.getBoatWeight()) copyMooring.setBoatWeight(mooring.getBoatWeight());
-        if(null != mooring.getSizeOfWeight()) copyMooring.setSizeOfWeight(mooring.getSizeOfWeight());
-        if(null != mooring.getTypeOfWeight()) copyMooring.setTypeOfWeight(mooring.getTypeOfWeight());
-        if(null != mooring.getEyeCondition()) copyMooring.setEyeCondition(mooring.getEyeCondition());
-        if(null != mooring.getTopChainCondition()) copyMooring.setTopChainCondition(mooring.getTopChainCondition());
-        if(null != mooring.getBottomChainCondition()) copyMooring.setBottomChainCondition(mooring.getBottomChainCondition());
-        if(null != mooring.getShackleSwivelCondition()) copyMooring.setShackleSwivelCondition(mooring.getShackleSwivelCondition());
-        if(null != mooring.getPendantCondition()) copyMooring.setPendantCondition(mooring.getPendantCondition());
-        if(null != mooring.getDepthAtMeanHighWater()) copyMooring.setDepthAtMeanHighWater(mooring.getDepthAtMeanHighWater());
-        if(null != mooring.getMooringStatus()) copyMooring.setMooringStatus(mooring.getMooringStatus());
-        if(null != mooring.getCustomer()) copyMooring.setCustomer(mooring.getCustomer());
-        if(null != mooring.getUser()) copyMooring.setUser(mooring.getUser());
-        if(null != mooring.getBoatyard()) copyMooring.setBoatyard(mooring.getBoatyard());
+        if (null != mooring.getId()) copyMooring.setId(mooring.getId());
+        if (null != mooring.getMooringNumber()) copyMooring.setMooringNumber(mooring.getMooringNumber());
+        if (null != mooring.getHarborOrArea()) copyMooring.setHarborOrArea(mooring.getHarborOrArea());
+        if (null != mooring.getGpsCoordinates()) copyMooring.setGpsCoordinates(mooring.getGpsCoordinates());
+        if (null != mooring.getInstallTopChainDate())
+            copyMooring.setInstallTopChainDate(mooring.getInstallTopChainDate());
+        if (null != mooring.getInstallBottomChainDate())
+            copyMooring.setInstallBottomChainDate(mooring.getInstallBottomChainDate());
+        if (null != mooring.getInstallConditionOfEyeDate())
+            copyMooring.setInstallConditionOfEyeDate(mooring.getInstallConditionOfEyeDate());
+        if (null != mooring.getBoatName()) copyMooring.setBoatName(mooring.getBoatName());
+        if (null != mooring.getBoatSize()) copyMooring.setBoatSize(mooring.getBoatSize());
+        if (null != mooring.getBoatType()) copyMooring.setBoatType(mooring.getBoatType());
+        if (null != mooring.getBoatWeight()) copyMooring.setBoatWeight(mooring.getBoatWeight());
+        if (null != mooring.getSizeOfWeight()) copyMooring.setSizeOfWeight(mooring.getSizeOfWeight());
+        if (null != mooring.getTypeOfWeight()) copyMooring.setTypeOfWeight(mooring.getTypeOfWeight());
+        if (null != mooring.getEyeCondition()) copyMooring.setEyeCondition(mooring.getEyeCondition());
+        if (null != mooring.getTopChainCondition()) copyMooring.setTopChainCondition(mooring.getTopChainCondition());
+        if (null != mooring.getBottomChainCondition())
+            copyMooring.setBottomChainCondition(mooring.getBottomChainCondition());
+        if (null != mooring.getShackleSwivelCondition())
+            copyMooring.setShackleSwivelCondition(mooring.getShackleSwivelCondition());
+        if (null != mooring.getPendantCondition()) copyMooring.setPendantCondition(mooring.getPendantCondition());
+        if (null != mooring.getDepthAtMeanHighWater())
+            copyMooring.setDepthAtMeanHighWater(mooring.getDepthAtMeanHighWater());
+        if (null != mooring.getMooringStatus()) copyMooring.setMooringStatus(mooring.getMooringStatus());
+        if (null != mooring.getCustomer()) copyMooring.setCustomer(mooring.getCustomer());
+        if (null != mooring.getUser()) copyMooring.setUser(mooring.getUser());
+        if (null != mooring.getBoatyard()) copyMooring.setBoatyard(mooring.getBoatyard());
 
         return copyMooring;
 
@@ -603,34 +639,34 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
     @Transactional
     private void mooringChangedLogs(final Mooring initialMooring, final Mooring savedMooring, final User user) {
 
-        if(initialMooring.getId() != null && savedMooring.getId() != null && !initialMooring.getId().equals(savedMooring.getId()))
+        if (initialMooring.getId() != null && savedMooring.getId() != null && !initialMooring.getId().equals(savedMooring.getId()))
             log.info(String.format("Mooring (Integer) Id changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getId(), savedMooring.getId(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getMooringNumber() != null && savedMooring.getMooringNumber() != null && !initialMooring.getMooringNumber().equals(savedMooring.getMooringNumber()))
+        if (initialMooring.getMooringNumber() != null && savedMooring.getMooringNumber() != null && !initialMooring.getMooringNumber().equals(savedMooring.getMooringNumber()))
             log.info(String.format("Mooring number changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringNumber(), savedMooring.getMooringNumber(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getHarborOrArea() != null && savedMooring.getHarborOrArea() != null && !initialMooring.getHarborOrArea().equals(savedMooring.getHarborOrArea()))
+        if (initialMooring.getHarborOrArea() != null && savedMooring.getHarborOrArea() != null && !initialMooring.getHarborOrArea().equals(savedMooring.getHarborOrArea()))
             log.info(String.format("Mooring harbor or area changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getHarborOrArea(), savedMooring.getHarborOrArea(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getGpsCoordinates() != null && savedMooring.getGpsCoordinates() != null && !initialMooring.getGpsCoordinates().equals(savedMooring.getGpsCoordinates()))
+        if (initialMooring.getGpsCoordinates() != null && savedMooring.getGpsCoordinates() != null && !initialMooring.getGpsCoordinates().equals(savedMooring.getGpsCoordinates()))
             log.info(String.format("Mooring gps coordinates changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getGpsCoordinates(), savedMooring.getGpsCoordinates(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getInstallBottomChainDate() != null && savedMooring.getInstallBottomChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate()))
+        if (initialMooring.getInstallBottomChainDate() != null && savedMooring.getInstallBottomChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate()))
             log.info(String.format("Mooring install bottom chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallBottomChainDate(), savedMooring.getInstallBottomChainDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getInstallTopChainDate() != null && savedMooring.getInstallTopChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate()))
+        if (initialMooring.getInstallTopChainDate() != null && savedMooring.getInstallTopChainDate() != null && !DateUtils.isSameDay(initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate()))
             log.info(String.format("Mooring install top chain date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallTopChainDate(), savedMooring.getInstallTopChainDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getInstallConditionOfEyeDate() != null && savedMooring.getInstallConditionOfEyeDate() != null && !DateUtils.isSameDay(initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate()))
+        if (initialMooring.getInstallConditionOfEyeDate() != null && savedMooring.getInstallConditionOfEyeDate() != null && !DateUtils.isSameDay(initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate()))
             log.info(String.format("Mooring install condition of eye date changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getInstallConditionOfEyeDate(), savedMooring.getInstallConditionOfEyeDate(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getBoatName() != null && savedMooring.getBoatName() != null && !initialMooring.getBoatName().equals(savedMooring.getBoatName()))
+        if (initialMooring.getBoatName() != null && savedMooring.getBoatName() != null && !initialMooring.getBoatName().equals(savedMooring.getBoatName()))
             log.info(String.format("Mooring boat name changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatName(), savedMooring.getBoatName(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getBoatSize() != null && savedMooring.getBoatSize() != null && !initialMooring.getBoatSize().equals(savedMooring.getBoatSize()))
+        if (initialMooring.getBoatSize() != null && savedMooring.getBoatSize() != null && !initialMooring.getBoatSize().equals(savedMooring.getBoatSize()))
             log.info(String.format("Mooring boat size changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatSize(), savedMooring.getBoatSize(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getBoatType() != null
                         && savedMooring.getBoatType() != null
                         && initialMooring.getBoatType().getBoatType() != null
@@ -639,22 +675,22 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring boat type changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatType(), savedMooring.getBoatType(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getBoatWeight() != null && savedMooring.getBoatWeight() != null && !initialMooring.getBoatWeight().equals(savedMooring.getBoatWeight()))
+        if (initialMooring.getBoatWeight() != null && savedMooring.getBoatWeight() != null && !initialMooring.getBoatWeight().equals(savedMooring.getBoatWeight()))
             log.info(String.format("Mooring boat weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBoatWeight(), savedMooring.getBoatWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getSizeOfWeight() != null && savedMooring.getSizeOfWeight() != null && !initialMooring.getSizeOfWeight().equals(savedMooring.getSizeOfWeight()))
+        if (initialMooring.getSizeOfWeight() != null && savedMooring.getSizeOfWeight() != null && !initialMooring.getSizeOfWeight().equals(savedMooring.getSizeOfWeight()))
             log.info(String.format("Mooring size of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getSizeOfWeight(), savedMooring.getSizeOfWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getTypeOfWeight() != null
                         && savedMooring.getTypeOfWeight() != null
                         && initialMooring.getTypeOfWeight().getType() != null
                         && savedMooring.getTypeOfWeight().getType() != null
-                && !initialMooring.getTypeOfWeight().getType().equals(savedMooring.getTypeOfWeight().getType())
+                        && !initialMooring.getTypeOfWeight().getType().equals(savedMooring.getTypeOfWeight().getType())
         )
             log.info(String.format("Mooring type of weight changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTypeOfWeight(), savedMooring.getTypeOfWeight(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getEyeCondition() != null
                         && savedMooring.getEyeCondition() != null
                         && initialMooring.getEyeCondition().getCondition() != null
@@ -663,7 +699,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring eye condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getEyeCondition(), savedMooring.getEyeCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getTopChainCondition() != null
                         && savedMooring.getTopChainCondition() != null
                         && initialMooring.getTopChainCondition().getCondition() != null
@@ -672,7 +708,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring top chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getTopChainCondition(), savedMooring.getTopChainCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getBottomChainCondition() != null
                         && savedMooring.getBottomChainCondition() != null
                         && initialMooring.getBottomChainCondition().getCondition() != null
@@ -681,7 +717,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring bottom chain condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getBottomChainCondition(), savedMooring.getBottomChainCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getShackleSwivelCondition() != null
                         && savedMooring.getShackleSwivelCondition() != null
                         && initialMooring.getShackleSwivelCondition().getCondition() != null
@@ -690,13 +726,13 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring shackle swivel condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getShackleSwivelCondition(), savedMooring.getShackleSwivelCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getPendantCondition() != null && savedMooring.getPendantCondition() != null && !initialMooring.getPendantCondition().equals(savedMooring.getPendantCondition()))
+        if (initialMooring.getPendantCondition() != null && savedMooring.getPendantCondition() != null && !initialMooring.getPendantCondition().equals(savedMooring.getPendantCondition()))
             log.info(String.format("Mooring pendant condition changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getPendantCondition(), savedMooring.getPendantCondition(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(initialMooring.getDepthAtMeanHighWater() != null && savedMooring.getDepthAtMeanHighWater() != null && !initialMooring.getDepthAtMeanHighWater().equals(savedMooring.getDepthAtMeanHighWater()))
+        if (initialMooring.getDepthAtMeanHighWater() != null && savedMooring.getDepthAtMeanHighWater() != null && !initialMooring.getDepthAtMeanHighWater().equals(savedMooring.getDepthAtMeanHighWater()))
             log.info(String.format("Mooring depth at mean highWater changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getDepthAtMeanHighWater(), savedMooring.getDepthAtMeanHighWater(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getMooringStatus() != null
                         && savedMooring.getMooringStatus() != null
                         && initialMooring.getMooringStatus().getStatus() != null
@@ -705,7 +741,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring status changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", initialMooring.getMooringStatus(), savedMooring.getMooringStatus(), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getCustomer() != null
                         && savedMooring.getCustomer() != null
                         && initialMooring.getCustomer().getId() != null
@@ -714,7 +750,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring assigned to customer changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), initialMooring.getCustomer()), customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedMooring.getCustomer()), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getUser() != null
                         && savedMooring.getUser() != null
                         && initialMooring.getUser().getId() != null
@@ -723,7 +759,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         )
             log.info(String.format("Mooring associated with user changed from: %1$s to %2$s by user of id: %3$s and name: %4$s", userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), initialMooring.getUser()), userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedMooring.getUser()), user.getId(), user.getFirstName() + " " + user.getLastName()));
 
-        if(
+        if (
                 initialMooring.getBoatyard() != null
                         && savedMooring.getBoatyard() != null
                         && initialMooring.getBoatyard().getId() != null
