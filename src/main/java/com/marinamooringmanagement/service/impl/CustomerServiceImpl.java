@@ -195,6 +195,10 @@ public class CustomerServiceImpl implements CustomerService {
                             customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), customer.getCountry()));
                         if(null != customer.getCustomerType())
                             customerResponseDto.setCustomerTypeDto(customerTypeMapper.toDto(CustomerTypeDto.builder().build(), customer.getCustomerType()));
+
+                        if(null != customer.getQuickBookCustomer()) {
+                            customerResponseDto.setQuickbookCustomerResponseDto(quickbookCustomerMapper.mapToResponseDto(QuickbookCustomerResponseDto.builder().build(), customer.getQuickBookCustomer()));
+                        }
                         return customerResponseDto;
                     })
                     .toList();

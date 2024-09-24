@@ -206,7 +206,7 @@ public class WorkOrder extends Base{
                         .pendantCondition(pendantCondition)
                         .depthAtMeanHighWater(depthAtMeanHighWater)
                         .mooringStatus(MooringStatus.builder().id(mooringStatusId).status(mooringStatusName).build())
-                        .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).quickbookCustomerId(quickbookCustomerId).build())
+                        .customer(Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build())
                         .user(User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build())
                         .boatyard(Boatyard.builder().id(boatyardId).boatyardId(boatyardNumber).boatyardName(boatyardName).build())
                         .serviceArea(ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).build())

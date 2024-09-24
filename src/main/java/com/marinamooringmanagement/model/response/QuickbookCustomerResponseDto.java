@@ -17,7 +17,9 @@ public class QuickbookCustomerResponseDto implements Serializable {
 
     private Integer id;
 
-    private String quickbookCustomerName;
+    private String quickbookCustomerFirstName;
+
+    private String quickbookCustomerLastName;
 
     private String quickbookCustomerId;
 

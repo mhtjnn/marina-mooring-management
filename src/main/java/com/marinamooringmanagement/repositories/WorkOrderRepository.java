@@ -293,7 +293,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
             "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
-            "c.lastName, c.customerId, c.quickbookCustomerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -319,7 +319,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
             "WHERE (:userId IS NOT NULL AND wo.customerOwnerUser.id = :userId) " +
-            "AND (:wordOrderId IS NOT NULL AND wo.id = :workOrderId)"
+            "AND (:workOrderId IS NOT NULL AND wo.id = :workOrderId)"
     )
     Optional<WorkOrder> findByIdWithBigData(
             @Param("workOrderId") Integer workOrderId,

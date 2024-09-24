@@ -104,14 +104,12 @@ public class Customer extends Base {
     @JsonManagedReference
     private QuickbookCustomer quickBookCustomer;
 
-    @Column(name = "quickbook_customer_id")
-    private String quickbookCustomerId;
-
     public Customer(
             Integer id, String firstName, String lastName, String customerId, String address, String city, String notes, String emailAddress,
                     Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
                     String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
-                    Integer roleId, String roleName
+                    Integer roleId, String roleName,
+                    Integer quickBookCustomerId, String quickbookCustomerFirstName, String quickbookCustomerLastName, String quickbookCustomerIdStr
     ) {
         this.id = id;
         this.firstName = firstName;
@@ -127,29 +125,7 @@ public class Customer extends Base {
         this.customerType = CustomerType.builder().id(customerTypeId).type(customerTypeName).build();
         this.phone = phone;
         this.user = User.builder().id(userId).firstName(userFirstName).lastName(userSecondName).role(Role.builder().id(roleId).name(roleName).build()).build();
-    }
-
-    public Customer(
-            Integer id, String firstName, String lastName, String customerId, String address, String city, String notes, String emailAddress, String quickbookCustomerId,
-            Integer stateId, String stateName, Integer countryId, String countryName, String zipCode, Integer customerTypeId,
-            String customerTypeName, Integer userId, String userFirstName, String userSecondName, String phone,
-            Integer roleId, String roleName
-    ) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.customerId = customerId;
-        this.address = address;
-        this.city = city;
-        this.notes = notes;
-        this.emailAddress = emailAddress;
-        this.quickbookCustomerId = quickbookCustomerId;
-        this.state = State.builder().id(stateId).name(stateName).build();
-        this.country = Country.builder().id(countryId).name(countryName).build();
-        this.zipCode = zipCode;
-        this.customerType = CustomerType.builder().id(customerTypeId).type(customerTypeName).build();
-        this.phone = phone;
-        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userSecondName).role(Role.builder().id(roleId).name(roleName).build()).build();
+        this.quickBookCustomer = QuickbookCustomer.builder().id(quickBookCustomerId).quickbookCustomerFirstName(quickbookCustomerFirstName).quickbookCustomerLastName(quickbookCustomerLastName).quickbookCustomerId(quickbookCustomerIdStr).build();
     }
 
     public Customer(

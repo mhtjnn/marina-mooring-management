@@ -295,7 +295,6 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
             if(!userMappedWithCustomer.getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with the given id: %1$s is associated with other customer owner", customerId));
 
-//            customer.setQuickbookCustomerId(quickbookCustomerIdStr);
             customer.setQuickBookCustomer(quickbookCustomer);
             quickbookCustomer.setCustomer(customer);
             final Customer savedCustomer = customerRepository.save(customer);
@@ -340,7 +339,6 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
             if(null != quickbookCustomer.getCustomer() && !quickbookCustomer.getCustomer().getId().equals(customerId)) {
                 final Customer initialMappedCustomer = quickbookCustomer.getCustomer();
-                initialMappedCustomer.setQuickbookCustomerId(null);
                 customerRepository.save(initialMappedCustomer);
             }
 

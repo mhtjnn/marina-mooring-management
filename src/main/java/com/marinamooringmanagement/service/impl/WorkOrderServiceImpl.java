@@ -687,6 +687,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse approveWorkOrder(Integer id, HttpServletRequest request, Double invoiceAmount) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -703,7 +704,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
 
-            WorkOrder workOrder = workOrderRepository.findByIdWithBigData(id, user.getId())
+//            WorkOrder workOrder = workOrderRepository.findByIdWithBigData(id, user.getId())
+//                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+
+            WorkOrder workOrder = workOrderRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
 
             if (null == workOrder.getCustomerOwnerUser())
@@ -739,7 +743,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderInvoice.setWorkOrder(workOrder);
             workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
             workOrderInvoice.setCustomerOwnerUser(user);
-            workOrderInvoice.setQuickbookCustomerId(workOrder.getMooring().getCustomer().getQuickbookCustomerId());
+
             workOrderInvoice.setPaymentList(new ArrayList<>());
 
             final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
@@ -973,7 +977,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         // Handle parent form creation
                         Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
 
-                        for(Form savedForm: workOrder.getFormList()) {
+                        for(Form savedForm: formList) {
                             if(savedForm.getParentFormId().equals(parentForm.getId())) {
                                 childForm = savedForm;
                                 break;
@@ -1155,8 +1159,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                             if(null == childInventory) childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
 
+                            final String workOrderNumber = workOrder.getWorkOrderNumber();
+
                             childInventory.setParentInventoryId(inventory.getId());
-                            childInventory.setItemName(String.format(inventory.getItemName() + "_" + workOrder.getWorkOrderNumber()));
+                            childInventory.setItemName(String.format("%1$s_%2$s", inventory.getItemName(), workOrderNumber));
 
                             quantityAfterOperation = inventory.getQuantity() - inventoryRequestDto.getQuantity();
 

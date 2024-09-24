@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intuit.ipp.data.Customer;
 import com.intuit.ipp.data.Deposit;
 import com.intuit.ipp.data.Error;
 import com.intuit.ipp.data.ReferenceType;
@@ -17,11 +16,8 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.helper.QBOServiceHelper;
 import com.marinamooringmanagement.mapper.PaymentMapper;
-import com.marinamooringmanagement.model.entity.Payment;
+import com.marinamooringmanagement.model.entity.*;
 import com.marinamooringmanagement.model.entity.QBO.QBOUser;
-import com.marinamooringmanagement.model.entity.QuickbookCustomer;
-import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.model.entity.WorkOrderInvoice;
 import com.marinamooringmanagement.model.entity.metadata.PaymentType;
 import com.marinamooringmanagement.model.request.PaymentRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
@@ -102,14 +98,30 @@ public class PaymentServiceImpl implements PaymentService {
             final WorkOrderInvoice workOrderInvoice = workOrderInvoiceRepository.findById(workOrderInvoiceId)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order invoice found with the given id: %1$s", workOrderInvoiceId)));
 
-            if (null == workOrderInvoice.getQuickbookCustomerId())
+            String quickBookCustomerIdStr = null;
+
+            final WorkOrder workOrderInvoiceMappedWorkOrder = workOrderInvoice.getWorkOrder();
+            if(null == workOrderInvoiceMappedWorkOrder) {
+                final Mooring workOrderMappedMooring = workOrderInvoiceMappedWorkOrder.getMooring();
+                if(null != workOrderMappedMooring) {
+                    final Customer mooringMappedCustomer = workOrderMappedMooring.getCustomer();
+                    if(null != mooringMappedCustomer) {
+                        final QuickbookCustomer customerMappedQuickbookCustomer = mooringMappedCustomer.getQuickBookCustomer();
+                        if(null != customerMappedQuickbookCustomer) {
+                            quickBookCustomerIdStr = customerMappedQuickbookCustomer.getId().toString();
+                        }
+                    }
+                }
+            }
+
+            if (null == quickBookCustomerIdStr)
                 throw new RuntimeException(String.format("Work Order invoice with the id: %1$s is not connected with any Quickbook customer", workOrderInvoiceId));
 
             com.intuit.ipp.data.Payment payment = new com.intuit.ipp.data.Payment();
 
             // Set the customer reference
             ReferenceType customerRef = new ReferenceType();
-            customerRef.setValue(workOrderInvoice.getQuickbookCustomerId());
+            customerRef.setValue(quickBookCustomerIdStr);
             payment.setCustomerRef(customerRef);
 
             // Set the total amount

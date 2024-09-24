@@ -1,7 +1,6 @@
 package com.marinamooringmanagement.repositories;
 
 import com.marinamooringmanagement.model.entity.Customer;
-import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,13 +19,15 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
             "c.id, c.firstName, c.lastName, c.customerId, c.address, c.city, c.notes, c.emailAddress, " +
             "s.id, s.name, co.id, co.name, c.zipCode, cu.id, cu.type, u.id, u.firstName, u.lastName, " +
-            "c.phone, r.id, r.name) " +
+            "c.phone, r.id, r.name, " +
+            "qbc.id, qbc.quickbookCustomerFirstName, quickbookCustomerLastName, quickbookCustomerId) " +
             "FROM Customer c " +
             "LEFT JOIN c.state s " +
             "LEFT JOIN c.country co " +
             "LEFT JOIN c.customerType cu " +
             "JOIN c.user u " +
             "JOIN u.role r " +
+            "JOIN c.quickBookCustomer qbc " +
             "WHERE (:searchText IS NOT NULL AND " +
             "(LOWER(CAST(c.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
@@ -100,26 +101,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     Optional<Customer> findByEmailAddress(String emailAddress);
 
     Optional<Customer> findByCustomerId(String customerId);
-
-    Optional<Customer> findByPhone(String phoneNumber);
-
-    @Query("SELECT new com.marinamooringmanagement.model.entity.Customer(" +
-            "c.id, c.firstName, c.lastName, c.customerId, c.address, c.city, c.notes, c.emailAddress, c.quickbookCustomerId, " +
-            "s.id, s.name, co.id, co.name, c.zipCode, cu.id, cu.type, u.id, u.firstName, u.lastName, " +
-            "c.phone, r.id, r.name) " +
-            "FROM Customer c " +
-            "LEFT JOIN c.state s " +
-            "LEFT JOIN c.country co " +
-            "LEFT JOIN c.customerType cu " +
-            "JOIN c.user u " +
-            "JOIN u.role r " +
-            "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
-            "AND (:quickbookCustomerId IS NOT NULL AND c.quickbookCustomerId = :quickbookCustomerId) " +
-            "ORDER BY c.id")
-    Optional<Customer> findCustomerByQuickbookCustomerId(
-            @Param("quickbookCustomerId") String quickbookCustomerId,
-            @Param("userId") Integer userId
-    );
-
-    Optional<Customer> findByQuickbookCustomerId(String quickbookCustomerId);
 }

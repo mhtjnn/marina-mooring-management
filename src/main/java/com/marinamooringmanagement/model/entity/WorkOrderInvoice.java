@@ -43,9 +43,6 @@ public class WorkOrderInvoice extends Base{
     @JoinColumn(name = "customer_owner_user_id")
     private User customerOwnerUser;
 
-    @Column(name = "quickbook_customer_id")
-    private String quickbookCustomerId;
-
     @OneToMany(mappedBy = "workOrderInvoice", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Payment> paymentList;
