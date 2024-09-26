@@ -88,7 +88,7 @@ public class WorkOrder extends Base{
                      Date completedDate, Time time, String problem,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
-                     Date inspectionDate, String boatName, String boatSize,
+                     Date inspectionDate, String boatId, String boatName, String boatSize,
                      Integer boatTypeId, String boatTypeName,
                      String boatWeight,
                      Integer sizeOfWeight,
@@ -126,6 +126,7 @@ public class WorkOrder extends Base{
                         .installTopChainDate(installTopChainDate)
                         .installConditionOfEyeDate(installConditionOfEyeDate)
                         .inspectionDate(inspectionDate)
+                        .boatId(boatId)
                         .boatName(boatName)
                         .boatSize(boatSize)
                         .boatType(BoatType.builder().id(boatTypeId).boatType(boatTypeName).build())
@@ -155,7 +156,7 @@ public class WorkOrder extends Base{
                      Date completedDate, Time time, String problem,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
-                     Date inspectionDate, String boatName, String boatSize,
+                     Date inspectionDate, String boatId, String boatName, String boatSize,
                      Integer boatTypeId, String boatTypeName,
                      String boatWeight,
                      Integer sizeOfWeight,
@@ -193,6 +194,7 @@ public class WorkOrder extends Base{
                         .installTopChainDate(installTopChainDate)
                         .installConditionOfEyeDate(installConditionOfEyeDate)
                         .inspectionDate(inspectionDate)
+                        .boatId(boatId)
                         .boatName(boatName)
                         .boatSize(boatSize)
                         .boatType(BoatType.builder().id(boatTypeId).boatType(boatTypeName).build())

@@ -47,6 +47,8 @@ public class MooringDueServiceResponseDto implements Serializable {
 
     private ServiceAreaResponseDto serviceAreaResponseDto;
 
+    private String boatId;
+
     /**
      * The name of the boat associated with the mooring.
      */

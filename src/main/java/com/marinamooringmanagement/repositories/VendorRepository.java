@@ -1,6 +1,5 @@
 package com.marinamooringmanagement.repositories;
 
-import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Vendor;
 import com.marinamooringmanagement.model.response.metadata.VendorMetadataResponse;
 import org.springframework.data.domain.Page;
