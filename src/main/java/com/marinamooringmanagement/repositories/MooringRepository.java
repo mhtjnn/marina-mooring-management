@@ -55,7 +55,7 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
-            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatName, " +
+            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
             "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
