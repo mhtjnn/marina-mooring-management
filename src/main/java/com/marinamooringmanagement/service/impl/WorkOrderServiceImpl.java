@@ -704,9 +704,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
 
-//            WorkOrder workOrder = workOrderRepository.findByIdWithBigData(id, user.getId())
-//                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
-
             WorkOrder workOrder = workOrderRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
 

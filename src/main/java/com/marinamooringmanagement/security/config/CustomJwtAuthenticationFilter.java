@@ -22,8 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -60,9 +61,9 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             final String jwtToken = extractJwtFromRequest(request);
-            if (StringUtils.hasText(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
+            if (StringUtils.isNotEmpty(jwtToken) && jwtTokenUtil.validateToken(jwtToken)) {
                 final UserDetails userDetails = new User(jwtTokenUtil.getUsernameFromToken(jwtToken),
-                        org.apache.commons.lang3.StringUtils.EMPTY, jwtTokenUtil.getRolesFromToken(jwtToken));
+                        StringUtils.EMPTY, jwtTokenUtil.getRolesFromToken(jwtToken));
                 final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 final AuthenticationDetails authDetails = new AuthenticationDetails();
@@ -98,7 +99,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String extractJwtFromRequest(final HttpServletRequest request) {
         final String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
+        if (StringUtils.isNotEmpty(bearerToken) && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);
         }
         return null;

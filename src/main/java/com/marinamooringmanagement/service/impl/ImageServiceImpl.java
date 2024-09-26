@@ -107,6 +107,7 @@ public class ImageServiceImpl implements ImageService {
 
     private Image uploadImageToEntity(MultipleImageRequestDto multipleImageRequestDto, Image image) throws IOException {
         try {
+            if(image == null) image = Image.builder().build();
             List<ImageRequestDto> imageRequestDtoList = multipleImageRequestDto.getImageRequestDtoList();
             if(imageRequestDtoList.isEmpty()) throw new RuntimeException("No image to upload");
             if(imageRequestDtoList.size() > 1) throw new RuntimeException("Multiple images to upload");

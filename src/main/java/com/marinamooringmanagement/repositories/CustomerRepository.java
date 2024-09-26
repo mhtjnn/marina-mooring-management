@@ -25,9 +25,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
             "LEFT JOIN c.state s " +
             "LEFT JOIN c.country co " +
             "LEFT JOIN c.customerType cu " +
-            "JOIN c.user u " +
-            "JOIN u.role r " +
-            "JOIN c.quickBookCustomer qbc " +
+            "LEFT JOIN c.user u " +
+            "LEFT JOIN u.role r " +
+            "LEFT JOIN c.quickBookCustomer qbc " +
             "WHERE (:searchText IS NOT NULL AND " +
             "(LOWER(CAST(c.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +

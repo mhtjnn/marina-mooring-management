@@ -1,13 +1,10 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intuit.ipp.data.Deposit;
 import com.intuit.ipp.data.Error;
 import com.intuit.ipp.data.ReferenceType;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.exception.InvalidTokenException;
 import com.intuit.ipp.services.DataService;
-import com.intuit.ipp.services.QueryResult;
 import com.intuit.oauth2.client.OAuth2PlatformClient;
 import com.intuit.oauth2.data.BearerTokenResponse;
 import com.intuit.oauth2.exception.OAuthException;
@@ -36,14 +33,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URI;
-import java.net.http.HttpRequest;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -78,6 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     @Override
+    @Transactional
     public BasicRestResponse savePayment(final PaymentRequestDto paymentRequestDto, final HttpServletRequest request, final Integer workOrderInvoiceId) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -101,14 +96,14 @@ public class PaymentServiceImpl implements PaymentService {
             String quickBookCustomerIdStr = null;
 
             final WorkOrder workOrderInvoiceMappedWorkOrder = workOrderInvoice.getWorkOrder();
-            if(null == workOrderInvoiceMappedWorkOrder) {
+            if(null != workOrderInvoiceMappedWorkOrder) {
                 final Mooring workOrderMappedMooring = workOrderInvoiceMappedWorkOrder.getMooring();
                 if(null != workOrderMappedMooring) {
                     final Customer mooringMappedCustomer = workOrderMappedMooring.getCustomer();
                     if(null != mooringMappedCustomer) {
                         final QuickbookCustomer customerMappedQuickbookCustomer = mooringMappedCustomer.getQuickBookCustomer();
                         if(null != customerMappedQuickbookCustomer) {
-                            quickBookCustomerIdStr = customerMappedQuickbookCustomer.getId().toString();
+                            quickBookCustomerIdStr = customerMappedQuickbookCustomer.getQuickbookCustomerId();
                         }
                     }
                 }
@@ -136,7 +131,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             String realmId = qboUser.getRealmId();
             if (StringUtils.isEmpty(realmId)) {
-                throw new RuntimeException("No realm ID.  QBO calls only work if the accounting scope was passed!");
+                throw new RuntimeException("No realm ID. QBO calls only work if the accounting scope was passed!");
             }
             String accessToken = qboUser.getAccessToken();
 

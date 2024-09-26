@@ -41,10 +41,12 @@ public class WorkOrderInvoice extends Base{
 
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_owner_user_id")
+    @ToString.Exclude
     private User customerOwnerUser;
 
     @OneToMany(mappedBy = "workOrderInvoice", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Payment> paymentList;
 
     public WorkOrderInvoice(Integer id, Double invoiceAmount, Integer workOrderInvoiceStatusId, String workOrderInvoiceStatusName,

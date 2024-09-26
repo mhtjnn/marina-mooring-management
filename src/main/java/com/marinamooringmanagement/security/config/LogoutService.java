@@ -9,9 +9,11 @@ import com.marinamooringmanagement.security.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +26,10 @@ public class LogoutService{
 
     private final JwtUtil jwtUtil;
 
+    @Autowired
     private QBOUserRepository qboUserRepository;
 
+    @Transactional
     public void logout(
             HttpServletRequest request
 
@@ -42,8 +46,10 @@ public class LogoutService{
         if(null != token) {
             tokenRepository.delete(token);
             if(null != token.getUser()) {
-                Optional<QBOUser> optionalQBOUser = qboUserRepository.findQBOUserByCreatedBy(token.getUser().getEmail());
-                optionalQBOUser.ifPresent(qboUser -> qboUserRepository.delete(qboUser));
+                if(null != token.getUser().getEmail()) {
+                    Optional<QBOUser> optionalQBOUser = qboUserRepository.findQBOUserByCreatedBy(token.getUser().getEmail());
+                    optionalQBOUser.ifPresent(qboUser -> qboUserRepository.delete(qboUser));
+                }
             }
         }
     }
