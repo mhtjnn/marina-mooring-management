@@ -6,10 +6,7 @@ import com.marinamooringmanagement.model.entity.metadata.CustomerType;
 import com.marinamooringmanagement.model.entity.metadata.State;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -91,17 +88,21 @@ public class Customer extends Base {
 
     @OneToMany(mappedBy = "customer", cascade = {}, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private List<Mooring> mooringList;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude
     private User user;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Image> imageList;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
     private QuickbookCustomer quickBookCustomer;
 
     public Customer(

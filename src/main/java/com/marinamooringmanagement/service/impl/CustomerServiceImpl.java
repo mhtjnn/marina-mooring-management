@@ -364,7 +364,6 @@ public class CustomerServiceImpl implements CustomerService {
 
             final Customer customer = optionalCustomer.get();
 
-
             if (null != customer.getUser()) {
                 if (!customer.getUser().getId().equals(user.getId()))
                     throw new RuntimeException(String.format("Customer with the id: %1$s is associated with some other user", customerId));

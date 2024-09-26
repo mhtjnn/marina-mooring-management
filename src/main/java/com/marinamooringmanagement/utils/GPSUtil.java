@@ -4,8 +4,10 @@ import com.marinamooringmanagement.exception.handler.GlobalExceptionHandler;
 
 public class GPSUtil extends GlobalExceptionHandler {
 
-    public static String getGpsCoordinates(String gpsCoordinates) {
+    public static String getGpsCoordinates(String givenGpsCoordinates) {
         try {
+            String gpsCoordinates = givenGpsCoordinates.replace(",", "");
+
             boolean westernHemisphere = false;
             boolean southernHemisphere = false;
 

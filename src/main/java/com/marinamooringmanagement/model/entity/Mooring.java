@@ -52,6 +52,9 @@ public class Mooring extends Base {
     @Column(name = "inspection_date")
     private Date inspectionDate;
 
+    @Column(name = "boat_id")
+    private String boatId;
+
     /**
      * Name of the boat associated with the mooring.
      */
@@ -162,7 +165,7 @@ public class Mooring extends Base {
 
     public Mooring(Integer id, String mooringNumber, String harborOrArea, String gpsCoordinates,
                    Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
-                   Date inspectionDate, String boatName, String boatSize,
+                   Date inspectionDate, String boatId, String boatName, String boatSize,
                    Integer boatTypeId, String boatTypeName,
                    String boatWeight,
                    Integer sizeOfWeight,
@@ -186,6 +189,7 @@ public class Mooring extends Base {
         this.installTopChainDate = installTopChainDate;
         this.installConditionOfEyeDate = installConditionOfEyeDate;
         this.inspectionDate = inspectionDate;
+        this.boatId = boatId;
         this.boatName = boatName;
         this.boatSize = boatSize;
         this.boatType = BoatType.builder().id(boatTypeId).boatType(boatTypeName).build();
@@ -207,7 +211,7 @@ public class Mooring extends Base {
 
     public Mooring(Integer id, String mooringNumber, String harborOrArea, String gpsCoordinates,
                    Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
-                   Date inspectionDate, String boatName, String boatSize, Integer boatTypeId, String boatTypeName,
+                   Date inspectionDate, String boatId, String boatName, String boatSize, Integer boatTypeId, String boatTypeName,
                    String boatWeight,
                    Integer sizeOfWeight, Integer typeOfWeightId, String typeOfWeightName, Integer eyeConditionId,
                    String eyeConditionName, Integer topChainConditionId, String topChainConditionName,
@@ -228,6 +232,7 @@ public class Mooring extends Base {
         this.installTopChainDate = installTopChainDate;
         this.installConditionOfEyeDate = installConditionOfEyeDate;
         this.inspectionDate = inspectionDate;
+        this.boatId = boatId;
         this.boatName = boatName;
         this.boatSize = boatSize;
         this.boatType = BoatType.builder().id(boatTypeId).boatType(boatTypeName).build();

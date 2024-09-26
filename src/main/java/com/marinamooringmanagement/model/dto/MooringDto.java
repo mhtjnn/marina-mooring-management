@@ -52,6 +52,8 @@ public class MooringDto extends BaseDto implements Serializable {
 
     private Date inspectionDate;
 
+    private String boatId;
+
     /**
      * Name of the boat associated with the mooring.
      */

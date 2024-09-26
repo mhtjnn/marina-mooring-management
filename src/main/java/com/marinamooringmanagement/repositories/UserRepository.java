@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -60,6 +59,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "AND (:searchText IS NOT NULL AND (" +
             "LOWER(u.firstName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(u.lastName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
+            "OR (LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +
             "OR LOWER(u.email) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(u.phoneNumber) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(r.name) LIKE CONCAT('%', LOWER(:searchText), '%'))) " +
