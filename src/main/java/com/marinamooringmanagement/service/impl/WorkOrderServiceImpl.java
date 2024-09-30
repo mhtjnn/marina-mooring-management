@@ -1,15 +1,28 @@
 package com.marinamooringmanagement.service.impl;
 
+import com.intuit.ipp.data.*;
+import com.intuit.ipp.exception.FMSException;
+import com.intuit.ipp.exception.InvalidTokenException;
+import com.intuit.ipp.services.DataService;
+import com.intuit.oauth2.client.OAuth2PlatformClient;
+import com.intuit.oauth2.data.BearerTokenResponse;
+import com.intuit.oauth2.exception.OAuthException;
+import com.marinamooringmanagement.client.OAuth2PlatformClientFactory;
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.MathException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.exception.ResourceNotProvidedException;
+import com.marinamooringmanagement.helper.QBOServiceHelper;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.*;
 import com.marinamooringmanagement.model.dto.*;
 import com.marinamooringmanagement.model.dto.metadata.*;
 import com.marinamooringmanagement.model.entity.*;
+import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.entity.Payment;
+import com.marinamooringmanagement.model.entity.QBO.QBOUser;
+import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
 import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
@@ -17,6 +30,7 @@ import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import com.marinamooringmanagement.model.request.*;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
@@ -36,6 +50,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -134,6 +149,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private VendorMapper vendorMapper;
+
+    @Autowired
+    private QBOServiceHelper helper;
+
+    @Autowired
+    private QBOUserRepository qboUserRepository;
+
+    @Autowired
+    private OAuth2PlatformClientFactory factory;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
@@ -688,7 +712,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     @Transactional
-    public BasicRestResponse approveWorkOrder(Integer id, HttpServletRequest request, Double invoiceAmount) {
+    public BasicRestResponse approveWorkOrder(Integer id, HttpServletRequest request, BigDecimal invoiceAmount) {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
@@ -706,6 +730,22 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             WorkOrder workOrder = workOrderRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id)));
+
+            String quickBookCustomerIdStr = null;
+
+            final Mooring workOrderMappedMooring = workOrder.getMooring();
+            if (null != workOrderMappedMooring) {
+                final Customer mooringMappedCustomer = workOrderMappedMooring.getCustomer();
+                if (null != mooringMappedCustomer) {
+                    final QuickbookCustomer customerMappedQuickbookCustomer = mooringMappedCustomer.getQuickBookCustomer();
+                    if (null != customerMappedQuickbookCustomer) {
+                        quickBookCustomerIdStr = customerMappedQuickbookCustomer.getQuickbookCustomerId();
+                    }
+                }
+            }
+
+            if (null == quickBookCustomerIdStr)
+                throw new RuntimeException(String.format("Work Order invoice with the id: %1$s is not connected with any Quickbook customer", id));
 
             if (null == workOrder.getCustomerOwnerUser())
                 throw new RuntimeException(String.format("Work order with the id: %1$s is not associated with any customer owner", id));
@@ -740,13 +780,105 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             workOrderInvoice.setWorkOrder(workOrder);
             workOrderInvoice.setWorkOrderInvoiceStatus(workOrderInvoiceStatus);
             workOrderInvoice.setCustomerOwnerUser(user);
-
             workOrderInvoice.setPaymentList(new ArrayList<>());
 
-            final WorkOrderInvoice savedWorkOrderInvoice = workOrderInvoiceRepository.save(workOrderInvoice);
+            workOrderInvoiceRepository.save(workOrderInvoice);
 
-            response.setMessage("Work order approved and it's invoice saved successfully!");
-            response.setStatus(HttpStatus.OK.value());
+            Invoice invoice = new Invoice();
+            List<Line> lineList = new ArrayList<>();
+
+            Line line = new Line();
+            line.setAmount(invoiceAmount); // Set the amount
+
+            // Create a SalesItemLineDetail for the line
+            SalesItemLineDetail salesItemLineDetail = new SalesItemLineDetail();
+            ReferenceType itemRef = new ReferenceType();
+            itemRef.setValue("1"); // Set the appropriate value for the item reference
+            itemRef.setName("Services"); // Set the name if required
+
+            salesItemLineDetail.setItemRef(itemRef);
+            line.setDetailType(LineDetailTypeEnum.SALES_ITEM_LINE_DETAIL);
+            line.setSalesItemLineDetail(salesItemLineDetail);
+
+            // Add the line to the list and set it in the invoice
+            lineList.add(line);
+            invoice.setLine(lineList);
+
+            // Set customer reference
+            ReferenceType customerRef = new ReferenceType();
+            customerRef.setValue(quickBookCustomerIdStr);
+            invoice.setCustomerRef(customerRef);
+
+            final QBOUser qboUser;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.ADMINISTRATOR)) {
+                qboUser = qboUserRepository.findQBOUserByEmail(LoggedInUserUtil.getLoggedInUserEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            } else {
+                qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            }
+
+            String realmId = qboUser.getRealmId();
+            if (StringUtils.isEmpty(realmId)) {
+                throw new RuntimeException("No realm ID. QBO calls only work if the accounting scope was passed!");
+            }
+            String accessToken = qboUser.getAccessToken();
+
+            // Save the payment using DataService
+            try {
+                DataService dataService = helper.getDataService(realmId, accessToken);
+
+                Invoice savedInvoice = dataService.add(invoice);
+
+                response.setContent(savedInvoice);
+                response.setMessage("Work order approved and it's invoice saved successfully!");
+                response.setStatus(HttpStatus.OK.value());
+
+            } /*
+             * Handle 401 status code -
+             * If a 401 response is received, refresh tokens should be used to get a new access token,
+             * and the API call should be tried again.
+             */ catch (InvalidTokenException e) {
+                log.error("Error while calling executeQuery :: " + e.getMessage());
+
+                //refresh tokens
+                log.info("received 401 during companyinfo call, refreshing tokens now");
+                OAuth2PlatformClient client = factory.getOAuth2PlatformClient();
+                String refreshToken = qboUser.getRefreshToken();
+
+                try {
+                    BearerTokenResponse bearerTokenResponse = client.refreshToken(refreshToken);
+
+                    qboUser.setLastModifiedDate(new Date(System.currentTimeMillis()));
+                    qboUser.setAccessToken(bearerTokenResponse.getAccessToken());
+                    qboUser.setRefreshToken(bearerTokenResponse.getRefreshToken());
+
+                    qboUserRepository.save(qboUser);
+
+                    //call company info again using new tokens
+                    log.info("Saving payment using new token");
+                    DataService dataService = helper.getDataService(realmId, accessToken);
+
+                    Invoice savedInvoice = dataService.add(invoice);
+
+                    response.setContent(savedInvoice);
+                    response.setMessage("Work order approved and it's invoice saved successfully!");
+                    response.setStatus(HttpStatus.OK.value());
+                } catch (OAuthException e1) {
+                    log.error("Error while calling bearer token :: " + e.getMessage());
+                    response.setMessage("Error while calling bearer token :: " + e.getMessage());
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                } catch (FMSException e1) {
+                    log.error("Error while calling bearer token :: " + e.getMessage());
+                    response.setMessage("Error while calling company currency :: " + e.getMessage());
+                    response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                }
+            } catch (FMSException e) {
+                List<com.intuit.ipp.data.Error> list = e.getErrorList();
+                list.forEach(error -> log.error("Error while calling executeQuery :: " + error.getMessage()));
+                response.setMessage("Error while calling executeQuery :: " + e.getMessage());
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            }
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -949,7 +1081,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 List<Integer> savedFormIds;
                 List<Form> formList;
 
-                if(null != workOrder.getFormList()) formList = workOrder.getFormList();
+                if (null != workOrder.getFormList()) formList = workOrder.getFormList();
                 else formList = new ArrayList<>();
 
                 if (null != workOrder.getFormList() && !workOrder.getFormList().isEmpty()) {
@@ -966,7 +1098,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 for (FormRequestDto formRequestDto : workOrderRequestDto.getFormRequestDtoList()) {
 
-                    if(formRequestDto.getEncodedFormData() == null) continue;
+                    if (formRequestDto.getEncodedFormData() == null) continue;
 
                     Form childForm = null;
 
@@ -974,14 +1106,14 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         // Handle parent form creation
                         Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
 
-                        for(Form savedForm: formList) {
-                            if(savedForm.getParentFormId().equals(parentForm.getId())) {
+                        for (Form savedForm : formList) {
+                            if (savedForm.getParentFormId().equals(parentForm.getId())) {
                                 childForm = savedForm;
                                 break;
                             }
                         }
 
-                        if(null == childForm) childForm = formMapper.toEntity(Form.builder().build(), parentForm);
+                        if (null == childForm) childForm = formMapper.toEntity(Form.builder().build(), parentForm);
 
                         String workOrderNumber = workOrder.getWorkOrderNumber();
                         childForm.setFormName(parentForm.getFormName() + "_" + workOrderNumber);
@@ -1146,15 +1278,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null == inventory.getParentInventoryId()) {
                             Inventory childInventory = null;
 
-                            for(Inventory savedInventory: workOrder.getInventoryList()) {
-                                if(savedInventory.getParentInventoryId().equals(inventory.getId())) {
+                            for (Inventory savedInventory : workOrder.getInventoryList()) {
+                                if (savedInventory.getParentInventoryId().equals(inventory.getId())) {
                                     childInventory = savedInventory;
                                     inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
                                     break;
                                 }
                             }
 
-                            if(null == childInventory) childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+                            if (null == childInventory)
+                                childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
 
                             final String workOrderNumber = workOrder.getWorkOrderNumber();
 
@@ -1262,7 +1395,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             workOrderRepository.save(workOrder);
 
-            formRepository.deleteAll(formsToDelete);
         } catch (
                 Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());

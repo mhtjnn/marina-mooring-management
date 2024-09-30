@@ -1,13 +1,12 @@
 package com.marinamooringmanagement.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marinamooringmanagement.constants.AppConstants;
-import com.marinamooringmanagement.exception.ClassConversionException;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.QuickbookCustomerMapper;
 import com.marinamooringmanagement.model.entity.Customer;
+import com.marinamooringmanagement.model.entity.QBO.QBOUser;
 import com.marinamooringmanagement.model.entity.QuickbookCustomer;
 import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -15,6 +14,7 @@ import com.marinamooringmanagement.model.request.QuickbookCustomerRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.QuickbookCustomerResponseDto;
 import com.marinamooringmanagement.repositories.CustomerRepository;
+import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
 import com.marinamooringmanagement.repositories.QuickbookCustomerRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
@@ -37,10 +37,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.NumberUtils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -71,6 +69,9 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private QBOUserRepository qboUserRepository;
 
     private static final Logger log = LoggerFactory.getLogger(QuickbookCustomerServiceImpl.class);
 
@@ -270,11 +271,7 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
             final Optional<QuickbookCustomer> optionalMappedQuickbookCustomer = quickbookCustomerRepository.findByCustomerId(customer.getId());
 
-            if(optionalMappedQuickbookCustomer.isPresent()) {
-                final QuickbookCustomer mappedQuickbookCustomer = optionalMappedQuickbookCustomer.get();
-                mappedQuickbookCustomer.setCustomer(null);
-                quickbookCustomerRepository.save(mappedQuickbookCustomer);
-            }
+            optionalMappedQuickbookCustomer.ifPresent(value -> quickbookCustomerRepository.delete(value));
 
             if(quickbookCustomer == null) {
                 throw new NullPointerException("Quickbook customer is null!!!");
@@ -297,8 +294,7 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
 
             customer.setQuickBookCustomer(quickbookCustomer);
             quickbookCustomer.setCustomer(customer);
-            final Customer savedCustomer = customerRepository.save(customer);
-
+            customerRepository.save(customer);
 
             response.setMessage(String.format("Customer with given id: %1$s is successfully mapped to quickbook customer with given id: %2$s", customerId, quickbookCustomerId));
             response.setStatus(HttpStatus.OK.value());

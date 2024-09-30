@@ -5,6 +5,8 @@ import com.marinamooringmanagement.model.request.WorkOrderRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.math.BigDecimal;
+
 public interface WorkOrderService {
     BasicRestResponse fetchWorkOrders(final BaseSearchRequest baseSearchRequest, final String searchText, final String showCompletedWorkOrders, final HttpServletRequest request);
 
@@ -22,7 +24,7 @@ public interface WorkOrderService {
 
     BasicRestResponse fetchCompletedWorkOrdersWithPendingPayApproval(final BaseSearchRequest baseSearchRequest, final String searchText, final HttpServletRequest request, final String payStatus);
 
-    BasicRestResponse approveWorkOrder(final Integer id, final HttpServletRequest request, final Double invoiceAmount);
+    BasicRestResponse approveWorkOrder(final Integer id, final HttpServletRequest request, final BigDecimal invoiceAmount);
 
     BasicRestResponse denyWorkOrder(final Integer id, final HttpServletRequest request, final String reportProblem);
 

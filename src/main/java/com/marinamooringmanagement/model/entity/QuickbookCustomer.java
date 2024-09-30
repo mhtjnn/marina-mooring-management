@@ -26,8 +26,8 @@ public class QuickbookCustomer extends Base{
     private String quickbookCustomerId;
 
     @OneToOne
-    @JsonBackReference
     @JoinColumn(name = "customer_id")
+    @JsonBackReference
     @ToString.Exclude
     private Customer customer;
 

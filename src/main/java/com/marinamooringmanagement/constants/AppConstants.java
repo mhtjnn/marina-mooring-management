@@ -52,22 +52,24 @@ public class AppConstants {
         /**
          * Indicates that an item needs inspection.
          */
-        public static final String NEED_INSPECTION = "NEED_INSPECTION";
+        public static final String NEED_INSPECTION = "Need Inspection";
 
         /**
          * Indicates that the gear is off.
          */
-        public static final String GEAR_OFF = "GEAR_OFF";
+        public static final String GEAR_OFF = "Gear Off";
 
         /**
          * Indicates that the gear is in use.
          */
-        public static final String GEAR_IN = "GEAR_IN";
+        public static final String GEAR_IN = "Gear In";
 
         /**
          * Indicates that the item is not in use.
          */
-        public static final String NOT_IN_USE = "NOT_IN_USE";
+        public static final String NOT_IN_USE = "Not In Use";
+
+        public static final String NEED_SERVICE = "Need Service";
     }
 
     public static class WorkOrderStatusConstants {

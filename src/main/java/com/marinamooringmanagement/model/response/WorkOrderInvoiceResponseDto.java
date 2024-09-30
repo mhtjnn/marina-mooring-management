@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -23,7 +24,7 @@ public class WorkOrderInvoiceResponseDto implements Serializable {
 
     private String lastContactTime;
 
-    private Double invoiceAmount;
+    private BigDecimal invoiceAmount;
 
     private WorkOrderInvoiceStatusDto workOrderInvoiceStatusDto;
 

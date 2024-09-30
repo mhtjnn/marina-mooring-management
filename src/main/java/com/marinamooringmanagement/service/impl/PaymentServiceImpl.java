@@ -35,6 +35,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -67,7 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
     private QBOUserRepository qboUserRepository;
 
     @Autowired
-    OAuth2PlatformClientFactory factory;
+    private OAuth2PlatformClientFactory factory;
 
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
@@ -126,8 +127,14 @@ public class PaymentServiceImpl implements PaymentService {
             paymentMethodRef.setValue(paymentRequestDto.getPaymentTypeId().toString());
             payment.setPaymentMethodRef(paymentMethodRef);
 
-            final QBOUser qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            final QBOUser qboUser;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.ADMINISTRATOR)) {
+                qboUser = qboUserRepository.findQBOUserByEmail(LoggedInUserUtil.getLoggedInUserEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            } else {
+                qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            }
 
             String realmId = qboUser.getRealmId();
             if (StringUtils.isEmpty(realmId)) {
@@ -140,6 +147,11 @@ public class PaymentServiceImpl implements PaymentService {
                 DataService dataService = helper.getDataService(realmId, accessToken);
 
                 com.intuit.ipp.data.Payment savedPayment = dataService.add(payment);
+
+                final BigDecimal afterOperationInvoiceAmount = workOrderInvoice.getInvoiceAmount().subtract(paymentRequestDto.getAmount());
+
+                workOrderInvoice.setInvoiceAmount(afterOperationInvoiceAmount);
+                workOrderInvoiceRepository.save(workOrderInvoice);
 
                 response.setContent(savedPayment);
                 response.setMessage("Payment saved successfully");

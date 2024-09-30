@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 import static com.marinamooringmanagement.constants.AppConstants.BooleanStringConst.NO;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE;
@@ -406,7 +408,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             produces = {"application/json"})
     public BasicRestResponse approveWorkOrder(
             @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
-            @Parameter(description = "Invoice amount", schema = @Schema(implementation = Double.class)) final @RequestParam("invoiceAmount") Double invoiceAmount,
+            @Parameter(description = "Invoice amount", schema = @Schema(implementation = Double.class)) final @RequestParam("invoiceAmount") BigDecimal invoiceAmount,
             final HttpServletRequest request
     ) {
         return workOrderService.approveWorkOrder(id, request, invoiceAmount);

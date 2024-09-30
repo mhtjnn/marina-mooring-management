@@ -8,6 +8,7 @@ import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +28,7 @@ public class WorkOrderInvoice extends Base{
     private Integer id;
 
     @Column(name = "invoiceAmount")
-    private Double invoiceAmount;
+    private BigDecimal invoiceAmount;
 
     @ManyToOne(cascade = {}, fetch = FetchType.EAGER)
     @JoinColumn(name = "work_order_invoice_status_id")
@@ -49,7 +50,7 @@ public class WorkOrderInvoice extends Base{
     @ToString.Exclude
     private List<Payment> paymentList;
 
-    public WorkOrderInvoice(Integer id, Double invoiceAmount, Integer workOrderInvoiceStatusId, String workOrderInvoiceStatusName,
+    public WorkOrderInvoice(Integer id, BigDecimal invoiceAmount, Integer workOrderInvoiceStatusId, String workOrderInvoiceStatusName,
                             Integer workOrderId, String workOrderNumber, Date dueDate, Date scheduledDate,
                             Date completedDate, Date creationDate ,Time time, String problem, Integer mooringId, String mooringNumber,
                             Integer technicianUserId, String technicianUserFirstName, String technicianUserLastName,

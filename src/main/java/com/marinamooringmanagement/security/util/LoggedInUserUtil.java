@@ -34,4 +34,13 @@ public class LoggedInUserUtil {
             throw new RuntimeException("Error occurred while extracting user ID of logged-in user");
         }
     }
+
+    public static String getLoggedInUserEmail() {
+        try {
+            final AuthenticationDetails authDetails = (AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+            return authDetails.getLoggedInUserEmail();
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while extracting user ID of logged-in user");
+        }
+    }
 }

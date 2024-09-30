@@ -28,6 +28,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.OverridesAttribute;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,17 +336,29 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", id)));
 
             final MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);
-            if (null != mooring.getCustomer()) {
-                final CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), mooring.getCustomer());
-                mooringResponseDto.setCustomerResponseDto(customerResponseDto);
-            }
-            if (null != mooring.getBoatyard()) {
-                final BoatyardResponseDto boatyardResponseDto = boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard());
-                mooringResponseDto.setBoatyardResponseDto(boatyardResponseDto);
-            }
-            if (null != mooring.getServiceArea()) {
-                final ServiceAreaResponseDto serviceAreaResponseDto = serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea());
-                mooringResponseDto.setServiceAreaResponseDto(serviceAreaResponseDto);
+
+            if (null != mooring.getCustomer())
+                mooringResponseDto.setCustomerId(mooring.getCustomer().getId());
+            if (null != mooring.getCustomer())
+                mooringResponseDto.setCustomerName(String.format(mooring.getCustomer().getFirstName() + " " + mooring.getCustomer().getLastName()));
+            if (null != mooring.getUser()) mooringResponseDto.setUserId(mooring.getUser().getId());
+            if (null != mooring.getBoatyard())
+                mooringResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), mooring.getBoatyard()));
+            if (null != mooring.getServiceArea())
+                mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), mooring.getServiceArea()));
+            if (null != mooring.getInstallBottomChainDate())
+                mooringResponseDto.setInstallBottomChainDate(DateUtil.dateToString(mooring.getInstallBottomChainDate()));
+            if (null != mooring.getInstallTopChainDate())
+                mooringResponseDto.setInstallTopChainDate(DateUtil.dateToString(mooring.getInstallTopChainDate()));
+            if (null != mooring.getInstallConditionOfEyeDate())
+                mooringResponseDto.setInstallConditionOfEyeDate(DateUtil.dateToString(mooring.getInstallConditionOfEyeDate()));
+            if (null != mooring.getInspectionDate())
+                mooringResponseDto.setInspectionDate(DateUtil.dateToString(mooring.getInspectionDate()));
+            if (null != mooring.getImageList() && !mooring.getImageList().isEmpty()) {
+                mooringResponseDto.setImageDtoList(mooring.getImageList()
+                        .stream()
+                        .map(image -> imageMapper.toDto(ImageDto.builder().build(), image))
+                        .toList());
             }
 
             response.setMessage(String.format("Mooring with the id: %1$s fetched success", id));
@@ -545,14 +558,19 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             Mooring savedMooring = mooringRepository.save(mooring);
             Mooring finalSavedMooring = savedMooring;
 
-            optionalBoatyard.ifPresent(boatyard -> {
-                if (null != boatyard.getMooringList()) boatyard.getMooringList().add(finalSavedMooring);
-                else {
-                    boatyard.setMooringList(new ArrayList<>());
-                    boatyard.getMooringList().add(finalSavedMooring);
-                }
-                boatyardRepository.save(optionalBoatyard.get());
-            });
+            if(null != mooring.getMooringStatus() && !StringUtils.equals(mooring.getMooringStatus().getStatus(), AppConstants.Status.GEAR_OFF)) {
+                mooring.setBoatyard(null);
+            } else {
+                optionalBoatyard.ifPresent(boatyard -> {
+                    if (null != boatyard.getMooringList()) boatyard.getMooringList().add(finalSavedMooring);
+                    else {
+                        boatyard.setMooringList(new ArrayList<>());
+                        boatyard.getMooringList().add(finalSavedMooring);
+                    }
+                    boatyardRepository.save(optionalBoatyard.get());
+                });
+            }
+
             optionalCustomer.ifPresent(customer -> {
                 if (null != customer.getMooringList()) customer.getMooringList().add(finalSavedMooring);
                 else {

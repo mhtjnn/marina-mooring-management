@@ -95,8 +95,14 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
 
-            final QBOUser qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            final QBOUser qboUser;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.ADMINISTRATOR)) {
+                qboUser = qboUserRepository.findQBOUserByEmail(LoggedInUserUtil.getLoggedInUserEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            } else {
+                qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            }
 
             String realmId = qboUser.getRealmId();
             if (StringUtils.isEmpty(realmId)) {
@@ -188,9 +194,14 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
             } else {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
-
-            final QBOUser qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            final QBOUser qboUser;
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.ADMINISTRATOR)) {
+                qboUser = qboUserRepository.findQBOUserByEmail(LoggedInUserUtil.getLoggedInUserEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            } else {
+                qboUser = qboUserRepository.findQBOUserByEmail(user.getEmail())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No QBO user found with the given email: %1$s", user.getEmail())));
+            }
 
             String realmId = qboUser.getRealmId();
             if (StringUtils.isEmpty(realmId)) {

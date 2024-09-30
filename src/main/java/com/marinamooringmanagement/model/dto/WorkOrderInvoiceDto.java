@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -17,7 +18,7 @@ public class WorkOrderInvoiceDto extends BaseDto{
 
     private Integer id;
 
-    private Double invoiceAmount;
+    private BigDecimal invoiceAmount;
 
     private WorkOrderInvoiceStatusDto workOrderInvoiceStatusDto;
 
