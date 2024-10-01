@@ -151,7 +151,7 @@ public class AuthorizationUtil {
 
     private User checksForCustomerOwner(final Integer customerOwnerId) {
         try {
-            final Integer loggedInUserId = loggedInUserUtil.getLoggedInUserID();
+            final Integer loggedInUserId = LoggedInUserUtil.getLoggedInUserID();
             if (customerOwnerId != -1 && !loggedInUserId.equals(customerOwnerId))
                 throw new RuntimeException(String.format("Cannot do operations with different customer owner Id"));
             Optional<User> optionalUser = userRepository.findUserByIdWithoutImage(loggedInUserId);

@@ -307,7 +307,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
@@ -341,7 +341,7 @@ public class WorkOrderController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})

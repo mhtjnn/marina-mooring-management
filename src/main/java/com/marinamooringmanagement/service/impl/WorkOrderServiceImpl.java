@@ -1,6 +1,7 @@
 package com.marinamooringmanagement.service.impl;
 
 import com.intuit.ipp.data.*;
+import com.intuit.ipp.exception.AuthenticationException;
 import com.intuit.ipp.exception.FMSException;
 import com.intuit.ipp.exception.InvalidTokenException;
 import com.intuit.ipp.services.DataService;
@@ -1042,7 +1043,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            if(null != workOrder.getCustomerOwnerUser() && !workOrder.getCustomerOwnerUser().getId().equals(user.getId())) throw new AuthenticationException("Not authorized to preform operations on work order of different customer owner.");
 
             workOrder.setCustomerOwnerUser(user);
 
