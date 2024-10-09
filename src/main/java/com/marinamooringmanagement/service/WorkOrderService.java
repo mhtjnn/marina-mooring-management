@@ -29,4 +29,6 @@ public interface WorkOrderService {
     BasicRestResponse denyWorkOrder(final Integer id, final HttpServletRequest request, final String reportProblem);
 
     BasicRestResponse fetchWorkOrderInvoice(BaseSearchRequest baseSearchRequest, String searchText, HttpServletRequest request);
+
+    BasicRestResponse fetchMooringDueForServiceForTechnician(final Integer id, final HttpServletRequest request);
 }

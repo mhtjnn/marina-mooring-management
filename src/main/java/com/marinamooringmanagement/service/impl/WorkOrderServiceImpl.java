@@ -27,6 +27,8 @@ import com.marinamooringmanagement.model.entity.User;
 import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.*;
 import com.marinamooringmanagement.model.response.*;
+import com.marinamooringmanagement.model.response.metadata.CountryResponseDto;
+import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
@@ -54,6 +56,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.Currency;
 import java.util.stream.Collectors;
 
 @Service
@@ -167,6 +170,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private MooringStatusRepository mooringStatusRepository;
 
+    @Autowired
+    private StateMapper stateMapper;
+
+    @Autowired
+    private CountryMapper countryMapper;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -209,8 +218,16 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                         if (null != workOrder.getMooring())
                             workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
-                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
+                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer());
+                            if(null != workOrder.getMooring().getCustomer().getState()) {
+                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getCustomer().getState()));
+                            }
+                            if(null != workOrder.getMooring().getCustomer().getCountry()) {
+                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getCustomer().getCountry()));
+                            }
+                            workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
+                        }
                         if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
                             workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
                         if (null != workOrder.getCustomerOwnerUser())
@@ -1044,6 +1061,43 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             response.setMessage("All work orders invoices fetched successfully.");
             response.setStatus(HttpStatus.OK.value());
             response.setContent(workOrderInvoiceResponseDtoList);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
+    @Override
+    public BasicRestResponse fetchMooringDueForServiceForTechnician(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
+            List<WorkOrder> workOrderList = workOrderRepository.findAllByTechnicianUser("", LoggedInUserUtil.getLoggedInUserID(), AppConstants.BooleanStringConst.NO);
+
+            if(null != workOrderList && !workOrderList.isEmpty()) {
+                List<MooringDueServiceResponseDto> mooringDueServiceResponseDtoList = getMooringDueServiceResponseDtoList(workOrderList);
+                response.setMessage("Mooring due for service fetched successfully");
+                response.setContent(mooringDueServiceResponseDtoList);
+            } else {
+                response.setContent(new ArrayList<>());
+            }
+            response.setStatus(HttpStatus.OK.value());
+
         } catch (Exception e) {
             response.setMessage(e.getLocalizedMessage());
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
