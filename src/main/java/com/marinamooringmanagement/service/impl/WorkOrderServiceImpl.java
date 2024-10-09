@@ -330,7 +330,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
             Optional<WorkOrder> optionalWorkOrder = workOrderRepository.findById(workOrderId);
             final WorkOrder workOrder = optionalWorkOrder.orElseThrow(() -> new ResourceNotFoundException(String.format("Work order not found with id: %1$s", workOrderId)));
-            performSave(workOrderRequestDto, workOrder, workOrderId, request);
+            response.setContent(performSave(workOrderRequestDto, workOrder, workOrderId, request));
             response.setMessage("Work order updated successfully");
             response.setStatus(HttpStatus.OK.value());
         } catch (Exception e) {
@@ -1093,7 +1093,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Transactional
-    private void performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
+    private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
@@ -1522,7 +1522,72 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
             }
 
-            workOrderRepository.save(workOrder);
+            WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+            WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), savedWorkOrder);
+            if (null != savedWorkOrder.getMooring())
+                workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), savedWorkOrder.getMooring()));
+            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getCustomer()) {
+                CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer());
+                if(null != savedWorkOrder.getMooring().getCustomer().getState()) {
+                    customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer().getState()));
+                }
+                if(null != savedWorkOrder.getMooring().getCustomer().getCountry()) {
+                    customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer().getCountry()));
+                }
+                workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
+            }
+            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getBoatyard())
+                workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedWorkOrder.getMooring().getBoatyard()));
+            if (null != savedWorkOrder.getCustomerOwnerUser())
+                workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedWorkOrder.getCustomerOwnerUser()));
+            if (null != savedWorkOrder.getTechnicianUser())
+                workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedWorkOrder.getTechnicianUser()));
+            if (null != savedWorkOrder.getWorkOrderStatus())
+                workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), savedWorkOrder.getWorkOrderStatus()));
+            if (null != savedWorkOrder.getWorkOrderPayStatus())
+                workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), savedWorkOrder.getWorkOrderPayStatus()));
+            if (null != savedWorkOrder.getDueDate())
+                workOrderResponseDto.setDueDate(DateUtil.dateToString(savedWorkOrder.getDueDate()));
+            if (null != savedWorkOrder.getScheduledDate())
+                workOrderResponseDto.setScheduledDate(DateUtil.dateToString(savedWorkOrder.getScheduledDate()));
+            if (null != savedWorkOrder.getCompletedDate())
+                workOrderResponseDto.setCompletedDate(DateUtil.dateToString(savedWorkOrder.getCompletedDate()));
+
+            List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(savedWorkOrder.getId());
+            List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(savedWorkOrder.getId());
+            List<Inventory> inventoryList = inventoryRepository.findInventoriesByWorkOrder(savedWorkOrder.getId());
+            List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(savedWorkOrder.getId());
+
+            if (null != imageList && !imageList.isEmpty()) {
+                workOrderResponseDto.setImageResponseDtoList(imageList
+                        .stream()
+                        .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                        .toList());
+            }
+            if (null != formList && !formList.isEmpty()) {
+                workOrderResponseDto.setFormResponseDtoList(formList
+                        .stream()
+                        .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                        .toList());
+            }
+            if (null != inventoryList && !inventoryList.isEmpty()) {
+                workOrderResponseDto.setInventoryResponseDtoList(inventoryList
+                        .stream()
+                        .map(inventory -> {
+                            final InventoryResponseDto inventoryResponseDto = inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory);
+                            VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor());
+                            inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
+                            return inventoryResponseDto;
+                        })
+                        .toList());
+            }
+            if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+                workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
+                        .stream()
+                        .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
+                        .toList());
+            }
+            return workOrderResponseDto;
 
         } catch (
                 Exception e) {
