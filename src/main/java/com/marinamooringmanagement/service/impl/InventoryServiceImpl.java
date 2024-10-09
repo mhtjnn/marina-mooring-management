@@ -35,7 +35,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -132,6 +131,7 @@ public class InventoryServiceImpl implements InventoryService {
                         }
                     }
                     predicates.add(criteriaBuilder.isNull(inventory.get("workOrder")));
+                    predicates.add(criteriaBuilder.isNull(inventory.get("parentInventoryId")));
                     // Always add the vendor ID predicate
                     predicates.add(criteriaBuilder.equal(inventory.join("vendor").get("id"), vendor.getId()));
 

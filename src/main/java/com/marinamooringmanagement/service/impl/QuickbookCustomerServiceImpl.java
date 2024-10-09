@@ -2,6 +2,7 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
+import com.marinamooringmanagement.exception.QBOOperationException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.mapper.CustomerMapper;
 import com.marinamooringmanagement.mapper.QuickbookCustomerMapper;
@@ -266,6 +267,14 @@ public class QuickbookCustomerServiceImpl implements QuickbookCustomerService {
             if(optionalCustomer.isEmpty()) throw new RuntimeException(String.format("No customer found with the given id: %1$s", customerId));
 
             final Customer customer = optionalCustomer.get();
+
+            if(null != customer.getQuickBookCustomer()) {
+                if(customer.getQuickBookCustomer().getQuickbookCustomerId().equals(quickbookCustomerId)) {
+                    response.setMessage("Given customer is already mapped to given quickbook customer.");
+                    response.setStatus(HttpStatus.OK.value());
+                    return response;
+                }
+            }
 
             final QuickbookCustomer quickbookCustomer = qboCustomerService.getQuickBooksCustomerByQuickbookCustomerResponse(customer, quickbookCustomerId, request);
 

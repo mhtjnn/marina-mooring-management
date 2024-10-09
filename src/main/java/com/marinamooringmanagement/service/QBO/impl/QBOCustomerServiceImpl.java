@@ -262,6 +262,7 @@ public class QBOCustomerServiceImpl implements QBOCustomerService {
         return responseEntity;
     }
 
+    @Transactional
     public QuickbookCustomer getQuickBooksCustomerByQuickbookCustomerResponse(com.marinamooringmanagement.model.entity.Customer customer, String quickbookCustomerId, HttpServletRequest request) {
         // Call your fetchQBOCustomerById to get the ResponseEntity
         ResponseEntity<String> responseEntity = fetchQBOCustomerById(quickbookCustomerId, request);

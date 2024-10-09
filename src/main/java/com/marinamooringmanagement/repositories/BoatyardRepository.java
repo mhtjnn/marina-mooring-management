@@ -86,7 +86,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
             "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(b.address) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
-            "LOWER(b.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')))) " +
+            "LOWER(b.boatyardId) LIKE LOWER(CONCAT('%', :searchText, '%')))) " +
             "ORDER BY b.id")
     List<Boatyard> findAll(@Param("searchText") String searchText,
                            @Param("userId") Integer userId);

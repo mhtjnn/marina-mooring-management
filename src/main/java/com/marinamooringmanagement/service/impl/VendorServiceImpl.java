@@ -217,7 +217,7 @@ public class VendorServiceImpl implements VendorService {
             }
 
             List<Inventory> inventoryList = vendor.getInventoryList();
-            inventoryRepository.deleteAll(inventoryList);
+            if(null != inventoryList) inventoryRepository.deleteAll(inventoryList);
 
             vendorRepository.deleteById(vendorId);
             final String message = vendorRepository.findById(vendorId).isPresent() ? String.format("Vendor with the id %1$s failed to get deleted", vendorId) : String.format("Vendor with the id %1$s is deleted successfully", vendorId);
@@ -325,7 +325,7 @@ public class VendorServiceImpl implements VendorService {
 
             if(null != vendor.getUser() && !vendor.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Vendor with the id: %1$s is associated with some other customer owner", id));
 
-            vendor.setUser(user);
+            if(null == id) vendor.setUser(user);
 
             vendorMapper.mapToVendor(vendor, vendorRequestDto);
 
@@ -361,6 +361,8 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", vendorRequestDto.getStateId()));
                 vendor.setState(optionalState.get());
+            } else if(null != vendor.getState() && null == vendor.getState().getId()) {
+                vendor.setState(null);
             }
 
             if (null != vendorRequestDto.getCountryId()) {
@@ -368,6 +370,8 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", vendorRequestDto.getCountryId()));
                 vendor.setCountry(optionalCountry.get());
+            } else if(null != vendor.getCountry() && null == vendor.getCountry().getId()) {
+                vendor.setCountry(null);
             }
 
             if (null != vendorRequestDto.getRemitStateId()) {
@@ -375,6 +379,8 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalState.isEmpty())
                     throw new ResourceNotFoundException(String.format("No state found with the given Id: %1$s", vendorRequestDto.getRemitStateId()));
                 vendor.setRemitState(optionalState.get());
+            } else if(null != vendor.getRemitState() && null == vendor.getRemitState().getId()) {
+                vendor.setRemitState(null);
             }
 
             if (null != vendorRequestDto.getRemitCountryId()) {
@@ -382,13 +388,15 @@ public class VendorServiceImpl implements VendorService {
                 if (optionalCountry.isEmpty())
                     throw new ResourceNotFoundException(String.format("No country found with the given Id: %1$s", vendorRequestDto.getRemitCountryId()));
                 vendor.setRemitCountry(optionalCountry.get());
+            } else if(null != vendor.getRemitCountry() && null == vendor.getRemitCountry().getId()) {
+                vendor.setRemitCountry(null);
             }
 
-            savedVendor = vendorRepository.save(vendor);
+            vendorRepository.save(vendor);
         } catch (Exception e) {
             logger.error("Error occurred during performSave() operation {}", e.getLocalizedMessage());
             throw e;
         }
-        return savedVendor;
+        return null;
     }
 }

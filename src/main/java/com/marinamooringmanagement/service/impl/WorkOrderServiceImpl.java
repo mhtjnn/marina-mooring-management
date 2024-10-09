@@ -24,15 +24,13 @@ import com.marinamooringmanagement.model.entity.Customer;
 import com.marinamooringmanagement.model.entity.Payment;
 import com.marinamooringmanagement.model.entity.QBO.QBOUser;
 import com.marinamooringmanagement.model.entity.User;
-import com.marinamooringmanagement.model.entity.metadata.MooringDueServiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderInvoiceStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderPayStatus;
-import com.marinamooringmanagement.model.entity.metadata.WorkOrderStatus;
+import com.marinamooringmanagement.model.entity.metadata.*;
 import com.marinamooringmanagement.model.request.*;
 import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.QBO.QBOUserRepository;
 import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatusRepository;
+import com.marinamooringmanagement.repositories.metadata.MooringStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
@@ -160,6 +158,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private OAuth2PlatformClientFactory factory;
 
+    @Autowired
+    private VoiceMEMORepository voiceMEMORepository;
+
+    @Autowired
+    private VoiceMEMOMapper voiceMEMOMapper;
+
+    @Autowired
+    private MooringStatusRepository mooringStatusRepository;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -224,6 +231,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
                         List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
                         List<Inventory> inventoryList = inventoryRepository.findInventoriesByWorkOrder(workOrder.getId());
+                        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(workOrder.getId());
 
                         if (null != imageList && !imageList.isEmpty()) {
                             workOrderResponseDto.setImageResponseDtoList(imageList
@@ -246,6 +254,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                         inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
                                         return inventoryResponseDto;
                                     })
+                                    .toList());
+                        }
+                        if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+                            workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
+                                    .stream()
+                                    .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
                                     .toList());
                         }
                         return workOrderResponseDto;
@@ -1085,8 +1099,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setImageList(imageList);
             }
 
-            List<Form> formsToDelete = new ArrayList<>();
-
             // Update form list
             if (null != workOrderRequestDto.getFormRequestDtoList() && !workOrderRequestDto.getFormRequestDtoList().isEmpty()) {
 
@@ -1147,6 +1159,61 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 }
 
                 workOrder.setFormList(formList);
+            }
+
+            if (null != workOrderRequestDto.getVoiceMEMORequestDtoList() && !workOrderRequestDto.getVoiceMEMORequestDtoList().isEmpty()) {
+
+                List<Integer> toDelete;
+                List<Integer> savedVoiceMEMOIds;
+                List<VoiceMEMO> voiceMEMOList;
+
+                if (null != workOrder.getVoiceMEMOList()) voiceMEMOList = workOrder.getVoiceMEMOList();
+                else voiceMEMOList = new ArrayList<>();
+
+                if (null != workOrder.getFormList() && !workOrder.getFormList().isEmpty()) {
+                    savedVoiceMEMOIds = voiceMEMOList.stream().map(VoiceMEMO::getId).toList();
+
+                    toDelete = savedVoiceMEMOIds.stream()
+                            .filter(id -> workOrderRequestDto.getVoiceMEMORequestDtoList().stream()
+                                    .noneMatch(voiceMEMORequestDto -> null != voiceMEMORequestDto.getId() && voiceMEMORequestDto.getId().equals(id)))
+                            .toList();
+
+                    List<VoiceMEMO> toDeleteVoiceMEMO = voiceMEMORepository.findAllById(toDelete);
+                    voiceMEMOList.removeAll(toDeleteVoiceMEMO);
+                }
+
+                for (VoiceMEMORequestDto voiceMEMORequestDto : workOrderRequestDto.getVoiceMEMORequestDtoList()) {
+
+                    if (voiceMEMORequestDto.getEncodedData() == null) continue;
+
+                    VoiceMEMO voiceMEMO;
+                    if(null != voiceMEMORequestDto.getId()) {
+                        voiceMEMO = voiceMEMORepository.findById(voiceMEMORequestDto.getId()).orElseThrow(() -> new ResourceNotFoundException(String.format("No voice MEMO found with the given id: %1$s", voiceMEMORequestDto.getId())));
+                    } else {
+                        voiceMEMO = VoiceMEMO.builder().build();
+                        voiceMEMOMapper.toEntity(voiceMEMO, voiceMEMORequestDto);
+                    }
+
+                    byte[] decodedBytes = Base64.getDecoder().decode(voiceMEMORequestDto.getEncodedData());
+                    voiceMEMO.setData(decodedBytes);
+
+                    voiceMEMOList.add(voiceMEMO);
+                }
+
+                workOrder.setVoiceMEMOList(voiceMEMOList);
+            }
+
+            if(null != workOrderRequestDto.getMooringStatusId()) {
+                if(null != workOrder.getMooring()) {
+
+                    MooringStatus mooringStatus = mooringStatusRepository.findById(workOrderRequestDto.getMooringStatusId())
+                            .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring status found with the given id: %1$s", workOrderRequestDto.getMooringStatusId())));
+
+                    Mooring mooring = workOrder.getMooring();
+                    mooring.setMooringStatus(mooringStatus);
+
+                    mooringRepository.save(mooring);
+                }
             }
 
             final LocalDate currentDate = LocalDate.now();
@@ -1235,6 +1302,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             if (null != workOrderRequestDto.getWorkOrderStatusId()) {
+
+                log.info("Inside work order status update");
+
                 final Optional<WorkOrderStatus> optionalWorkOrderStatus = workOrderStatusRepository.findById(workOrderRequestDto.getWorkOrderStatusId());
                 if (optionalWorkOrderStatus.isEmpty())
                     throw new RuntimeException(String.format("No work order status found with the given id: %1$s", workOrderRequestDto.getWorkOrderStatusId()));
@@ -1262,6 +1332,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 // Waiting on Parts section
                 if (workOrderStatus.getStatus().equals(AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
+                    log.info("Inside waiting on parts work order status");
                     if (null == workOrderRequestDto.getInventoryRequestDtoList()) {
                         throw new ResourceNotProvidedException("No inventory item/s provided!!!");
                     }
@@ -1270,6 +1341,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     List<Integer> savedInventoryIds;
                     List<Inventory> inventoryList = new ArrayList<>();
                     if (null != workOrder.getInventoryList() && !workOrder.getInventoryList().isEmpty()) {
+                        log.info("Deleting work order inventory whose id is not given");
                         inventoryList = workOrder.getInventoryList();
 
                         savedInventoryIds = workOrder.getInventoryList().stream().map(Inventory::getId).toList();
@@ -1282,9 +1354,11 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         inventoryRepository.deleteAllById(toDelete);
                     }
 
+                    if(inventoryList.isEmpty()) inventoryList = new ArrayList<>();
+
                     for (InventoryRequestDto inventoryRequestDto : workOrderRequestDto.getInventoryRequestDtoList()) {
                         int quantityAfterOperation;
-
+                        log.info("Adding inventory to the inventory list");
                         final Inventory inventory = inventoryRepository.findById(inventoryRequestDto.getId())
                                 .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
 
@@ -1345,6 +1419,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     }
 
+                    log.info("Setting the inventory list: {} ", inventoryList);
                     workOrder.setInventoryList(inventoryList);
                 }
 

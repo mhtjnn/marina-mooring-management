@@ -40,12 +40,12 @@ public class VendorDto extends BaseDto implements Serializable {
     /**
      * State where the vendor is located.
      */
-    private StateDto stateDto;
+    private StateDto stateDto = null;
 
     /**
      * Country where the vendor is located.
      */
-    private CountryDto countryDto;
+    private CountryDto countryDto = null;
 
     /**
      * ZIP code of the vendor's location.
@@ -64,9 +64,9 @@ public class VendorDto extends BaseDto implements Serializable {
 
     private String remitAddress;
 
-    private StateDto remitStateDto;
+    private StateDto remitStateDto = null;
 
-    private CountryDto remitCountryDto;
+    private CountryDto remitCountryDto = null;
 
     private String remitZipCode;
 

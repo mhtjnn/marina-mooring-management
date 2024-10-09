@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.dto.metadata;
 
+import com.marinamooringmanagement.model.dto.BaseDto;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,9 +13,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MooringDueServiceStatusDto implements Serializable {
-
-    private static final long serialVersionUID = 5502680630359L;
+public class MooringDueServiceStatusDto extends BaseDto {
 
     private Integer id;
 

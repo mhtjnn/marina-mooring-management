@@ -1,7 +1,5 @@
 package com.marinamooringmanagement.model.response;
 
-import com.marinamooringmanagement.model.dto.ImageDto;
-import com.marinamooringmanagement.model.dto.PaymentDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderPayStatusDto;
 import com.marinamooringmanagement.model.dto.metadata.WorkOrderStatusDto;
 import lombok.AllArgsConstructor;
@@ -56,4 +54,7 @@ public class WorkOrderResponseDto implements Serializable {
     private List<FormResponseDto> formResponseDtoList;
 
     private List<InventoryResponseDto> inventoryResponseDtoList;
+
+    private List<VoiceMEMOResponseDto> voiceMEMOResponseDtoList;
+
 }

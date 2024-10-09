@@ -83,6 +83,8 @@ public class WorkOrder extends Base{
     @ToString.Exclude
     private List<Inventory> inventoryList;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workOrder", fetch = FetchType.LAZY)
+    private List<VoiceMEMO> voiceMEMOList;
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
                      Date completedDate, Time time, String problem,

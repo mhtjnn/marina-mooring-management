@@ -11,25 +11,17 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FormResponseDto implements Serializable {
+public class VoiceMEMOResponseDto implements Serializable {
 
-    private static final long serialVersionUID = 552686350796487L;
+    private static final long serialVersionUID = 55026806303550349L;
 
     private Integer id;
 
-    private String submittedDate;
-
-    private String submittedBy;
-
-    private String formName;
-
-    private String fileName;
+    private String name;
 
     private String encodedData;
 
-    private UserResponseDto userResponseDto;
-
     private WorkOrderResponseDto workOrderResponseDto;
 
-    private Integer parentFormId;
+    private UserResponseDto userResponseDto;
 }

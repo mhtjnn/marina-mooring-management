@@ -50,14 +50,14 @@ public class Vendor extends Base {
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "state_id")
-    private State state;
+    private State state = null;
 
     /**
      * The country of the customer's address.
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
-    private Country country;
+    private Country country = null;
 
     /**
      * ZIP code of the vendor's location.
@@ -85,13 +85,13 @@ public class Vendor extends Base {
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "remit_state_id")
-    private State remitState;
+    private State remitState = null;
     /**
      * The country of the customer's address.
      */
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "remit_country_id")
-    private Country remitCountry;
+    private Country remitCountry = null;
 
     private String remitZipCode;
 

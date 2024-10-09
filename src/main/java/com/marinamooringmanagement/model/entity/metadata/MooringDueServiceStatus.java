@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity.metadata;
 
+import com.marinamooringmanagement.model.entity.Base;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "mooring_due_service_status")
-public class MooringDueServiceStatus {
+public class MooringDueServiceStatus extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
