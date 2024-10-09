@@ -459,13 +459,11 @@ public class WorkOrderController extends GlobalExceptionHandler {
 
     )
     @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
-    @RequestMapping(value = "/mooringsDueForService/{id}",
+    @RequestMapping(value = "/mooringsDueForService",
             method = RequestMethod.GET,
             produces = {"application/json"})
     public BasicRestResponse fetchMooringDueForServiceForTechnician(
-            @Parameter(description = "Id of the work order to be deleted", schema = @Schema(implementation = Integer.class)) final @PathVariable("id") Integer id,
-            final HttpServletRequest request
     ) {
-        return workOrderService.fetchMooringDueForServiceForTechnician(id, request);
+        return workOrderService.fetchMooringDueForServiceForTechnician();
     }
 }

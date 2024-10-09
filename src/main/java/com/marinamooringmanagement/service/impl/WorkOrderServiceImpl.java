@@ -1069,23 +1069,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    public BasicRestResponse fetchMooringDueForServiceForTechnician(Integer id, HttpServletRequest request) {
+    public BasicRestResponse fetchMooringDueForServiceForTechnician() {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user;
-
-            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
-                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
-                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
-
-                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
-                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
-            } else {
-                user = authorizationUtil.checkAuthority(customerOwnerId);
-            }
 
             List<WorkOrder> workOrderList = workOrderRepository.findAllByTechnicianUser("", LoggedInUserUtil.getLoggedInUserID(), AppConstants.BooleanStringConst.NO);
 
