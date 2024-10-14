@@ -334,6 +334,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse updateWorkOrder(WorkOrderRequestDto workOrderRequestDto, Integer workOrderId, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
