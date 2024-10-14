@@ -93,6 +93,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "AND (:searchText IS NOT NULL AND LOWER(CAST(u.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR (LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +
             "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(r.name) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +

@@ -166,6 +166,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(m.mooringNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(wo.workOrderNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(byd.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(CONCAT(tu.firstName, ' ', tu.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(tu.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
