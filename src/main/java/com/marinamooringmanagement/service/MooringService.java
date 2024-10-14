@@ -44,4 +44,6 @@ public interface MooringService {
     BasicRestResponse deleteMooring(final Integer id, final HttpServletRequest request);
 
     BasicRestResponse getMooringById(final Integer id, final HttpServletRequest request);
+
+    BasicRestResponse fetchMooringPercentageIncrease(final HttpServletRequest request);
 }

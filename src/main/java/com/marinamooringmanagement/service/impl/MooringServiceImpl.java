@@ -373,6 +373,40 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchMooringPercentageIncrease(HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+
+            long currentMonthMooringCount;
+            long previousMonthMooringCount;
+
+            currentMonthMooringCount = mooringRepository.getCurrentMonthMooringCount(user.getId());
+            previousMonthMooringCount = mooringRepository.getPreviousMonthMooringCount(user.getId());
+
+            if (previousMonthMooringCount == 0) {
+                if(currentMonthMooringCount > 0) currentMonthMooringCount = 100;
+                else currentMonthMooringCount = 0;
+            }
+
+            double percentageIncrease =
+                    ((double) (currentMonthMooringCount - previousMonthMooringCount) / previousMonthMooringCount) * 100;
+
+            response.setMessage("Percentage increase fetched successfully.");
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(percentageIncrease);
+
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return response;
+    }
+
     /**
      * Performs the actual saving of a mooring entity based on the request DTO and mooring object.
      *

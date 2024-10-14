@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.marinamooringmanagement.constants.AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM;
@@ -19,6 +21,9 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 
 @RestController
 @RequestMapping("/api/v1/notification")
+@Validated
+@CrossOrigin
+@Tag(name = "Notification Controller", description = "These are API's for notification.")
 public class NotificationController {
 
     @Autowired
@@ -58,6 +63,31 @@ public class NotificationController {
                 .sortDir(sortDir)
                 .build();
         return notificationService.getNotifications(id, baseSearchRequest, searchText, request);
+    }
+
+    @Operation(
+            summary = "API to read notification",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @PostMapping("/read/{id}")
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    public BasicRestResponse readNotifications(
+            @Parameter(description = "Notification Id", schema = @Schema(implementation = Integer.class)) @PathVariable("id") final Integer id,
+            final HttpServletRequest request
+    ) {
+        return notificationService.readNotification(id, request);
     }
 
 }

@@ -11,4 +11,6 @@ public interface NotificationService {
     void createNotificationForSaveWorkOrder(final WorkOrder workOrder);
 
     void createNotificationForUpdateWorkOrder(final WorkOrder savedWorkOrder);
+
+    BasicRestResponse readNotification(final Integer id, final HttpServletRequest request);
 }

@@ -185,4 +185,16 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
     List<Mooring> findAllMooringMetadata(@Param("userId") Integer userId);
 
     Optional<Mooring> findByBoatId(String boatIdStr);
+
+    @Query("SELECT COUNT(m) FROM Mooring m " +
+            "WHERE MONTH(m.creationDate) = MONTH(CURRENT_DATE) " +
+            "AND YEAR(m.creationDate) = YEAR(CURRENT_DATE) " +
+            "AND m.user.id = :userId")
+    long getCurrentMonthMooringCount(@Param("userId") Integer userId);
+
+    @Query("SELECT COUNT(m) FROM Mooring m " +
+            "WHERE MONTH(m.creationDate) = MONTH(CURRENT_DATE) - 1 " +
+            "AND YEAR(m.creationDate) = YEAR(CURRENT_DATE) " +
+            "AND m.user.id = :userId")
+    long getPreviousMonthMooringCount(@Param("userId") Integer userId);
 }

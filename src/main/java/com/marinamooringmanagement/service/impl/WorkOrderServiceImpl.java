@@ -231,8 +231,19 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             }
                             workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
                         }
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) {
+                            final BoatyardResponseDto boatyardResponseDto = boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard());
+                            if(null != workOrder.getMooring().getBoatyard().getState() && null != workOrder.getMooring().getBoatyard().getState().getId()) {
+                                StateResponseDto stateResponseDto = stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getBoatyard().getState());
+                                boatyardResponseDto.setStateResponseDto(stateResponseDto);
+                            }
+                            if(null != workOrder.getMooring().getBoatyard().getCountry() && null != workOrder.getMooring().getBoatyard().getCountry().getId()) {
+                                CountryResponseDto countryResponseDto = countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getBoatyard().getCountry());
+                                boatyardResponseDto.setCountryResponseDto(countryResponseDto);
+                            }
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardResponseDto);
+
+                        }
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())

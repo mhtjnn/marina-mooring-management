@@ -2,6 +2,7 @@ package com.marinamooringmanagement.service.impl;
 
 import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.constants.enums.EntityEnum;
+import com.marinamooringmanagement.exception.ResourceNotFoundException;
 import com.marinamooringmanagement.model.entity.Notification;
 import com.marinamooringmanagement.model.entity.WorkOrder;
 import com.marinamooringmanagement.model.request.BaseSearchRequest;
@@ -76,5 +77,29 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setEntityId(workOrder.getId());
 
         notificationRepository.save(notification);
+    }
+
+    @Override
+    public BasicRestResponse readNotification(Integer id, HttpServletRequest request) {
+        BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+
+        try {
+
+            final Notification notification = notificationRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No notification found with the given id: %1$s", id)));
+
+            notification.setRead(true);
+
+            notificationRepository.save(notification);
+
+            response.setMessage(String.format("Notification with the id: %1$s updated successfully", id));
+            response.setStatus(HttpStatus.OK.value());
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+        return response;
     }
 }

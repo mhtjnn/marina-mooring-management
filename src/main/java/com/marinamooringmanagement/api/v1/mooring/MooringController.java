@@ -209,4 +209,32 @@ public class MooringController extends GlobalExceptionHandler {
         return mooringService.getMooringById(id, request);
     }
 
+    @Operation(
+            summary = "API to get percentage increase of mooring from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @RequestMapping(
+            value = "/percentageIncrease",
+            method = RequestMethod.GET,
+            produces = {"application/json"}
+    )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    public BasicRestResponse fetchMooringPercentageIncrease(
+            final HttpServletRequest request
+    ) {
+        return mooringService.fetchMooringPercentageIncrease(request);
+    }
+
 }
