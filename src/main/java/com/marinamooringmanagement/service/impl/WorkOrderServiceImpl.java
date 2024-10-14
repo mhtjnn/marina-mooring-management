@@ -37,6 +37,7 @@ import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusR
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
+import com.marinamooringmanagement.service.NotificationService;
 import com.marinamooringmanagement.service.WorkOrderService;
 import com.marinamooringmanagement.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,7 +57,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.Currency;
 import java.util.stream.Collectors;
 
 @Service
@@ -175,6 +175,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Autowired
     private CountryMapper countryMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
@@ -1092,8 +1095,110 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
+    @Override
+    public BasicRestResponse fetchWorkOrderById(Integer id, HttpServletRequest request) {
+        final BasicRestResponse response = BasicRestResponse.builder().build();
+        response.setTime(new Timestamp(System.currentTimeMillis()));
+        try {
+            log.info("API called to fetch all the work orders in the database");
+
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user = authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+
+            final Optional<WorkOrder> optionalWorkOrder;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.ADMINISTRATOR)
+                    || StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.CUSTOMER_OWNER)) {
+                optionalWorkOrder = workOrderRepository.findWorkOrderById(id, user.getId());
+            } else if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                optionalWorkOrder = workOrderRepository.findWorkOrderByIdUsingTechnicianLogin(id, LoggedInUserUtil.getLoggedInUserID());
+            } else {
+                throw new RuntimeException("No authorized");
+            }
+
+            if(optionalWorkOrder.isEmpty()) throw new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", id));
+
+            final WorkOrder workOrder = optionalWorkOrder.get();
+
+            final WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
+                        if (null != workOrder.getMooring())
+                            workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
+                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer());
+                            if(null != workOrder.getMooring().getCustomer().getState()) {
+                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getCustomer().getState()));
+                            }
+                            if(null != workOrder.getMooring().getCustomer().getCountry()) {
+                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getCustomer().getCountry()));
+                            }
+                            workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
+                        }
+                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getCustomerOwnerUser())
+                            workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
+                        if (null != workOrder.getTechnicianUser())
+                            workOrderResponseDto.setTechnicianUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getTechnicianUser()));
+                        if (null != workOrder.getWorkOrderStatus())
+                            workOrderResponseDto.setWorkOrderStatusDto(workOrderStatusMapper.mapToDto(WorkOrderStatusDto.builder().build(), workOrder.getWorkOrderStatus()));
+                        if (null != workOrder.getWorkOrderPayStatus())
+                            workOrderResponseDto.setWorkOrderPayStatusDto(workOrderPayStatusMapper.toDto(WorkOrderPayStatusDto.builder().build(), workOrder.getWorkOrderPayStatus()));
+                        if (null != workOrder.getDueDate())
+                            workOrderResponseDto.setDueDate(DateUtil.dateToString(workOrder.getDueDate()));
+                        if (null != workOrder.getScheduledDate())
+                            workOrderResponseDto.setScheduledDate(DateUtil.dateToString(workOrder.getScheduledDate()));
+                        if (null != workOrder.getCompletedDate())
+                            workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
+
+                        List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Inventory> inventoryList = inventoryRepository.findInventoriesByWorkOrder(workOrder.getId());
+                        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(workOrder.getId());
+
+                        if (null != imageList && !imageList.isEmpty()) {
+                            workOrderResponseDto.setImageResponseDtoList(imageList
+                                    .stream()
+                                    .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                                    .toList());
+                        }
+                        if (null != formList && !formList.isEmpty()) {
+                            workOrderResponseDto.setFormResponseDtoList(formList
+                                    .stream()
+                                    .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                                    .toList());
+                        }
+                        if (null != inventoryList && !inventoryList.isEmpty()) {
+                            workOrderResponseDto.setInventoryResponseDtoList(inventoryList
+                                    .stream()
+                                    .map(inventory -> {
+                                        final InventoryResponseDto inventoryResponseDto = inventoryMapper.mapToInventoryResponseDto(InventoryResponseDto.builder().build(), inventory);
+                                        VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor());
+                                        inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
+                                        return inventoryResponseDto;
+                                    })
+                                    .toList());
+                        }
+                        if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+                            workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
+                                    .stream()
+                                    .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
+                                    .toList());
+                        }
+
+            response.setMessage(String.format("Work order by id %1$s fetched successfully.", id));
+            response.setStatus(HttpStatus.OK.value());
+            response.setContent(workOrderResponseDto);
+        } catch (Exception e) {
+            response.setMessage(e.getLocalizedMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
+    }
+
     @Transactional
     private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
+
+        boolean mooringStatusFlag = false;
+
         try {
             if (null == workOrderId) workOrder.setLastModifiedDate(new Date(System.currentTimeMillis()));
 
@@ -1254,6 +1359,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     mooring.setMooringStatus(mooringStatus);
 
                     mooringRepository.save(mooring);
+
+                    mooringStatusFlag = true;
                 }
             }
 
@@ -1406,11 +1513,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null == inventory.getParentInventoryId()) {
                             Inventory childInventory = null;
 
-                            for (Inventory savedInventory : workOrder.getInventoryList()) {
-                                if (savedInventory.getParentInventoryId().equals(inventory.getId())) {
-                                    childInventory = savedInventory;
-                                    inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
-                                    break;
+                            if(null != workOrder.getInventoryList()) {
+                                for (Inventory savedInventory : workOrder.getInventoryList()) {
+                                    if (savedInventory.getParentInventoryId().equals(inventory.getId())) {
+                                        childInventory = savedInventory;
+                                        inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
+                                        break;
+                                    }
                                 }
                             }
 
@@ -1523,6 +1632,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
+
+            if(workOrderId == null) {
+                notificationService.createNotificationForSaveWorkOrder(savedWorkOrder);
+            }
+
+            if(mooringStatusFlag) {
+                notificationService.createNotificationForUpdateWorkOrder(savedWorkOrder);
+            }
+
             WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), savedWorkOrder);
             if (null != savedWorkOrder.getMooring())
                 workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), savedWorkOrder.getMooring()));

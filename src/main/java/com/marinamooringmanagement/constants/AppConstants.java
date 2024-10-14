@@ -184,4 +184,12 @@ public class AppConstants {
 
         public static final String USA = "United States of America";
     }
+
+    public static class NotificationMessageConstants {
+
+        public static final String NEW_ASSIGNEE = "A new %1$s has been assigned to you";
+
+        public static final String UPDATED = "Work Order %1$s mooring status has been updated to %2$s";
+
+    }
 }

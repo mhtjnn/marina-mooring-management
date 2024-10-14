@@ -1,8 +1,8 @@
 package com.marinamooringmanagement.model.request;
 
+import com.marinamooringmanagement.constants.AppConstants;
 import jakarta.persistence.MappedSuperclass;
 import lombok.*;
-import org.springframework.data.domain.Sort;
 
 /**
  * Represents a base class for defining search criteria in various search requests.
@@ -21,12 +21,12 @@ public class BaseSearchRequest {
     /**
      * The size of each page in paginated results.
      */
-    private Integer pageSize;
+    private Integer pageSize = Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_SIZE);
 
     /**
      * The page number to retrieve in paginated results.
      */
-    private Integer pageNumber;
+    private Integer pageNumber = Integer.valueOf(AppConstants.DefaultPageConst.DEFAULT_PAGE_NUM);
 
     /**
      * The sort order for results.

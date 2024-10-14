@@ -466,4 +466,33 @@ public class WorkOrderController extends GlobalExceptionHandler {
     ) {
         return workOrderService.fetchMooringDueForServiceForTechnician();
     }
+
+    @Operation(
+            summary = "API to fetch work order of a given id from the database",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            content = { @Content(schema = @Schema(implementation = BasicRestResponse.class), mediaType = "application/json") },
+                            responseCode = "400"
+                    )
+            }
+
+    )
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.GET,
+            produces = {"application/json"}
+    )
+    public BasicRestResponse fetchWorkOrderById(
+            @Parameter(description = "Work Order Id", schema = @Schema(implementation = Integer.class)) @PathVariable("id") final Integer id,
+            final HttpServletRequest request
+    ) {
+        return workOrderService.fetchWorkOrderById(id, request);
+    }
 }

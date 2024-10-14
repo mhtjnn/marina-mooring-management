@@ -328,4 +328,79 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             @Param("workOrderId") Integer workOrderId,
             @Param("userId") Integer userId
     );
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
+            "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
+            "wo.time, wo.problem, " +
+            "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
+            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
+            "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
+            "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "s.id, s.serviceAreaName, " +
+            "tu.id, tu.firstName, tu.lastName, " +
+            "cu.id, cu.firstName, cu.lastName, " +
+            "wos.id, wos.status, wops.id, wops.status, " +
+            "woi.id) " +
+            "FROM WorkOrder wo " +
+            "LEFT JOIN wo.mooring m " +
+            "LEFT JOIN wo.technicianUser tu " +
+            "LEFT JOIN wo.customerOwnerUser cu " +
+            "LEFT JOIN wo.workOrderStatus wos " +
+            "LEFT JOIN wo.workOrderPayStatus wops " +
+            "LEFT JOIN wo.workOrderInvoice woi " +
+            "LEFT JOIN m.boatType bt " +
+            "LEFT JOIN m.typeOfWeight tw " +
+            "LEFT JOIN m.eyeCondition ec " +
+            "LEFT JOIN m.topChainCondition tc " +
+            "LEFT JOIN m.bottomChainCondition bc " +
+            "LEFT JOIN m.shackleSwivelCondition sc " +
+            "LEFT JOIN m.mooringStatus ms " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.boatyard byd " +
+            "LEFT JOIN m.serviceArea s " +
+            "LEFT JOIN m.user u " +
+            "LEFT JOIN u.role r " +
+            "WHERE (wo.id = :workOrderId) AND (cu.id = :customerOwnerId)")
+    Optional<WorkOrder> findWorkOrderById(
+            @Param("workOrderId") Integer workOrderId,
+            @Param("customerOwnerId") Integer customerOwnerId);
+
+    @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
+            "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
+            "wo.time, wo.problem, " +
+            "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
+            "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
+            "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
+            "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "s.id, s.serviceAreaName, " +
+            "tu.id, tu.firstName, tu.lastName, " +
+            "cu.id, cu.firstName, cu.lastName, " +
+            "wos.id, wos.status, wops.id, wops.status, " +
+            "woi.id) " +
+            "FROM WorkOrder wo " +
+            "LEFT JOIN wo.mooring m " +
+            "LEFT JOIN wo.technicianUser tu " +
+            "LEFT JOIN wo.customerOwnerUser cu " +
+            "LEFT JOIN wo.workOrderStatus wos " +
+            "LEFT JOIN wo.workOrderPayStatus wops " +
+            "LEFT JOIN wo.workOrderInvoice woi " +
+            "LEFT JOIN m.boatType bt " +
+            "LEFT JOIN m.typeOfWeight tw " +
+            "LEFT JOIN m.eyeCondition ec " +
+            "LEFT JOIN m.topChainCondition tc " +
+            "LEFT JOIN m.bottomChainCondition bc " +
+            "LEFT JOIN m.shackleSwivelCondition sc " +
+            "LEFT JOIN m.mooringStatus ms " +
+            "LEFT JOIN m.customer c " +
+            "LEFT JOIN m.boatyard byd " +
+            "LEFT JOIN m.serviceArea s " +
+            "LEFT JOIN m.user u " +
+            "LEFT JOIN u.role r " +
+            "WHERE (wo.id = :workOrderId) AND (tu.id = :technicianUserId)")
+    Optional<WorkOrder> findWorkOrderByIdUsingTechnicianLogin(@Param("workOrderId") Integer workOrderId,
+                                                    @Param("technicianUserId") Integer technicianUserId);
 }
