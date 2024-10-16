@@ -91,7 +91,7 @@ public class WorkOrder extends Base{
     private List<VoiceMEMO> voiceMEMOList;
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
-                     Date completedDate, Time time, String problem,
+                     Date completedDate, Time time, String problem, BigDecimal cost,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
                      Date inspectionDate, String boatId, String boatName, String boatSize,
@@ -120,6 +120,7 @@ public class WorkOrder extends Base{
         this.dueDate = dueDate;
         this.scheduledDate = scheduledDate;
         this.completedDate = completedDate;
+        this.cost = cost;
         this.time = time;
         this.problem = problem;
         this.mooring =

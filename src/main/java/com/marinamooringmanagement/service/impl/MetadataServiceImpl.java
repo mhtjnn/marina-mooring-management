@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
@@ -571,23 +572,30 @@ public class MetadataServiceImpl implements MetadataService {
 
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            final Customer customer = mooringRepository.findCustomerByMooringIdMetadata(mooringId, user.getId()).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the mooring of id: %1$s", mooringId)));
-
-            if(null == customer.getUser()) throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customer.getId()));
-            if(!customer.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customer.getId()));
-
+            final Optional<Customer> optionalCustomer = mooringRepository.findCustomerByMooringIdMetadata(mooringId, user.getId());
             List<CustomerMetadataResponse> customerMetadataResponseList = new ArrayList<>();
-            CustomerMetadataResponse customerMetadataResponse = CustomerMetadataResponse.builder().build();
-            if(null != customer.getId()) customerMetadataResponse.setId(customer.getId());
-            if(null != customer.getFirstName()) customerMetadataResponse.setFirstName(customer.getFirstName());
-            if(null != customer.getLastName()) customerMetadataResponse.setLastName(customer.getLastName());
+            if(optionalCustomer.isEmpty()) {
+                response.setContent(customerMetadataResponseList);
+            } else {
+                final Customer customer = Customer.builder().build();
 
-            customerMetadataResponseList.add(customerMetadataResponse);
+                if (null == customer.getUser())
+                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customer.getId()));
+                if (!customer.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customer.getId()));
 
-            response.setStatus(HttpStatus.OK.value());
+                CustomerMetadataResponse customerMetadataResponse = CustomerMetadataResponse.builder().build();
+                if (null != customer.getId()) customerMetadataResponse.setId(customer.getId());
+                if (null != customer.getFirstName()) customerMetadataResponse.setFirstName(customer.getFirstName());
+                if (null != customer.getLastName()) customerMetadataResponse.setLastName(customer.getLastName());
 
-            if(customer.getId() == null) response.setContent(null);
-            else response.setContent(customerMetadataResponseList);
+                customerMetadataResponseList.add(customerMetadataResponse);
+
+                response.setStatus(HttpStatus.OK.value());
+
+                if (customer.getId() == null) response.setContent(null);
+                else response.setContent(customerMetadataResponseList);
+            }
 
             response.setMessage(String.format("Customer associated with mooring of id: %1$s is fetched successfully", mooringId));
 
@@ -606,21 +614,28 @@ public class MetadataServiceImpl implements MetadataService {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            final Boatyard boatyard = mooringRepository.findBoatyardByMooringIdMetadata(mooringId, user.getId()).orElseThrow(() -> new ResourceNotFoundException(String.format("No boatyard is associated with mooring of id: %1$s",mooringId)));
-
-            if(!boatyard.getUser().getId().equals(user.getId())) throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyard.getId()));
+            final Optional<Boatyard> optionalBoatyard = mooringRepository.findBoatyardByMooringIdMetadata(mooringId, user.getId());
 
             List<BoatyardMetadataResponse> boatyardMetadataResponseList = new ArrayList<>();
-            BoatyardMetadataResponse boatyardMetadataResponse = BoatyardMetadataResponse.builder().build();
-            if(null != boatyard.getId()) boatyardMetadataResponse.setId(boatyard.getId());
-            if(null != boatyard.getBoatyardName()) boatyardMetadataResponse.setBoatyardName(boatyard.getBoatyardName());
 
-            boatyardMetadataResponseList.add(boatyardMetadataResponse);
+            if(optionalBoatyard.isEmpty()) {
+                response.setContent(boatyardMetadataResponseList);
+            } else {
+                final Boatyard boatyard = optionalBoatyard.get();
 
-            response.setStatus(HttpStatus.OK.value());
+                if (!boatyard.getUser().getId().equals(user.getId()))
+                    throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyard.getId()));
 
-            if(boatyard.getId() == null) response.setContent(null);
-            else response.setContent(boatyardMetadataResponseList);
+                BoatyardMetadataResponse boatyardMetadataResponse = BoatyardMetadataResponse.builder().build();
+                if (null != boatyard.getId()) boatyardMetadataResponse.setId(boatyard.getId());
+                if (null != boatyard.getBoatyardName()) boatyardMetadataResponse.setBoatyardName(boatyard.getBoatyardName());
+
+                boatyardMetadataResponseList.add(boatyardMetadataResponse);
+
+                response.setStatus(HttpStatus.OK.value());
+
+                response.setContent(boatyardMetadataResponseList);
+            }
 
             response.setMessage(String.format("Boatyard associated with mooring of id: %1$s is fetched successfully", mooringId));
 
