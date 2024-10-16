@@ -30,7 +30,7 @@ import static com.marinamooringmanagement.constants.AppConstants.DefaultPageCons
 @RestController
 @RequestMapping(value = "/api/v1/boatyard")
 @Validated
-@CrossOrigin
+@CrossOrigin()
 @Tag(name = "Boatyard Controller", description = "These are API's for boatyard.")
 public class BoatyardController extends GlobalExceptionHandler {
 

@@ -55,13 +55,6 @@ public class StateServiceImpl implements StateService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             log.info("fetch all states");
-            final Pageable p = PageRequest.of(
-                    baseSearchRequest.getPageNumber(),
-                    baseSearchRequest.getPageSize(),
-                    SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir())
-                    );
-
-            if(countryId != 190 && countryId != 13) throw new RuntimeException(String.format("Currently we are saving address for USA and Australia only"));
 
             final Country country = countryRepository.findById(countryId)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No country found with the given id: %1$s", countryId)));

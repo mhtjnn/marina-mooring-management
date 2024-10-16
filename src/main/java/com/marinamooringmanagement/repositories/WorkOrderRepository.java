@@ -16,7 +16,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, " +
+            "wo.time, wo.problem, wo.cost, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
@@ -71,7 +71,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, " +
+            "wo.time, wo.problem, wo.cost, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +

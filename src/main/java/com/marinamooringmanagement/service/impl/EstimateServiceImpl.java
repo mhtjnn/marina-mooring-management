@@ -205,8 +205,6 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to save the estimate in the database");
             final Estimate workOrder = Estimate.builder().build();
 
-            if (null == estimateRequestDto.getTechnicianId())
-                throw new RuntimeException("Technician Id cannot be null");
             if (null == estimateRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
 
             performSave(estimateRequestDto, workOrder, null, request);
@@ -389,11 +387,9 @@ public class EstimateServiceImpl implements EstimateService {
             final LocalDate currentDate = LocalDate.now();
 
             if (null == estimateRequestDto.getScheduledDate() && null == estimateRequestDto.getDueDate()) {
-                if (null == estimateId)
-                    throw new RuntimeException(String.format("Due date and Schedule date cannot be null during save"));
+
             } else if (null == estimateRequestDto.getDueDate()) {
-                if (null == estimateId)
-                    throw new RuntimeException(String.format("Due date cannot be null during saved"));
+
                 final Date savedScheduleDate = estimate.getScheduledDate();
                 final Date givenScheduleDate = DateUtil.stringToDate(estimateRequestDto.getScheduledDate());
 
@@ -414,8 +410,7 @@ public class EstimateServiceImpl implements EstimateService {
 
                 estimate.setScheduledDate(givenScheduleDate);
             } else if (null == estimateRequestDto.getScheduledDate()) {
-                if (null == estimateId)
-                    throw new RuntimeException(String.format("Schedule date cannot be null during save"));
+
                 final Date givenDueDate = DateUtil.stringToDate(estimateRequestDto.getDueDate());
 
                 LocalDate localGivenDueDate = givenDueDate.toInstant()
@@ -557,21 +552,9 @@ public class EstimateServiceImpl implements EstimateService {
 
                 final Mooring mooring = optionalMooring.get();
 
-                if (null == estimateRequestDto.getCustomerId())
-                    throw new RuntimeException("Customer Id cannot be null during saving/updating work order");
-                if (null == estimateRequestDto.getBoatyardId())
-                    throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
-                if (null == mooring.getCustomer())
-                    throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", estimateRequestDto.getMooringId()));
-                if (null == mooring.getBoatyard())
-                    throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", estimateRequestDto.getBoatyardId()));
-                if (!mooring.getCustomer().getId().equals(estimateRequestDto.getCustomerId()))
-                    throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
-                if (!mooring.getBoatyard().getId().equals(estimateRequestDto.getBoatyardId()))
-                    throw new RuntimeException(String.format("Boatyard Id is different in mooring with given id: %1$s", mooring.getId()));
-
                 estimate.setMooring(mooring);
-            } else {
+            }
+            else {
                 if (null == estimateId)
                     throw new RuntimeException(String.format("While saving work order mooring id cannot be null"));
             }
@@ -590,9 +573,6 @@ public class EstimateServiceImpl implements EstimateService {
                     throw new RuntimeException(String.format("User with the id: %1$s is not of technician role", technician.getId()));
 
                 estimate.setTechnicianUser(technician);
-            } else {
-                if (null == estimateId)
-                    throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
             }
 
             estimateRepository.save(estimate);

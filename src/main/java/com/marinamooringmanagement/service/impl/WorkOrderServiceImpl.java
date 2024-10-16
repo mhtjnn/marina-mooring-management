@@ -317,8 +317,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to save the work order in the database");
             final WorkOrder workOrder = WorkOrder.builder().build();
 
-            if (null == workOrderRequestDto.getTechnicianId())
-                throw new RuntimeException("Technician Id cannot be null");
             if (null == workOrderRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
 
             performSave(workOrderRequestDto, workOrder, null, request);
@@ -1379,11 +1377,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final LocalDate currentDate = LocalDate.now();
 
             if (null == workOrderRequestDto.getScheduledDate() && null == workOrderRequestDto.getDueDate()) {
-                if (null == workOrderId)
-                    throw new RuntimeException(String.format("Due date and Schedule date cannot be null during save"));
+
             } else if (null == workOrderRequestDto.getDueDate()) {
-                if (null == workOrderId)
-                    throw new RuntimeException(String.format("Due date cannot be null during saved"));
+
                 final Date savedScheduleDate = workOrder.getScheduledDate();
                 final Date givenScheduleDate = DateUtil.stringToDate(workOrderRequestDto.getScheduledDate());
 
@@ -1404,8 +1400,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 workOrder.setScheduledDate(givenScheduleDate);
             } else if (null == workOrderRequestDto.getScheduledDate()) {
-                if (null == workOrderId)
-                    throw new RuntimeException(String.format("Schedule date cannot be null during save"));
+
                 final Date givenDueDate = DateUtil.stringToDate(workOrderRequestDto.getDueDate());
 
                 LocalDate localGivenDueDate = givenDueDate.toInstant()
@@ -1598,23 +1593,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                 final Mooring mooring = optionalMooring.get();
 
-                if (null == workOrderRequestDto.getCustomerId())
-                    throw new RuntimeException("Customer Id cannot be null during saving/updating work order");
-                if (null == workOrderRequestDto.getBoatyardId())
-                    throw new RuntimeException("Boatyard Customer Id cannot be null during saving/updating work order");
-                if (null == mooring.getCustomer())
-                    throw new RuntimeException(String.format("No customer found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
-                if (null == mooring.getBoatyard())
-                    throw new RuntimeException(String.format("No boatyard found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
-                if (null == mooring.getUser())
-                    throw new RuntimeException(String.format("No user found for the mooring with the id: %1$s", workOrderRequestDto.getMooringId()));
-                if (!mooring.getCustomer().getId().equals(workOrderRequestDto.getCustomerId()))
-                    throw new RuntimeException(String.format("Customer Id is different in mooring with given id: %1$s", mooring.getId()));
-                if (!mooring.getBoatyard().getId().equals(workOrderRequestDto.getBoatyardId()))
-                    throw new RuntimeException(String.format("Boatyard Id is different in mooring with given id: %1$s", mooring.getId()));
-                if (!mooring.getUser().getId().equals(user.getId()))
-                    throw new RuntimeException(String.format("Customer owner is different in mooring with given id: %1$s", mooring.getId()));
-
                 workOrder.setMooring(mooring);
             } else {
                 if (null == workOrderId)
@@ -1638,18 +1616,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     throw new RuntimeException(String.format("Customer owner is different in technician of id: %1$s", workOrderRequestDto.getTechnicianId()));
 
                 workOrder.setTechnicianUser(technician);
-            } else {
-                if (null == workOrderId)
-                    throw new RuntimeException(String.format("Technician Id cannot be null during saving/updating work order"));
             }
 
             WorkOrder savedWorkOrder = workOrderRepository.save(workOrder);
 
-            if(workOrderId == null) {
+            if(workOrderId == null && null != workOrder.getTechnicianUser()) {
                 notificationService.createNotificationForSaveWorkOrder(savedWorkOrder);
             }
 
-            if(mooringStatusFlag) {
+            if(mooringStatusFlag && null != workOrder.getTechnicianUser()) {
                 notificationService.createNotificationForUpdateWorkOrder(savedWorkOrder);
             }
 

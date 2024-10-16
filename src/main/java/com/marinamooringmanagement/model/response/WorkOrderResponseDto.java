@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class WorkOrderResponseDto implements Serializable {
     private Time time;
 
     private String problem;
+
+    private BigDecimal cost;
 
     private CustomerResponseDto customerResponseDto;
 

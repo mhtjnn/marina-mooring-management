@@ -19,6 +19,7 @@ public interface FormRepository extends JpaRepository<Form, Integer>, JpaSpecifi
             "JOIN f.user u " +
             "JOIN u.role r " +
             "WHERE f.parentFormId IS NULL AND workOrder IS NULL AND (:searchText IS NOT NULL AND " +
+            "(CAST(f.id AS string) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(f.formName IS NOT NULL AND LOWER(f.formName) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(f.fileName IS NOT NULL AND LOWER(f.fileName) LIKE LOWER(CONCAT('%', :searchText, '%')))  OR " +
             "(f.createdBy IS NOT NULL AND LOWER(f.createdBy) LIKE LOWER(CONCAT('%', :searchText, '%')))) " +

@@ -6,6 +6,7 @@ import com.marinamooringmanagement.model.entity.metadata.*;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +41,9 @@ public class WorkOrder extends Base{
 
     @Column(name = "problem")
     private String problem;
+
+    @Column(name = "cost")
+    private BigDecimal cost;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "mooring_id")
@@ -155,7 +159,7 @@ public class WorkOrder extends Base{
     }
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
-                     Date completedDate, Time time, String problem,
+                     Date completedDate, Time time, String problem, BigDecimal cost,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
                      Date inspectionDate, String boatId, String boatName, String boatSize,
@@ -188,6 +192,7 @@ public class WorkOrder extends Base{
         this.completedDate = completedDate;
         this.time = time;
         this.problem = problem;
+        this.cost = cost;
         this.mooring =
                 Mooring.builder()
                         .id(mooringId)

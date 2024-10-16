@@ -388,11 +388,11 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             previousMonthMooringCount = mooringRepository.getPreviousMonthMooringCount(user.getId());
 
             if (previousMonthMooringCount == 0) {
-                response.setContent(currentMonthMooringCount);
+                response.setContent(100);
             } else {
                 double percentageIncrease =
                         ((double) (currentMonthMooringCount - previousMonthMooringCount) / previousMonthMooringCount) * 100;
-                response.setContent(percentageIncrease);
+                response.setContent((int) percentageIncrease);
             }
 
             response.setMessage("Percentage increase fetched successfully.");
