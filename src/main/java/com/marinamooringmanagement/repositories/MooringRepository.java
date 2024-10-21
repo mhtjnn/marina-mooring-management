@@ -75,7 +75,7 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
             "JOIN m.user u " +
             "JOIN u.role r " +
             "WHERE m.id = :mooringId AND u.id = :userId")
-    Optional<Mooring> findById(@Param("mooringId") Integer mooringId,
+    Optional<Mooring> findMooringById(@Param("mooringId") Integer mooringId,
                                @Param("userId") Integer userId);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Mooring(" +
@@ -145,11 +145,9 @@ public interface MooringRepository extends JpaRepository<Mooring, Integer> {
             "FROM Mooring m " +
             "LEFT JOIN m.customer c " +
             "LEFT JOIN m.user u " +
-            "WHERE ((:mooringId IS NOT NULL AND m.id = :mooringId) " +
-            "AND (:userId is NOT NULL AND u.id = :userId)) " +
+            "WHERE ((:mooringId IS NOT NULL AND m.id = :mooringId)) " +
             "ORDER BY m.id")
-    Optional<Customer> findCustomerByMooringIdMetadata(@Param("mooringId") Integer mooringId,
-                                                       @Param("userId") Integer userId);
+    Optional<Customer> findCustomerByMooringIdMetadata(@Param("mooringId") Integer mooringId);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
             "b.id, b.boatyardName, b.boatyardId, u.id, u.firstName, u.lastName) " +

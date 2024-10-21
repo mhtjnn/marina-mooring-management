@@ -17,6 +17,7 @@ import com.marinamooringmanagement.model.response.*;
 import com.marinamooringmanagement.repositories.*;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
+import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.EstimateService;
 import com.marinamooringmanagement.utils.DateUtil;
 import com.marinamooringmanagement.utils.SortUtils;
@@ -93,6 +94,12 @@ public class EstimateServiceImpl implements EstimateService {
     @Autowired
     private VendorMapper vendorMapper;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private BoatyardRepository boatyardRepository;
+
     private static final Logger log = LoggerFactory.getLogger(EstimateServiceImpl.class);
 
     @Override
@@ -104,7 +111,17 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to fetch all the moorings in the database");
 
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            authorizationUtil.checkAuthorityForTechnician(customerOwnerId);
+            final User user;
+
+            if(StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User technicianUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No technician user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(technicianUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", technicianUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             Specification<Estimate> spec = new Specification<Estimate>() {
                 @Override
@@ -152,10 +169,10 @@ public class EstimateServiceImpl implements EstimateService {
                         EstimateResponseDto estimateResponseDto = estimateMapper.mapToEstimateResponseDto(EstimateResponseDto.builder().build(), estimate);
                         if (null != estimate.getMooring())
                             estimateResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), estimate.getMooring()));
-                        if (null != estimate.getMooring() && null != estimate.getMooring().getCustomer())
-                            estimateResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), estimate.getMooring().getCustomer()));
-                        if (null != estimate.getMooring() && null != estimate.getMooring().getBoatyard())
-                            estimateResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), estimate.getMooring().getBoatyard()));
+                        if (null != estimate.getCustomer())
+                            estimateResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), estimate.getCustomer()));
+                        if (null != estimate.getBoatyard())
+                            estimateResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), estimate.getBoatyard()));
                         if (null != estimate.getCustomerOwnerUser())
                             estimateResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), estimate.getCustomerOwnerUser()));
                         if (null != estimate.getTechnicianUser())
@@ -205,7 +222,7 @@ public class EstimateServiceImpl implements EstimateService {
             log.info("API called to save the estimate in the database");
             final Estimate workOrder = Estimate.builder().build();
 
-            if (null == estimateRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
+            if (null == estimateRequestDto.getCustomerId()) throw new RuntimeException("Customer Id cannot be null");
 
             performSave(estimateRequestDto, workOrder, null, request);
 
@@ -326,16 +343,16 @@ public class EstimateServiceImpl implements EstimateService {
 
                     List<Inventory> inventoryList = new ArrayList<>();
 
-                    for(Inventory inventory: estimate.getInventoryList()) {
+                    for (Inventory inventory : estimate.getInventoryList()) {
 
                         final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
                                 .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
 
-                        if(parentInventory.getQuantity() < inventory.getQuantity()) {
+                        if (parentInventory.getQuantity() < inventory.getQuantity()) {
                             throw new MathException("Given quantity is greater than available quantity");
                         }
 
-                        parentInventory.setQuantity(parentInventory.getQuantity()-inventory.getQuantity());
+                        parentInventory.setQuantity(parentInventory.getQuantity() - inventory.getQuantity());
                         inventoryRepository.save(parentInventory);
 
                         String originalItemName = inventory.getItemName().split("_")[0];
@@ -384,18 +401,21 @@ public class EstimateServiceImpl implements EstimateService {
 
             estimateMapper.mapToEstimate(estimate, estimateRequestDto);
 
+            if(estimateId != null) {
+                estimate.setCreationDate(new Date(System.currentTimeMillis()));
+                estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            } else {
+                estimate.setLastModifiedDate(new Date(System.currentTimeMillis()));
+            }
+
             final LocalDate currentDate = LocalDate.now();
 
             if (null == estimateRequestDto.getScheduledDate() && null == estimateRequestDto.getDueDate()) {
 
             } else if (null == estimateRequestDto.getDueDate()) {
 
-                final Date savedScheduleDate = estimate.getScheduledDate();
                 final Date givenScheduleDate = DateUtil.stringToDate(estimateRequestDto.getScheduledDate());
 
-                LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
                 LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
@@ -403,10 +423,17 @@ public class EstimateServiceImpl implements EstimateService {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
 
-                if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
-                    throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
                 if (localGivenScheduleDate.isAfter(localSavedDueDate))
                     throw new RuntimeException(String.format("Given schedule date: %1$s is after saved due date: %2$s", localGivenScheduleDate, localSavedDueDate));
+
+                if (null != estimate.getScheduledDate()) {
+                    final Date savedScheduleDate = estimate.getScheduledDate();
+                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                }
 
                 estimate.setScheduledDate(givenScheduleDate);
             } else if (null == estimateRequestDto.getScheduledDate()) {
@@ -417,12 +444,15 @@ public class EstimateServiceImpl implements EstimateService {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
 
-                LocalDate localSavedScheduleDate = estimate.getScheduledDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
+                if (null != estimate.getScheduledDate()) {
 
-                if (localGivenDueDate.isBefore(localSavedScheduleDate))
-                    throw new RuntimeException(String.format("Given due date: %1$s is before saved schedule date: %2$s", localGivenDueDate, localSavedScheduleDate));
+                    LocalDate localSavedScheduleDate = estimate.getScheduledDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    if (localGivenDueDate.isBefore(localSavedScheduleDate))
+                        throw new RuntimeException(String.format("Given due date: %1$s is before saved schedule date: %2$s", localGivenDueDate, localSavedScheduleDate));
+                }
+
                 estimate.setDueDate(givenDueDate);
             } else {
 
@@ -443,25 +473,26 @@ public class EstimateServiceImpl implements EstimateService {
                     if (localScheduleDate.isAfter(localDueDate))
                         throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localScheduleDate, localDueDate));
                 } else {
+                    if (estimate.getScheduledDate() != null) {
+                        final Date savedScheduleDate = estimate.getScheduledDate();
 
-                    final Date savedScheduleDate = estimate.getScheduledDate();
+                        LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        LocalDate localGivenDueDate = givenDueDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
 
-                    LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate localGivenDueDate = givenDueDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
+                        LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
 
-                    if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
-                        throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
-                    if (localGivenScheduleDate.isAfter(localGivenDueDate))
-                        throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+                        if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                            throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                        if (localGivenScheduleDate.isAfter(localGivenDueDate))
+                            throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+                    }
                 }
-
                 estimate.setScheduledDate(givenScheduleDate);
                 estimate.setDueDate(givenDueDate);
             }
@@ -474,9 +505,6 @@ public class EstimateServiceImpl implements EstimateService {
                 final WorkOrderStatus workOrderStatus = optionalWorkOrderStatus.get();
 
                 if (workOrderStatus.getStatus().equals(AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
-                    if (null == estimateRequestDto.getInventoryRequestDtoList()) {
-                        throw new ResourceNotProvidedException("No inventory item/s provided!!!");
-                    }
 
                     List<Integer> toDelete;
                     List<Integer> savedInventoryIds;
@@ -527,7 +555,7 @@ public class EstimateServiceImpl implements EstimateService {
 
                             inventory.setQuantity(childInventoryCount);
 
-                            if(inventoryRequestDto.getQuantity() == 0) {
+                            if (inventoryRequestDto.getQuantity() == 0) {
                                 inventory.setWorkOrder(null);
                                 inventoryList.remove(inventory);
                                 inventoryRepository.delete(inventory);
@@ -554,9 +582,28 @@ public class EstimateServiceImpl implements EstimateService {
 
                 estimate.setMooring(mooring);
             }
-            else {
+
+            if (null != estimateRequestDto.getCustomerId()) {
+                Optional<Customer> optionalCustomer = customerRepository.findById(estimateRequestDto.getCustomerId());
+                if (optionalCustomer.isEmpty())
+                    throw new RuntimeException(String.format("No customer found with the given id: %1$s", estimateRequestDto.getCustomerId()));
+
+                final Customer customer = optionalCustomer.get();
+
+                estimate.setCustomer(customer);
+            } else {
                 if (null == estimateId)
-                    throw new RuntimeException(String.format("While saving work order mooring id cannot be null"));
+                    throw new RuntimeException("While saving estimate customer is required");
+            }
+
+            if (null != estimateRequestDto.getBoatyardId()) {
+                Optional<Boatyard> optionalBoatyard = boatyardRepository.findById(estimateRequestDto.getBoatyardId());
+                if (optionalBoatyard.isEmpty())
+                    throw new RuntimeException(String.format("No boatyard found with the given id: %1$s", estimateRequestDto.getBoatyardId()));
+
+                final Boatyard boatyard = optionalBoatyard.get();
+
+                estimate.setBoatyard(boatyard);
             }
 
             if (null != estimateRequestDto.getTechnicianId()) {

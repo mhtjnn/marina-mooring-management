@@ -49,4 +49,6 @@ public interface FormRepository extends JpaRepository<Form, Integer>, JpaSpecifi
             "JOIN u.role r " +
             "WHERE f.id = :id")
     Form findByIdWithoutData(@Param(("id")) Integer id);
+
+    List<Form> findByWorkOrderId(Integer id);
 }

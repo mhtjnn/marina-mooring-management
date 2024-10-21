@@ -157,6 +157,9 @@ public class Mooring extends Base {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "mooring", fetch = FetchType.LAZY)
     private List<Image> imageList;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "mooring", fetch = FetchType.LAZY)
+    private List<WorkOrder> workOrderList;
+
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)
     @JoinColumn(name = "service_area_id")
     @JsonBackReference

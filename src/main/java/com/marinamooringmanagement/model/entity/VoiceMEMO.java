@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Data
@@ -23,8 +25,8 @@ public class VoiceMEMO extends Base{
     private String name;
 
     @Lob
+    @JdbcTypeCode(SqlTypes.BLOB)
     @Column(name = "data", length = 1048576)
-    @Basic(fetch = FetchType.LAZY)
     private byte[] data;
 
     @ManyToOne(cascade = {}, fetch = FetchType.LAZY)

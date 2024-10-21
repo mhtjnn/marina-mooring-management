@@ -28,4 +28,6 @@ public interface VoiceMEMORepository extends JpaRepository<VoiceMEMO, Integer> {
             "FROM VoiceMEMO v " +
             "WHERE v.id = :id")
     Optional<VoiceMEMO> findByIdWithoutData(@Param("id") Integer id);
+
+    List<VoiceMEMO> findByWorkOrderId(Integer id);
 }

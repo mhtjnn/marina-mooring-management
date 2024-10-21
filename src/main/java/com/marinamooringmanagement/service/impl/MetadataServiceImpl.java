@@ -508,7 +508,16 @@ public class MetadataServiceImpl implements MetadataService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user =  authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final Customer customer = customerRepository.findCustomerWithUserMetadata(user.getId(), customerId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the id: %1$s", customerId)));
 
@@ -538,7 +547,16 @@ public class MetadataServiceImpl implements MetadataService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user =  authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final Boatyard boatyard = boatyardRepository.findBoatyardWithUserMetadata(user.getId(), boatyardId).orElseThrow(() -> new ResourceNotFoundException(String.format("No boatyard found with the id: %1$s", boatyardId)));
 
@@ -568,28 +586,20 @@ public class MetadataServiceImpl implements MetadataService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
-
-            final Optional<Customer> optionalCustomer = mooringRepository.findCustomerByMooringIdMetadata(mooringId, user.getId());
+            final Optional<Customer> optionalCustomer = mooringRepository.findCustomerByMooringIdMetadata(mooringId);
             List<CustomerMetadataResponse> customerMetadataResponseList = new ArrayList<>();
             if(optionalCustomer.isEmpty()) {
                 response.setContent(customerMetadataResponseList);
             } else {
-                final Customer customer = Customer.builder().build();
+                final Customer customer = optionalCustomer.get();
 
-                if (null == customer.getUser())
-                    throw new RuntimeException(String.format("Customer with the id: %1$s is associated with no user", customer.getId()));
-                if (!customer.getUser().getId().equals(user.getId()))
-                    throw new RuntimeException(String.format("Customer with given id: %1$s is associated with some other user", customer.getId()));
-
-                CustomerMetadataResponse customerMetadataResponse = CustomerMetadataResponse.builder().build();
-                if (null != customer.getId()) customerMetadataResponse.setId(customer.getId());
-                if (null != customer.getFirstName()) customerMetadataResponse.setFirstName(customer.getFirstName());
-                if (null != customer.getLastName()) customerMetadataResponse.setLastName(customer.getLastName());
-
-                customerMetadataResponseList.add(customerMetadataResponse);
+                if (null != customer.getId()) {
+                    CustomerMetadataResponse customerMetadataResponse = CustomerMetadataResponse.builder().build();
+                    customerMetadataResponse.setId(customer.getId());
+                    if (null != customer.getFirstName()) customerMetadataResponse.setFirstName(customer.getFirstName());
+                    if (null != customer.getLastName()) customerMetadataResponse.setLastName(customer.getLastName());
+                    customerMetadataResponseList.add(customerMetadataResponse);
+                }
 
                 response.setStatus(HttpStatus.OK.value());
 
@@ -612,7 +622,16 @@ public class MetadataServiceImpl implements MetadataService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             final Optional<Boatyard> optionalBoatyard = mooringRepository.findBoatyardByMooringIdMetadata(mooringId, user.getId());
 
@@ -626,11 +645,13 @@ public class MetadataServiceImpl implements MetadataService {
                 if (!boatyard.getUser().getId().equals(user.getId()))
                     throw new RuntimeException(String.format("Boatyard with given id: %1$s is associated with some other user", boatyard.getId()));
 
-                BoatyardMetadataResponse boatyardMetadataResponse = BoatyardMetadataResponse.builder().build();
-                if (null != boatyard.getId()) boatyardMetadataResponse.setId(boatyard.getId());
-                if (null != boatyard.getBoatyardName()) boatyardMetadataResponse.setBoatyardName(boatyard.getBoatyardName());
-
-                boatyardMetadataResponseList.add(boatyardMetadataResponse);
+                if (null != boatyard.getId()) {
+                    BoatyardMetadataResponse boatyardMetadataResponse = BoatyardMetadataResponse.builder().build();
+                    boatyardMetadataResponse.setId(boatyard.getId());
+                    if (null != boatyard.getBoatyardName())
+                        boatyardMetadataResponse.setBoatyardName(boatyard.getBoatyardName());
+                    boatyardMetadataResponseList.add(boatyardMetadataResponse);
+                }
 
                 response.setStatus(HttpStatus.OK.value());
 
@@ -652,7 +673,16 @@ public class MetadataServiceImpl implements MetadataService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             List<MooringMetadataResponse> mooringMetadataResponseList = mooringRepository.findAllMooringsBasedOnBoatyardIdAndCustomerIdMetadata(boatyardId, customerId, user.getId())
                     .stream()
@@ -681,8 +711,17 @@ public class MetadataServiceImpl implements MetadataService {
         BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
-            Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
-            final User user = authorizationUtil.checkAuthority(customerOwnerId);
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             List<MooringMetadataResponse> mooringMetadataResponseList = mooringRepository.findAllMooringMetadata(user.getId())
                     .stream()
@@ -915,8 +954,16 @@ public class MetadataServiceImpl implements MetadataService {
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
-            User user = authorizationUtil.checkAuthority(customerOwnerId);
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
 
             content = formRepository.findAllWithoutFormData("", user.getId());
 
@@ -944,7 +991,7 @@ public class MetadataServiceImpl implements MetadataService {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user;
-            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
                 final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 
@@ -975,7 +1022,7 @@ public class MetadataServiceImpl implements MetadataService {
         try {
             final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user;
-            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.FINANCE)) {
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
                 final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
                         .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
 

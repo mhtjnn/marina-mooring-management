@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.response.NotificationResponseDto(" +
-            "n.id, n.createdById, n.sendToId, n.notificationMessage, n.isRead, n.entityStr, n.entityId) " +
+            "n.id, n.creationDate, n.createdById, n.sendToId, n.notificationMessage, n.isRead, n.entityStr, n.entityId) " +
             "FROM Notification n " +
             "WHERE n.sendToId = :sendToId " +
             "ORDER BY n.creationDate")

@@ -34,6 +34,8 @@ public class WorkOrderResponseDto implements Serializable {
 
     private String problem;
 
+    private String reasonForDenial;
+
     private BigDecimal cost;
 
     private CustomerResponseDto customerResponseDto;

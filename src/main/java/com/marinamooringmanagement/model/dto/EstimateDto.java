@@ -33,6 +33,10 @@ public class EstimateDto extends BaseDto{
 
     private MooringDto mooringDto;
 
+    private CustomerDto customerDto;
+
+    private BoatyardDto boatyardDto;
+
     private UserDto customerOwnerUserDto;
 
     private UserDto technicianUserDto;

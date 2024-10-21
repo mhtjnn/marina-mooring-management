@@ -332,7 +332,7 @@ public class MooringServiceImpl extends GlobalExceptionHandler implements Moorin
             final int customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
             final User user = authorizationUtil.checkAuthority(customerOwnerId);
 
-            final Mooring mooring = mooringRepository.findById(id, user.getId())
+            final Mooring mooring = mooringRepository.findMooringById(id, user.getId())
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", id)));
 
             final MooringResponseDto mooringResponseDto = mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), mooring);

@@ -102,7 +102,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/",
             method = RequestMethod.POST,
             produces = {"application/json"})
@@ -136,7 +136,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.PUT,
             produces = {"application/json"})
@@ -170,7 +170,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/{id}",
             method = RequestMethod.DELETE,
             produces = {"application/json"})
@@ -197,7 +197,7 @@ public class EstimateController extends GlobalExceptionHandler {
             }
 
     )
-    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER)
+    @PreAuthorize(Authority.ADMINISTRATOR + " or " + Authority.CUSTOMER_OWNER + " or " + Authority.TECHNICIAN)
     @RequestMapping(value = "/convertEstimateToWorkOrder/{id}",
             method = RequestMethod.GET,
             produces = {"application/json"})

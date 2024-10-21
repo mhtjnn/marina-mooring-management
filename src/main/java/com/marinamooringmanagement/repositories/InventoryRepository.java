@@ -45,4 +45,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
             "WHERE e.id = :estimateId")
     List<Inventory> findInventoriesByEstimate(@Param("estimateId") Integer estimateId);
 
+    List<Inventory> findByWorkOrderId(Integer id);
 }

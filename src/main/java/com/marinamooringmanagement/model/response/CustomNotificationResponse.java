@@ -11,22 +11,15 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NotificationResponseDto{
+public class CustomNotificationResponse {
 
     private Integer id;
 
     private Date creationDate;
 
-    private Integer createdById;
-
-    private Integer sendToId;
-
-    private String notificationMessage;
+    private String message;
 
     private boolean notificationRead;
 
-    private String entityStr;
-
-    private Integer entityId;
-
+    private Object entityObj;
 }

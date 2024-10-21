@@ -32,6 +32,8 @@ public class WorkOrderDto extends BaseDto{
 
     private String problem;
 
+    private String reasonForDenial;
+
     private BigDecimal cost;
 
     private WorkOrderStatusDto workOrderStatusDto;
@@ -39,6 +41,10 @@ public class WorkOrderDto extends BaseDto{
     private WorkOrderPayStatusDto workOrderPayStatusDto;
 
     private MooringDto mooringDto;
+
+    private CustomerDto customerDto;
+
+    private BoatyardDto boatyardDto;
 
     private UserDto customerOwnerUserDto;
 

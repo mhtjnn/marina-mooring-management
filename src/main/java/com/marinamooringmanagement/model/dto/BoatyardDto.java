@@ -2,6 +2,7 @@ package com.marinamooringmanagement.model.dto;
 
 import com.marinamooringmanagement.model.dto.metadata.CountryDto;
 import com.marinamooringmanagement.model.dto.metadata.StateDto;
+import com.marinamooringmanagement.model.response.WorkOrderResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -65,5 +66,7 @@ public class BoatyardDto extends BaseDto {
     private List<MooringDto> mooringDtoList;
 
     private UserDto user;
+
+    private List<WorkOrderResponseDto> workOrderResponseDtoList;
 }
 

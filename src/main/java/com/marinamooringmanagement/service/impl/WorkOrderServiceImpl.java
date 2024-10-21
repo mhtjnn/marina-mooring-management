@@ -13,7 +13,6 @@ import com.marinamooringmanagement.constants.AppConstants;
 import com.marinamooringmanagement.exception.DBOperationException;
 import com.marinamooringmanagement.exception.MathException;
 import com.marinamooringmanagement.exception.ResourceNotFoundException;
-import com.marinamooringmanagement.exception.ResourceNotProvidedException;
 import com.marinamooringmanagement.helper.QBOServiceHelper;
 import com.marinamooringmanagement.mapper.*;
 import com.marinamooringmanagement.mapper.metadata.*;
@@ -179,6 +178,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private BoatyardRepository boatyardRepository;
+
     private static final Logger log = LoggerFactory.getLogger(WorkOrderServiceImpl.class);
 
     @Override
@@ -221,24 +226,24 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                         if (null != workOrder.getMooring())
                             workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
-                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer());
-                            if(null != workOrder.getMooring().getCustomer().getState()) {
-                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getCustomer().getState()));
+                        if (null != workOrder.getCustomer()) {
+                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer());
+                            if(null != workOrder.getCustomer().getState()) {
+                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getCustomer().getState()));
                             }
-                            if(null != workOrder.getMooring().getCustomer().getCountry()) {
-                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getCustomer().getCountry()));
+                            if(null != workOrder.getCustomer().getCountry()) {
+                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getCustomer().getCountry()));
                             }
                             workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
                         }
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard()) {
-                            final BoatyardResponseDto boatyardResponseDto = boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard());
-                            if(null != workOrder.getMooring().getBoatyard().getState() && null != workOrder.getMooring().getBoatyard().getState().getId()) {
-                                StateResponseDto stateResponseDto = stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getBoatyard().getState());
+                        if (null != workOrder.getBoatyard()) {
+                            final BoatyardResponseDto boatyardResponseDto = boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard());
+                            if(null != workOrder.getBoatyard().getState() && null != workOrder.getBoatyard().getState().getId()) {
+                                StateResponseDto stateResponseDto = stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getBoatyard().getState());
                                 boatyardResponseDto.setStateResponseDto(stateResponseDto);
                             }
-                            if(null != workOrder.getMooring().getBoatyard().getCountry() && null != workOrder.getMooring().getBoatyard().getCountry().getId()) {
-                                CountryResponseDto countryResponseDto = countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getBoatyard().getCountry());
+                            if(null != workOrder.getBoatyard().getCountry() && null != workOrder.getBoatyard().getCountry().getId()) {
+                                CountryResponseDto countryResponseDto = countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getBoatyard().getCountry());
                                 boatyardResponseDto.setCountryResponseDto(countryResponseDto);
                             }
                             workOrderResponseDto.setBoatyardResponseDto(boatyardResponseDto);
@@ -310,6 +315,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional
     public BasicRestResponse saveWorkOrder(WorkOrderRequestDto workOrderRequestDto, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -317,9 +323,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             log.info("API called to save the work order in the database");
             final WorkOrder workOrder = WorkOrder.builder().build();
 
-            if (null == workOrderRequestDto.getMooringId()) throw new RuntimeException("Mooring Id cannot be null");
-
-            performSave(workOrderRequestDto, workOrder, null, request);
+            response.setContent(performSave(workOrderRequestDto, workOrder, null, request));
 
             response.setMessage("Work order saved successfully.");
             response.setStatus(HttpStatus.CREATED.value());
@@ -454,10 +458,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                         if (null != workOrder.getMooring())
                             workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
-                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer()));
+                        if (null != workOrder.getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
@@ -635,17 +639,17 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                                     workOrderResponseDto.setMooringResponseDto(mooringResponseDto);
                                     if (null != workOrder.getMooring().getServiceArea())
                                         mooringResponseDto.setServiceAreaResponseDto(serviceAreaMapper.mapToResponseDto(ServiceAreaResponseDto.builder().build(), workOrder.getMooring().getServiceArea()));
-                                    if (null != workOrder.getMooring().getCustomer()) {
-                                        workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                                        if (null != workOrder.getMooring().getCustomer().getFirstName()
-                                                && null != workOrder.getMooring().getCustomer().getLastName())
+                                    if (null != workOrder.getCustomer()) {
+                                        workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer()));
+                                        if (null != workOrder.getCustomer().getFirstName()
+                                                && null != workOrder.getCustomer().getLastName())
                                             mooringResponseDto.setCustomerName(
-                                                    workOrder.getMooring().getCustomer().getFirstName() + " " + workOrder.getMooring().getCustomer().getLastName()
+                                                    workOrder.getCustomer().getFirstName() + " " + workOrder.getCustomer().getLastName()
                                             );
                                     }
                                 }
-                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                                if (null != workOrder.getBoatyard())
+                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard()));
                                 if (null != workOrder.getCustomerOwnerUser())
                                     workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                                 if (null != workOrder.getTechnicianUser())
@@ -720,10 +724,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                         if (null != workOrder.getMooring())
                             workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer())
-                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getCustomer())
+                            workOrderResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer()));
+                        if (null != workOrder.getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
@@ -741,7 +745,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         }
                         return workOrderResponseDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             response.setTotalSize(workOrderList.size());
             response.setCurrentSize(paginatedWorkOrder.size());
@@ -969,7 +973,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("No work order pay status found with the status as %1$s", AppConstants.WorkOrderPayStatusConstants.NOACTION)));
             workOrder.setWorkOrderPayStatus(workOrderPayStatus);
 
-            workOrder.setProblem(reportProblem);
+            workOrder.setReasonForDenial(reportProblem);
 
             workOrderRepository.save(workOrder);
 
@@ -1106,6 +1110,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
+    @Transactional()
     public BasicRestResponse fetchWorkOrderById(Integer id, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -1132,18 +1137,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             final WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                         if (null != workOrder.getMooring())
                             workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
-                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer());
-                            if(null != workOrder.getMooring().getCustomer().getState()) {
-                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getCustomer().getState()));
+                        if (null != workOrder.getCustomer()) {
+                            CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer());
+                            if(null != workOrder.getCustomer().getState()) {
+                                customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getCustomer().getState()));
                             }
-                            if(null != workOrder.getMooring().getCustomer().getCountry()) {
-                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getCustomer().getCountry()));
+                            if(null != workOrder.getCustomer().getCountry()) {
+                                customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getCustomer().getCountry()));
                             }
                             workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
                         }
-                        if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                        if (null != workOrder.getBoatyard())
+                            workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard()));
                         if (null != workOrder.getCustomerOwnerUser())
                             workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                         if (null != workOrder.getTechnicianUser())
@@ -1159,21 +1164,41 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null != workOrder.getCompletedDate())
                             workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
 
-                        List<Image> imageList = imageRepository.findImagesByWorkOrderIdWithoutData(workOrder.getId());
-                        List<Form> formList = formRepository.findFormsByWorkOrderIdWithoutData(workOrder.getId());
-                        List<Inventory> inventoryList = inventoryRepository.findInventoriesByWorkOrder(workOrder.getId());
-                        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findVoiceMEMOsByWorkOrderIdWithoutData(workOrder.getId());
+                        List<Image> imageList = imageRepository.findByWorkOrderId(workOrder.getId());
+                        List<Form> formList = formRepository.findByWorkOrderId(workOrder.getId());
+                        List<Inventory> inventoryList = inventoryRepository.findByWorkOrderId(workOrder.getId());
+                        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findByWorkOrderId(workOrder.getId());
 
                         if (null != imageList && !imageList.isEmpty()) {
                             workOrderResponseDto.setImageResponseDtoList(imageList
                                     .stream()
-                                    .map(image -> imageMapper.toResponseDto(ImageResponseDto.builder().build(), image))
+                                    .map(image -> {
+                                        ImageResponseDto imageResponseDto = ImageResponseDto.builder().build();
+                                        imageMapper.toResponseDto(imageResponseDto, image);
+                                        if(null != image.getImageData()) {
+                                            String encodedData = Base64.getEncoder().encodeToString(image.getImageData());
+                                            if(null != encodedData) {
+                                                imageResponseDto.setEncodedData(encodedData);
+                                            }
+                                        }
+                                        return imageResponseDto;
+                                    })
                                     .toList());
                         }
                         if (null != formList && !formList.isEmpty()) {
                             workOrderResponseDto.setFormResponseDtoList(formList
                                     .stream()
-                                    .map(form -> formMapper.toResponseDto(FormResponseDto.builder().build(), form))
+                                    .map(form -> {
+                                        FormResponseDto formResponseDto = FormResponseDto.builder().build();
+                                        formMapper.toResponseDto(formResponseDto, form);
+                                        if(null != form.getFormData()) {
+                                            String encodedData = Base64.getEncoder().encodeToString(form.getFormData());
+                                            if(null != encodedData) {
+                                                formResponseDto.setEncodedData(encodedData);
+                                            }
+                                        }
+                                        return formResponseDto;
+                                    })
                                     .toList());
                         }
                         if (null != inventoryList && !inventoryList.isEmpty()) {
@@ -1190,7 +1215,15 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
                             workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
                                     .stream()
-                                    .map(voiceMEMO -> voiceMEMOMapper.toResponseDto(VoiceMEMOResponseDto.builder().build(), voiceMEMO))
+                                    .map(voiceMEMO -> {
+                                        VoiceMEMOResponseDto voiceMEMOResponseDto = VoiceMEMOResponseDto.builder().build();
+                                        voiceMEMOMapper.toResponseDto(voiceMEMOResponseDto, voiceMEMO);
+                                        if(null != voiceMEMO.getData()) {
+                                            String encodedData = Base64.getEncoder().encodeToString(voiceMEMO.getData());
+                                            voiceMEMOResponseDto.setEncodedData(encodedData);
+                                        }
+                                        return voiceMEMOResponseDto;
+                                    })
                                     .toList());
                         }
 
@@ -1204,7 +1237,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return response;
     }
 
-    @Transactional
+//    @Transactional
     private WorkOrderResponseDto performSave(final WorkOrderRequestDto workOrderRequestDto, final WorkOrder workOrder, final Integer workOrderId, final HttpServletRequest request) {
 
         boolean mooringStatusFlag = false;
@@ -1287,6 +1320,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         // Handle parent form creation
                         Form parentForm = formRepository.findByIdWithoutData(formRequestDto.getId());
 
+                        if(null == parentForm) continue;
+
                         for (Form savedForm : formList) {
                             if (savedForm.getParentFormId().equals(parentForm.getId())) {
                                 childForm = savedForm;
@@ -1352,26 +1387,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
                     byte[] decodedBytes = Base64.getDecoder().decode(voiceMEMORequestDto.getEncodedData());
                     voiceMEMO.setData(decodedBytes);
-
+                    voiceMEMO.setWorkOrder(workOrder);
+                    voiceMEMO.setUser(user);
                     voiceMEMOList.add(voiceMEMO);
                 }
 
                 workOrder.setVoiceMEMOList(voiceMEMOList);
-            }
-
-            if(null != workOrderRequestDto.getMooringStatusId()) {
-                if(null != workOrder.getMooring()) {
-
-                    MooringStatus mooringStatus = mooringStatusRepository.findById(workOrderRequestDto.getMooringStatusId())
-                            .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring status found with the given id: %1$s", workOrderRequestDto.getMooringStatusId())));
-
-                    Mooring mooring = workOrder.getMooring();
-                    mooring.setMooringStatus(mooringStatus);
-
-                    mooringRepository.save(mooring);
-
-                    mooringStatusFlag = true;
-                }
             }
 
             final LocalDate currentDate = LocalDate.now();
@@ -1380,25 +1401,29 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
             } else if (null == workOrderRequestDto.getDueDate()) {
 
-                final Date savedScheduleDate = workOrder.getScheduledDate();
                 final Date givenScheduleDate = DateUtil.stringToDate(workOrderRequestDto.getScheduledDate());
+                if(workOrder.getScheduledDate() != null) {
+                    final Date savedScheduleDate = workOrder.getScheduledDate();
 
-                LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-                LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
 
-                if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
-                    throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
-                if (localGivenScheduleDate.isAfter(localSavedDueDate))
-                    throw new RuntimeException(String.format("Given schedule date: %1$s is after saved due date: %2$s", localGivenScheduleDate, localSavedDueDate));
+                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    LocalDate localSavedDueDate = workOrder.getDueDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
 
-                workOrder.setScheduledDate(givenScheduleDate);
+                    if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                    if (localGivenScheduleDate.isAfter(localSavedDueDate))
+                        throw new RuntimeException(String.format("Given schedule date: %1$s is after saved due date: %2$s", localGivenScheduleDate, localSavedDueDate));
+                    workOrder.setScheduledDate(givenScheduleDate);
+                } else {
+                    workOrder.setScheduledDate(givenScheduleDate);
+                }
             } else if (null == workOrderRequestDto.getScheduledDate()) {
 
                 final Date givenDueDate = DateUtil.stringToDate(workOrderRequestDto.getDueDate());
@@ -1434,22 +1459,26 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localScheduleDate, localDueDate));
                 } else {
 
-                    final Date savedScheduleDate = workOrder.getScheduledDate();
+                    if(workOrder.getScheduledDate() != null) {
+                        final Date savedScheduleDate = workOrder.getScheduledDate();
 
-                    LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate localGivenDueDate = givenDueDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
+                        LocalDate localGivenScheduleDate = givenScheduleDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        LocalDate localGivenDueDate = givenDueDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
 
-                    if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
-                        throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
-                    if (localGivenScheduleDate.isAfter(localGivenDueDate))
-                        throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+
+                        LocalDate localSavedScheduleDate = savedScheduleDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+
+                        if (localGivenScheduleDate.isBefore(localSavedScheduleDate))
+                            throw new RuntimeException(String.format("Given schedule date: %1$s is before saved schedule date: %2$s", localGivenScheduleDate, localSavedScheduleDate));
+                        if (localGivenScheduleDate.isAfter(localGivenDueDate))
+                            throw new RuntimeException(String.format("Given schedule date: %1$s is after given due date: %2$s", localGivenScheduleDate, localGivenDueDate));
+                    }
                 }
 
                 workOrder.setScheduledDate(givenScheduleDate);
@@ -1488,98 +1517,95 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 // Waiting on Parts section
                 if (workOrderStatus.getStatus().equals(AppConstants.WorkOrderStatusConstants.WAITING_ON_PARTS)) {
                     log.info("Inside waiting on parts work order status");
-                    if (null == workOrderRequestDto.getInventoryRequestDtoList()) {
-                        throw new ResourceNotProvidedException("No inventory item/s provided!!!");
-                    }
+                    if (null != workOrderRequestDto.getInventoryRequestDtoList() && !workOrderRequestDto.getInventoryRequestDtoList().isEmpty()) {
+                        List<Integer> toDelete;
+                        List<Integer> savedInventoryIds;
+                        List<Inventory> inventoryList = new ArrayList<>();
+                        if (null != workOrder.getInventoryList() && !workOrder.getInventoryList().isEmpty()) {
+                            log.info("Deleting work order inventory whose id is not given");
+                            inventoryList = workOrder.getInventoryList();
 
-                    List<Integer> toDelete;
-                    List<Integer> savedInventoryIds;
-                    List<Inventory> inventoryList = new ArrayList<>();
-                    if (null != workOrder.getInventoryList() && !workOrder.getInventoryList().isEmpty()) {
-                        log.info("Deleting work order inventory whose id is not given");
-                        inventoryList = workOrder.getInventoryList();
+                            savedInventoryIds = workOrder.getInventoryList().stream().map(Inventory::getId).toList();
 
-                        savedInventoryIds = workOrder.getInventoryList().stream().map(Inventory::getId).toList();
+                            toDelete = savedInventoryIds
+                                    .stream()
+                                    .filter(id -> workOrderRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
+                                    .toList();
 
-                        toDelete = savedInventoryIds
-                                .stream()
-                                .filter(id -> workOrderRequestDto.getInventoryRequestDtoList().stream().noneMatch(inventoryRequestDto -> null != inventoryRequestDto.getId() && inventoryRequestDto.getId().equals(id)))
-                                .toList();
+                            inventoryRepository.deleteAllById(toDelete);
+                        }
 
-                        inventoryRepository.deleteAllById(toDelete);
-                    }
+                        if (inventoryList.isEmpty()) inventoryList = new ArrayList<>();
 
-                    if(inventoryList.isEmpty()) inventoryList = new ArrayList<>();
+                        for (InventoryRequestDto inventoryRequestDto : workOrderRequestDto.getInventoryRequestDtoList()) {
+                            int quantityAfterOperation;
+                            log.info("Adding inventory to the inventory list");
+                            final Inventory inventory = inventoryRepository.findById(inventoryRequestDto.getId())
+                                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
 
-                    for (InventoryRequestDto inventoryRequestDto : workOrderRequestDto.getInventoryRequestDtoList()) {
-                        int quantityAfterOperation;
-                        log.info("Adding inventory to the inventory list");
-                        final Inventory inventory = inventoryRepository.findById(inventoryRequestDto.getId())
-                                .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventoryRequestDto.getId())));
+                            if (null == inventory.getParentInventoryId()) {
+                                Inventory childInventory = null;
 
-                        if (null == inventory.getParentInventoryId()) {
-                            Inventory childInventory = null;
-
-                            if(null != workOrder.getInventoryList()) {
-                                for (Inventory savedInventory : workOrder.getInventoryList()) {
-                                    if (savedInventory.getParentInventoryId().equals(inventory.getId())) {
-                                        childInventory = savedInventory;
-                                        inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
-                                        break;
+                                if (null != workOrder.getInventoryList()) {
+                                    for (Inventory savedInventory : workOrder.getInventoryList()) {
+                                        if (savedInventory.getParentInventoryId().equals(inventory.getId())) {
+                                            childInventory = savedInventory;
+                                            inventory.setQuantity(inventory.getQuantity() + childInventory.getQuantity());
+                                            break;
+                                        }
                                     }
+                                }
+
+                                if (null == childInventory)
+                                    childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
+
+                                final String workOrderNumber = workOrder.getWorkOrderNumber();
+
+                                childInventory.setParentInventoryId(inventory.getId());
+                                childInventory.setItemName(String.format("%1$s_%2$s", inventory.getItemName(), workOrderNumber));
+
+                                quantityAfterOperation = inventory.getQuantity() - inventoryRequestDto.getQuantity();
+
+                                if (quantityAfterOperation < 0) {
+                                    throw new MathException("Given quantity is greater than available quantity");
+                                }
+
+                                inventory.setQuantity(quantityAfterOperation);
+                                childInventory.setQuantity(inventoryRequestDto.getQuantity());
+                                inventoryList.add(childInventory);
+
+                                childInventory.setWorkOrder(workOrder);
+
+                                inventoryRepository.save(inventory);
+
+                            } else {
+                                final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
+                                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
+
+                                quantityAfterOperation = parentInventory.getQuantity() + inventory.getQuantity() - inventoryRequestDto.getQuantity();
+
+                                if (quantityAfterOperation < 0) {
+                                    throw new MathException("Given quantity is greater than available quantity");
+                                }
+
+                                inventory.setQuantity(inventoryRequestDto.getQuantity());
+                                parentInventory.setQuantity(quantityAfterOperation);
+
+                                inventoryRepository.save(parentInventory);
+
+                                if (inventoryRequestDto.getQuantity() == 0) {
+                                    inventory.setWorkOrder(null);
+                                    inventoryList.remove(inventory);
+                                    inventoryRepository.delete(inventory);
                                 }
                             }
 
-                            if (null == childInventory)
-                                childInventory = inventoryMapper.mapToInventory(Inventory.builder().build(), inventory);
-
-                            final String workOrderNumber = workOrder.getWorkOrderNumber();
-
-                            childInventory.setParentInventoryId(inventory.getId());
-                            childInventory.setItemName(String.format("%1$s_%2$s", inventory.getItemName(), workOrderNumber));
-
-                            quantityAfterOperation = inventory.getQuantity() - inventoryRequestDto.getQuantity();
-
-                            if (quantityAfterOperation < 0) {
-                                throw new MathException("Given quantity is greater than available quantity");
-                            }
-
-                            inventory.setQuantity(quantityAfterOperation);
-                            childInventory.setQuantity(inventoryRequestDto.getQuantity());
-                            inventoryList.add(childInventory);
-
-                            childInventory.setWorkOrder(workOrder);
-
-                            inventoryRepository.save(inventory);
-
-                        } else {
-                            final Inventory parentInventory = inventoryRepository.findById(inventory.getParentInventoryId())
-                                    .orElseThrow(() -> new ResourceNotFoundException(String.format("No inventory found with the given id: %1$s", inventory.getParentInventoryId())));
-
-                            quantityAfterOperation = parentInventory.getQuantity() + inventory.getQuantity() - inventoryRequestDto.getQuantity();
-
-                            if (quantityAfterOperation < 0) {
-                                throw new MathException("Given quantity is greater than available quantity");
-                            }
-
-                            inventory.setQuantity(inventoryRequestDto.getQuantity());
-                            parentInventory.setQuantity(quantityAfterOperation);
-
-                            inventoryRepository.save(parentInventory);
-
-                            if (inventoryRequestDto.getQuantity() == 0) {
-                                inventory.setWorkOrder(null);
-                                inventoryList.remove(inventory);
-                                inventoryRepository.delete(inventory);
-                            }
                         }
 
+                        log.info("Setting the inventory list: {} ", inventoryList);
+                        workOrder.setInventoryList(inventoryList);
                     }
-
-                    log.info("Setting the inventory list: {} ", inventoryList);
-                    workOrder.setInventoryList(inventoryList);
                 }
-
                 workOrder.setWorkOrderStatus(workOrderStatus);
             } else {
                 if (null == workOrderId)
@@ -1587,16 +1613,40 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
 
             if (null != workOrderRequestDto.getMooringId()) {
-                Optional<Mooring> optionalMooring = mooringRepository.findById(workOrderRequestDto.getMooringId());
-                if (optionalMooring.isEmpty())
-                    throw new RuntimeException(String.format("No mooring found with the given id: %1$s", workOrderRequestDto.getMooringId()));
-
-                final Mooring mooring = optionalMooring.get();
-
+                final Mooring mooring = Mooring.builder().id(workOrderRequestDto.getMooringId()).build();
                 workOrder.setMooring(mooring);
             } else {
+                workOrder.setMooring(null);
+            }
+
+            if (null != workOrderRequestDto.getCustomerId()) {
+                final Customer customer = Customer.builder().id(workOrderRequestDto.getCustomerId()).build();
+                workOrder.setCustomer(customer);
+            } else {
                 if (null == workOrderId)
-                    throw new RuntimeException(String.format("While saving work order mooring id cannot be null"));
+                    throw new NullPointerException("While saving work order customer cannot be null");
+            }
+
+            if (null != workOrderRequestDto.getBoatyardId()) {
+                final Boatyard boatyard = Boatyard.builder().id(workOrderRequestDto.getBoatyardId()).build();
+                workOrder.setBoatyard(boatyard);
+            } else {
+                workOrder.setBoatyard(null);
+            }
+
+            if(null != workOrderRequestDto.getMooringStatusId()) {
+                if(null != workOrder.getMooring()) {
+
+                    MooringStatus mooringStatus = mooringStatusRepository.findById(workOrderRequestDto.getMooringStatusId())
+                            .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring status found with the given id: %1$s", workOrderRequestDto.getMooringStatusId())));
+
+                    Mooring mooring = workOrder.getMooring();
+                    mooring.setMooringStatus(mooringStatus);
+
+                    mooringRepository.save(mooring);
+
+                    mooringStatusFlag = true;
+                }
             }
 
             if (null != workOrderRequestDto.getTechnicianId()) {
@@ -1631,18 +1681,18 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             WorkOrderResponseDto workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), savedWorkOrder);
             if (null != savedWorkOrder.getMooring())
                 workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), savedWorkOrder.getMooring()));
-            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getCustomer()) {
-                CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer());
-                if(null != savedWorkOrder.getMooring().getCustomer().getState()) {
-                    customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer().getState()));
+            if (null != savedWorkOrder.getCustomer()) {
+                CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), savedWorkOrder.getCustomer());
+                if(null != savedWorkOrder.getCustomer().getState()) {
+                    customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), savedWorkOrder.getCustomer().getState()));
                 }
-                if(null != savedWorkOrder.getMooring().getCustomer().getCountry()) {
-                    customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), savedWorkOrder.getMooring().getCustomer().getCountry()));
+                if(null != savedWorkOrder.getCustomer().getCountry()) {
+                    customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), savedWorkOrder.getCustomer().getCountry()));
                 }
                 workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
             }
-            if (null != savedWorkOrder.getMooring() && null != savedWorkOrder.getMooring().getBoatyard())
-                workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedWorkOrder.getMooring().getBoatyard()));
+            if (null != savedWorkOrder.getBoatyard())
+                workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), savedWorkOrder.getBoatyard()));
             if (null != savedWorkOrder.getCustomerOwnerUser())
                 workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), savedWorkOrder.getCustomerOwnerUser()));
             if (null != savedWorkOrder.getTechnicianUser())
@@ -1694,8 +1744,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             }
             return workOrderResponseDto;
 
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             log.error("Error occurred during performSave() function {}", e.getLocalizedMessage());
             throw new DBOperationException(e.getMessage(), e);
         }
@@ -1710,24 +1759,22 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         HashMap<String, MooringDueServiceResponseDto> mooringDueServiceResponseDtoHashMap = new HashMap<>();
 
         for (WorkOrder workOrder : workOrderList) {
-            if (null == workOrder.getMooring())
-                throw new RuntimeException(String.format("No mooring found for the work order with the id: %1$s", workOrder.getId()));
+            if (null == workOrder.getMooring()) continue;
             MooringDueServiceResponseDto mooringDueServiceResponseDto = MooringDueServiceResponseDto.builder().build();
 
-            if (null == workOrder.getMooring().getCustomer())
-                throw new RuntimeException(String.format("No customer found for the work order with the id: %1$s", workOrder.getId()));
+            if (null != workOrder.getCustomer()) {
+                final Customer customer = workOrder.getCustomer();
+                mooringDueServiceResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer));
+            }
 
-            if (null == workOrder.getMooring().getBoatyard())
-                throw new RuntimeException(String.format("No boatyard found for the work order with the id: %1$s", workOrder.getId()));
+            if (null != workOrder.getBoatyard()) {
+                final Boatyard boatyard = workOrder.getBoatyard();
+                mooringDueServiceResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), boatyard));
+            }
 
             final Mooring mooring = workOrder.getMooring();
-            final Customer customer = workOrder.getMooring().getCustomer();
-            final Boatyard boatyard = workOrder.getMooring().getBoatyard();
 
             mooringMapper.mapToMooringDueServiceResponseDto(mooringDueServiceResponseDto, mooring);
-
-            mooringDueServiceResponseDto.setCustomerResponseDto(customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), customer));
-            mooringDueServiceResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), boatyard));
 
             Optional<MooringDueServiceStatus> optionalMooringDueServiceStatus;
 
@@ -1784,15 +1831,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                         if (savedDueDate.before(mooringServiceDate)) {
                             mooringDueServiceResponseDtoFromMap.setMooringServiceDate(DateUtil.dateToString(workOrder.getDueDate()));
                         }
-                    } else {
-                        throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrder.getId()));
                     }
-                } else {
-                    throw new RuntimeException(String.format("Mooring service date is null for mooring of id: %1$s", mooringDueServiceResponseDtoFromMap.getId()));
                 }
             } else {
-                if (null == workOrder.getDueDate())
-                    throw new RuntimeException(String.format("Due date is null for work order of id: %1$s", workOrder.getId()));
+                if (null == workOrder.getDueDate()) continue;
 
                 mooringDueServiceResponseDto.setMooringServiceDate(DateUtil.dateToString(workOrder.getDueDate()));
 

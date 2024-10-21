@@ -1,5 +1,6 @@
 package com.marinamooringmanagement.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marinamooringmanagement.model.entity.metadata.Country;
 import com.marinamooringmanagement.model.entity.metadata.CustomerType;
@@ -104,6 +105,9 @@ public class Customer extends Base {
     @JsonManagedReference
     @ToString.Exclude
     private QuickbookCustomer quickBookCustomer;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<WorkOrder> workOrderList;
 
     public Customer(
             Integer id, String firstName, String lastName, String customerId, String address, String city, String notes, String emailAddress,
