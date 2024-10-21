@@ -201,8 +201,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
-            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
-            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status, c.id, c.firstName, " +
+            "c.lastName, c.customerId, c.phone, c.address, cs.id, cs.name, cc.id, cc.name, " +
+            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, byd.address, " +
+            "bydS.id, bydS.name, " +
+            "bydC.id, bydC.name, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -223,7 +226,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN m.shackleSwivelCondition sc " +
             "LEFT JOIN m.mooringStatus ms " +
             "LEFT JOIN wo.customer c " +
+            "LEFT JOIN c.state cs " +
+            "LEFT JOIN c.country cc " +
             "LEFT JOIN wo.boatyard byd " +
+            "LEFT JOIN byd.state bydS " +
+            "LEFT JOIN byd.country bydC " +
             "LEFT JOIN m.serviceArea s " +
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
@@ -246,8 +253,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
-            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
-            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status, c.id, c.firstName, " +
+            "c.lastName, c.customerId, c.phone, c.address, cs.id, cs.name, cc.id, cc.name, " +
+            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, byd.address, " +
+            "bydS.id, bydS.name, " +
+            "bydC.id, bydC.name, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -268,7 +278,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN m.shackleSwivelCondition sc " +
             "LEFT JOIN m.mooringStatus ms " +
             "LEFT JOIN wo.customer c " +
+            "LEFT JOIN c.state cs " +
+            "LEFT JOIN c.country cc " +
             "LEFT JOIN wo.boatyard byd " +
+            "LEFT JOIN byd.state bydS " +
+            "LEFT JOIN byd.country bydC " +
             "LEFT JOIN m.serviceArea s " +
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
