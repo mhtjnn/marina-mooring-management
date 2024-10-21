@@ -24,6 +24,7 @@ import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.NotificationService;
 import com.marinamooringmanagement.utils.DateUtil;
+import com.marinamooringmanagement.utils.SortUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
                 user = authorizationUtil.checkAuthority(customerOwnerId);
             }
 
-            Pageable pageable = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize());
+            Pageable pageable = PageRequest.of(baseSearchRequest.getPageNumber(), baseSearchRequest.getPageSize(), SortUtils.getSort(baseSearchRequest.getSortBy(), baseSearchRequest.getSortDir()));
             Page<NotificationResponseDto> notificationResponseDtoPage = notificationRepository.findAll(id, pageable);
 
             List<CustomNotificationResponse> customNotificationResponseList;

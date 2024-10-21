@@ -15,8 +15,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     @Query("SELECT new com.marinamooringmanagement.model.response.NotificationResponseDto(" +
             "n.id, n.creationDate, n.createdById, n.sendToId, n.notificationMessage, n.isRead, n.entityStr, n.entityId) " +
             "FROM Notification n " +
-            "WHERE n.sendToId = :sendToId " +
-            "ORDER BY n.creationDate")
+            "WHERE n.sendToId = :sendToId ")
     Page<NotificationResponseDto> findAll(
             @Param("sendToId") final Integer sendToId,
             Pageable pageable
