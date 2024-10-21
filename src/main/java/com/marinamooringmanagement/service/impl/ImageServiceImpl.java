@@ -12,6 +12,7 @@ import com.marinamooringmanagement.model.request.MultipleImageRequestDto;
 import com.marinamooringmanagement.model.response.BasicRestResponse;
 import com.marinamooringmanagement.model.response.ImageResponseDto;
 import com.marinamooringmanagement.repositories.*;
+import com.marinamooringmanagement.security.exception.AuthorizationException;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.ImageService;
@@ -28,10 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional
@@ -166,6 +164,19 @@ public class ImageServiceImpl implements ImageService {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
         try {
+
+            final Integer customerOwnerId = request.getIntHeader(AppConstants.HeaderConstants.CUSTOMER_OWNER_ID);
+            final User user;
+            if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
+                final User financeUser = userRepository.findUserByIdWithoutImage(LoggedInUserUtil.getLoggedInUserID())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No finance user found with the given id: %1$s", LoggedInUserUtil.getLoggedInUserID())));
+
+                user = userRepository.findUserByIdWithoutImage(financeUser.getCustomerOwnerId())
+                        .orElseThrow(() -> new ResourceNotFoundException(String.format("No customer owner user found with the given id: %1$s", financeUser.getCustomerOwnerId())));
+            } else {
+                user = authorizationUtil.checkAuthority(customerOwnerId);
+            }
+
             boolean found = false;
             if(StringUtils.equals(entity, AppConstants.EntityConstants.CUSTOMER)) {
                 final Customer customer = customerRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No customer found with the given id: %1$s", entity)));
@@ -181,11 +192,14 @@ public class ImageServiceImpl implements ImageService {
                 customerRepository.save(customer);
 
             } else if(StringUtils.equals(entity, AppConstants.EntityConstants.WORK_ORDER)) {
-                final WorkOrder workOrder = workOrderRepository.findById(entityId).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", entityId)));
-                for(Image image: workOrder.getImageList()) {
-                    if(!ObjectUtils.notEqual(image.getId(), id)) {
-                        found = true;
-                        imageMapper.toEntity(image, imageRequestDto);
+                final WorkOrder workOrder = workOrderRepository.findWorkOrderById(entityId, user.getId()).orElseThrow(() -> new ResourceNotFoundException(String.format("No work order found with the given id: %1$s", entityId)));
+                List<Image> imageList = imageRepository.findByWorkOrderId(workOrder.getId());
+                if(null != imageList) {
+                    for (Image image : imageList) {
+                        if (!ObjectUtils.notEqual(image.getId(), id)) {
+                            found = true;
+                            imageMapper.toEntity(image, imageRequestDto);
+                        }
                     }
                 }
 

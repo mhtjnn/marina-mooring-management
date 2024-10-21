@@ -1111,7 +1111,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public BasicRestResponse fetchWorkOrderById(Integer id, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -1240,7 +1240,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         return formResponseDtoList;
     }
 
-    @Transactional
     public List<VoiceMEMOResponseDto> getVoiceMEMOResponseDtoListByWorkOrderId(final Integer workOrderId) {
         List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findByWorkOrderId(workOrderId);
         List<VoiceMEMOResponseDto> voiceMEMOResponseDtoList = new ArrayList<>();
