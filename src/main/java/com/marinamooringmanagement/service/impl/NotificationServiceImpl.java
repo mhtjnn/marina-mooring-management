@@ -20,6 +20,7 @@ import com.marinamooringmanagement.model.response.metadata.StateResponseDto;
 import com.marinamooringmanagement.repositories.NotificationRepository;
 import com.marinamooringmanagement.repositories.UserRepository;
 import com.marinamooringmanagement.repositories.WorkOrderRepository;
+import com.marinamooringmanagement.security.exception.AuthorizationException;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.NotificationService;
@@ -125,7 +126,7 @@ public class NotificationServiceImpl implements NotificationService {
                             } else if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
                                 optionalWorkOrder = workOrderRepository.findWorkOrderByIdUsingTechnicianLogin(notificationResponseDto.getEntityId(), LoggedInUserUtil.getLoggedInUserID());
                             } else {
-                                throw new RuntimeException("No authorized");
+                                throw new AuthorizationException("No authorized");
                             }
 
                             if (optionalWorkOrder.isPresent()) {
@@ -134,18 +135,18 @@ public class NotificationServiceImpl implements NotificationService {
                                 workOrderResponseDto = workOrderMapper.mapToWorkOrderResponseDto(WorkOrderResponseDto.builder().build(), workOrder);
                                 if (null != workOrder.getMooring())
                                     workOrderResponseDto.setMooringResponseDto(mooringMapper.mapToMooringResponseDto(MooringResponseDto.builder().build(), workOrder.getMooring()));
-                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getCustomer()) {
-                                    CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getMooring().getCustomer());
-                                    if (null != workOrder.getMooring().getCustomer().getState()) {
-                                        customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getMooring().getCustomer().getState()));
+                                if (null != workOrder.getMooring() && null != workOrder.getCustomer()) {
+                                    CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(CustomerResponseDto.builder().build(), workOrder.getCustomer());
+                                    if (null != workOrder.getCustomer().getState()) {
+                                        customerResponseDto.setStateResponseDto(stateMapper.mapToStateResponseDto(StateResponseDto.builder().build(), workOrder.getCustomer().getState()));
                                     }
-                                    if (null != workOrder.getMooring().getCustomer().getCountry()) {
-                                        customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getMooring().getCustomer().getCountry()));
+                                    if (null != workOrder.getCustomer().getCountry()) {
+                                        customerResponseDto.setCountryResponseDto(countryMapper.mapToCountryResponseDto(CountryResponseDto.builder().build(), workOrder.getCustomer().getCountry()));
                                     }
                                     workOrderResponseDto.setCustomerResponseDto(customerResponseDto);
                                 }
-                                if (null != workOrder.getMooring() && null != workOrder.getMooring().getBoatyard())
-                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getMooring().getBoatyard()));
+                                if (null != workOrder.getMooring() && null != workOrder.getBoatyard())
+                                    workOrderResponseDto.setBoatyardResponseDto(boatyardMapper.mapToBoatYardResponseDto(BoatyardResponseDto.builder().build(), workOrder.getBoatyard()));
                                 if (null != workOrder.getCustomerOwnerUser())
                                     workOrderResponseDto.setCustomerOwnerUserResponseDto(userMapper.mapToUserResponseDto(UserResponseDto.builder().build(), workOrder.getCustomerOwnerUser()));
                                 if (null != workOrder.getTechnicianUser())

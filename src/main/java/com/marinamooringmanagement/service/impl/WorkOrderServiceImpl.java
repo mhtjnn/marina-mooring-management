@@ -34,6 +34,7 @@ import com.marinamooringmanagement.repositories.metadata.MooringDueServiceStatus
 import com.marinamooringmanagement.repositories.metadata.MooringStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderInvoiceStatusRepository;
 import com.marinamooringmanagement.repositories.metadata.WorkOrderStatusRepository;
+import com.marinamooringmanagement.security.exception.AuthorizationException;
 import com.marinamooringmanagement.security.util.AuthorizationUtil;
 import com.marinamooringmanagement.security.util.LoggedInUserUtil;
 import com.marinamooringmanagement.service.NotificationService;
@@ -1110,7 +1111,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     }
 
     @Override
-    @Transactional()
+    @Transactional
     public BasicRestResponse fetchWorkOrderById(Integer id, HttpServletRequest request) {
         final BasicRestResponse response = BasicRestResponse.builder().build();
         response.setTime(new Timestamp(System.currentTimeMillis()));
@@ -1127,7 +1128,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             } else if (StringUtils.equals(LoggedInUserUtil.getLoggedInUserRole(), AppConstants.Role.TECHNICIAN)) {
                 optionalWorkOrder = workOrderRepository.findWorkOrderByIdUsingTechnicianLogin(id, LoggedInUserUtil.getLoggedInUserID());
             } else {
-                throw new RuntimeException("No authorized");
+                throw new AuthorizationException("No authorized");
             }
 
             if (optionalWorkOrder.isEmpty())
@@ -1165,43 +1166,12 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             if (null != workOrder.getCompletedDate())
                 workOrderResponseDto.setCompletedDate(DateUtil.dateToString(workOrder.getCompletedDate()));
 
-            List<Image> imageList = imageRepository.findByWorkOrderId(workOrder.getId());
-            List<Form> formList = formRepository.findByWorkOrderId(workOrder.getId());
             List<Inventory> inventoryList = inventoryRepository.findByWorkOrderId(workOrder.getId());
-            List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findByWorkOrderId(workOrder.getId());
 
-            if (null != imageList && !imageList.isEmpty()) {
-                workOrderResponseDto.setImageResponseDtoList(imageList
-                        .stream()
-                        .map(image -> {
-                            ImageResponseDto imageResponseDto = ImageResponseDto.builder().build();
-                            imageMapper.toResponseDto(imageResponseDto, image);
-                            if (null != image.getImageData()) {
-                                String encodedData = Base64.getEncoder().encodeToString(image.getImageData());
-                                if (null != encodedData) {
-                                    imageResponseDto.setEncodedData(encodedData);
-                                }
-                            }
-                            return imageResponseDto;
-                        })
-                        .toList());
-            }
-            if (null != formList && !formList.isEmpty()) {
-                workOrderResponseDto.setFormResponseDtoList(formList
-                        .stream()
-                        .map(form -> {
-                            FormResponseDto formResponseDto = FormResponseDto.builder().build();
-                            formMapper.toResponseDto(formResponseDto, form);
-                            if (null != form.getFormData()) {
-                                String encodedData = Base64.getEncoder().encodeToString(form.getFormData());
-                                if (null != encodedData) {
-                                    formResponseDto.setEncodedData(encodedData);
-                                }
-                            }
-                            return formResponseDto;
-                        })
-                        .toList());
-            }
+            workOrderResponseDto.setImageResponseDtoList(getImageResponseDtoListByWorkOrderId(workOrder.getId()));
+            workOrderResponseDto.setFormResponseDtoList(getFormResponseDtoListByWorkOrderId(workOrder.getId()));
+            workOrderResponseDto.setVoiceMEMOResponseDtoList(getVoiceMEMOResponseDtoListByWorkOrderId(workOrder.getId()));
+
             if (null != inventoryList && !inventoryList.isEmpty()) {
                 workOrderResponseDto.setInventoryResponseDtoList(inventoryList
                         .stream()
@@ -1210,20 +1180,6 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                             VendorResponseDto vendorResponseDto = vendorMapper.mapToVendorResponseDto(VendorResponseDto.builder().build(), inventory.getVendor());
                             inventoryResponseDto.setVendorResponseDto(vendorResponseDto);
                             return inventoryResponseDto;
-                        })
-                        .toList());
-            }
-            if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
-                workOrderResponseDto.setVoiceMEMOResponseDtoList(voiceMEMOList
-                        .stream()
-                        .map(voiceMEMO -> {
-                            VoiceMEMOResponseDto voiceMEMOResponseDto = VoiceMEMOResponseDto.builder().build();
-                            voiceMEMOMapper.toResponseDto(voiceMEMOResponseDto, voiceMEMO);
-                            if (null != voiceMEMO.getData()) {
-                                String encodedData = Base64.getEncoder().encodeToString(voiceMEMO.getData());
-                                voiceMEMOResponseDto.setEncodedData(encodedData);
-                            }
-                            return voiceMEMOResponseDto;
                         })
                         .toList());
             }
@@ -1236,6 +1192,76 @@ public class WorkOrderServiceImpl implements WorkOrderService {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return response;
+    }
+
+    @Transactional
+    public List<ImageResponseDto> getImageResponseDtoListByWorkOrderId(final Integer workOrderId) {
+        List<Image> imageList = imageRepository.findByWorkOrderId(workOrderId);
+        List<ImageResponseDto> imageResponseDtoList = new ArrayList<>();
+        if (null != imageList && !imageList.isEmpty()) {
+            imageResponseDtoList = imageList
+                    .stream()
+                    .map(image -> {
+                        ImageResponseDto imageResponseDto = ImageResponseDto.builder().build();
+                        imageMapper.toResponseDto(imageResponseDto, image);
+                        if (null != image.getImageData()) {
+                            String encodedData = Base64.getEncoder().encodeToString(image.getImageData());
+                            if (null != encodedData) {
+                                imageResponseDto.setEncodedData(encodedData);
+                            }
+                        }
+                        return imageResponseDto;
+                    })
+                    .toList();
+        }
+        return imageResponseDtoList;
+    }
+
+    @Transactional
+    public List<FormResponseDto> getFormResponseDtoListByWorkOrderId(final Integer workOrderId) {
+        List<Form> formList = formRepository.findByWorkOrderId(workOrderId);
+        List<FormResponseDto> formResponseDtoList = new ArrayList<>();
+        if (null != formList && !formList.isEmpty()) {
+            formResponseDtoList = formList
+                    .stream()
+                    .map(form -> {
+                        FormResponseDto formResponseDto = FormResponseDto.builder().build();
+                        formMapper.toResponseDto(formResponseDto, form);
+                        if (null != form.getFormData()) {
+                            String encodedData = Base64.getEncoder().encodeToString(form.getFormData());
+                            if (null != encodedData) {
+                                formResponseDto.setEncodedData(encodedData);
+                            }
+                        }
+                        return formResponseDto;
+                    })
+                    .toList();
+        }
+        return formResponseDtoList;
+    }
+
+    @Transactional
+    public List<VoiceMEMOResponseDto> getVoiceMEMOResponseDtoListByWorkOrderId(final Integer workOrderId) {
+        List<VoiceMEMO> voiceMEMOList = voiceMEMORepository.findByWorkOrderId(workOrderId);
+        List<VoiceMEMOResponseDto> voiceMEMOResponseDtoList = new ArrayList<>();
+        if (null != voiceMEMOList && !voiceMEMOList.isEmpty()) {
+            voiceMEMOResponseDtoList = voiceMEMOList
+                    .stream()
+                    .map(voiceMEMO -> {
+                        VoiceMEMOResponseDto voiceMEMOResponseDto = VoiceMEMOResponseDto.builder().build();
+                        voiceMEMOMapper.toResponseDto(voiceMEMOResponseDto, voiceMEMO);
+                        if (null != voiceMEMO.getData()) {
+                            String encodedData = Base64.getEncoder().encodeToString(voiceMEMO.getData());
+                            voiceMEMOResponseDto.setEncodedData(encodedData);
+                        } else {
+                            String nullCheckString = "Data is NULL";
+                            voiceMEMOResponseDto.setEncodedData(nullCheckString);
+                        }
+                        return voiceMEMOResponseDto;
+                    })
+                    .toList();
+        }
+        return voiceMEMOResponseDtoList;
     }
 
     @Transactional
@@ -1272,14 +1298,53 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                 workOrder.setCreationDate(new Date(System.currentTimeMillis()));
             }
 
+//            if (null != workOrderRequestDto.getImageRequestDtoList() && !workOrderRequestDto.getImageRequestDtoList().isEmpty()) {
+//                List<Image> imageList = new ArrayList<>();
+//                if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+//                    imageList = workOrder.getImageList();
+//                }
+//                for (ImageRequestDto imageRequestDto : workOrderRequestDto.getImageRequestDtoList()) {
+//                    Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
+//                    if (null != imageRequestDto.getImageData()) {
+//                        image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
+//                    }
+//                    image.setCreationDate(new Date(System.currentTimeMillis()));
+//                    image.setLastModifiedDate(new Date(System.currentTimeMillis()));
+//                    imageList.add(image);
+//
+//                    image.setWorkOrder(workOrder);
+//                }
+//
+//                workOrder.setImageList(imageList);
+//            }
+
+            //Update Image List
             if (null != workOrderRequestDto.getImageRequestDtoList() && !workOrderRequestDto.getImageRequestDtoList().isEmpty()) {
-                List<Image> imageList = new ArrayList<>();
-                if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty())
-                    imageList = workOrder.getImageList();
+
+                List<Integer> toDelete;
+                List<Integer> savedImageIds;
+                List<Image> imageList;
+
+                if (null != workOrder.getImageList()) imageList = workOrder.getImageList();
+                else imageList = new ArrayList<>();
+
+                if (null != workOrder.getImageList() && !workOrder.getImageList().isEmpty()) {
+                    savedImageIds = imageList.stream().map(Image::getId).toList();
+
+                    toDelete = savedImageIds.stream()
+                            .filter(id -> workOrderRequestDto.getImageRequestDtoList().stream()
+                                    .noneMatch(imageRequestDto -> null != imageRequestDto.getId() && imageRequestDto.getId().equals(id)))
+                            .toList();
+
+                    List<Image> toDeleteImages = imageRepository.findAllById(toDelete);
+                    imageList.removeAll(toDeleteImages);
+                }
+
                 for (ImageRequestDto imageRequestDto : workOrderRequestDto.getImageRequestDtoList()) {
                     Image image = imageMapper.toEntity(Image.builder().build(), imageRequestDto);
-                    if (null != imageRequestDto.getImageData())
+                    if (null != imageRequestDto.getImageData()) {
                         image.setImageData(ImageUtils.validateEncodedString(imageRequestDto.getImageData()));
+                    }
                     image.setCreationDate(new Date(System.currentTimeMillis()));
                     image.setLastModifiedDate(new Date(System.currentTimeMillis()));
                     imageList.add(image);
