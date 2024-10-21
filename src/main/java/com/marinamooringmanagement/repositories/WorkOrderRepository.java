@@ -16,7 +16,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
@@ -58,6 +58,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "AND (:searchText IS NOT NULL AND (" +
             "LOWER(CAST(wo.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(wo.problem) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(wo.workOrderNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
@@ -74,7 +75,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
@@ -120,6 +121,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(m.mooringNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
+            "LOWER(wo.workOrderNumber) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(byd.boatyardName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(s.serviceAreaName) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
             "LOWER(CONCAT(tu.firstName, ' ', tu.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%')) OR " +
@@ -133,13 +135,16 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
-            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
-            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status, c.id, c.firstName, " +
+            "c.lastName, c.customerId, c.phone, c.address, cs.id, cs.name, cc.id, cc.name, " +
+            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, byd.address, " +
+            "bydS.id, bydS.name, " +
+            "bydC.id, bydC.name, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -160,7 +165,11 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN m.shackleSwivelCondition sc " +
             "LEFT JOIN m.mooringStatus ms " +
             "LEFT JOIN wo.customer c " +
+            "LEFT JOIN c.state cs " +
+            "LEFT JOIN c.country cc " +
             "LEFT JOIN wo.boatyard byd " +
+            "LEFT JOIN byd.state bydS " +
+            "LEFT JOIN byd.country bydC " +
             "LEFT JOIN m.serviceArea s " +
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
@@ -187,7 +196,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
@@ -232,7 +241,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
@@ -343,14 +352,16 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
-            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status, c.id, c.firstName, " +
             "c.lastName, c.customerId, c.phone, c.address, cs.id, cs.name, cc.id, cc.name, " +
-            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, byd.address, " +
+            "bydS.id, bydS.name, " +
+            "bydC.id, bydC.name, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -374,6 +385,8 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN c.state cs " +
             "LEFT JOIN c.country cc " +
             "LEFT JOIN wo.boatyard byd " +
+            "LEFT JOIN byd.state bydS " +
+            "LEFT JOIN byd.country bydC " +
             "LEFT JOIN m.serviceArea s " +
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
@@ -384,14 +397,16 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
-            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
+            "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status, c.id, c.firstName, " +
             "c.lastName, c.customerId, c.phone, c.address, cs.id, cs.name, cc.id, cc.name, " +
-            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, " +
+            "u.id, u.firstName, u.lastName, byd.id, byd.boatyardId, byd.boatyardName, byd.address, " +
+            "bydS.id, bydS.name, " +
+            "bydC.id, bydC.name, " +
             "s.id, s.serviceAreaName, " +
             "tu.id, tu.firstName, tu.lastName, " +
             "cu.id, cu.firstName, cu.lastName, " +
@@ -415,6 +430,8 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
             "LEFT JOIN c.state cs " +
             "LEFT JOIN c.country cc " +
             "LEFT JOIN wo.boatyard byd " +
+            "LEFT JOIN byd.state bydS " +
+            "LEFT JOIN byd.country bydC " +
             "LEFT JOIN m.serviceArea s " +
             "LEFT JOIN m.user u " +
             "LEFT JOIN u.role r " +
@@ -424,7 +441,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Integer> {
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.WorkOrder(" +
             "wo.id, wo.workOrderNumber, wo.dueDate, wo.scheduledDate, wo.completedDate, " +
-            "wo.time, wo.problem, wo.cost, " +
+            "wo.time, wo.problem, wo.cost, wo.reasonForDenial, " +
             "m.id, m.mooringNumber, m.harborOrArea, m.gpsCoordinates, m.installBottomChainDate, " +
             "m.installTopChainDate, m.installConditionOfEyeDate, m.inspectionDate, m.boatId, m.boatName, " +
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +

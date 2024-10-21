@@ -181,7 +181,7 @@ public class WorkOrder extends Base {
     }
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
-                     Date completedDate, Time time, String problem, BigDecimal cost,
+                     Date completedDate, Time time, String problem, BigDecimal cost, String reasonForDenial,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
                      Date inspectionDate, String boatId, String boatName, String boatSize,
@@ -216,6 +216,7 @@ public class WorkOrder extends Base {
         this.time = time;
         this.problem = problem;
         this.cost = cost;
+        this.reasonForDenial = reasonForDenial;
         if (mooringId != null) this.mooring =
                 Mooring.builder()
                         .id(mooringId)
@@ -302,7 +303,7 @@ public class WorkOrder extends Base {
     }
 
     public WorkOrder(Integer id, String workOrderNumber, Date dueDate, Date scheduledDate,
-                     Date completedDate, Time time, String problem,
+                     Date completedDate, Time time, String problem, BigDecimal cost, String reasonForDenial,
                      Integer mooringId, String mooringNumber, String harborOrArea, String gpsCoordinates,
                      Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
                      Date inspectionDate, String boatId, String boatName, String boatSize,
@@ -334,6 +335,8 @@ public class WorkOrder extends Base {
         this.completedDate = completedDate;
         this.time = time;
         this.problem = problem;
+        this.cost = cost;
+        this.reasonForDenial = reasonForDenial;
         if (mooringId != null) this.mooring =
                 Mooring.builder()
                         .id(mooringId)
