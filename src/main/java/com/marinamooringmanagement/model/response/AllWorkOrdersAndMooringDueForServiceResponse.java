@@ -1,0 +1,22 @@
+package com.marinamooringmanagement.model.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.List;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class AllWorkOrdersAndMooringDueForServiceResponse implements Serializable {
+
+    private static final long serialVersionUID = 55268635075679L;
+
+    List<WorkOrderResponseDto> workOrderResponseDtoList;
+
+    List<MooringDueServiceResponseDto> mooringDueServiceResponseDtoList;
+}

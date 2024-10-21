@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sending Email</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- use the font -->
+    <style>
+        @media screen and (max-width: 768px) {
+            table {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<table align="center" border="0" cellpadding="0" cellspacing="0">
+    <thead>
+    <tr >
+        <th style="height: 25px; background-color: rgb(2, 149, 192)">&nbsp;</th>
+    </tr>
+    <tr>
+        <th class="gradientBG" style="height: 5px; background-color: rgb(2, 149, 192)">&nbsp;</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr >
+        <td style="padding: 30px 60px; font-size: 14px;">
+            <p>Dear <b><i><span th:text="${technicianUserFirstName + ' ' + technicianUserLastName}"></span>,</i></b></p>
+            <p>You have this work order which has a due date within one month!!!</p>
+            <p><b><i>Here is the work order information:</i></b></p>
+            <p><b><i>Work Order number:</i></b> <span th:text="${workOrderNumber}"></span></p>
+            <p><b><i>Work Order due date:</i></b> <span th:text="${dueDate}"></span></p>
+            <p><b><i>Work Order scheduled date:</i></b> <span th:text="${scheduledDate}"></span></p>
+            <p><b><i>Work Order time:</i></b> <span th:text="${time}"></span></p>
+            <p><b><i>Work Order problem:</i></b> <span th:text="${problem}"></span></p>
+            <p><b><i>Mooring Number:</i></b> <span th:text="${mooringNumber}"></span></p>
+            <p><b><i>Customer Name:</i></b> <span th:text="${customerFirstName + ' ' + customerLastName}"></span></p>
+            <p><b><i>Customer Number:</i></b> <span th:text="${customerId}"></span></p>
+            <p><b><i>Work Order Status:</i></b> <span th:text="${workOrderStatus}"></span></p>
+            <p>Thank you.</p>
+            <p><b>[THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL]</b></p>
+        </td>
+    </tbody>
+</table>
+</body>
+</html>

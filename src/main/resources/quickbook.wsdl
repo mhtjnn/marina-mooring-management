@@ -1,0 +1,32 @@
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://developer.intuit.com/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             targetNamespace="http://developer.intuit.com/"
+             name="QuickBooksWebService">
+
+    <message name="qbXMLRequest">
+        <part name="request" element="tns:qbXML"/>
+    </message>
+
+    <portType name="QuickBooksPort">
+        <operation name="handleRequest">
+            <input message="tns:qbXMLRequest"/>
+        </operation>
+    </portType>
+
+    <binding name="QuickBooksBinding" type="tns:QuickBooksPort">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="handleRequest">
+            <soap:operation soapAction="http://developer.intuit.com/handleRequest"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+        </operation>
+    </binding>
+
+    <service name="QuickBooksService">
+        <port name="QuickBooksPort" binding="tns:QuickBooksBinding">
+            <soap:address location="http://localhost:8080/ws"/>
+        </port>
+    </service>
+</definitions>
