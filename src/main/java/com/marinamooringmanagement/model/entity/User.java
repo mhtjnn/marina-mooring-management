@@ -73,6 +73,9 @@ public class User extends Base {
     @Column(name = "zipcode")
     private String zipCode;
 
+    @Column(name = "disabled")
+    private Boolean disabled;
+
     /**
      * The role associated with the user.
      */

@@ -90,10 +90,9 @@ public class AuthorizationUtil {
 
         if(loggedInUserRole.equals(AppConstants.Role.ADMINISTRATOR)) {
             if(customerOwnerId == -1 && (userToBeDeleted.getRole().getName().equals(AppConstants.Role.FINANCE) || userToBeDeleted.getRole().getName().equals(AppConstants.Role.TECHNICIAN))) throw new RuntimeException("Please select a customer owner");
-            else if(customerOwnerId != -1 && !customerOwnerId.equals(userToBeDeleted.getCustomerOwnerId())) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
         } else if (loggedInUserRole.equals(AppConstants.Role.CUSTOMER_OWNER)) {
             if(customerOwnerId != -1 && !loggedInUserID.equals(customerOwnerId)) throw new RuntimeException("Cannot perform operations on user with different customer owner id");
-            if(null == userToBeDeleted.getCustomerOwnerId()) throw new RuntimeException(String.format("Not Authorized to perform operation on user with role as Administrator and Customer owner"));
+            if(null == userToBeDeleted.getCustomerOwnerId()) throw new RuntimeException(String.format("Not authorized to perform operation on user with role as Administrator and Customer owner"));
             if (!userToBeDeleted.getCustomerOwnerId().equals(loggedInUserID))
                 throw new RuntimeException("Not authorized to perform operations on user with different customer owner Id");
         } else{
