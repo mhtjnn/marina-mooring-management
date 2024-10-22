@@ -588,7 +588,11 @@ public class UserServiceImpl implements UserService {
             authorizationUtil.checkAuthorityForUser(customerOwnerId, savedRole.getName());
 
             //if userId is null that means user is getting saved for the first time. So, we are setting creation date here
-            if (null == userId) user.setCreationDate(new Date(System.currentTimeMillis()));
+            if (null == userId) {
+                user.setCreationDate(new Date(System.currentTimeMillis()));
+            }
+
+            user.setDisabled(false);
 
             //mapping the simple properties of the user from the given userRequestDto
             mapper.mapToUser(user, userRequestDto);
