@@ -54,12 +54,13 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "LEFT JOIN u.role r " +
             "LEFT JOIN u.state s " +
             "LEFT JOIN u.country c " +
-            "WHERE ((:customerOwnerId = -1 AND r.id = 2) " +
+            "WHERE u.disabled = false AND (" +
+            "(:customerOwnerId = -1 AND r.id = 2) " +
             "OR ((r.id = 3 OR r.id = 4) AND u.customerOwnerId = :customerOwnerId)) " +
-            "AND (:searchText IS NOT NULL AND (" +
+            "AND (:searchText IS NULL OR :searchText = '' OR (" +
             "LOWER(u.firstName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(u.lastName) LIKE CONCAT('%', LOWER(:searchText), '%') " +
-            "OR (LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +
+            "OR LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(u.email) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(u.phoneNumber) LIKE CONCAT('%', LOWER(:searchText), '%') " +
             "OR LOWER(r.name) LIKE CONCAT('%', LOWER(:searchText), '%'))) " +
@@ -80,7 +81,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "u.id, u.firstName, u.lastName) " +
             "FROM User u " +
             "LEFT JOIN u.role r " +
-            "WHERE (r.id = :roleId) " +
+            "WHERE (r.id = :roleId AND u.disabled = false) " +
             "ORDER BY u.id")
     List<User> findAllUsersByRoleMetadata(@Param("roleId") Integer roleId);
 
@@ -88,7 +89,7 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "u.id, u.firstName, u.lastName) " +
             "FROM User u " +
             "LEFT JOIN u.role r " +
-            "WHERE r.id = :roleId " +
+            "WHERE u.disabled = false AND r.id = :roleId " +
             "AND (:customerOwnerId IS NOT NULL AND u.customerOwnerId IS NOT NULL AND u.customerOwnerId = :customerOwnerId) " +
             "AND (:searchText IS NOT NULL AND LOWER(CAST(u.id AS string)) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
             "OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
@@ -112,6 +113,6 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
             "LEFT JOIN u.state s " +
             "LEFT JOIN u.country c " +
             "LEFT JOIN u.role r " +
-            "WHERE u.id = :id")
+            "WHERE u.disabled = false AND u.id = :id")
     Optional<User> findUserByIdWithoutImage(@Param("id") Integer customerOwnerId);
 }

@@ -48,6 +48,8 @@ public class UserDto extends BaseDto implements Serializable {
      */
     private String password;
 
+    private Boolean disabled;
+
     /**
      * The ID of the customer admin associated with the user.
      */

@@ -305,7 +305,8 @@ public class UserServiceImpl implements UserService {
                 for (User user : userAssociatedWithCurrCustomerOwner) {
                     List<Token> tokenList = tokenRepository.findByUserId(user.getId());
                     tokenRepository.deleteAll(tokenList);
-                    userRepository.delete(user);
+                    user.setDisabled(true);
+                    userRepository.save(user);
                 }
             }
 
@@ -314,7 +315,8 @@ public class UserServiceImpl implements UserService {
             if (null != tokenList && !tokenList.isEmpty()) tokenRepository.deleteAll(tokenList);
 
             // deleting the user
-            userRepository.deleteById(userId);
+            userToBeDeleted.setDisabled(true);
+            userRepository.save(userToBeDeleted);
 
             response.setMessage("User Deleted Successfully!!!");
             response.setStatus(200);
