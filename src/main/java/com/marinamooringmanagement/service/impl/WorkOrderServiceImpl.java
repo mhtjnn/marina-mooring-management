@@ -1706,7 +1706,8 @@ public class WorkOrderServiceImpl implements WorkOrderService {
                     MooringStatus mooringStatus = mooringStatusRepository.findById(workOrderRequestDto.getMooringStatusId())
                             .orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring status found with the given id: %1$s", workOrderRequestDto.getMooringStatusId())));
 
-                    Mooring mooring = workOrder.getMooring();
+                    Mooring mooring = mooringRepository.findById(workOrder.getMooring().getId()).orElseThrow(() -> new ResourceNotFoundException(String.format("No mooring found with the given id: %1$s", workOrder.getMooring().getId())));
+
                     mooring.setMooringStatus(mooringStatus);
 
                     mooringRepository.save(mooring);
