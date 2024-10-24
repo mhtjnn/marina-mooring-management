@@ -256,6 +256,52 @@ public class Mooring extends Base {
         this.imageList = imageList;
     }
 
+    public Mooring(Integer id, String mooringNumber, String harborOrArea, String gpsCoordinates,
+                   Date installBottomChainDate, Date installTopChainDate, Date installConditionOfEyeDate,
+                   Date inspectionDate, String boatId, String boatName, String boatSize,
+                   Integer boatTypeId, String boatTypeName,
+                   String boatWeight,
+                   Integer sizeOfWeight,
+                   Integer typeOfWeightId, String typeOfWeightName,
+                   Integer eyeConditionId, String eyeConditionName,
+                   Integer topChainConditionId, String topChainConditionName,
+                   Integer bottomChainConditionId, String bottomChainConditionName,
+                   Integer shackleSwivelConditionId, String shackleSwivelConditionName,
+                   String pendantCondition, Integer depthAtMeanHighWater,
+                   Integer mooringStatusId, String mooringStatusName,
+                   Integer customerId, String customerFirstName, String customerLastName, String customerNumber,
+                   Integer userId, String userFirstName, String userLastName,
+                   Integer boatyardId, String boatyardName, String mainContact,
+                   Integer serviceAreaId, String serviceAreaName)
+    {
+        this.id = id;
+        this.mooringNumber = mooringNumber;
+        this.harborOrArea = harborOrArea;
+        this.gpsCoordinates = gpsCoordinates;
+        this.installBottomChainDate = installBottomChainDate;
+        this.installTopChainDate = installTopChainDate;
+        this.installConditionOfEyeDate = installConditionOfEyeDate;
+        this.inspectionDate = inspectionDate;
+        this.boatId = boatId;
+        this.boatName = boatName;
+        this.boatSize = boatSize;
+        this.boatType = BoatType.builder().id(boatTypeId).boatType(boatTypeName).build();
+        this.boatWeight = boatWeight;
+        this.sizeOfWeight = sizeOfWeight;
+        this.typeOfWeight = TypeOfWeight.builder().id(typeOfWeightId).type(typeOfWeightName).build();
+        this.eyeCondition = EyeCondition.builder().id(eyeConditionId).condition(eyeConditionName).build();
+        this.topChainCondition = TopChainCondition.builder().id(topChainConditionId).condition(topChainConditionName).build();
+        this.bottomChainCondition = BottomChainCondition.builder().id(bottomChainConditionId).condition(bottomChainConditionName).build();
+        this.shackleSwivelCondition = ShackleSwivelCondition.builder().id(shackleSwivelConditionId).condition(shackleSwivelConditionName).build();
+        this.pendantCondition = pendantCondition;
+        this.depthAtMeanHighWater = depthAtMeanHighWater;
+        this.mooringStatus = MooringStatus.builder().id(mooringStatusId).status(mooringStatusName).build();
+        this.customer = Customer.builder().id(customerId).firstName(customerFirstName).lastName(customerLastName).customerId(customerNumber).build();
+        this.user = User.builder().id(userId).firstName(userFirstName).lastName(userLastName).build();
+        this.boatyard = Boatyard.builder().id(boatyardId).boatyardName(boatyardName).mainContact(mainContact).build();
+        this.serviceArea = ServiceArea.builder().id(serviceAreaId).serviceAreaName(serviceAreaName).build();
+    }
+
     public Mooring(Integer id, String mooringNumber) {
         this.id = id;
         this.mooringNumber = mooringNumber;

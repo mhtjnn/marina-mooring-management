@@ -37,6 +37,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
             "(c.emailAddress IS NOT NULL AND LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(c.phone IS NOT NULL AND LOWER(c.phone) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(s.name IS NOT NULL AND LOWER(s.name) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
+            "(cu.type IS NOT NULL AND LOWER(cu.type) LIKE LOWER(CONCAT('%', :searchText, '%'))) OR " +
             "(co.name IS NOT NULL AND LOWER(co.name) LIKE LOWER(CONCAT('%', :searchText, '%')))) " +
             "AND (:userId IS NOT NULL AND u.id = :userId) " +
             "ORDER BY c.id")

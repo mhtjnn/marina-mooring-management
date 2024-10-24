@@ -43,7 +43,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
             "m.boatSize, bt.id, bt.boatType, m.boatWeight, m.sizeOfWeight, tw.id, tw.type, ec.id, " +
             "ec.condition, tc.id, tc.condition, bc.id, bc.condition, sc.id, sc.condition, " +
             "m.pendantCondition, m.depthAtMeanHighWater, ms.id, ms.status , c.id, c.firstName, " +
-            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardName, " +
+            "c.lastName, c.customerId, u.id, u.firstName, u.lastName, byd.id, byd.boatyardName, byd.mainContact, " +
             "s.id, s.serviceAreaName) " +
             "FROM Mooring m " +
             "LEFT JOIN m.boatType bt " +
@@ -95,7 +95,7 @@ public interface BoatyardRepository extends JpaRepository<Boatyard, Integer> {
     Optional<Boatyard> findByBoatyardId(final String boatyardId);
 
     @Query("SELECT new com.marinamooringmanagement.model.entity.Boatyard(" +
-            "b.id, b.boatyardName, b.boatyardId, u.id, u.firstName, u.lastName) " +
+            "b.id, b.boatyardName, b.boatyardId, b.mainContact, u.id, u.firstName, u.lastName) " +
             "FROM Boatyard b " +
             "LEFT JOIN b.user u " +
             "WHERE (:userId IS NOT NULL AND u.id = :userId) " +
